@@ -141,17 +141,16 @@ server:~ # </programlisting>
       <para><filename>/etc/shorewall/zones</filename>:</para>
 
       <programlisting>###############################################################################
-#ZONE    TYPE       OPTIONS                IN                       OUT
-#                                          OPTIONS                  OPTIONS
+#ZONE    TYPE       OPTIONS                IN_OPTION                OUT_OPTIONS
 net      ipv4
 vz       ipv4</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>###############################################################################
-#ZONE    INTERFACE          BROADCAST      OPTIONS
-net      eth0               -              proxyarp=1
-vz       venet0             -              <emphasis role="bold">routeback,arp_filter=0</emphasis></programlisting>
+#ZONE    INTERFACE          OPTIONS
+net      eth0               proxyarp=1
+vz       venet0             <emphasis role="bold">routeback,arp_filter=0</emphasis></programlisting>
     </section>
 
     <section>
@@ -159,8 +158,8 @@ vz       venet0             -              <emphasis role="bold">routeback,arp_f
 
       <para>If you run Shorewall Multi-ISP support on the host, you should
       arrange for traffic to your containers to use the main routing table. In
-      the configuration shown here, this entry in /etc/shorewall/rtrules
-      is appropriate:</para>
+      the configuration shown here, this entry in /etc/shorewall/rtrules is
+      appropriate:</para>
 
       <programlisting>#SOURCE            DEST              PROVIDER          PRIORITY
 -                  206.124.146.178   main              1000</programlisting>
@@ -290,7 +289,7 @@ done.
 
     <para>The network diagram is shown below.</para>
 
-    <graphic fileref="images/Network2009c.png" />
+    <graphic fileref="images/Network2009c.png"/>
 
     <para>The two systems shown in the green box are OpenVZ Virtual
     Environments (containers).</para>
@@ -457,8 +456,7 @@ NAME="server"</emphasis></programlisting>
 
       <para><filename>/etc/shorewall/zones</filename>:</para>
 
-      <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
-#                                               OPTIONS                 OPTIONS
+      <programlisting>#ZONE           TYPE            OPTIONS         IN_OPTIONS              OUT_OPTIONS
 fw              firewall
 net             ipv4            #Internet
 loc             ipv4            #Local wired Zone
@@ -472,11 +470,11 @@ INT_IF=eth1
 <emphasis role="bold">VPS_IF=venet0</emphasis>
 ...</programlisting>
 
-      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
-net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0,<emphasis
+      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       OPTIONS
+net     $NET_IF         dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0,<emphasis
             role="bold">proxyarp=1</emphasis>
-loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
-<emphasis role="bold">dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
+loc     $INT_IF         dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
+<emphasis role="bold">dmz     $VPS_IF         logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback</emphasis>
 ...</programlisting>This is a multi-ISP configuration so entries are required
       in <filename>/etc/shorewall/rtrules</filename>:</para>
 
@@ -501,8 +499,7 @@ loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1
 
       <para>/etc/shorewall/zones:</para>
 
-      <programlisting>#ZONE       TYPE         OPTIONS           IN                OUT
-#                                          OPTIONS           OPTIONS
+      <programlisting>#ZONE       TYPE         OPTIONS           IN_OPTIONS        OUT_OPTIONS
 fw          firewall
 net         ipv4</programlisting>
 
@@ -526,7 +523,7 @@ net     <emphasis role="bold">venet0 </emphasis>         detect          dhcp,tc
 
     <para>The network diagram is shown below.</para>
 
-    <graphic fileref="images/Network2010.png" />
+    <graphic fileref="images/Network2010.png"/>
 
     <para>The two systems shown in the green box are OpenVZ Virtual
     Environments (containers).</para>
@@ -768,8 +765,7 @@ NAME="server"
 
       <para><filename><filename>/etc/shorewall/zones</filename>:</filename></para>
 
-      <programlisting>#ZONE           TYPE            OPTIONS         IN                      OUT
-#                                               OPTIONS                 OPTIONS
+      <programlisting>#ZONE           TYPE            OPTIONS         IN_OPTIONS              OUT_OPTIONS
 fw              firewall
 net             ipv4            #Internet
 loc             ipv4            #Local wired Zone
@@ -783,10 +779,10 @@ INT_IF=eth1
 <emphasis role="bold">VPS_IF=vzbr0</emphasis>
 ...</programlisting>
 
-      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
-net     $NET_IF         detect                  dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0
-loc     $INT_IF         detect                  dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
-dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback
+      <para><filename>/etc/shorewall/interfaces</filename>:<programlisting>#ZONE   INTERFACE       OPTIONS
+net     $NET_IF         dhcp,blacklist,tcpflags,optional,routefilter=0,nosmurfs,logmartions=0
+loc     $INT_IF         dhcp,logmartians=1,routefilter=1,nets=(172.20.1.0/24),tcpflags
+dmz     $VPS_IF         logmartians=0,routefilter=0,nets=(206.124.146.177,206.124.146.178),routeback
 ...</programlisting></para>
 
       <para><filename>/etc/shorewall/proxyarp:</filename></para>
@@ -813,15 +809,14 @@ dmz     $VPS_IF         detect                  logmartians=0,routefilter=0,nets
 
       <para><filename>/etc/shorewall/zones:</filename></para>
 
-      <programlisting>#ZONE       TYPE         OPTIONS           IN                OUT
-#                                          OPTIONS           OPTIONS
+      <programlisting>#ZONE       TYPE         OPTIONS           IN_OPTIONS        OUT_OPTIONS
 fw          firewall
 net         ipv4</programlisting>
 
       <para><filename>/etc/shorewall/interfaces:</filename></para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     <emphasis role="bold">eth0  </emphasis>         detect          dhcp,tcpflags,logmartians,nosmurfs</programlisting>
+      <programlisting>#ZONE   INTERFACE      OPTIONS
+net     <emphasis role="bold">eth0  </emphasis>         dhcp,tcpflags,logmartians,nosmurfs</programlisting>
     </section>
   </section>
 </article>

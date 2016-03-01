@@ -734,6 +734,23 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">DOCKER=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.6. When set to <option>Yes</option>,
+          the generated script will save Docker-generated rules before and
+          restore them after executing the <command>start</command>,
+          <command>stop</command>, <command>reload</command> and
+          <command>restart</command> commands. If set to <option>No</option>
+          (the default), the generated script will delete any Docker-generated
+          rules when executing those commands. See<ulink url="/Docker.html">
+          http://www.shorewall.net/Docker.html</ulink> for additional
+          information.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">DONT_LOAD=</emphasis>[<emphasis>module</emphasis>[,<emphasis>module</emphasis>]...]</term>
 
@@ -763,8 +780,8 @@
         <listitem>
           <para>Normally, when the SOURCE or DEST columns in
           shorewall-policy(5) contains 'all', a single policy chain is created
-          and the policy is enforced in that chain. For example, if the policy
-          entry is<programlisting>#SOURCE DEST POLICY LOG
+          and thes policy is enforced in that chain. For example, if the
+          policy entry is<programlisting>#SOURCE DEST POLICY LOG
 #                   LEVEL
 net     all  DROP   info</programlisting>then the chain name is 'net-all'
           ('net2all if ZONE2ZONE=2) which is also the chain named in Shorewall

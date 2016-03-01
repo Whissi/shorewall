@@ -62,7 +62,7 @@
 
     <para>Suppose that we have the following situation:</para>
 
-    <graphic fileref="images/TwoNets1.png" />
+    <graphic fileref="images/TwoNets1.png"/>
 
     <para>We want systems in the 192.168.1.0/24 subnetwork to be able to
     communicate with the systems in the 10.0.0.0/8 network. This is
@@ -103,12 +103,12 @@ vpn          ipv4</programlisting>
     <para>On system A, the 10.0.0.0/8 will comprise the <emphasis
     role="bold">vpn</emphasis> zone. In /etc/shorewall/interfaces:</para>
 
-    <programlisting>#ZONE        INTERFACE      BROADCAST        OPTIONS
-vpn          tosysb         10.255.255.255</programlisting>
+    <programlisting>#ZONE        INTERFACE      OPTIONS
+vpn          tosysb</programlisting>
 
     <para>In /etc/shorewall/tunnels on system A, we need the following:</para>
 
-    <programlisting>#TYPE         ZONE          GATEWAY          GATEWAY ZONE
+    <programlisting>#TYPE         ZONE          GATEWAY          GATEWAY_ZONE
 ipip          net           134.28.54.2</programlisting>
 
     <para>This entry in /etc/shorewall/tunnels, opens the firewall so that the
@@ -133,12 +133,12 @@ subnet=10.0.0.0/8
     <emphasis role="bold">vpn</emphasis> zone. In
     /etc/shorewall/interfaces:</para>
 
-    <programlisting>#ZONE        INTERFACE          BROADCAST
-vpn          tosysa             192.168.1.255</programlisting>
+    <programlisting>#ZONE        INTERFACE
+vpn          tosysa</programlisting>
 
     <para>In /etc/shorewall/tunnels on system B, we have:</para>
 
-    <programlisting>#TYPE        ZONE           GATEWAY           GATEWAY ZONE
+    <programlisting>#TYPE        ZONE           GATEWAY           GATEWAY_ZONE
 ipip         net            206.191.148.9</programlisting>
 
     <para>And in the tunnel script on system B:</para>

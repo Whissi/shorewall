@@ -163,8 +163,7 @@ httpd_accel_uses_host_header on</programlisting>
 
         <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
-#                                                       PORT(S)    DEST
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DPORT            SPORT      ORIGDEST
 ACCEPT    $FW        net      tcp      www
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177
 </programlisting>
@@ -175,10 +174,9 @@ REDIRECT  loc        3128     tcp      www              -          !206.124.146.
         Squid.</para>
 
         <para>If needed, you may just add the additional hosts/networks to the
-        ORIGINAL DEST column in your REDIRECT rule.</para>
+        ORIGDEST column in your REDIRECT rule.</para>
 
-        <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
-#                                                       PORT(S)    DEST
+        <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DPORT            SPORT      ORIGDEST
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
 
         <para>People frequently ask <emphasis>How can I exclude certain
@@ -188,8 +186,7 @@ REDIRECT  loc        3128     tcp      www              -          !206.124.146.
         <para>Suppose that you want to exclude 192.168.1.5 and 192.168.1.33
         from the proxy. Your rules would then be:</para>
 
-        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
-#                                                       PORT(S)    DEST
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DPORT            SPORT      ORIGDEST
 ACCEPT    $FW        net      tcp      www
 REDIRECT  loc:!192.168.1.5,192.168.1.33\
                      3128     tcp      www              -          !206.124.146.177,130.252.100.0/24
@@ -215,8 +212,7 @@ gateway:/etc/shorewall# </programlisting>
         role="bold">(squid)</emphasis> is running under the <emphasis
         role="bold">proxy</emphasis> user Id. We add these rules:</para>
 
-        <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL          RATE       USER/
-#                                                       PORT(S)    DEST              LIMIT      GROUP
+        <programlisting>#ACTION   SOURCE     DEST     PROTO    DPORT            SPORT      ORIGDEST          RATE       USER
 ACCEPT    $FW        net      tcp      www
 REDIRECT  $FW        3128     tcp      www              -          -                 -         <emphasis
             role="bold"> !proxy</emphasis></programlisting>
@@ -242,18 +238,16 @@ Squid   1       202     -               eth1            192.168.1.3     loose,no
           <listitem>
             <para>In <filename>/etc/shorewall/mangle</filename> add:</para>
 
-            <programlisting>#ACTION        SOURCE              DEST        PROTO    DEST
-#                                                       PORT(S)
+            <programlisting>#ACTION        SOURCE              DEST        PROTO    DPORT            SPORT      ORIGDEST
 MARK(202):P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
 
             <para>If you are still using a tcrules file, you should consider
             switching to using a mangle file (<command>shorewall update
-            -t</command> (<command>shorewall update</command> on
-	    Shorewall 5.0 and later) will do that for you). Corresponding
+            -t</command> (<command>shorewall update</command> on Shorewall 5.0
+            and later) will do that for you). Corresponding
             /etc/shorewall/tcrules entries are:</para>
 
-            <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
-#                                                 PORT(S)
+            <programlisting>#MARK    SOURCE              DEST        PROTO    DPORT
 202:P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
           </listitem>
 
@@ -261,8 +255,8 @@ MARK(202):P    eth1:!192.168.1.3   0.0.0.0/0   tcp      80</programlisting>
             <para>In <filename> <filename>/etc/shorewall/interfaces</filename>
             </filename>:</para>
 
-            <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
-loc     eth1         detect       <emphasis role="bold">routeback,routefilter=0,logmartians=0</emphasis>        </programlisting>
+            <programlisting>#ZONE   INTERFACE    OPTIONS
+loc     eth1         <emphasis role="bold">routeback,routefilter=0,logmartians=0</emphasis>        </programlisting>
           </listitem>
 
           <listitem>
@@ -294,8 +288,7 @@ loc     eth1         detect       <emphasis role="bold">routeback,routefilter=0,
 
         <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION  SOURCE   DEST                 PROTO    DEST PORT(S)    SOURCE     ORIGINAL
-#                                                               PORT(S)    DEST
+        <programlisting>#ACTION  SOURCE   DEST                 PROTO    DPORT           SPORT      ORIGDEST
 DNAT     loc      dmz:192.0.2.177:3128 tcp      80              -          !192.0.2.177</programlisting>
       </section>
 
@@ -316,14 +309,12 @@ Squid   1       202     -               eth2            192.0.2.177     loose,no
           <listitem>
             <para>In <filename>/etc/shorewall/mangle</filename> add:</para>
 
-            <programlisting>#ACTION        SOURCE              DEST        PROTO    DEST
-#                                                       PORT(S)
+            <programlisting>#ACTION        SOURCE              DEST        PROTO    DPORT
 MARK(202):P    eth1                0.0.0.0/0   tcp      80</programlisting>
 
             <para>Corresponding /etc/shorewall/tcrules entries are:</para>
 
-            <programlisting>#MARK    SOURCE              DEST        PROTO    DEST
-#                                                 PORT(S)
+            <programlisting>#MARK    SOURCE              DEST        PROTO    DPORT
 202:P    eth1                0.0.0.0/0   tcp      80</programlisting>
           </listitem>
 
@@ -331,8 +322,8 @@ MARK(202):P    eth1                0.0.0.0/0   tcp      80</programlisting>
             <para>In <filename> <filename>/etc/shorewall/interfaces</filename>
             </filename>:</para>
 
-            <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
-loc     eth2         detect       <emphasis role="bold">routefilter=0,logmartians=0</emphasis>        </programlisting>
+            <programlisting>#ZONE   INTERFACE    OPTIONS
+loc     eth2         <emphasis role="bold">routefilter=0,logmartians=0</emphasis>        </programlisting>
           </listitem>
 
           <listitem>
@@ -363,7 +354,7 @@ loc     eth2         detect       <emphasis role="bold">routefilter=0,logmartian
 
     <para><filename>/etc/shorewall/rules</filename>:</para>
 
-    <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
+    <programlisting>#ACTION   SOURCE   DEST   PROTO   DPORT
 ACCEPT    Z        SZ     tcp     SP
 ACCEPT    SZ       net    tcp     80,443</programlisting>
 
@@ -371,7 +362,7 @@ ACCEPT    SZ       net    tcp     80,443</programlisting>
       <title>Squid on the firewall listening on port 8080 with access from the
       <quote>loc</quote> zone:</title>
 
-      <para><filename>/etc/shorewall/rules:</filename> <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)
+      <para><filename>/etc/shorewall/rules:</filename> <programlisting>#ACTION   SOURCE   DEST   PROTO    DPORT
 ACCEPT    loc      $FW    tcp      8080
 ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     </example>
@@ -406,8 +397,8 @@ ACCEPT    $FW      net    tcp      80,443</programlisting></para>
 
     <para><filename>/etc/shorewall/interfaces:</filename></para>
 
-    <programlisting>#ZONE        INTERFACE        BROADCAST         OPTIONS
--            lo               -                 -</programlisting>
+    <programlisting>#ZONE        INTERFACE        OPTIONS
+-            lo               -</programlisting>
 
     <para><filename>/etc/shorewall/providers</filename>:</para>
 
@@ -422,17 +413,13 @@ Tproxy    1        -        -           lo        -            tproxy</programli
     <para><filename>/etc/shorewall/mangle</filename> (assume loc interface is
     eth1 and net interface is eth0):</para>
 
-    <programlisting>#ACTION         SOURCE      DEST        PROTO      DEST        SOURCE
-#                                                  PORT(S)     PORT(S)
+    <programlisting>#ACTION         SOURCE      DEST        PROTO      DPORT       SPORT
 DIVERT          eth0        0.0.0.0/0   tcp        -           80
 TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
 
-    <para>Corresponding <filename>/etc/shorewall/tcrules</filename>
-    are:</para>
+    <para>Corresponding <filename>/etc/shorewall/mangle</filename> are:</para>
 
-    <programlisting><emphasis role="bold">FORMAT 2</emphasis>
-#MARK           SOURCE      DEST        PROTO      DEST        SOURCE
-#                                                  PORT(S)     PORT(S)
+    <programlisting>#MARK           SOURCE      DEST        PROTO      DPORT       SPORT
 DIVERT          eth0        0.0.0.0/0   tcp        -           80
 TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
 
@@ -445,16 +432,14 @@ TPROXY(3129)    eth1        0.0.0.0/0   tcp        80</programlisting>
       on port 80, then you need to exclude it from TPROXY. Suppose that your
       web server listens on 192.0.2.144; then:</para>
 
-      <programlisting><emphasis role="bold">FORMAT 2</emphasis>
-#MARK           SOURCE              DEST           PROTO      DEST        SOURCE
-#                                                             PORT(S)     PORT(S)
+      <programlisting>#MARK           SOURCE              DEST           PROTO      DPORT       SPORT
 DIVERT          eth0                0.0.0.0/0      tcp        -           80
 TPROXY(3129)    eth1                !192.0.2.144   tcp        80          -</programlisting>
     </note>
 
     <para>/etc/shorewall/rules:</para>
 
-    <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
+    <programlisting>#ACTION   SOURCE   DEST   PROTO   DPORT
 ACCEPT    loc      $FW    tcp     80
 ACCEPT    $FW      net    tcp     80</programlisting>
 

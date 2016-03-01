@@ -264,6 +264,7 @@ our %EXPORT_TAGS = (
                                        have_address_variables
 				       set_global_variables
 				       save_dynamic_chains
+				       save_docker_rules
 				       load_ipsets
 				       create_save_ipsets
 				       validate_nfobject
@@ -1525,8 +1526,7 @@ sub create_irule( $$$;@ ) {
 }
 
 #
-# Clone an existing rule. Only the rule hash itself is cloned; reference values are shared between the new rule
-# reference and the old.
+# Clone an existing rule.
 #
 sub clone_irule( $ ) {
     my $oldruleref = $_[0];
@@ -2989,11 +2989,31 @@ sub initialize_chain_table($) {
 	}
     }
 
+    my $chainref;
+
     if ( $full ) {
 	#
 	# Create this chain early in case it is needed by Policy actions
 	#
 	new_standard_chain 'reject';
+
+	if ( $config{DOCKER} ) {
+	    $chainref = new_nat_chain( $globals{POSTROUTING} = 'SHOREWALL' );
+	    set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	}
+    }
+
+    if ( my $docker = $config{DOCKER} ) {
+	add_commands( $nat_table->{POSTROUTING}, '[ -f ${VARDIR}/.nat_POSTROUTING ] && cat ${VARDIR}/.nat_POSTROUTING >&3' );
+	$chainref = new_standard_chain( 'DOCKER' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.filter_DOCKER ] && cat ${VARDIR}/.filter_DOCKER >&3' );
+	$chainref = new_nat_chain( 'DOCKER' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.nat_DOCKER ] && cat ${VARDIR}/.nat_DOCKER >&3' );
+	$chainref = new_standard_chain( 'DOCKER-ISOLATION' );
+	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
+	add_commands( $chainref, '[ -f ${VARDIR}/.filter_DOCKER-ISOLATION ] && cat ${VARDIR}/.filter_DOCKER-ISOLATION >&3' );
     }
 
     my $ruleref = transform_rule( $globals{LOGLIMIT} );
@@ -8043,6 +8063,32 @@ sub emitr1( $$ ) {
 #
 # Emit code to save the dynamic chains to hidden files in ${VARDIR}
 #
+sub save_docker_rules($) {
+    my $tool = $_[0];
+
+    emit( qq(if [ -n "\$g_docker" ]; then),
+	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
+	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
+	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
+	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \$VARDIR/.filter_DOCKER-ISOLATION)
+	);
+
+    if ( known_interface( 'docker0' ) ) {
+	emit( qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \$VARDIR/.filter_FORWARD) );
+    } else {
+	emit( qq(    $tool -t filter -S FORWARD | egrep '^-A FORWARD.*[io] (docker0|br-[a-z0-9]{12})' > \$VARDIR/.filter_FORWARD) );
+    }
+
+    emit( qq(    [ -s \$VARDIR/.filter_FORWARD ] || rm -f \$VARDIR/.filter_FORWARD),
+	  qq(else),
+	  qq(    rm -f \$VARDIR/.nat_DOCKER),
+	  qq(    rm -f \$VARDIR/.nat_POSTROUTING),
+	  qq(    rm -f \$VARDIR/.filter_DOCKER),
+	  qq(    rm -f \$VARDIR/.filter_DOCKER-ISOLATION),
+	  qq(    rm -f \$VARDIR/.filter_FORWARD),
+	  qq(fi)
+	)
+}
 
 sub save_dynamic_chains() {
 
@@ -8077,25 +8123,23 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
-
+	emit(''), save_docker_rules( $tool ) if $config{DOCKER};
     } else {
-	$tool = $family == F_IPV4 ? '${IPTABLES}-save' : '${IP6TABLES}-save';
-
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
-    $tool -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
+    $utility -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
 else
     rm -f \${VARDIR}/.UPnP
 fi
 
 if chain_exists forwardUPnP; then
-    $tool -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
+    $utility -t filter | grep '^-A forwardUPnP ' > \${VARDIR}/.forwardUPnP
 else
     rm -f \${VARDIR}/.forwardUPnP
 fi
 
 if chain_exists dynamic; then
-    $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
+    $utility -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic
 else
     rm -f \${VARDIR}/.dynamic
 fi
@@ -8115,10 +8159,11 @@ EOF
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
 	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
+	emit( '' ), save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
-	      qq(        $tool -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
+	      qq(        $utility -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
     }
 
 emit <<"EOF";
@@ -8421,7 +8466,7 @@ sub create_netfilter_load( $ ) {
 
 	my @chains;
 	#
-	# iptables-restore seems to be quite picky about the order of the builtin chains
+	# Iptables-restore seems to be quite picky about the order of the builtin chains
 	#
 	for my $chain ( @builtins ) {
 	    my $chainref = $chain_table{$table}{$chain};
@@ -8437,8 +8482,25 @@ sub create_netfilter_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
-		emit_unindented ":$chainref->{name} - [0:0]";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}
@@ -8524,8 +8586,24 @@ sub preview_netfilter_load() {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0, $chainref->{name} );
-		print ":$chainref->{name} - [0:0]\n";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}
@@ -8710,13 +8788,11 @@ sub create_stop_load( $ ) {
 
     emit '';
 
-    emit(  '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY,
-	   '',
-	   'progress_message2 "Running $command..."',
-	   '',
-	   '$command <<__EOF__' );
+    save_progress_message "Preparing $utility input...";
 
-    $mode = CAT_MODE;
+    emit "exec 3>\${VARDIR}/.${utility}-stop-input";
+
+    enter_cat_mode;
 
     unless ( $test ) {
 	my $date = localtime;
@@ -8746,8 +8822,24 @@ sub create_stop_load( $ ) {
 	for my $chain ( grep $chain_table{$table}{$_}->{referenced} , ( sort keys %{$chain_table{$table}} ) ) {
 	    my $chainref =  $chain_table{$table}{$chain};
 	    unless ( $chainref->{builtin} ) {
-		assert( $chainref->{cmdlevel} == 0 , $chainref->{name} );
-		emit_unindented ":$chainref->{name} - [0:0]";
+		my $name = $chainref->{name};
+		assert( $chainref->{cmdlevel} == 0 , $name );
+		if ( $name =~ /^DOCKER/ ) {
+		    if ( $name eq 'DOCKER' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			enter_cat_mode;
+		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
+			enter_cmd_mode;
+			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			enter_cat_mode;
+		    } else {		    
+			emit_unindented ":$name - [0:0]";
+		    }
+		} else {
+		    emit_unindented ":$name - [0:0]";
+		}
+
 		push @chains, $chainref;
 	    }
 	}
@@ -8760,10 +8852,19 @@ sub create_stop_load( $ ) {
 	#
 	# Commit the changes to the table
 	#
+	enter_cat_mode unless $mode == CAT_MODE;
 	emit_unindented 'COMMIT';
     }
 
-    emit_unindented '__EOF__';
+    enter_cmd_mode;
+
+    emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
+
+    emit( '',
+	  'progress_message2 "Running $command..."',
+	  '',
+	  "cat \${VARDIR}/.${utility}-stop-input | \$command # Use this nonsensical form to appease SELinux",
+	);
     #
     # Test result
     #

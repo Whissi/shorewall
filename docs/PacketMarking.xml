@@ -178,8 +178,8 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <itemizedlist>
       <listitem>
         <para>Rules are conditionally executed based on whether the current
-        packet matches the contents of the SOURCE, DEST, PROTO, PORT(S),
-        CLIENT PORT(S_, USER, TEST, LENGTH and TOS columns.</para>
+        packet matches the contents of the SOURCE, DEST, PROTO, DPORT, SPORT,
+        USER, TEST, LENGTH and TOS columns.</para>
       </listitem>
 
       <listitem>
@@ -352,7 +352,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>The relationship between these options is shown in this
     diagram.</para>
 
-    <graphic align="left" fileref="images/MarkGeometry.png" valign="top" />
+    <graphic align="left" fileref="images/MarkGeometry.png" valign="top"/>
 
     <para>The default values of these options are determined by the settings
     of other options as follows:</para>
@@ -476,8 +476,7 @@ tcp      6 19 TIME_WAIT src=206.124.146.176 dst=192.136.34.98 sport=58597 dport=
     <para>Here's the example (slightly expanded) from the comments at the top
     of the <filename>/etc/shorewall/mangle</filename> file.</para>
 
-    <programlisting>#ACTION  SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST    LENGTH  TOS
-#                                                        PORT(S)
+    <programlisting>#ACTION  SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST    LENGTH  TOS
 MARK(1)  0.0.0.0/0       0.0.0.0/0       icmp    echo-request                 #Rule 1
 MARK(1)  0.0.0.0/0       0.0.0.0/0       icmp    echo-reply                   #Rule 2
 MARK(1)  $FW             0.0.0.0/0       icmp    echo-request                 #Rule 3
@@ -486,8 +485,7 @@ MARK(1)  $FW             0.0.0.0/0       icmp    echo-reply                   #R
 RESTORE  0.0.0.0/0       0.0.0.0/0       all     -       -       -       0    #Rule 5
 CONTINUE 0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 6
 MARK(4)  0.0.0.0/0       0.0.0.0/0       ipp2p:all                            #Rule 7
-SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 8
-##LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #Rule 8</programlisting>
 
     <para>Let's take a look at each rule:</para>
 
@@ -554,33 +552,25 @@ SAVE     0.0.0.0/0       0.0.0.0/0       all     -       -       -       !0   #R
     <filename>/etc/shorewall/providers</filename>:</para>
 
     <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS         COPY
-Blarg   1       0x100   main            eth3            206.124.146.254 track,balance   br0,eth1
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-</programlisting>
+Blarg   1       0x100   main            eth3            206.124.146.254 track,balance   br0,eth1</programlisting>
 
     <para>Here is <filename>/etc/shorewall/mangle</filename>:</para>
 
-    <programlisting>#ACTION                 SOURCE          DEST            PROTO   PORT(S) SOURCE  USER    TEST
-#                                                                       PORT(S)
+    <programlisting>#ACTION                 SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
 CLASSIFY(1:110)         192.168.0.0/22  eth3                            #Our internal nets get priority
                                                                         #over the server
-CLASSIFY(1:130)         206.124.146.177 eth3            tcp     -       873
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+CLASSIFY(1:130)         206.124.146.177 eth3            tcp     -       873</programlisting>
 
     <para>And here is <filename>/etc/shorewall/tcdevices</filename> and
     <filename>/etc/shorewall/tcclasses</filename>:</para>
 
-    <programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH
+    <programlisting>#INTERFACE      IN_BANDWITH     OUT_BANDWIDTH
 eth3            1.3mbit         384kbit
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 
 #INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
 eth3            10      full            full            1               tcp-ack,tos-minimize-delay
 eth3            20      9*full/10       9*full/10       2               default
-eth3            30      6*full/10       6*full/10       3
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+eth3            30      6*full/10       6*full/10       3</programlisting>
 
     <para>I've annotated the following output with comments beginning with
     "&lt;&lt;&lt;&lt;" and ending with "&gt;&gt;&gt;&gt;". This example uses

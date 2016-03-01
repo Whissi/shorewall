@@ -120,7 +120,7 @@ loc        eth2:0.0.0.0/0</programlisting>
 
   <bridgehead renderas="sect4">Policy File</bridgehead>
 
-  <programlisting>#SOURCE          DEST         POLICY         LOG LEVEL
+  <programlisting>#SOURCE          DEST         POLICY         LOGLEVEL
 <emphasis role="bold">ops              all          ACCEPT
 all              ops          CONTINUE</emphasis>
 loc              net          ACCEPT
@@ -134,7 +134,7 @@ all              all          REJECT         info</programlisting>
 
   <bridgehead renderas="sect4">Rules File</bridgehead>
 
-  <programlisting>#ACTION   SOURCE      DEST        PROTO        DEST PORT(S)     SOURCE PORTS(S)    ORIGINAL DEST
+  <programlisting>#ACTION   SOURCE      DEST        PROTO        DPORT     SPORT    ORIGDEST
 REDIRECT  loc!ops     3128        tcp          http</programlisting>
 
   <para>This is the rule that transparently redirects web traffic to the

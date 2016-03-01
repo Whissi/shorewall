@@ -60,7 +60,7 @@
 
     <para>The following figure represents a one-to-one NAT environment.</para>
 
-    <graphic fileref="images/staticnat.png" />
+    <graphic fileref="images/staticnat.png"/>
 
     <para>One-to-one NAT can be used to make the systems with the 10.1.1.*
     addresses appear to be on the upper (130.252.100.*) subnet. If we assume
@@ -73,7 +73,7 @@
     internal host(s) — such traffic is still subject to your policies and
     rules.</para>
 
-    <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL       INTERFACE         INTERNAL      ALL INTERFACES     LOCAL
+    <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL       INTERFACE         INTERNAL      ALLINTS            LOCAL
 130.252.100.18  eth0              10.1.1.2      no                 no
 130.252.100.19  eth0              10.1.1.3      no                 no</programlisting></para>
 
@@ -105,7 +105,7 @@
       <quote>yes</quote> then you must NOT configure your own
       alias(es).</para>
 
-      <para></para>
+      <para/>
     </note>
 
     <note>
@@ -126,8 +126,7 @@
     would need the following entry in
     <filename>/etc/shorewall/rules</filename>:</para>
 
-    <programlisting>#ACTION     SOURCE     DEST            PROTO       DEST        SOURCE         ORIG
-#                                                  PORT(S)     PORT(S)        DEST
+    <programlisting>#ACTION     SOURCE     DEST            PROTO       DPORT       SPORT          ORIGDEST
 ACCEPT      net        loc:10.1.1.2    tcp         80          -              130.252.100.18</programlisting>
   </section>
 

@@ -131,13 +131,13 @@ add_rule( $chainref, '-p tcp --dport 1601 -m recent                       --name
         Internet, add this rule in
         <filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
+        <programlisting>#ACTION          SOURCE            DEST           PROTO       DPORT
 SSHKnock         net               $FW            tcp         22,1599,1600,1601</programlisting>
 
         <para>If you want to log the DROPs and ACCEPTs done by SSHKnock, you
         can just add a log level as in:</para>
 
-        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
+        <programlisting>#ACTION          SOURCE            DEST           PROTO       DPORT
 SSHKnock:info    net               $FW            tcp         22,1599,1600,1601</programlisting>
       </listitem>
 
@@ -146,18 +146,16 @@ SSHKnock:info    net               $FW            tcp         22,1599,1600,1601<
         206.124.146.178 to internal system 192.168.1.5. In
         /etc/shorewall/rules:</para>
 
-        <programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
-#                                                                            PORT(S)     DEST
+        <programlisting>#ACTION          SOURCE            DEST            PROTO       DPORT         SPORT       ORIGDEST
 DNAT-            net               192.168.1.5     tcp         22            -           206.124.146.178
 SSHKnock         net               $FW             tcp         1599,1600,1601
 SSHKnock         net               loc:192.168.1.5 tcp         22            -           206.124.146.178</programlisting>
 
         <note>
           <para>You can use SSHKnock with DNAT on earlier releases provided
-          that you omit the ORIGINAL DEST entry on the second SSHKnock rule.
-          This rule will be quite secure provided that you specify
-          'routefilter' on your external interface and have
-          NULL_ROUTE_RFC1918=Yes in
+          that you omit the ORIGDEST entry on the second SSHKnock rule. This
+          rule will be quite secure provided that you specify 'routefilter' on
+          your external interface and have NULL_ROUTE_RFC1918=Yes in
           <filename>shorewall.conf</filename>.</para>
         </note>
       </listitem>

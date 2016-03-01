@@ -922,7 +922,7 @@ ppp0           6000kbit         500kbit</programlisting>
         packets arriving on eth2 and eth3 should be marked with 2. All packets
         originating on the firewall itself should be marked with 3.</para>
 
-        <programlisting>#ACTION       SOURCE    DESTINATION    PROTOCOL   PORT(S)
+        <programlisting>#ACTION       SOURCE    DEST           PROTO     DPORT
 MARK(1)       eth1      0.0.0.0/0      all
 MARK(2)       eth2      0.0.0.0/0      all
 MARK(2)       eth3      0.0.0.0/0      all
@@ -935,7 +935,7 @@ MARK(3)       $FW       0.0.0.0/0      all</programlisting>
         <para>All GRE (protocol 47) packets destined for 155.186.235.151
         should be marked with 12.</para>
 
-        <programlisting>#ACTION       SOURCE    DESTINATION     PROTOCOL   PORT(S)
+        <programlisting>#ACTION       SOURCE    DEST            PROTO      DPORT
 MARK(12):T    0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
@@ -945,7 +945,7 @@ MARK(12):T    0.0.0.0/0 155.182.235.151 47</programlisting>
         <para>All SSH request packets originating in 192.168.1.0/24 and
         destined for 155.186.235.151 should be marked with 22.</para>
 
-        <programlisting>#ACTION       SOURCE         DESTINATION     PROTOCOL   PORT(S)
+        <programlisting>#ACTION       SOURCE         DEST            PROTO      DPORT
 MARK(22):T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
       </example>
 
@@ -956,8 +956,7 @@ MARK(22):T    192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
         /etc/shorewall/tcdevices should be assigned to the class with mark
         value 10.</para>
 
-        <programlisting>#ACTION           SOURCE         DESTINATION     PROTOCOL   PORT(S)         CLIENT
-#                                                                           PORT(S)
+        <programlisting>#ACTION           SOURCE         DEST            PROTO      DPORT           SPORT
 CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        22
 CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
       </example>
@@ -975,8 +974,7 @@ CLASSIFY(1:110)   0.0.0.0/0      0.0.0.0/0       tcp        -               22</
         means unclassified. Traffic originating on the firewall is not covered
         by this example.</para>
 
-        <programlisting>#ACTION        SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST
-#                                                                      PORT(S)  GROUP
+        <programlisting>#ACTION        SOURCE         DEST            PROTO      DPORT         SPORT    USER      TEST
 MARK(1)        0.0.0.0/0      0.0.0.0/0       icmp       echo-request
 MARK(1)        0.0.0.0/0      0.0.0.0/0       icmp       echo-reply
 
@@ -1002,8 +1000,7 @@ SAVE           0.0.0.0/0      0.0.0.0/0       all        -             -        
         ensure that all VOIP packets also receive that mark (assumes that
         nf_conntrack_sip is loaded).</para>
 
-        <programlisting>#ACTION  SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST      CONNBYTES      TOS      HELPER
-#                                                                PORT(S)  GROUP
+        <programlisting>#ACTION  SOURCE         DEST            PROTO      DPORT         SPORT    USER      TEST      CONNBYTES      TOS      HELPER
 RESTORE  0.0.0.0/0      0.0.0.0/0       all        -             -        -         0
 CONTINUE 0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0
 1        0.0.0.0/0      0.0.0.0/0       all        -             -        -         -         -              -        sip
@@ -1235,7 +1232,7 @@ Source IP address is 192.168.4.3 = 0xc0a80403
 
       <para><filename>/etc/shorewall/tcdevices</filename>:</para>
 
-      <programlisting>#INTERFACE IN-BANDWIDTH OUT-BANDWIDTH
+      <programlisting>#INTERFACE IN_BANDWIDTH OUT_BANDWIDTH
 eth0       100mbit      100mbit</programlisting>
 
       <para><filename>/etc/shorewall/tcclasses</filename>:</para>
@@ -1293,7 +1290,7 @@ IPMARK(src,0xff,0x10100):F       192.168.1.0/29     eth0</programlisting>
         <section id="realtcd">
           <title>tcdevices file</title>
 
-          <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+          <programlisting>#INTERFACE      IN_BANDWITH     OUT_BANDWIDTH
 ppp0            5000kbit        500kbit</programlisting>
         </section>
 
@@ -1309,8 +1306,7 @@ ppp0            3       2*full/10       8*full/10       2</programlisting>
         <section id="realtcr">
           <title>mangle file</title>
 
-          <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
-#                                                              PORT(S)
+          <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT    SPORT   USER
 MARK(1):F       0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 MARK(1):F       0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 # mark traffic which should have a lower priority with a 3:
@@ -1347,23 +1343,14 @@ NOPRIOPORTDST="6662 6663"  </programlisting>
           <para>This would result in the following additional settings to the
           mangle file:</para>
 
-          <programlisting>MARK(3)               192.168.1.128/25 0.0.0.0/0      all
+          <programlisting>#ACTION                SOURCE          DEST           PROTO   DPORT     SPORT   USER
+MARK(3)               192.168.1.128/25 0.0.0.0/0      all
 MARK(3)               192.168.3.28     0.0.0.0/0      all
 MARK(3)               0.0.0.0/0        60.0.0.0/24    all
 MARK(3)               0.0.0.0/0        0.0.0.0/0      udp     6662,6663
 MARK(3)               0.0.0.0/0        0.0.0.0/0      udp     -         6662,6663
 MARK(3)               0.0.0.0/0        0.0.0.0/0      tcp     6662,6663
 MARK(3)               0.0.0.0/0        0.0.0.0/0      tcp     -         6662,6663</programlisting>
-
-          <para>Corresponding tcrules file entries are:</para>
-
-          <programlisting>3               192.168.1.128/25 0.0.0.0/0      all
-3               192.168.3.28     0.0.0.0/0      all
-3               0.0.0.0/0        60.0.0.0/24    all
-3               0.0.0.0/0        0.0.0.0/0      udp     6662,6663
-3               0.0.0.0/0        0.0.0.0/0      udp     -         6662,6663
-3               0.0.0.0/0        0.0.0.0/0      tcp     6662,6663
-3               0.0.0.0/0        0.0.0.0/0      tcp     -         6662,6663</programlisting>
         </section>
       </section>
 
@@ -1378,7 +1365,7 @@ MARK(3)               0.0.0.0/0        0.0.0.0/0      tcp     -         6662,666
         <section id="simpletcd">
           <title>tcdevices file</title>
 
-          <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+          <programlisting>#INTERFACE      IN_BANDWITH     OUT_BANDWIDTH
 ppp0            6000kbit        700kbit</programlisting>
 
           <para>We have 6mbit down and 700kbit upstream.</para>
@@ -1403,8 +1390,7 @@ ppp0            4       90kbit          200kbit         3           default</pro
         <section id="simpletcr">
           <title>mangle file</title>
 
-          <programlisting>#ACTION               SOURCE          DEST            PROTO   PORT(S)      SOURCE    USER
-#                                                                          PORT(S)
+          <programlisting>#ACTION               SOURCE          DEST            PROTO   DPORT        SPORT     USER
 MARK(1):F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 MARK(1):F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 MARK(2):F             192.168.2.23    0.0.0.0/0       all
@@ -1412,8 +1398,7 @@ MARK(3):F             192.168.2.42    0.0.0.0/0       all</programlisting>
 
           <para>Corresponding tcrules file:</para>
 
-          <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
-#                                                                    PORT(S)
+          <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT        SPORT     USER
 1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 2:F             192.168.2.23    0.0.0.0/0       all
@@ -1472,13 +1457,12 @@ MARK(3):F             192.168.2.42    0.0.0.0/0       all</programlisting>
 
     <para><filename>/etc/shorewall/tcdevices</filename>:</para>
 
-    <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH          OPTIONS
+    <programlisting>#INTERFACE    IN_BANDWITH      OUT_BANDWIDTH          OPTIONS
 eth0          -                1000kbit               hfsc</programlisting>
 
     <para><filename>/etc/shorewall/tcclasses</filename>:</para>
 
-    <programlisting>#INTERFACE:CLASS     MARK      RATE:              CEIL     PRIORITY      OPTIONS
-#                              DMAX:UMAX
+    <programlisting>#INTERFACE           MARK      RATE               CEIL     PRIORITY      OPTIONS
 1:10                 1         500kbit            full     1
 1:20                 2         500kbit            full     1
 1:10:11              3         400kbit:53ms:1500b full     2
@@ -1649,8 +1633,7 @@ ip link set ifb0 up</command></programlisting>
 
           <para>Example: <filename>/etc/shorewall/rules</filename>:</para>
 
-          <programlisting>#ACTION       SOURCE           DEST            PROTO    DEST            SOURCE         ORIGINAL
-#                                                       PORT(S)         PORT(S)        DEST
+          <programlisting>#ACTION       SOURCE           DEST            PROTO    DPORT           SPORT          ORIGDEST
 DNAT          net              dmz:192.168.4.5 tcp      80              -              206.124.146.177</programlisting>
 
           <para>Requests redirected by this rule will have destination IP
@@ -1721,7 +1704,7 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
         </varlistentry>
 
         <varlistentry>
-          <term>DEST PORT(S)</term>
+          <term>DPORT</term>
 
           <listitem>
             <para>Comma-separated list of destination port names or numbers.
@@ -1731,7 +1714,7 @@ eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
         </varlistentry>
 
         <varlistentry>
-          <term>SOURCE PORT</term>
+          <term>SPORT</term>
 
           <listitem>
             <para>Comma-separated list of source port names or numbers. May
@@ -1810,8 +1793,7 @@ qt ip link set dev ifb0 up</programlisting></para>
       <para><filename>/etc/shorewall/tcdevices</filename>:</para>
 
       <para><programlisting>
-#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
-#                                                               INTERFACES
+#INTERFACE      IN_BANDWITH     OUT_BANDWIDTH   OPTIONS         REDIRECT
 1:eth0          -               384kbit         classify
 2:ifb0          -               1300kbit        -               eth0</programlisting>
       <filename>/etc/shorewall/tcclasses</filename>:<programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
@@ -1820,8 +1802,7 @@ qt ip link set dev ifb0 up</programlisting></para>
 1:130           -       2*full/10       6*full/10       3
 2:110           -       5*full/10       full            1               tcp-ack,tos-minimize-delay
 2:120           -       2*full/10       6*full/10       2               default
-2:130           -       2*full/10       6*full/10       3</programlisting><filename>/etc/shorewall/tcfilters</filename>:<programlisting>#INTERFACE:     SOURCE          DEST            PROTO   DEST    SOURCE
-#CLASS                                                  PORT(S) PORT(S)
+2:130           -       2*full/10       6*full/10       3</programlisting><filename>/etc/shorewall/tcfilters</filename>:<programlisting>#INTERFACE:     SOURCE          DEST            PROTO   DPORT   SPORT
 #
 #                                  OUTGOING TRAFFIC
 #

@@ -122,7 +122,7 @@ gateway:~#</programlisting>
     <para>This is a diagram of the network configuration here at Shorewall.net
     during the summer of 2010:</para>
 
-    <graphic align="center" fileref="images/Network2010a.png" />
+    <graphic align="center" fileref="images/Network2010a.png"/>
 
     <para>I created a zone for the vservers as follows:</para>
 
@@ -138,8 +138,9 @@ vpn             ipv4            #OpenVPN clients
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-    <programlisting>#ZONE   INTERFACE     BROADCAST           OPTIONS
-<emphasis role="bold">net     eth1          detect              routeback,dhcp,optional,routefilter=0,logmartians,proxyarp=0,nosmurfs,upnp</emphasis>
+    <programlisting>?FORMAT 2
+#ZONE   INTERFACE     OPTIONS
+<emphasis role="bold">net     eth1          routeback,dhcp,optional,routefilter=0,logmartians,proxyarp=0,nosmurfs,upnp</emphasis>
 ...</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename>:</para>
@@ -164,8 +165,7 @@ drct    eth4:dynamic
 
     <para><filename>/etc/shorewall6/zones</filename></para>
 
-    <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
-#					OPTIONS			OPTIONS
+    <programlisting>#ZONE	TYPE	OPTIONS			IN_OPTIONS			OUT_OPTIONS
 fw	firewall
 net	ipv6
 loc	ipv6
@@ -175,8 +175,9 @@ vpn	ipv6
 
     <para><filename>/etc/shorewall6/interfaces</filename>:</para>
 
-    <programlisting>#ZONE   INTERFACE     BROADCAST           OPTIONS
-<emphasis role="bold">net     sit1          detect              tcpflags,forward=1,nosmurfs,routeback</emphasis>
+    <programlisting>?FORMAT 2
+#ZONE   INTERFACE     OPTIONS
+<emphasis role="bold">net     sit1          tcpflags,forward=1,nosmurfs,routeback</emphasis>
 ...</programlisting>
 
     <para><filename>/etc/shorewall6/hosts</filename>:</para>
@@ -204,7 +205,7 @@ vpn	ipv6
     Proxy NDP support in Shorewall 4.4.16 and later. The new network diagram
     is as shown below:</para>
 
-    <graphic align="center" fileref="images/Network2011.png" />
+    <graphic align="center" fileref="images/Network2011.png"/>
 
     <para>This change was accompanied by the following additions to
     <filename>/etc/shorewall6/proxyndp</filename>:</para>

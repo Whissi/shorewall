@@ -44,15 +44,13 @@
   <para>If you wish to run Samba on your firewall and access shares between
   the firewall and local hosts, you need the following rules:</para>
 
-  <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
-#                                                 PORT(S)
+  <programlisting>#ACTION   SOURCE   DEST   PROTO    DPORT          SPORT
 SMB(ACCEPT)  $FW      loc
 SMB(ACCEPT)  loc      $FW</programlisting>
 
   <para>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</para>
 
-  <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
-#                                                 PORT(S)
+  <programlisting>#ACTION   SOURCE   DEST   PROTO    DPORT          SPORT
 SMB(ACCEPT)  Z1       Z2
 SMB(ACCEPT)  Z2       Z1</programlisting>
 

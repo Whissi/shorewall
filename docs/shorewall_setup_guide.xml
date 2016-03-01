@@ -106,19 +106,13 @@
         <para><emphasis role="bold">Note to Debian Users</emphasis></para>
 
         <para>If you install using the .deb, you will find that your <filename
-        class="directory">/etc/shorewall</filename> directory is empty. This
-        is intentional. The released configuration file skeletons may be found
-        on your system in the directory <filename
-        class="directory">/usr/share/doc/shorewall-common/default-config</filename>.
+        class="directory">/etc/shorewall</filename> directory is almost empty.
+        This is intentional. The released configuration file skeletons may be
+        found on your system in the directory <filename
+        class="directory">/usr/share/doc/shorewall/default-config</filename>.
         Simply copy the files you need from that directory to <filename
         class="directory">/etc/shorewall</filename> and modify the
         copies.</para>
-
-        <para>Note that you must copy <filename
-        class="directory">/usr/share/doc/shorewall-common/default-config/shorewall.conf</filename>
-        and /usr/share/doc/shorewall-common/default-config/modules to
-        <filename class="directory">/etc/shorewall</filename> even if you do
-        not modify those files.</para>
       </warning></para>
 
     <para>As each file is introduced, I suggest that you look through the
@@ -269,8 +263,7 @@ dmz     ipv4</programlisting>
     <filename>/etc/shorewall/policy</filename> file had the following
     policies:</para>
 
-    <programlisting>#SOURCE ZONE     DESTINATION ZONE    POLICY     LOG     LIMIT:BURST
-#                                               LEVEL
+    <programlisting>#SOURCE          DEST                POLICY     LOGLEVEL     LIMIT
 loc              net                 ACCEPT
 net              all                 DROP       info
 all              all                 REJECT     info</programlisting>
@@ -416,10 +409,11 @@ all              all                 REJECT     info</programlisting>
     url="manpages/shorewall-interfaces.html">/etc/shorewall/interfaces
     </ulink>file, that file would might contain:</para>
 
-    <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect
-loc      eth1           detect
-dmz      eth2           detect</programlisting>
+    <programlisting>?FORMAT 2
+#ZONE    INTERFACE      OPTIONS
+net      eth0
+loc      eth1
+dmz      eth2</programlisting>
 
     <para>Note that the <emphasis role="bold">$FW</emphasis> zone has no entry
     in the /etc/shorewall/interfaces file.</para>
@@ -435,10 +429,11 @@ dmz      eth2           detect</programlisting>
     <example id="multi">
       <title>Multiple Interfaces to a Zone</title>
 
-      <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect
-loc      eth1           detect
-loc      eth2           detect</programlisting>
+      <programlisting>?FORMAT 2
+#ZONE    INTERFACE      BROADCAST     OPTIONS
+net      eth0
+loc      eth1
+loc      eth2</programlisting>
     </example>
 
     <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
@@ -1409,8 +1404,7 @@ eth0           192.168.201.0/29     192.0.2.176</programlisting>
         <filename><ulink
         url="manpages/shorewall-rules.html">/etc/shorewall/rules</ulink></filename>:</para>
 
-        <programlisting>#ACTION  SOURCE  DEST               PROTO  DEST    SOURCE    ORIGINAL
-#                                          PORT(S) PORT(S)   DEST
+        <programlisting>#ACTION  SOURCE  DEST               PROTO  DPORT   SPORT     ORIGDEST
 DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
 
         <para>If one of your daughter's friends at address <emphasis
@@ -1424,8 +1418,8 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
 
         <para>This example used the firewall's external IP address for DNAT.
         You can use another of your public IP addresses (place it in the
-        ORIGINAL DEST column in the rule above) but Shorewall will not add
-        that address to the firewall's external interface for you.</para>
+        ORIGDEST column in the rule above) but Shorewall will not add that
+        address to the firewall's external interface for you.</para>
 
         <important>
           <para>When testing DNAT rules like those shown above, you must test
@@ -1489,7 +1483,7 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         url="ProxyARP.htm"><filename>/etc/shorewall/proxyarp</filename></ulink>
         file.</para>
 
-        <programlisting>#ADDRESS     INTERFACE    EXTERNAL      HAVE ROUTE           PERSISTENT
+        <programlisting>#ADDRESS     INTERFACE    EXTERNAL      HAVEROUTE            PERSISTENT
 192.0.2.177  eth2         eth0          No
 192.0.2.178  eth2         eth0          No</programlisting>
 
@@ -1608,7 +1602,7 @@ eth0           192.168.201.0/29     192.0.2.176</programlisting>
         You would do that by adding an entry in <filename><ulink
         url="NAT.htm">/etc/shorewall/nat</ulink></filename>.</para>
 
-        <programlisting>#EXTERNAL   INTERFACE   INTERNAL       ALL INTERFACES   LOCAL
+        <programlisting>#EXTERNAL   INTERFACE   INTERNAL       ALLINTS          LOCAL
 192.0.2.179 eth0        192.168.201.4  No               No</programlisting>
 
         <para>With this entry in place, you daughter has her own IP address
@@ -1622,8 +1616,7 @@ eth0           192.168.201.0/29     192.0.2.176</programlisting>
         to use a DNAT rule for you daughter's web server -- you would rather
         just use an ACCEPT rule:</para>
 
-        <programlisting>#ACTION  SOURCE  DEST               PROTO  DEST    SOURCE    ORIGINAL
-#                                          PORT(S) PORT(S)   DEST
+        <programlisting>#ACTION  SOURCE  DEST               PROTO  DEST    SPORT     ORIGDEST
 ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
 
         <para>A word of warning is in order here. ISPs typically configure
@@ -1719,14 +1712,13 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
       rules.</para>
 
       <note>
-        <para>Since the SOURCE PORT(S) and ORIG. DEST. Columns aren't used in
-        this section, they won't be shown</para>
+        <para>Since the SPORT and ORIGDEST. Columns aren't used in this
+        section, they won't be shown</para>
       </note>
 
       <para>You probably want to allow ping between your zones:</para>
 
-      <programlisting>#ACTION  SOURCE  DEST               PROTO  DEST   
-#                                          PORT(S)
+      <programlisting>#ACTION  SOURCE  DEST               PROTO  DPORT   
 ACCEPT   net     dmz                icmp   echo-request
 ACCEPT   net     loc                icmp   echo-request
 ACCEPT   dmz     loc                icmp   echo-request
@@ -1735,8 +1727,7 @@ ACCEPT   loc     dmz                icmp   echo-request</programlisting>
       <para>Let's suppose that you run mail and pop3 servers on DMZ 2 and a
       Web Server on DMZ 1. The rules that you would need are:</para>
 
-      <programlisting>#ACTION  SOURCE          DEST               PROTO  DEST    COMMENTS 
-#                                                  PORT(S)
+      <programlisting>#ACTION  SOURCE          DEST               PROTO  DPORT
 ACCEPT   net             dmz:192.0.2.178    tcp    smtp    #Mail from
                                                            #Internet
 ACCEPT   net             dmz:192.0.2.178    tcp    pop3    #Pop3 from
@@ -1760,8 +1751,7 @@ ACCEPT   loc             dmz:192.0.2.177    tcp    https   #Secure WWW
       <para>If you run a public DNS server on 192.0.2.177, you would need to
       add the following rules:</para>
 
-      <programlisting>#ACTION  SOURCE          DEST               PROTO  DEST    COMMENTS 
-#                                                  PORT(S)
+      <programlisting>#ACTION  SOURCE          DEST               PROTO  DPORT
 ACCEPT   net             dmz:192.0.2.177    udp    domain  #UDP DNS from
                                                            #Internet
 ACCEPT   net             dmz:192.0.2.177    tcp    domain  #TCP DNS from
@@ -1784,8 +1774,7 @@ ACCEPT   dmz:192.0.2.177 net                tcp    domain  #TCPP DNS to
       scp utility can also do publishing and software update
       distribution.</para>
 
-      <programlisting>#ACTION  SOURCE          DEST               PROTO  DEST    COMMENTS 
-#                                           PORT(S)
+      <programlisting>#ACTION  SOURCE          DEST               PROTO  DPORT
 ACCEPT   loc             dmz                tcp    ssh     #SSH to the DMZ
 ACCEPT   net             $FW                tcp    ssh     #SSH to the
                                                            #Firewall</programlisting>
@@ -1816,22 +1805,11 @@ ACCEPT   net             $FW                tcp    ssh     #SSH to the
       <para><filename>/etc/shorewall/interfaces</filename> (The
       <quote>options</quote> will be very site-specific).</para>
 
-      <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           detect        routefilter
-loc      eth1           detect
-dmz      eth2           detect</programlisting>
-
-      <para>The setup described here requires that your network interfaces be
-      brought up before Shorewall can start. This opens a short window during
-      which you have no firewall protection. If you replace
-      <quote>detect</quote> with the actual broadcast addresses in the entries
-      above, you can bring up Shorewall before you bring up your network
-      interfaces.</para>
-
-      <programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
-net      eth0           192.0.2.255
-loc      eth1           192.168.201.7
-dmz      eth2           192.168.202.7</programlisting>
+      <programlisting>?FORMAT 2
+#ZONE    INTERFACE      OPTIONS
+net      eth0           routefilter
+loc      eth1
+dmz      eth2</programlisting>
 
       <para><filename>/etc/shorewall/masq</filename> - Local Subnet</para>
 
@@ -1851,8 +1829,7 @@ eth0           192.168.201.0/29     192.0.2.176</programlisting>
 
       <para><filename>/etc/shorewall/rules</filename></para>
 
-      <programlisting>#ACTION  SOURCE          DEST               PROTO  DEST    COMMENTS 
-#                                                  PORT(S)
+      <programlisting>#ACTION  SOURCE          DEST               PROTO  DPORT
 ACCEPT   net             dmz                icmp   echo-request
 ACCEPT   net             loc                icmp   echo-request
 ACCEPT   dmz             loc                icmp   echo-request

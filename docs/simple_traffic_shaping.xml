@@ -194,7 +194,7 @@ eth0                   External</programlisting>
         band 2.</para>
 
         <note>
-          <para>When an INTERFACE is specified, the PROTO, PORT(S) and ADDRESS
+          <para>When an INTERFACE is specified, the PROTO, DPORT and ADDRESS
           column must contain '-'.</para>
         </note>
       </listitem>
@@ -203,14 +203,14 @@ eth0                   External</programlisting>
         <para>Assign traffic from a particular IP address to a specific
         priority band:</para>
 
-        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+        <programlisting>#BAND         PROTO         DPORT           ADDRESS             INTERFACE        HELPER
 1               -             -             192.168.1.44</programlisting>
 
         <para>In this example, traffic from 192.168.1.44 will be assigned to
         priority band 1.</para>
 
         <note>
-          <para>When an ADDRESS is specified, the PROTO, PORT(S) and INTERFACE
+          <para>When an ADDRESS is specified, the PROTO, DPORT and INTERFACE
           columns must be empty.</para>
         </note>
       </listitem>
@@ -219,7 +219,7 @@ eth0                   External</programlisting>
         <para>Assign traffic to/from a particular application to a specific
         priority band:</para>
 
-        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+        <programlisting>#BAND         PROTO         DPORT           ADDRESS             INTERFACE        HELPER
 1             udp           1194</programlisting>
 
         <para>In that example, OpenVPN traffic is assigned to priority band
@@ -230,7 +230,7 @@ eth0                   External</programlisting>
         <para>Assign traffic that uses a particular Netfilter helper to a
         particular priority band:</para>
 
-        <programlisting>#BAND         PROTO         PORT(S)         ADDRESS             INTERFACE        HELPER
+        <programlisting>#BAND         PROTO         DPORT           ADDRESS             INTERFACE        HELPER
 1               -             -             -                   -                sip</programlisting>
 
         <para>In this example, SIP and associated RTP traffic will be assigned
@@ -318,11 +318,11 @@ tun0                   Internal</programlisting>
 
     <para>Example:</para>
 
-    <para><filename>/etc/shorewall/tcinterfaces</filename><programlisting>#INTERFACE	TYPE		IN-BANDWIDTH			OUT-BANDWIDTH
+    <para><filename>/etc/shorewall/tcinterfaces</filename><programlisting>#INTERFACE	TYPE		IN_BANDWIDTH			OUT_BANDWIDTH
 eth0		External	50mbit:200kb			6.0mbit:100kb:200ms:100mbit:1516   
 </programlisting>etc/shorewall/tcpri:</para>
 
-    <programlisting>#BAND	PROTO		PORT(S)		ADDRESS		INTERFACE	HELPER
+    <programlisting>#BAND	PROTO		DPORT  		ADDRESS		INTERFACE	HELPER
 COMMENT	 All DMZ traffic in band 3 by default
 3	-	 	-		70.90.191.124/31
 COMMENT Bit Torrent is in band 3
@@ -335,7 +335,7 @@ COMMENT And place echo requests in band 1 to avoid false line-down reports
 
     <para>etc/shorewall6/tcpri:</para>
 
-    <programlisting>#BAND	PROTO		PORT(S)		ADDRESS		INTERFACE	HELPER
+    <programlisting>#BAND	PROTO		DPORT  		ADDRESS		INTERFACE	HELPER
 COMMENT	 All DMZ traffic in band 3 by default
 3	-	 	-		2001:470:b:227::40/124
 COMMENT But give a boost to DNS queries

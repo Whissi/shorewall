@@ -538,8 +538,7 @@ SetEvent(SSH,ACCEPT,src)</programlisting>
 
       <para><filename>etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION               SOURCE         DEST      PROTO      DEST
-#                                                         PORT(S)
+      <programlisting>#ACTION               SOURCE         DEST      PROTO      DPORT
 SSHLIMIT              net            $FW       tcp        22                        </programlisting>
 
       <caution>
@@ -645,8 +644,7 @@ SSHLIMIT              net            $FW       tcp        22                    
         <para>To duplicate the SSHLIMIT entry in
         <filename>/etc/shorewall/rules</filename> shown above:</para>
 
-        <programlisting>#ACTION               SOURCE         DEST      PROTO      DEST
-#                                                         PORT(S)
+        <programlisting>#ACTION               SOURCE         DEST      PROTO      DPORT
 AutoBL(SSH,-,-,-,REJECT,warn)\
                       net            $FW       tcp        22                </programlisting>
       </section>
@@ -688,8 +686,7 @@ Knock                                          #Port Knocking</programlisting>
 #
 ?format 2
 ###############################################################################
-#ACTION               SOURCE         DEST      PROTO      DEST
-#                                                         PORT(S)
+#ACTION               SOURCE         DEST      PROTO      DPORT
 IfEvent(SSH,ACCEPT:info,60,1,src,reset)\
                       -              -         tcp        22
 SetEvent(SSH,ACCEPT)  -              -         tcp        1600
@@ -697,8 +694,7 @@ ResetEvent(SSH,DROP:info)        </programlisting>
 
       <para><filename>etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION               SOURCE         DEST      PROTO      DEST
-#                                                         PORT(S)
+      <programlisting>#ACTION               SOURCE         DEST      PROTO      DPORT
 Knock                 net            $FW       tcp        22,1599-1601          </programlisting>
     </section>
 
@@ -750,7 +746,7 @@ KnockEnhanced 'net', '$FW', {name =&gt; 'SSH1', log_level =&gt; 3, proto =&gt; '
 
             <listitem>
               <para><emphasis role="bold">original_dest</emphasis> is the rule
-              ORIGINAL DEST</para>
+              ORIGDEST</para>
             </listitem>
 
             <listitem>

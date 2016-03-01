@@ -628,6 +628,22 @@ sub process_stoppedrules() {
     $result;
 }
 
+sub create_docker_rules() {
+
+    add_commands( $nat_table->{PREROUTING} , '[ -n "$g_docker" ] && echo "-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
+    add_commands( $nat_table->{OUTPUT} ,     '[ -n "$g_docker" ] && echo "-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
+
+    my $chainref = $filter_table->{FORWARD};
+
+    add_commands( $chainref, '[ -n "$g_dockernetwork" ] && echo "-A FORWARD -j DOCKER-ISOLATION" >&3', );
+
+    if ( known_interface('docker0') ) {
+	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
+    }
+
+    add_commands( $chainref, '[ -f $VARDIR/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );
+}
+
 sub setup_mss();
 
 sub add_common_rules ( $ ) {
@@ -646,6 +662,10 @@ sub add_common_rules ( $ ) {
     my $level     = $config{BLACKLIST_LOG_LEVEL};
     my $tag       = $globals{BLACKLIST_LOG_TAG};
     my $rejectref = $filter_table->{reject};
+    #
+    # Insure that Docker jumps are early in the builtin chains
+    #
+    create_docker_rules if $config{DOCKER};
 
     if ( $config{DYNAMIC_BLACKLIST} ) {
 	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);
@@ -1508,13 +1528,15 @@ sub add_interface_jumps {
     # Add Nat jumps
     #
     for my $interface ( @_ ) {
-	addnatjump 'POSTROUTING' , snat_chain( $interface ), imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , snat_chain( $interface ), imatch_dest_dev( $interface );
     }
+
+    addnatjump( 'POSTROUTING', 'SHOREWALL' ) if $config{DOCKER};
 
     for my $interface ( @interfaces  ) {
 	addnatjump 'PREROUTING'  , input_chain( $interface )  , imatch_source_dev( $interface );
-	addnatjump 'POSTROUTING' , output_chain( $interface ) , imatch_dest_dev( $interface );
-	addnatjump 'POSTROUTING' , masq_chain( $interface ) , imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , output_chain( $interface ) , imatch_dest_dev( $interface );
+	addnatjump $globals{POSTROUTING} , masq_chain( $interface ) , imatch_dest_dev( $interface );
 
 	if ( have_capability 'RAWPOST_TABLE' ) {
 	    insert_ijump ( $rawpost_table->{POSTROUTING}, j => postrouting_chain( $interface ), 0, imatch_dest_dev( $interface) )   if $rawpost_table->{postrouting_chain $interface};
@@ -2246,8 +2268,8 @@ sub generate_matrix() {
     #
     # Make sure that the 1:1 NAT jumps are last in PREROUTING
     #
-    addnatjump 'PREROUTING'  , 'nat_in';
-    addnatjump 'POSTROUTING' , 'nat_out';
+    addnatjump 'PREROUTING'          , 'nat_in';
+    addnatjump $globals{POSTROUTING} , 'nat_out';
 
     add_interface_jumps @interfaces unless $interface_jumps_added;
 
@@ -2455,6 +2477,16 @@ EOF
 
 EOF
 
+    if ( $config{DOCKER} ) {
+	push_indent;
+	emit( 'if [ $COMMAND = stop ]; then' );
+	push_indent;
+	save_docker_rules( $family == F_IPV4 ? '${IPTABLES}'      : '${IP6TABLES}');
+	pop_indent;
+	emit( "fi\n");
+	pop_indent;
+    }
+
     if ( have_capability( 'NAT_ENABLED' ) ) {
 	emit<<'EOF';
     if [ -f ${VARDIR}/nat ]; then
@@ -2504,6 +2536,10 @@ EOF
     emit( 'undo_routing',
 	  "restore_default_route $config{USE_DEFAULT_RT}"
 	  );
+    #
+    # Insure that Docker jumps are early in the builtin chains
+    #
+    create_docker_rules if $config{DOCKER};
 
     if ( $config{ADMINISABSENTMINDED} ) {
 	add_ijump $filter_table ->{$_}, j => 'ACCEPT', state_imatch 'ESTABLISHED,RELATED' for qw/INPUT FORWARD/;

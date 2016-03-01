@@ -892,7 +892,7 @@ net      eth1         detect          …</programlisting>
 
       <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
+      <programlisting>#SOURCE    DESTINATION    POLICY     LOGLEVEL     LIMIT
 net        net            DROP</programlisting>
 
       <para><filename>/etc/shorewall/masq</filename>:</para>
@@ -913,15 +913,13 @@ eth1             0.0.0.0/0         130.252.99.27</programlisting>
       later, you would make this entry in <ulink
       url="manpages/shorewall-mangle.html">/etc/shorewall/mangle</ulink>.</para>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                               PORT(S)
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
 MARK(2):P       &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
 
       <para>Note that traffic from the firewall itself must be handled in a
       different rule:</para>
 
-      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                               PORT(S)
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
 MARK(2)         $FW             0.0.0.0/0       tcp     25</programlisting>
 
       <para>If you are running a Shorewall version earlier than 4.6.0, the
@@ -929,14 +927,12 @@ MARK(2)         $FW             0.0.0.0/0       tcp     25</programlisting>
       url="manpages4/manpages/shorewall-tcrules.html">/etc/shorewall/tcrules</ulink>
       would be:</para>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                               PORT(S)
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
 
       <para>And for traffic from the firewall:</para>
 
-      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                               PORT(S)
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
 2               $FW             0.0.0.0/0       tcp     25</programlisting>
     </section>
 
@@ -951,8 +947,7 @@ MARK(2)         $FW             0.0.0.0/0       tcp     25</programlisting>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION        SOURCE             DEST              PROTO     DEST PORT(S)     SOURCE       ORIGINAL
-#                                                                              PORTS(S)     DEST
+      <programlisting>#ACTION        SOURCE             DEST              PROTO     DPORT            SPORT        ORIGDEST
 DNAT           net                loc:192.168.1.3   tcp       25</programlisting>
 
       <para>Continuing the above example, to forward only connection requests
@@ -962,19 +957,16 @@ DNAT           net                loc:192.168.1.3   tcp       25</programlisting
         <listitem>
           <para>Qualify the SOURCE by ISP 1's interface:</para>
 
-          <programlisting>#ACTION        SOURCE             DEST              PROTO     DEST PORT(S)     SOURCE       ORIGINAL
-#                                                                              PORTS(S)     DEST
+          <programlisting>#ACTION        SOURCE             DEST              PROTO     DPORT            SPORT        ORIGDEST
 DNAT           net<emphasis role="bold">:eth0</emphasis>           loc:192.168.1.3   tcp       25</programlisting>
 
           <para>or</para>
         </listitem>
 
         <listitem>
-          <para>Specify the IP address of ISP 1 in the ORIGINAL DEST
-          column:</para>
+          <para>Specify the IP address of ISP 1 in the ORIGDEST column:</para>
 
-          <programlisting>#ACTION        SOURCE             DEST              PROTO     DEST PORT(S)     SOURCE       ORIGINAL
-#                                                                              PORTS(S)     DEST
+          <programlisting>#ACTION        SOURCE             DEST              PROTO     DPORT            SPORT        ORIGDEST
 DNAT           net                loc:192.168.1.3   tcp       25               <emphasis
               role="bold">-            206.124.146.176</emphasis></programlisting>
         </listitem>
@@ -2573,8 +2565,7 @@ wireless       3        3    -         wlan0                172.20.1.1   track,o
       role="bold">avvanta</emphasis> provider.</para>
 
       <para>Here is the mangle file (MARK_IN_FORWARD_CHAIN=No in
-      <filename>shorewall.conf</filename>):<programlisting>#ACTION               SOURCE          DEST            PROTO   DEST            SOURCE  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
-#                                                             PORT(S)         PORT(S) 
+      <filename>shorewall.conf</filename>):<programlisting>#ACTION               SOURCE          DEST            PROTO   DPORT           SPORT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
 MARK(2)               $FW             0.0.0.0/0       tcp     21
 MARK(2)               $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
 MARK(2)               $FW             0.0.0.0/0       tcp     119</programlisting></para>
@@ -2583,8 +2574,7 @@ MARK(2)               $FW             0.0.0.0/0       tcp     119</programlistin
       switching to using a mangle file (<command>shorewall update -t</command>
       will do that for you). Here are the equivalent tcrules entries:</para>
 
-      <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)         CLIENT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
-#                                                                       PORT(S) 
+      <programlisting>#MARK           SOURCE          DEST            PROTO   DPORT           SPORT   USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
 2               $FW             0.0.0.0/0       tcp     21
 2               $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
 2               $FW             0.0.0.0/0       tcp     119</programlisting>
@@ -2603,8 +2593,7 @@ MARK(2)               $FW             0.0.0.0/0       tcp     119</programlistin
 
       <para>The same rules converted to use the mangle file are:</para>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT(S)         CLIENT  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
-#                                                                       PORT(S) 
+      <programlisting>#MARK           SOURCE          DEST            PROTO   DPORT           SPORT   USER    TEST    LENGTH  TOS     CONNBYTES       HELPER
 MARK(2)         $FW             0.0.0.0/0       tcp     21
 MARK(2)         $FW             0.0.0.0/0       tcp     -               -       -       -       -       -       -               ftp
 MARK(2)         $FW             0.0.0.0/0       tcp     119</programlisting>
@@ -2612,8 +2601,7 @@ MARK(2)         $FW             0.0.0.0/0       tcp     119</programlisting>
       <para>The remaining files are for a rather standard two-interface config
       with a bridge as the local interface.</para>
 
-      <para><filename>zones</filename>:<programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
+      <para><filename>zones</filename>:<programlisting>#ZONE   IPSEC   OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 fw      firewall
 net     ipv4
 kvm     ipv4</programlisting><filename>policy</filename>:<programlisting>net             net             NONE
@@ -2623,17 +2611,17 @@ kvm             all             ACCEPT
 net             all             DROP            info
 all             all             REJECT          info</programlisting></para>
 
-      <para>interfaces:<programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS                 GATEWAY
+      <para>interfaces:<programlisting>#ZONE    INTERFACE      OPTIONS
 #
-net     eth0            detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional,arp_ignore
-net     wlan0           detect          dhcp,tcpflags,routefilter,blacklist,logmartians,optional
-kvm     br0             detect          routeback       #Virtual Machines</programlisting><note>
+net     eth0            dhcp,tcpflags,routefilter,blacklist,logmartians,optional,arp_ignore
+net     wlan0           dhcp,tcpflags,routefilter,blacklist,logmartians,optional
+kvm     br0             routeback       #Virtual Machines</programlisting><note>
           <para><filename class="devicefile">wlan0</filename> is the wireless
           adapter in the notebook. Used when the laptop is in our home but not
           connected to the wired network.</para>
         </note></para>
 
-      <para>masq:<programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
+      <para>masq:<programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   DPORT   IPSEC
 eth0                    192.168.0.0/24
 wlan0                   192.168.0.0/24</programlisting><note>
           <para>Because the firewall has only a single external IP address, I
@@ -2815,7 +2803,7 @@ dmz             ip           #LXC Containers</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE  INTERFACE   OPTIONS
+      <programlisting>#ZONE  INTERFACE        OPTIONS
 loc    INT_IF           dhcp,physical=$INT_IF,ignore=1,wait=5,routefilter,nets=172.20.1.0/24,routeback
 net    COMB_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
 net    COMC_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
@@ -2881,9 +2869,7 @@ root@gateway:~# </programlisting>
       <para><filename>/etc/shorewall/mangle</filename> is not used to support
       Multi-ISP:</para>
 
-      <programlisting>#MARK                           SOURCE        DEST          PROTO  DEST    SOURCE  
-#                                                                  PORT(S) PORT(S)
-FORMAT 2
+      <programlisting>#MARK                           SOURCE        DEST          PROTO  DPORT   SPORT
 TTL(+1):P                       INT_IF        -
 SAME:P                          INT_IF        -             tcp    80,443
 ?if $PROXY &amp;&amp; ! $SQUID2

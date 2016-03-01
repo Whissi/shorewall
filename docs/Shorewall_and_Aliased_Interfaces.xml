@@ -166,7 +166,7 @@ iface eth0 inet static
       <example id="SSH">
         <title>allow SSH from net to eth0:0 above</title>
 
-        <para><optional><filename>/etc/shorewall/rules</filename></optional><programlisting>#ACTION   SOURCE     DEST                 PROTO      DEST PORT(S)
+        <para><optional><filename>/etc/shorewall/rules</filename></optional><programlisting>#ACTION   SOURCE     DEST                 PROTO      DPORT
 ACCEPT    net        $FW:206.124.146.178  tcp        22</programlisting></para>
       </example>
     </section>
@@ -179,15 +179,14 @@ ACCEPT    net        $FW:206.124.146.178  tcp        22</programlisting></para>
       zone at 192.168.1.3. That is accomplished by a single rule in the
       <filename>/etc/shorewall/rules</filename> file:</para>
 
-      <programlisting>#ACTION   SOURCE     DEST                 PROTO      DEST PORT(S)   SOURCE    ORIGINAL
-#                                                                   PORT(S)   DEST
+      <programlisting>#ACTION   SOURCE     DEST                 PROTO      DPORT          SPORT     ORIGDEST
 DNAT      net        loc:192.168.1.3      tcp        80             -         206.124.146.178    </programlisting>
 
       <para>If I wished to forward tcp port 10000 on that virtual interface to
       port 22 on local host 192.168.1.3, the rule would be:</para>
 
-      <programlisting>#ACTION   SOURCE     DEST                 PROTO      DEST PORT(S)   SOURCE    ORIGINAL
-#                                                                   PORT(S)   DEST
+      <programlisting>#ACTION   SOURCE     DEST                 PROTO      DPORT          SPORT     ORIGDEST
+DNAT      net        loc:192.168.1.3      tcp        80             -         206.124.146.178    
 DNAT      net        loc:192.168.1.3:22   tcp        10000          -         206.124.146.178    </programlisting>
     </section>
 
@@ -202,7 +201,7 @@ DNAT      net        loc:192.168.1.3:22   tcp        10000          -         20
 eth0                   192.168.1.0/24  206.124.146.178</programlisting>
 
       <para>Similarly, you want SMTP traffic from local system 192.168.1.22 to
-      have source IP 206.124.146.178:<programlisting>#INTERFACE             SUBNET          ADDRESS             PROTO      DEST PORT(S)
+      have source IP 206.124.146.178:<programlisting>#INTERFACE             SUBNET          ADDRESS             PROTO      DPORT
 eth0                   192.168.1.22    206.124.146.178     tcp        25</programlisting></para>
 
       <para>Shorewall can create the alias (additional address) for you if you
@@ -246,7 +245,7 @@ eth0:2 = 206.124.146.180</programlisting>
       would have the following in
       <filename>/etc/shorewall/nat</filename>:</para>
 
-      <programlisting>#EXTERNAL          INTERFACE         INTERNAL     ALL INTERFACES    LOCAL
+      <programlisting>#EXTERNAL          INTERFACE         INTERNAL     ALL_INTERFACES    LOCAL
 206.124.146.178    eth0              192.168.1.3  no                no</programlisting>
 
       <para>Shorewall can create the alias (additional address) for you if you
@@ -263,7 +262,7 @@ eth0:2 = 206.124.146.180</programlisting>
       setting ADD_IP_ALIASES=Yes, you specify the virtual interface name in
       the INTERFACE column as follows.</para>
 
-      <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL          INTERFACE         INTERNAL     ALL INTERFACES    LOCAL
+      <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL          INTERFACE         INTERNAL     ALL_INTERFACES    LOCAL
 206.124.146.178    eth0:0            192.168.1.3  no                no</programlisting></para>
 
       <para>In either case, to create rules in
@@ -275,7 +274,7 @@ eth0:2 = 206.124.146.180</programlisting>
         <title>You want to allow SSH from the net to 206.124.146.178 a.k.a.
         192.168.1.3.</title>
 
-        <para><programlisting>#ACTION    SOURCE     DEST              PROTO     DEST PORT(S)
+        <para><programlisting>#ACTION    SOURCE     DEST              PROTO     DPORT
 ACCEPT     net        loc:192.168.1.3   tcp       22</programlisting></para>
       </example>
     </section>
@@ -305,8 +304,8 @@ loc          ipv4</programlisting>
 
         <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-        <programlisting>#ZONE       INTERFACE  BROADCAST                      OPTIONS
-loc         eth1       -                              <emphasis role="bold">routeback</emphasis>   </programlisting>
+        <programlisting>#ZONE       INTERFACE  OPTIONS
+loc         eth1       <emphasis role="bold">routeback</emphasis>   </programlisting>
 
         <para>In <filename>/etc/shorewall/rules</filename>, simply specify
         ACCEPT rules for the traffic that you want to permit.</para>
@@ -327,8 +326,8 @@ loc2         ipv4</programlisting>
 
         <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-        <programlisting>#ZONE       INTERFACE  BROADCAST                      OPTIONS
--           eth1       -   </programlisting>
+        <programlisting>#ZONE       INTERFACE  OPTIONS
+-           eth1          </programlisting>
 
         <para>In <filename>/etc/shorewall/hosts</filename>:</para>
 

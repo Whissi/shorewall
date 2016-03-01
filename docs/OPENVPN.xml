@@ -68,8 +68,8 @@
 
   <orderedlist>
     <listitem>
-      <para>It is widely supported -- I run it on both Linux and Windows
-      XP.</para>
+      <para>It is widely supported -- I run it on both Linux and
+      Windows.</para>
     </listitem>
 
     <listitem>
@@ -97,7 +97,7 @@
 
     <para>Suppose that we have the following situation:</para>
 
-    <graphic fileref="images/TwoNets1.png" />
+    <graphic fileref="images/TwoNets1.png"/>
 
     <para>We want systems in the 192.168.1.0/24 subnetwork to be able to
     communicate with the systems in the 10.0.0.0/8 network. This is
@@ -118,8 +118,7 @@
       <para><filename>/etc/shorewall/zones</filename> — Systems A &amp;
       B</para>
 
-      <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
-#                                      OPTIONS                 OPTIONS
+      <programlisting>#ZONE   TYPE   OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 vpn     ipv4</programlisting>
     </blockquote>
 
@@ -130,7 +129,7 @@ vpn     ipv4</programlisting>
       <para>In <filename>/etc/shorewall/interfaces</filename> on system
       A:</para>
 
-      <programlisting>#ZONE      INTERFACE        BROADCAST     OPTIONS
+      <programlisting>#ZONE      INTERFACE        OPTIONS
 vpn        tun0</programlisting>
     </blockquote>
 
@@ -138,7 +137,7 @@ vpn        tun0</programlisting>
     the following:</para>
 
     <blockquote>
-      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY_ZONE
 openvpn       net            134.28.54.2</programlisting>
     </blockquote>
 
@@ -150,7 +149,7 @@ openvpn       net            134.28.54.2</programlisting>
     <blockquote>
       <para>/etc/shorewall/tunnels with port 7777:</para>
 
-      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
+      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY_ZONE
 openvpn:7777      net            134.28.54.2</programlisting>
     </blockquote>
 
@@ -161,7 +160,7 @@ openvpn:7777      net            134.28.54.2</programlisting>
     <blockquote>
       <para>/etc/shorewall/tunnels using TCP:</para>
 
-      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
+      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY_ZONE
 openvpn:tcp       net            134.28.54.2</programlisting>
     </blockquote>
 
@@ -170,7 +169,7 @@ openvpn:tcp       net            134.28.54.2</programlisting>
     <blockquote>
       <para>/etc/shorewall/tunnels using TCP port 7777:</para>
 
-      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
+      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY_ZONE
 openvpn:tcp:7777  net            134.28.54.2</programlisting>
     </blockquote>
 
@@ -206,7 +205,7 @@ vpn        tun0 </programlisting>
     have:</para>
 
     <blockquote>
-      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY_ZONE
 openvpn       net            206.191.148.9</programlisting>
     </blockquote>
 
@@ -249,7 +248,7 @@ vpn            loc           ACCEPT</programlisting>
     <para>OpenVPN 2.0 provides excellent support for roadwarriors. Consider
     the setup in the following diagram:</para>
 
-    <graphic fileref="images/Mobile.png" />
+    <graphic fileref="images/Mobile.png"/>
 
     <para>On the gateway system (System A), we need a zone to represent the
     remote clients — we'll call that zone <quote>road</quote>.</para>
@@ -257,8 +256,7 @@ vpn            loc           ACCEPT</programlisting>
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System A:</para>
 
-      <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
-#                                      OPTIONS                 OPTIONS
+      <programlisting>#ZONE   TYPE   OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 road    ipv4</programlisting>
     </blockquote>
 
@@ -269,7 +267,7 @@ road    ipv4</programlisting>
       <para>In <filename>/etc/shorewall/interfaces</filename> on system
       A:</para>
 
-      <programlisting>#ZONE      INTERFACE        BROADCAST     OPTIONS
+      <programlisting>#ZONE      INTERFACE        OPTIONS
 road       tun+</programlisting>
     </blockquote>
 
@@ -277,7 +275,7 @@ road       tun+</programlisting>
     the following:</para>
 
     <blockquote>
-      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY_ZONE
 openvpn:1194  net            0.0.0.0/0</programlisting>
     </blockquote>
 
@@ -288,7 +286,7 @@ openvpn:1194  net            0.0.0.0/0</programlisting>
     uses NAT.</para>
 
     <blockquote>
-      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY_ZONE
 openvpnserver:1194  net            0.0.0.0/0</programlisting>
     </blockquote>
 
@@ -363,7 +361,7 @@ home       tun0</programlisting>
     the following:</para>
 
     <blockquote>
-      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY_ZONE
 openvpn:1194  net            206.162.148.9</programlisting>
     </blockquote>
 
@@ -372,7 +370,7 @@ openvpn:1194  net            206.162.148.9</programlisting>
     prefer:</para>
 
     <blockquote>
-      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY_ZONE
 openvpnclient:1194  net            206.162.148.9</programlisting>
     </blockquote>
 
@@ -443,7 +441,7 @@ verb 3</programlisting>
     192.168.1.0/24, there will be times when your roadwarriors need to access
     your lan from a remote location that uses that same network.</para>
 
-    <graphic align="center" fileref="images/Mobile1.png" />
+    <graphic align="center" fileref="images/Mobile1.png"/>
 
     <para>This may be accomplished by configuring a second server on your
     firewall that uses a different port and by using <ulink
@@ -719,7 +717,7 @@ TUNNEL_IF=gif0
         <para>Add this entry to <ulink
         url="manpages/shorewall-tunnels.html">/etc/shorewall/tunnels</ulink>:</para>
 
-        <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+        <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY_ZONE
 openvpnserver:1194  net            0.0.0.0/0</programlisting>
       </listitem>
     </orderedlist>
@@ -736,7 +734,7 @@ openvpnserver:1194  net            0.0.0.0/0</programlisting>
 
     <para>Consider the following case:</para>
 
-    <graphic align="center" fileref="images/bridge4.png" />
+    <graphic align="center" fileref="images/bridge4.png"/>
 
     <para>Part of the 192.168.1.0/24 network is in one location and part in
     another. The two LANs can be bridged with OpenVPN as described in this

@@ -503,8 +503,7 @@ loadmodule nf_conntrack_sane        ports=0</programlisting>
         limit the scope of the helper. Suppose that your Linux FTP server is
         in zone dmz and has address 70.90.191.123.</para>
 
-        <programlisting>#ACTION               SOURCE                         DEST                      PROTO            DEST           SOURCE
-#                                                                                               PORT(S)        PORT(2)
+        <programlisting>#ACTION               SOURCE                         DEST                      PROTO            DPORT          SPORT
 SECTION RELATED
 ACCEPT                all                            dmz:70.90.191.123                          32768:               ; helper=ftp   # passive FTP to dmz server; /proc/sys/net/ipv4/ip_local_port_range == 32760:65535
 ACCEPT                dmz:70.90.191.123              all                       tcp              1024:          20    ; helper=ftp   # active  FTP to dmz server

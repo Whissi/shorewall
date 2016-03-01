@@ -213,8 +213,7 @@ ip link set ifb0 up</programlisting>
 
     <para>The tcdevices file describes the two devices:</para>
 
-    <programlisting>#NUMBER:        IN-BANDWITH     OUT-BANDWIDTH   OPTIONS         REDIRECTED
-#INTERFACE                                                      INTERFACES
+    <programlisting>#NUMBER:        IN_BANDWITH     OUT_BANDWIDTH   OPTIONS         REDIRECT
 1:eth0          -               ${UPLOAD}kbit   hfsc,linklayer=ethernet,overhead=0
 2:ifb0          -               ${DOWNLOAD}kbit hfsc            eth0</programlisting>
   </section>
@@ -225,67 +224,66 @@ ip link set ifb0 up</programlisting>
     <para>The tcclasses file defines the class hierarchy for both
     devices:</para>
 
-    <programlisting>#IFACE: MARK    RATE:                           CEIL                            PRIORITY        OPTIONS
-#CLASS          DMAX:UMAX
-1       1       ${UP_SC_VOIP_RATE}kbit:\
-                ${UP_SC_VOIP_DMAX}:\
-                ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
+    <programlisting>#INTERFACE MARK    RATE                            CEIL                            PRIORITY        OPTIONS
+1          1       ${UP_SC_VOIP_RATE}kbit:\
+                   ${UP_SC_VOIP_DMAX}:\
+                   ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
 
-1       2       ${UP_RT_PRIO_RATE}kbit:\
-                ${UP_RT_PRIO_DMAX}:\
-                ${UP_RT_PRIO_UMAX}              ${UP_LS_PRIO_RATE}kbit:\
-                                                ${UP_UL_PRIO_RATE}kbit          1
+1          2       ${UP_RT_PRIO_RATE}kbit:\
+                   ${UP_RT_PRIO_DMAX}:\
+                   ${UP_RT_PRIO_UMAX}              ${UP_LS_PRIO_RATE}kbit:\
+                                                   ${UP_UL_PRIO_RATE}kbit          1
 
-1       3       -                               ${UP_LS_NORMAL_RATE}kbit:\
-                                                ${UP_UL_NORMAL_RATE}kbit        1               red=(limit=$UP_NORMAL_RED_limit,\
-                                                                                                     min=$UP_NORMAL_RED_min,\
-                                                                                                     max=$UP_NORMAL_RED_max,\
-                                                                                                     burst=$UP_NORMAL_RED_burst,\
-                                                                                                     probability=$UP_NORMAL_RED_PROB,\
-                                                                                                     ecn)
-1       4       -                               ${UP_LS_P2P_RATE}kbit:\
-                                                ${UP_UL_P2P_RATE}kbit           1               red=(limit=$UP_P2P_RED_limit,\
-                                                                                                     min=$UP_P2P_RED_min,\
-                                                                                                     max=$UP_P2P_RED_max,\
-                                                                                                     burst=$UP_P2P_RED_burst,\
-                                                                                                     probability=$UP_P2P_RED_PROB,\
-                                                                                                     ecn)
-1       5       -                               ${UP_LS_BULK_RATE}kbit:\
-                                                ${UP_UL_BULK_RATE}kbit          1               default,\
-                                                                                                red=(limit=$UP_BULK_RED_limit,\
-                                                                                                     min=$UP_BULK_RED_min,\
-                                                                                                     max=$UP_BULK_RED_max,\
-                                                                                                     burst=$UP_BULK_RED_burst,\
-                                                                                                     probability=$UP_BULK_RED_PROB,\
-                                                                                                     ecn)
+1          3       -                               ${UP_LS_NORMAL_RATE}kbit:\
+                                                   ${UP_UL_NORMAL_RATE}kbit        1               red=(limit=$UP_NORMAL_RED_limit,\
+                                                                                                        min=$UP_NORMAL_RED_min,\
+                                                                                                        max=$UP_NORMAL_RED_max,\
+                                                                                                        burst=$UP_NORMAL_RED_burst,\
+                                                                                                        probability=$UP_NORMAL_RED_PROB,\
+                                                                                                        ecn)
+1          4       -                               ${UP_LS_P2P_RATE}kbit:\
+                                                   ${UP_UL_P2P_RATE}kbit           1               red=(limit=$UP_P2P_RED_limit,\
+                                                                                                        min=$UP_P2P_RED_min,\
+                                                                                                        max=$UP_P2P_RED_max,\
+                                                                                                        burst=$UP_P2P_RED_burst,\
+                                                                                                        probability=$UP_P2P_RED_PROB,\
+                                                                                                        ecn)
+1          5       -                               ${UP_LS_BULK_RATE}kbit:\
+                                                   ${UP_UL_BULK_RATE}kbit          1               default,\
+                                                                                                   red=(limit=$UP_BULK_RED_limit,\
+                                                                                                        min=$UP_BULK_RED_min,\
+                                                                                                        max=$UP_BULK_RED_max,\
+                                                                                                        burst=$UP_BULK_RED_burst,\
+                                                                                                        probability=$UP_BULK_RED_PROB,\
+                                                                                                        ecn)
 
-2:10    -       ${UP_SC_VOIP_RATE}kbit:\
-                ${UP_SC_VOIP_DMAX}:\
-                ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
+2:10       -       ${UP_SC_VOIP_RATE}kbit:\
+                   ${UP_SC_VOIP_DMAX}:\
+                   ${UP_SC_VOIP_UMAX}              ${UP_UL_VOIP_RATE}kbit          1
 
-2:20    -       ${DOWN_RT_PRIO_RATE}kbit:\
-                ${DOWN_RT_PRIO_DMAX}:\
-                ${DOWN_RT_PRIO_UMAX}            ${DOWN_UL_PRIO_RATE}kbit        1
+2:20       -       ${DOWN_RT_PRIO_RATE}kbit:\
+                   ${DOWN_RT_PRIO_DMAX}:\
+                   ${DOWN_RT_PRIO_UMAX}            ${DOWN_UL_PRIO_RATE}kbit        1
 
-2:30    -       -                               ${DOWN_LS_NORMAL_RATE}kbit:\
-                                                ${DOWN_UL_NORMAL_RATE}kbit      1               red=(limit=$DOWN_NORMAL_RED_limit,\
-                                                                                                     min=$DOWN_NORMAL_RED_min,\
-                                                                                                     max=$DOWN_NORMAL_RED_max,\
-                                                                                                     burst=$DOWN_NORMAL_RED_burst,\
-                                                                                                     probability=$DOWN_NORMAL_RED_PROB)
-2:40    -       -                               ${DOWN_LS_P2P_RATE}kbit:\
-                                                ${DOWN_UL_P2P_RATE}kbit         1               red=(limit=$DOWN_P2P_RED_limit,\
-                                                                                                     min=$DOWN_P2P_RED_min,\
-                                                                                                     max=$DOWN_P2P_RED_max,\
-                                                                                                     burst=$DOWN_P2P_RED_burst,\
-                                                                                                     probability=$DOWN_P2P_RED_PROB)
-2:50    -       -                               ${DOWN_LS_BULK_RATE}kbit:\
-                                                ${DOWN_UL_BULK_RATE}kbit        1               default,\
-                                                                                                red=(limit=$DOWN_BULK_RED_limit,\
-                                                                                                     min=$DOWN_BULK_RED_min,\
-                                                                                                     max=$DOWN_BULK_RED_max,\
-                                                                                                     burst=$DOWN_BULK_RED_burst,\
-                                                                                                     probability=$DOWN_BULK_RED_PROB)</programlisting>
+2:30       -       -                               ${DOWN_LS_NORMAL_RATE}kbit:\
+                                                   ${DOWN_UL_NORMAL_RATE}kbit      1               red=(limit=$DOWN_NORMAL_RED_limit,\
+                                                                                                        min=$DOWN_NORMAL_RED_min,\
+                                                                                                        max=$DOWN_NORMAL_RED_max,\
+                                                                                                        burst=$DOWN_NORMAL_RED_burst,\
+                                                                                                        probability=$DOWN_NORMAL_RED_PROB)
+2:40       -       -                               ${DOWN_LS_P2P_RATE}kbit:\
+                                                   ${DOWN_UL_P2P_RATE}kbit         1               red=(limit=$DOWN_P2P_RED_limit,\
+                                                                                                        min=$DOWN_P2P_RED_min,\
+                                                                                                        max=$DOWN_P2P_RED_max,\
+                                                                                                        burst=$DOWN_P2P_RED_burst,\
+                                                                                                        probability=$DOWN_P2P_RED_PROB)
+2:50       -       -                               ${DOWN_LS_BULK_RATE}kbit:\
+                                                   ${DOWN_UL_BULK_RATE}kbit        1               default,\
+                                                                                                   red=(limit=$DOWN_BULK_RED_limit,\
+                                                                                                        min=$DOWN_BULK_RED_min,\
+                                                                                                        max=$DOWN_BULK_RED_max,\
+                                                                                                        burst=$DOWN_BULK_RED_burst,\
+                                                                                                        probability=$DOWN_BULK_RED_PROB)</programlisting>
   </section>
 
   <section>
@@ -293,8 +291,7 @@ ip link set ifb0 up</programlisting>
 
     <para>The mangle file classifies upload packets:</para>
 
-    <programlisting>#MARK            SOURCE         DEST          PROTO     DEST        SOURCE     USER    TEST
-#                                                       PORT(S)     PORT(S)
+    <programlisting>#MARK            SOURCE         DEST          PROTO     DPORT       SPORT      USER    TEST
 RESTORE:T        -              -             -         -           -          -       !0:C
 CONTINUE:T       -              -             -         -           -          -       !0
 2:T              -              -             icmp
@@ -319,8 +316,7 @@ SAVE:T           -              -             -         -           -          -
 
     <para>The tcfilters file classifies download packets:</para>
 
-    <programlisting>#INTERFACE:     SOURCE  DEST    PROTO   DEST    SOURCE   TOS            LENGTH
-#CLASS                                  PORT(S) PORT(S)
+    <programlisting>#INTERFACE:     SOURCE  DEST    PROTO   DPORT   SPORT     TOS            LENGTH
 #
 # These classify download traffic
 #

@@ -2,7 +2,7 @@
 #
 # Script to install Shoreline Firewall Init
 #
-#     (c) 2000-20114 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000-2016 - Tom Eastep (teastep@shorewall.net)
 #     (c) 2010 - Roberto C. Sanchez (roberto@connexer.com)
 #
 #       Shorewall documentation is available at http://shorewall.net

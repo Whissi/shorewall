@@ -2,7 +2,7 @@
 #
 # Script to install Shoreline Firewall
 #
-#     (c) 2000-201,2014 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000-2016 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.net
 #

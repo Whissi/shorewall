@@ -267,16 +267,14 @@
       <para><filename><filename>/etc/shorewall/tunnels</filename></filename> —
       System A:</para>
 
-      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
-ipsec         net         134.28.54.2
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
+ipsec         net         134.28.54.2</programlisting>
 
       <para><filename><filename>/etc/shorewall/tunnels</filename></filename> —
       System B:</para>
 
-      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
-ipsec         net         206.162.148.9
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
+ipsec         net         206.162.148.9</programlisting>
     </blockquote>
 
     <note>
@@ -295,11 +293,9 @@ ipsec         net         206.162.148.9
       <para><filename><filename>/etc/shorewall/zones</filename></filename> —
       Systems A and B:</para>
 
-      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+      <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 net            ipv4
-<emphasis role="bold">vpn            ipv4</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+<emphasis role="bold">vpn            ipv4</emphasis></programlisting>
     </blockquote>
 
     <para>Remember the assumption that both systems A and B have eth0 as their
@@ -315,14 +311,12 @@ net            ipv4
       <para><filename>/etc/shorewall/hosts</filename> — System A</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
-vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis></programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename> — System B</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
-vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis></programlisting>
     </blockquote>
 
     <para>Assuming that you want to give each local network free access to the
@@ -330,17 +324,17 @@ vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ips
     <filename>/etc/shorewall/policy</filename> entries on each system:</para>
 
     <blockquote>
-      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
-loc              vpn                    ACCEPT
-vpn              loc                    ACCEPT</programlisting>
+      <programlisting>#SOURCE          DEST            POLICY          LEVEL       BURST:LIMIT
+loc              vpn             ACCEPT
+vpn              loc             ACCEPT</programlisting>
     </blockquote>
 
     <para>If you need access from each firewall to hosts in the other network,
     then you could add:</para>
 
     <blockquote>
-      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
-$FW              vpn                    ACCEPT</programlisting>
+      <programlisting>#SOURCE          DEST            POLICY          LEVEL       BURST:LIMIT
+$FW              vpn             ACCEPT</programlisting>
     </blockquote>
 
     <para>If you need access between the firewall's, you should describe the
@@ -348,7 +342,7 @@ $FW              vpn                    ACCEPT</programlisting>
     from System B, add this rule on system A:</para>
 
     <blockquote>
-      <programlisting>#ACTION    SOURCE           DESTINATION      PROTO        POLICY
+      <programlisting>#ACTION    SOURCE           DEST      PROTO        POLICY
 ACCEPT     vpn:134.28.54.2  $FW</programlisting>
     </blockquote>
 
@@ -458,8 +452,7 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         through an ESP tunnel then the following entry would be
         appropriate:</para>
 
-        <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
-#                                       OPTIONS                 OPTIONS
+        <programlisting>#ZONE   TYPE    OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
         <para>You should also set FASTACCEPT=No in shorewall.conf to ensure
@@ -493,25 +486,24 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
       <blockquote>
         <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
-        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+        <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 net            ipv4
 <emphasis role="bold">vpn            ipsec</emphasis>
 loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+</programlisting>
       </blockquote>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
       but that cannot be determined in advance. In the
       <filename>/etc/shorewall/tunnels</filename> file on system A, the
       following entry should be made:<blockquote>
-          <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
+          <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
 ipsec         net         0.0.0.0/0           vpn
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+</programlisting>
         </blockquote></para>
 
       <para><note>
-          <para>the GATEWAY ZONE column contains the name of the zone
+          <para>the GATEWAY_ZONE column contains the name of the zone
           corresponding to peer subnetworks. This indicates that the gateway
           system itself comprises the peer subnetwork; in other words, the
           remote gateway is a standalone system.</para>
@@ -524,8 +516,7 @@ ipsec         net         0.0.0.0/0           vpn
         <para><filename>/etc/shorewall/hosts</filename> — System A:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:0.0.0.0/0</programlisting>
       </blockquote>
 
       <para>You will need to configure your <quote>through the tunnel</quote>
@@ -536,24 +527,20 @@ vpn               eth0:0.0.0.0/0
       <blockquote>
         <para><filename>/etc/shorewall/zones</filename> - System B:</para>
 
-        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
+        <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
 vpn            ipsec
 net            ipv4
-loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+loc            ipv4</programlisting>
 
         <para><filename>/etc/shorewall/tunnels</filename> - System B:</para>
 
-        <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
-ipsec         net         206.162.148.9       vpn
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+        <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY_ZONE
+ipsec         net         206.162.148.9       vpn</programlisting>
 
         <para><filename>/etc/shorewall/hosts</filename> - System B:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+vpn               eth0:0.0.0.0/0</programlisting>
       </blockquote>
 
       <para>On system A, here are the IPsec files:</para>
@@ -716,13 +703,11 @@ RACOON=/usr/sbin/racoon</programlisting>
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System A</para>
 
-      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
-#                                                   OPTIONS      OPTIONS
-net            ipv4
+      <programlisting>#ZONE          TYPE             OPTIONS             IN_OPTIONS   OUT_OPTIONS
+et            ipv4
 vpn            ipsec
 <emphasis role="bold">l2tp           ipv4</emphasis>
-loc            ipv4
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+loc            ipv4</programlisting>
     </blockquote>
 
     <para>Since the L2TP will require the use of pppd, you will end up with
@@ -737,8 +722,7 @@ loc            ipv4
       <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 net     eth0            detect          routefilter
 loc     eth1            192.168.1.255
-l2tp    ppp+            -
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+l2tp    ppp+            -</programlisting>
     </blockquote>
 
     <para>The next thing that must be done is to adjust the policy so that the
@@ -776,7 +760,7 @@ l2tp    ppp+            -
     <blockquote>
       <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
+      <programlisting>#SOURCE         DEST            POLICY          LOGLEVEL       LIMIT
 $FW             all             ACCEPT
 loc             net             ACCEPT
 loc             l2tp            ACCEPT # Allows local machines to connect to road warriors
@@ -784,8 +768,7 @@ l2tp            loc             ACCEPT # Allows road warriors to connect to loca
 l2tp            net             ACCEPT # Allows road warriors to connect to the Internet
 net             all             DROP            info
 # The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          info</programlisting>
     </blockquote>
 
     <para>The final step is to modify your rules file. There are three
@@ -802,8 +785,7 @@ all             all             REJECT          info
     <blockquote>
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION         SOURCE  DEST    PROTO   DEST    SOURCE
-#                                       PORT(S) PORT(S)
+      <programlisting>#ACTION         SOURCE  DEST    PROTO   DPORT   SPORT
 ?SECTION ESTABLISHED
 # Prevent IPsec bypass by hosts behind a NAT gateway
 L2TP(REJECT)    net     $FW
@@ -815,8 +797,7 @@ ACCEPT          vpn     $FW     udp     1701
 HTTP(ACCEPT)    loc     $FW
 HTTP(ACCEPT)    l2tp    $FW
 HTTPS(ACCEPT)   loc     $FW
-HTTPS(ACCEPT)   l2tp    $FW
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+HTTPS(ACCEPT)   l2tp    $FW</programlisting>
     </blockquote>
   </section>
 
@@ -890,9 +871,8 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
     <blockquote>
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     eth0            detect          routefilter,dhcp,tcpflags
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      <programlisting>#ZONE   INTERFACE       OPTIONS
+net     eth0            routefilter,dhcp,tcpflags</programlisting>
 
       <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
@@ -910,8 +890,7 @@ net            ipv4</programlisting>
       <para><filename><filename>/etc/shorewall/hosts</filename></filename>:</para>
 
       <programlisting>#ZONE           HOST(S)                         OPTIONS
-loc             eth0:192.168.20.0/24  
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+loc             eth0:192.168.20.0/24</programlisting>
 
       <para>It is worth noting that although <emphasis>loc</emphasis> is a
       sub-zone of <emphasis>net</emphasis>, because <emphasis>loc</emphasis>
@@ -921,15 +900,14 @@ loc             eth0:192.168.20.0/24
 
       <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
+      <programlisting>#SOURCE         DEST            POLICY          LOGLEVEL       LIMIT
 $FW             all             ACCEPT
 loc             $FW             ACCEPT
 net             loc             NONE
 loc             net             NONE
 net             all             DROP            info
 # The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          info</programlisting>
 
       <para>Since there are no cases where net&lt;-&gt;loc traffic should
       occur, NONE policies are used.</para>

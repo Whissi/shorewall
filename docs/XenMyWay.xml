@@ -72,7 +72,7 @@
     class="devicefile">xenbr0</filename>) and a number of virtual interfaces
     as shown in the following diagram.</para>
 
-    <graphic align="center" fileref="images/Xen1.png" />
+    <graphic align="center" fileref="images/Xen1.png"/>
 
     <para>I use the term <firstterm>Extended Dom0</firstterm> to distinguish
     the bridge and virtual interfaces from Dom0 itself. That distinction is
@@ -169,7 +169,7 @@
 
     <para>Here is a high-level diagram of our network.</para>
 
-    <graphic align="center" fileref="images/Xen5.png" />
+    <graphic align="center" fileref="images/Xen5.png"/>
 
     <para>As shown in this diagram, the Xen system has three physical network
     interfaces. These are:</para>
@@ -330,7 +330,7 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
       <para>With all three Xen domains up and running, the system looks as
       shown in the following diagram.</para>
 
-      <graphic align="center" fileref="images/Xen4.png" />
+      <graphic align="center" fileref="images/Xen4.png"/>
 
       <para>The zones correspond to the Shorewall zones in the firewall DomU
       configuration.</para>
@@ -430,39 +430,24 @@ done</programlisting>
       <blockquote>
         <para><filename>/etc/shorewall/zones</filename>:</para>
 
-        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
-#                                       OPTIONS                 OPTIONS
+        <programlisting>#ZONE   TYPE            OPTIONS         IN_OPTIONS              OUT_OPTIONS
 fw      firewall
 loc     ipv4
-dmz     ipv4
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
+dmz     ipv4</programlisting>
 
         <para><filename>/etc/shorewall/policy</filename> (Note the unusual use
         of an ACCEPT all-&gt;all policy):</para>
 
-        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-#                                               LEVEL
+        <programlisting>#SOURCE         DEST            POLICY          LOGLEVEL             LIMIT
 dmz             all             REJECT          info
 all             dmz             REJECT          info
-all             all             ACCEPT
-#LAST LINE -- DO NOT REMOVE</programlisting>
+all             all             ACCEPT</programlisting>
 
         <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
         <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 loc     xenbr0          192.168.1.255   dhcp,routeback
-dmz     xenbr1          -               routeback
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-
-        <para><filename>/etc/shorewall/rules</filename>:</para>
-
-        <programlisting>#ACTION         SOURCE                          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
-#                                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
-#SECTION ESTABLISHED
-#SECTION RELATED
-SECTION NEW
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+dmz     xenbr1          -               routeback</programlisting>
       </blockquote>
     </section>
 
@@ -478,7 +463,7 @@ SECTION NEW
       for our two laptops and a bridged OpenVPN server for the wireless
       network in our home. Here is the firewall's view of the network:</para>
 
-      <graphic align="center" fileref="images/network4.png" />
+      <graphic align="center" fileref="images/network4.png"/>
 
       <para>The two laptops can be directly attached to the LAN as shown above
       or they can be attached wirelessly -- their IP addresses are the same in
@@ -544,21 +529,17 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
 
         <para><filename>/etc/shorewall/zones</filename>:</para>
 
-        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
-#                                       OPTIONS                 OPTIONS
+        <programlisting>#ZONE   TYPE            OPTIONS         IN_OPTIONS              OUT_OPTIONS
 fw      firewall
 net     ipv4            #Internet
 loc     ipv4            #Local wired Zone
 dmz     ipv4            #DMZ
 vpn     ipv4            #Open VPN clients
-wifi    ipv4            #Local Wireless Zone
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
+wifi    ipv4            #Local Wireless Zone</programlisting>
 
         <para><filename>/etc/shorewall/policy</filename>:</para>
 
-        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-#                                               LEVEL
+        <programlisting>#SOURCE         DEST            POLICY          LOGLEVEL        LIMIT
 $FW             $FW             ACCEPT
 $FW             net             ACCEPT
 loc             net             ACCEPT
@@ -573,8 +554,7 @@ net             $FW             DROP            $LOG            1/sec:2
 net             loc             DROP            $LOG            2/sec:4
 net             dmz             DROP            $LOG            8/sec:30
 net             vpn             DROP            $LOG
-all             all             REJECT          $LOG
-#LAST LINE -- DO NOT REMOVE</programlisting>
+all             all             REJECT          $LOG</programlisting>
 
         <para><filename>/etc/shorewall/params (edited)</filename>:</para>
 
@@ -591,9 +571,7 @@ DMZ_IF=eth1
 EXT_IF=eth3
 WIFI_IF=eth4
 
-OMAK=&lt;IP address at our second home&gt;
-
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+OMAK=&lt;IP address at our second home&gt;</programlisting>
 
         <para><filename>/etc/shorewall/init</filename>:</para>
 
@@ -607,15 +585,14 @@ dmz     $DMZ_IF         192.168.0.255           logmartians
 loc     $INT_IF         192.168.1.255           dhcp,routeback,logmartians
 wifi    $WIFI_IF        192.168.3.255           dhcp,maclist
 vpn     tun+            -
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+</programlisting>
 
         <para><filename>/etc/shorewall/nat</filename>:</para>
 
-        <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
-#                                                       INTERFACES
+        <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALLINTS         LOCAL
 206.124.146.178         $EXT_IF         192.168.1.3     No              No     #Wookie
 206.124.146.180         $EXT_IF         192.168.1.6     No              No     #Work LapTop
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+</programlisting>
 
         <para><filename>/etc/shorewall/masq (Note the cute trick here and in
         the <filename>following proxyarp</filename> file that allows me to
@@ -624,45 +601,39 @@ vpn     tun+            -
         rule before the SNAT rules generated by entries in
         <filename>/etc/shorewall/nat</filename> above.</para>
 
-        <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
+        <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   DPORT IPSEC
 +$EXT_IF:192.168.1.1    0.0.0.0/0       192.168.1.254
-$EXT_IF                 192.168.0.0/22  206.124.146.179
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+$EXT_IF                 192.168.0.0/22  206.124.146.179</programlisting>
 
         <para><filename>/etc/shorewall/proxyarp</filename>:</para>
 
         <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
 192.168.1.1     $EXT_IF         $INT_IF         yes
-206.124.146.177 $DMZ_IF         $EXT_IF         yes
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+206.124.146.177 $DMZ_IF         $EXT_IF         yes</programlisting>
 
         <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
-#                                               ZONE
+        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY_ZONE
 openvpnserver:udp       net     0.0.0.0/0                 #Routed server for RoadWarrior access
 openvpnserver:udp       wifi    192.168.3.0/24            #Home wireless network server
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+</programlisting>
 
         <para><filename>/etc/shorewall/actions</filename>:</para>
 
         <programlisting>#ACTION
 Mirrors             # Accept traffic from Shorewall Mirrors
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+</programlisting>
 
         <para><filename>/etc/shorewall/action.Mirrors</filename>:</para>
 
-        <programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
-#                                               PORT    PORT(S)    DEST         LIMIT
-ACCEPT  $MIRRORS
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+        <programlisting>#TARGET SOURCE          DEST            PROTO   PORT    SPORT      ORIGDEST     RATE
+ACCEPT  $MIRRORS</programlisting>
 
         <para><filename>/etc/shorewall/rules</filename>:</para>
 
-        <programlisting>SECTION NEW
+        <programlisting>?SECTION NEW
 ###############################################################################################################################################################################
-#ACTION         SOURCE                          DEST                    PROTO   DEST                                    SOURCE          ORIGINAL        RATE    USER/
-#                                                                               PORT                                    PORT(S)         DEST            LIMIT   GROUP
+#ACTION         SOURCE                          DEST                    PROTO   DPORT                                   SPORT           ORIGDEST        RATE    USER
 ###############################################################################################################################################################################
 REJECT:$LOG     loc                             net                     tcp     25
 REJECT:$LOG     loc                             net                     udp     1025:1031
@@ -815,28 +786,24 @@ Ping(ACCEPT)    fw                              dmz
 # Avoid logging Freenode.net probes
 #
 DROP            net:82.96.96.3                          all
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+</programlisting>
 
         <para><filename>/etc/shorewall/tcdevices</filename></para>
 
-        <programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH
-$EXT_IF         1300kbit        384kbit
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+        <programlisting>#INTERFACE      IN_BANDWITH     OUT_BANDWIDTH
+$EXT_IF         1300kbit        384kbit</programlisting>
 
         <para><filename>/etc/shorewall/tcclasses</filename><programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
 $EXT_IF         10      5*full/10       full            1               tcp-ack,tos-minimize-delay
 $EXT_IF         20      3*full/10       9*full/10       2               default
-$EXT_IF         30      2*full/10       6*full/10       3
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+$EXT_IF         30      2*full/10       6*full/10       3</programlisting></para>
 
-        <para><filename>/etc/shorewall/tcrules</filename><programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
-#                                                       PORT(S)
-1:110   192.168.0.0/22  $EXT_IF                                         #Our internal nets get priority
-                                                                        #over the server
-1:130   206.124.146.177 $EXT_IF         tcp     -       873             #Throttle rsync traffic to the
-                                                                        #Shorewall Mirrors.
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+        <para><filename>/etc/shorewall/mangle</filename><programlisting>#ACTION           SOURCE          DEST            PROTO   DPORT   SPORT   USER    TEST
+CLASSIFY(1:110)   192.168.0.0/22  $EXT_IF                                         #Our internal nets get priority
+                                                                                  #over the server
+CLASSIFY(1:130)   206.124.146.177 $EXT_IF         tcp     -       873             #Throttle rsync traffic to the
+                                                                                  #Shorewall Mirrors.
+</programlisting></para>
       </blockquote>
 
       <para>The tap0 device used by the bridged OpenVPN server is bridged to

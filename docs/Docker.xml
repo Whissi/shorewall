@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Docker Support</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2016</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Shorewall 5.0.5 and Earlier</title>
+
+    <para>Both Docker and Shorewall assume that they 'own' the iptables
+    configuration. This leads to problems when Shorewall is restarted or
+    reloaded, because it drops all of the rules added by Docker. Fortunately,
+    the extensibility features in Shorewall allow users to <ulink
+    url="https://blog.discourse.org/2015/11/shorewalldocker-two-great-tastes-that-taste-great-together/#">create
+    their own solution</ulink> for saving the Docker-generated rules before
+    these operations and restoring them afterwards.</para>
+  </section>
+
+  <section>
+    <title>Shorewall 5.0.6 and Later</title>
+
+    <para>Beginning with Shorewall 5.0.6, Shorewall has native support for
+    simple Docker configurations. This support is enabled by setting
+    DOCKER=Yes in shorewall.conf. With this setting, the generated script
+    saves the Docker-created ruleset before executing a
+    <command>stop</command>, <command>start</command>,
+    <command>restart</command> or <command>reload</command> operation and
+    restores those rules along with the Shorewall-generated ruleset.</para>
+
+    <para>This support assumes that the default Docker bridge (docker0) is
+    being used. It is recommended that this bridge be defined to Shorewall in
+    <ulink
+    url="manpages/shorewall-interfaces.html">shorewall-interfaces(8)</ulink>.
+    As shown below, you can control inter-container communication using the
+    <option>bridge</option> and <option>routeback</option> options. If docker0
+    is not defined to Shorewall, then Shorewall will save and restore the
+    FORWARD chain rules involving that interface.</para>
+
+    <para><filename>/etc/shorewall/shorewall.conf</filename>:</para>
+
+    <programlisting>DOCKER=Yes</programlisting>
+
+    <para><filename>/etc/shorewall/zones</filename>:</para>
+
+    <programlisting>#ZONE         TYPE        OPTIONS
+dock          ipv4        #'dock' is just an example -- call it anything you like</programlisting>
+
+    <para><filename>/etc/shorewall/policy</filename>:</para>
+
+    <programlisting>#SOURCE        DEST        POLICY         LEVEL
+dock           $FW         REJECT
+dock           all         ACCEPT</programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE          INTERFACE        OPTIONS
+dock           docker0          bridge   #Allow ICC (bridge implies routeback=1)</programlisting>
+
+    <para>or</para>
+
+    <programlisting>#ZONE          INTERFACE        OPTIONS
+dock           docker0          bridge,routeback=0   #Disallow ICC</programlisting>
+  </section>
+</article>

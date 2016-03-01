@@ -494,8 +494,7 @@ tarpit       inline             # Wrapper for TARPIT
     <section>
       <title>/etc/shorewall/action.Mirrors</title>
 
-      <para><programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
-#                                               PORT    PORT(S)    DEST         LIMIT
+      <para><programlisting>#TARGET SOURCE          DEST            PROTO   DPORT   SPORT      ORIGDEST     RATE
 ?COMMENT Accept traffic from Mirrors
 ?FORMAT  2
 DEFAULTS -
@@ -508,8 +507,7 @@ $1      $MIRRORS
     <section>
       <title>/etc/shorewall/action.tarpit</title>
 
-      <programlisting>#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/   MARK    CONNLIMIT       TIME         HEADERS         SWITCH        HELPER
-#                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+      <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT           ORIGDEST        RATE            USER    MARK    CONNLIMIT       TIME         HEADERS         SWITCH        HELPER
 $LOG            { rate=s:1/min }
 TARPIT
 </programlisting>
@@ -520,7 +518,8 @@ TARPIT
     <section id="zones">
       <title>/etc/shorewall/zones</title>
 
-      <para><programlisting>fw              firewall
+      <para><programlisting>#ZONE           TYPE
+fw              firewall
 loc             ip                                              #Local Zone
 net             ipv4                                            #Internet
 dmz             ipv4                                            #LXC Containers
@@ -531,7 +530,7 @@ smc:net         ip                                              #10.0.1.0/24
     <section id="interfaces">
       <title>/etc/shorewall/interfaces</title>
 
-      <para><programlisting>#ZONE  INTERFACE  BROADCAST OPTIONS
+      <para><programlisting>#ZONE  INTERFACE        OPTIONS
 loc    INT_IF           dhcp,physical=$INT_IF,ignore=1,wait=5,routefilter,nets=172.20.1.0/24,routeback,tcpflags=0
 net    COMB_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMB_IF,upnp,nosmurfs,tcpflags
 net    COMC_IF          optional,sourceroute=0,routefilter=0,arp_ignore=1,proxyarp=0,physical=$COMC_IF,upnp,nosmurfs,tcpflags,dhcp
@@ -552,8 +551,7 @@ smc     COMC_IF:10.0.0.0/24
     <section id="policy">
       <title>/etc/shorewall/policy</title>
 
-      <para><programlisting>#SOURCE         DEST            POLICY                          LOG             LIMIT:BURST
-#                                                               LEVEL
+      <para><programlisting>#SOURCE         DEST            POLICY                          LOGLEVEL        LIMIT
 $FW             dmz             REJECT                          $LOG
 $FW             net             REJECT                          $LOG
 ?else
@@ -577,8 +575,7 @@ all             all             REJECT:Reject                   $LOG
     <section id="accounting">
       <title>/etc/shorewall/accounting</title>
 
-      <para><programlisting>#ACTION                         CHAIN           SOURCE                  DESTINATION     PROTO   DEST            SOURCE  USER/    MARK     IPSEC
-#                                                                                               PORT(S)         PORT(S) GROUP
+      <para><programlisting>#ACTION                         CHAIN           SOURCE                  DESTINATION     PROTO   DPORT           SPORT   USER     MARK     IPSEC
 ?COMMENT
 ?SECTION PREROUTING
 ?SECTION INPUT
@@ -604,7 +601,8 @@ ACCOUNT(loc-net,$INT_NET)       -               INT_IF                  COMB_IF
     <section id="blacklist">
       <title>/etc/shorewall/blrules</title>
 
-      <para><programlisting>WHITELIST       net:70.90.191.126       all
+      <para><programlisting>#ACTION         SOURCE                  DEST                    PROTO   DPORT                   SPORT           ORIGDEST        RATE    USER      MARK     CONNLIMIT    TIME      HEADERS SWITCH
+WHITELIST       net:70.90.191.126       all
 BLACKLIST       net:+blacklist          all
 BLACKLIST       net                     all                     udp     1023:1033,1434,5948,23773
 DROP            net                     all                     tcp     57,1433,1434,2401,2745,3127,3306,3410,4899,5554,5948,6101,8081,9898,23773
@@ -714,8 +712,7 @@ br0                             70.90.191.120/29        70.90.191.121           
       <title>/etc/shorewall/conntrack</title>
 
       <para><programlisting>?FORMAT 2
-#ACTION                 SOURCE          DESTINATION     PROTO   DEST            SOURCE  USER/
-#                                                               PORT(S)         PORT(S) GROUP
+#ACTION         SOURCE            DEST             PROTO   DPORT           SPORT
 #
 DROP            net               -                udp     3551
 NOTRACK         net               -                tcp     23
@@ -818,8 +815,7 @@ br0                 -                ComcastB  11000
     <section id="routestopped">
       <title>/etc/shorewall/stoppedrules</title>
 
-      <para><programlisting>#TARGET         HOST(S)                 DEST      PROTO     DEST        SOURCE
-#                                                           PORT(S)     PORT(S)
+      <para><programlisting>#TARGET         HOST(S)                 DEST      PROTO     DPORT       SPORT
 ACCEPT          INT_IF:172.20.1.0/24    $FW
 NOTRACK         COMB_IF                 -         41
 NOTRACK         $FW                     COMB_IF   41
@@ -832,9 +828,7 @@ ACCEPT          COMC_IF                 $FW       udp       67:68</programlistin
       <title>/etc/shorewall/rules</title>
 
       <para><programlisting>################################################################################################################################################################################################
-#ACTION         SOURCE                  DEST                    PROTO   DEST                    SOURCE          ORIGINAL        RATE    USER/     MARK     CONNLIMIT    TIME      HEADERS SWITCH
-#                                                                       PORT(S)                 PORT(S)         DEST            LIMIT   GROUP
-################################################################################################################################################################################################
+#ACTION         SOURCE                  DEST                    PROTO   DPORT                   SPORT           ORIGDEST        RATE    USER      MARK     CONNLIMIT    TIME      HEADERS SWITCH
 ?if $VERSION &lt; 40500
 ?SHELL echo "   ERROR: Shorewall version is too low" &gt;&amp;2; exit 1
 ?endif

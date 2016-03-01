@@ -314,14 +314,34 @@ gateway:/etc/shorewall#                                               </programl
       <para><filename>/etc/shorewall/shorewall.conf</filename>:
       <programlisting>MACLIST_LOG_LEVEL=NFLOG(1,0,1)</programlisting></para>
 
-      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DEST
-#                                                 PORT(S)
+      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION             SOURCE     DEST     PROTO     DPORT
 ACCEPT:NFLOG(1,0,1) vpn        fw       tcp       ssh,time,631,8080 </programlisting><important>
           <para>Shorewall considers <emphasis role="bold">ULOG(...)</emphasis>
           and <emphasis role="bold">NFLOG(...)</emphasis> to be <emphasis
           role="bold">log levels</emphasis>, just like info, debug, etc. even
           though they are not defined by syslog.</para>
         </important></para>
+
+      <para>Here is a copy of a ulogd.conf file that logs to
+      /var/log/firewall. It was contributed by a Shorewall user on IRC:</para>
+
+      <programlisting>[global]
+user="ulogd"
+logfile="/var/log/ulogd/ulogd.log"
+loglevel=7
+
+plugin="/usr/lib64/ulogd/ulogd_inppkt_NFLOG.so"
+plugin="/usr/lib64/ulogd/ulogd_filter_IFINDEX.so"
+plugin="/usr/lib64/ulogd/ulogd_filter_IP2STR.so"
+plugin="/usr/lib64/ulogd/ulogd_filter_PRINTPKT.so"
+plugin="/usr/lib64/ulogd/ulogd_output_LOGEMU.so"
+plugin="/usr/lib64/ulogd/ulogd_raw2packet_BASE.so"
+
+stack=log:NFLOG,base1:BASE,ifi1:IFINDEX,ip2str1:IP2STR,print1:PRINTPKT,firewall:LOGEMU
+
+[firewall]
+file="/var/log/firewall"
+sync=1</programlisting>
     </section>
   </section>
 

@@ -6438,7 +6438,7 @@ sub generate_aux_config() {
 
     if ( -f $fn ) {
 	emit( '',
-	      'dump_filter() {' );
+	      'dump_filter1() {' );
 	push_indent;
 	append_file( $fn,1 ) or emit 'cat -';
 	pop_indent;

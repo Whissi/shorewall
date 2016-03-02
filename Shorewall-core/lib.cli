@@ -980,6 +980,63 @@ show_nat() {
     $g_tool -t nat -L $g_ipt_options | $output_filter
 }
 
+show_raw() {
+    echo "$g_product $SHOREWALL_VERSION RAW Table at $g_hostname - $(date)"
+    echo
+    show_reset
+    $g_tool -t raw -L $g_ipt_options | $output_filter
+}
+
+show_rawpost() {
+    echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
+    echo
+    show_reset
+    $g_tool -t rawpost -L $g_ipt_options | $output_filter
+}
+
+show_mangle() {
+    echo "$g_product $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
+    echo
+    show_reset
+    $g_tool -t mangle -L $g_ipt_options | $output_filter
+}
+
+show_classifiers_wrapper() {
+    echo "$g_product $SHOREWALL_VERSION Classifiers at $g_hostname - $(date)"
+    echo
+    show_classifiers
+}
+
+show_ip_addresses() {
+    echo "$g_product $SHOREWALL_VERSION IP at $g_hostname - $(date)"
+    echo
+    ip -$g_family addr list
+}
+
+show_routing_wrapper() {
+    echo "$g_product $SHOREWALL_VERSION Routing at $g_hostname - $(date)"
+    echo
+    show_routing
+}
+
+show_policies() {
+    echo "$g_product $SHOREWALL_VERSION Policies at $g_hostname - $(date)"
+    echo
+    [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies
+}
+
+show_ipa() {
+    echo "$g_product $SHOREWALL_VERSION per-IP Accounting at $g_hostname - $(date)"
+    echo
+    perip_accounting
+}
+
+show_arptables() {
+    echo "$g_product $SHOREWALL_VERSION arptables at $g_hostname - $(date)"
+    echo
+    $arptables -L -n -v
+}
+
 show_macros() {
     for directory in $(split $CONFIG_PATH); do
 	temp=
@@ -1161,24 +1218,15 @@ show_command() {
 	    ;;
 	raw)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION RAW Table at $g_hostname - $(date)"
-		   echo
-		   show_reset
-		   $g_tool -t raw -L $g_ipt_options | $output_filter } $g_pager
+	    eval show_raw $g_pager
 	    ;;
 	rawpost)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
-		   echo
-		   show_reset
-		   $g_tool -t rawpost -L $g_ipt_options | $output_filter } $g_pager
+	    eval show_rawpost $g_pager
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
-		   echo
-		   show_reset
-		   $g_tool -t mangle -L $g_ipt_options | $output_filter } $g_pager
+	    eval show_mangle $g_pager
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
@@ -1202,9 +1250,7 @@ show_command() {
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION Classifiers at $g_hostname - $(date)"
-		   echo
-		   show_classifiers } $g_pager
+	    eval show_classifiers_wrapper $g_pager
 	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
@@ -1241,15 +1287,11 @@ show_command() {
 	    ;;
 	ip)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION IP at $g_hostname - $(date)"
-		   echo
-		   ip -$g_family addr list } $g_pager
+	    eval show_ip_addresses $g_pager
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION Routing at $g_hostname - $(date)"
-		   echo
-		   show_routing } $g_pager
+	    eval show_routing_wrapper $g_pager
 	    ;;
 	config)
 	    . ${g_sharedir}/configpath
@@ -1278,16 +1320,12 @@ show_command() {
 	    ;;
 	policies)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION Policies at $g_hostname - $(date)"
-		   echo
-		   [ -f ${VARDIR}/policies ] && cat ${VARDIR}/policies } $g_pager
+	    eval show_policies $g_wrapper
 	    ;;
 	ipa)
 	    [ $g_family -eq 4 ] || usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION per-IP Accounting at $g_hostname - $(date)"
-		   echo
-		   [ $# -gt 1 ] && usage 1
-		   perip_accounting } $g_pager
+	    [ $# -gt 1 ] && usage 1
+	    eval show_ipa $g_pager
 	    ;;
 	marks)
 	    [ $# -gt 1 ] && usage 1
@@ -1305,9 +1343,7 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    resolve_arptables
 	    if [ -n "$arptables" -a -x $arptables ]; then
-		eval { echo "$g_product $SHOREWALL_VERSION arptables at $g_hostname - $(date)"
-		       echo
-		       $arptables -L -n -v } $g_pager
+		eval show_arptables $g_pager
 	    else
 		error_message "Cannot locate the arptables executable"
 	    fi
@@ -3739,7 +3775,11 @@ get_config() {
 		[ -n "$g_pager" ] || fatal_error "PAGER=$PAGER does not exist"
 		;;
 	esac
-    fi
+
+	[ -x "$g_pager" ] || fatal_error "PAGER $g_pager is not executable"
+
+	g_pager="| $g_pager"
+     fi
 
     lib=$(find_file lib.cli-user)
 

@@ -1001,7 +1001,7 @@ show_mangle() {
     $g_tool -t mangle -L $g_ipt_options | $output_filter
 }
 
-show_classifiers_wrapper() {
+show_classifiers_command() {
     echo "$g_product $SHOREWALL_VERSION Classifiers at $g_hostname - $(date)"
     echo
     show_classifiers
@@ -1013,7 +1013,7 @@ show_ip_addresses() {
     ip -$g_family addr list
 }
 
-show_routing_wrapper() {
+show_routing_command() {
     echo "$g_product $SHOREWALL_VERSION Routing at $g_hostname - $(date)"
     echo
     show_routing
@@ -1035,6 +1035,85 @@ show_arptables() {
     echo "$g_product $SHOREWALL_VERSION arptables at $g_hostname - $(date)"
     echo
     $arptables -L -n -v
+}
+
+show_log() {
+    echo "$g_product $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
+    echo
+    show_reset
+    host=$(echo $g_hostname | sed 's/\..*$//')
+
+    if [ $# -eq 2 ]; then
+	eval search_log $2
+    elif [ -n "$g_pager" ]; then
+	packet_log 100
+    else
+	packet_log 20
+    fi
+}
+
+show_connections() {
+    if [ $g_family -eq 4 ]; then
+	if [ -d /proc/sys/net/netfilter/ ]; then
+	    local count
+	    local max
+	    count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+	    max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+	    echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
+	else
+	    echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
+	fi
+
+	echo
+
+	if qt mywhich conntrack ; then
+	    shift
+	    conntrack -f ipv4 -L $@ | show_connections_filter
+	else
+	    [ $# -gt 1 ] && usage 1
+	    if [ -f /proc/net/ip_conntrack ]; then
+		cat /proc/net/ip_conntrack | show_connections_filter
+	    else
+		grep -v '^ipv6' /proc/net/nf_conntrack | show_connections_filter
+	    fi
+	fi
+    elif qt mywhich conntrack ; then
+	shift
+	echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
+	echo
+	conntrack -f ipv6 -L $@ | show_connections_filter
+    else
+	[ $# -gt 1 ] && usage 1
+	if [ -f /proc/sys/net/netfilter/nf_conntrack_count -a -f /proc/sys/net/nf_conntrack ]; then
+	    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
+	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
+	    echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
+	    echo
+	    grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
+	fi
+    fi
+}
+
+show_nfacct_command() {
+    echo "$g_product $SHOREWALL_VERSION NF Accounting at $g_hostname - $(date)"
+    echo
+    show_nfacct
+}
+
+show_events_command() {
+    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
+    echo
+    show_events
+}
+
+show_blacklists() {
+    echo "$g_product $SHOREWALL_VERSION blacklist chains at $g_hostname - $(date)"
+    echo
+    show_bl;
+}
+
+show_actions_sorted() {
+    show_actions | sort
 }
 
 show_macros() {
@@ -1172,45 +1251,7 @@ show_command() {
 
     case "$1" in
 	connections)
-	    if [ $g_family -eq 4 ]; then
-		if [ -d /proc/sys/net/netfilter/ ]; then
-		    local count
-		    local max
-		    count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-		    max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-		    echo "$g_product $SHOREWALL_VERSION Connections ($count out of $max) at $g_hostname - $(date)"
-		else
-		    echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
-		fi
-
-		echo
-
-		if qt mywhich conntrack ; then
-		    shift
-		    conntrack -f ipv4 -L $@ | show_connections_filter
-		else
-		    [ $# -gt 1 ] && usage 1
-		    if [ -f /proc/net/ip_conntrack ]; then
-			cat /proc/net/ip_conntrack | show_connections_filter
-		    else
-			grep -v '^ipv6' /proc/net/nf_conntrack | show_connections_filter
-		    fi
-	        fi
-	    elif qt mywhich conntrack ; then
-		shift
-		echo "$g_product $SHOREWALL_VERSION Connections at $g_hostname - $(date)"
-		echo
-		conntrack -f ipv6 -L $@ | show_connections_filter
-	    else
-		[ $# -gt 1 ] && usage 1
-		if [ -f /proc/sys/net/netfilter/nf_conntrack_count -a -f /proc/sys/net/nf_conntrack ]; then
-		    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
-		    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
-		    echo "$g_product $SHOREWALL_VERSION Connections ($count of $max) at $g_hostname - $(date)"
-		    echo
-		    grep '^ipv6' /proc/net/nf_conntrack | sed -r 's/0000:/:/g; s/:::+/::/g; s/:0+/:/g' | show_connections_filter
-		fi
-	    fi
+	    eval show_connections $@ $g_pager
 	    ;;
 	nat)
 	    [ $# -gt 1 ] && usage 1
@@ -1232,25 +1273,15 @@ show_command() {
 	    [ $# -gt 2 ] && usage 1
 
 	    setup_logread
-
-	    echo "$g_product $SHOREWALL_VERSION Log ($LOGFILE) at $g_hostname - $(date)"
-	    echo
-	    show_reset
-	    host=$(echo $g_hostname | sed 's/\..*$//')
-
-	    if [ $# -eq 2 ]; then
-		search_log $2
-	    else
-		packet_log 20
-	    fi
+	    eval show_log $g_pager
 	    ;;
 	tc)
 	    [ $# -gt 2 ] && usage 1
-	    eval show_tc $g_pager
+	    eval show_tc $@ $g_pager
 	    ;;
 	classifiers|filters)
 	    [ $# -gt 1 ] && usage 1
-	    eval show_classifiers_wrapper $g_pager
+	    eval show_classifiers_command $g_pager
 	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
@@ -1291,7 +1322,7 @@ show_command() {
 	    ;;
 	routing)
 	    [ $# -gt 1 ] && usage 1
-	    eval show_routing_wrapper $g_pager
+	    eval show_routing_command $g_pager
 	    ;;
 	config)
 	    . ${g_sharedir}/configpath
@@ -1320,7 +1351,7 @@ show_command() {
 	    ;;
 	policies)
 	    [ $# -gt 1 ] && usage 1
-	    eval show_policies $g_wrapper
+	    eval show_policies $g_pager
 	    ;;
 	ipa)
 	    [ $g_family -eq 4 ] || usage 1
@@ -1335,9 +1366,7 @@ show_command() {
 	    ;;
 	nfacct)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION NF Accounting at $g_hostname - $(date)"
-		   echo
-		   show_nfacct } $g_pager
+	    eval show_nfacct_command $g_pager
 	    ;;
 	arptables)
 	    [ $# -gt 1 ] && usage 1
@@ -1357,15 +1386,11 @@ show_command() {
 	    ;;
 	events)
 	    [ $# -gt 1 ] && usage 1
-	    eval { echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
-		   echo
-		   show_events } $g_pager
+	    eval show_events_command $g_pager
 	    ;;
 	bl|blacklists)
 	    [ $# -gt 1 ] && usage 1
-	    echo "$g_product $SHOREWALL_VERSION blacklist chains at $g_hostname - $(date)"
-	    echo
-	    show_bl;
+	    eval show_blacklists $g_pager
 	    ;;
 	opens)
 	    [ $# -gt 1 ] && usage 1
@@ -1385,7 +1410,7 @@ show_command() {
 		    case $1 in
 			actions)
 			    [ $# -gt 1 ] && usage 1
-			    eval show_actions | sort $pager
+			    eval show_actions_sorted $g_pager
 			    return
 			    ;;
 			macro)

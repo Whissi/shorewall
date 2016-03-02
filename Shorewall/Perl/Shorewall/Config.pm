@@ -876,6 +876,7 @@ sub initialize( $;$$) {
 	  LEGACY_RESTART => undef ,
 	  RESTART => undef ,
 	  DOCKER => undef ,
+	  PAGER => undef ,
 	  #
 	  # Packet Disposition
 	  #

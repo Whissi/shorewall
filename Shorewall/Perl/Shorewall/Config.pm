@@ -4912,6 +4912,7 @@ sub update_config_file( $ ) {
     update_default( 'USE_DEFAULT_RT', 'No' );
     update_default( 'EXPORTMODULES',  'No' );
     update_default( 'RESTART',        'reload' );
+    update_default( 'PAGER',          '' );
 
     my $fn;
 

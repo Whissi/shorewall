@@ -3728,6 +3728,19 @@ get_config() {
 
     g_loopback=$(find_loopback_interfaces)
 
+    if [ -n "$PAGER" -a -t 1 ]; then
+	case $PAGER in
+	    /*)
+		g_pager="$PAGER"
+		[ -f "$g_pager" ] || fatal_error "PAGER=$PAGER does not exist"
+		;;
+	    *)
+		g_pager=$(mywhich pager 2> /dev/null)
+		[ -n "$g_pager" ] || fatal_error "PAGER=$PAGER does not exist"
+		;;
+	esac
+    fi
+
     lib=$(find_file lib.cli-user)
 
     [ -f $lib ] && . $lib
@@ -4222,19 +4235,6 @@ shorewall_cli() {
 	    g_echo_n=-n
 	    ;;
     esac
-
-    if [ -t 1 ]; then
-	#
-	# Output is to a terminal -- use a pager on commands with verbose output
-	#
-	if qt mywhich less; then
-	    g_pager='| less'
-	elif qt mywhich more; then
-	    g_pager='| more'
-	else
-	    g_pager=''
-	fi
-    fi
 
     COMMAND=$1
 

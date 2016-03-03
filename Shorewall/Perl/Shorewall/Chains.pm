@@ -8067,25 +8067,25 @@ sub save_docker_rules($) {
     my $tool = $_[0];
 
     emit( qq(if [ -n "\$g_docker" ]; then),
-	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \$VARDIR/.nat_DOCKER),
-	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \$VARDIR/.nat_POSTROUTING),
-	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \$VARDIR/.filter_DOCKER),
-	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \$VARDIR/.filter_DOCKER-ISOLATION)
+	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \${VARDIR}/.nat_DOCKER),
+	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \${VARDIR}/.nat_POSTROUTING),
+	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \${VARDIR}/.filter_DOCKER),
+	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \${VARDIR}/.filter_DOCKER-ISOLATION)
 	);
 
     if ( known_interface( 'docker0' ) ) {
-	emit( qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \$VARDIR/.filter_FORWARD) );
+	emit( qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \${VARDIR}/.filter_FORWARD) );
     } else {
-	emit( qq(    $tool -t filter -S FORWARD | egrep '^-A FORWARD.*[io] (docker0|br-[a-z0-9]{12})' > \$VARDIR/.filter_FORWARD) );
+	emit( qq(    $tool -t filter -S FORWARD | egrep '^-A FORWARD.*[io] (docker0|br-[a-z0-9]{12})' > \${VARDIR}/.filter_FORWARD) );
     }
 
-    emit( qq(    [ -s \$VARDIR/.filter_FORWARD ] || rm -f \$VARDIR/.filter_FORWARD),
+    emit( qq(    [ -s \${VARDIR}/.filter_FORWARD ] || rm -f \${VARDIR}/.filter_FORWARD),
 	  qq(else),
-	  qq(    rm -f \$VARDIR/.nat_DOCKER),
-	  qq(    rm -f \$VARDIR/.nat_POSTROUTING),
-	  qq(    rm -f \$VARDIR/.filter_DOCKER),
-	  qq(    rm -f \$VARDIR/.filter_DOCKER-ISOLATION),
-	  qq(    rm -f \$VARDIR/.filter_FORWARD),
+	  qq(    rm -f \${VARDIR}/.nat_DOCKER),
+	  qq(    rm -f \${VARDIR}/.nat_POSTROUTING),
+	  qq(    rm -f \${VARDIR}/.filter_DOCKER),
+	  qq(    rm -f \${VARDIR}/.filter_DOCKER-ISOLATION),
+	  qq(    rm -f \${VARDIR}/.filter_FORWARD),
 	  qq(fi)
 	)
 }

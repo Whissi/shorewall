@@ -8159,7 +8159,6 @@ EOF
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
 	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
-	emit( '' ), save_docker_rules( $tool ) if $config{DOCKER};
     } else {
 	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
 	      qq(    if chain_exists dynamic; then),
@@ -8168,8 +8167,14 @@ EOF
 
 emit <<"EOF";
     fi
+EOF
+
+emit <<"EOF";
+
 fi
 EOF
+
+    emit( '' ), save_docker_rules( $tool ) if $config{DOCKER};
 
     pop_indent;
 

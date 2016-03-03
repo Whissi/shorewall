@@ -8167,10 +8167,6 @@ EOF
 
 emit <<"EOF";
     fi
-EOF
-
-emit <<"EOF";
-
 fi
 EOF
 

@@ -2474,7 +2474,6 @@ EOF
     if [ $COMMAND = clear -a -f /proc/sys/net/netfilter/nf_conntrack_helper ]; then
         echo 1 > /proc/sys/net/netfilter/nf_conntrack_helper
     fi
-
 EOF
 
     if ( $config{DOCKER} ) {

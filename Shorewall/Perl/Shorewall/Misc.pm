@@ -641,7 +641,7 @@ sub create_docker_rules() {
 	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
 
-    add_commands( $chainref, '[ -f $VARDIR/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );
+    add_commands( $chainref, '[ -f ${VARDIR}/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );
 }
 
 sub setup_mss();

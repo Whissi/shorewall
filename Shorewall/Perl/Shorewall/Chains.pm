@@ -8155,21 +8155,6 @@ rm -f \${VARDIR}/.UPnP
 rm -f \${VARDIR}/.forwardUPnP
 EOF
 
-    if ( have_capability 'IPTABLES_S' ) {
-	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
-	      qq(    if chain_exists dynamic; then),
-	      qq(        $tool -S dynamic | tail -n +2 > \${VARDIR}/.dynamic) );
-    } else {
-	emit( qq(if [ "\$COMMAND" = stop -o "\$COMMAND" = clear ]; then),
-	      qq(    if chain_exists dynamic; then),
-	      qq(        $utility -t filter | grep '^-A dynamic ' > \${VARDIR}/.dynamic) );
-    }
-
-emit <<"EOF";
-    fi
-fi
-EOF
-
     emit( '' ), save_docker_rules( $tool ) if $config{DOCKER};
 
     pop_indent;

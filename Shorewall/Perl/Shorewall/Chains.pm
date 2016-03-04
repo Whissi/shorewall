@@ -3004,6 +3004,7 @@ sub initialize_chain_table($) {
     }
 
     if ( my $docker = $config{DOCKER} ) {
+	add_commands( $nat_table->{OUTPUT}, '[ -f ${VARDIR}/.nat_OUTPUT ] && cat ${VARDIR}/.nat_OUTPUT >&3' );
 	add_commands( $nat_table->{POSTROUTING}, '[ -f ${VARDIR}/.nat_POSTROUTING ] && cat ${VARDIR}/.nat_POSTROUTING >&3' );
 	$chainref = new_standard_chain( 'DOCKER' );
 	set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
@@ -8068,6 +8069,7 @@ sub save_docker_rules($) {
 
     emit( qq(if [ -n "\$g_docker" ]; then),
 	  qq(    $tool -t nat -S DOCKER | tail -n +2 > \${VARDIR}/.nat_DOCKER),
+	  qq(    $tool -t nat -S OUTPUT | tail -n +2 | fgrep DOCKER > \${VARDIR}/.nat_OUTPUT),
 	  qq(    $tool -t nat -S POSTROUTING | tail -n +2 | fgrep -v SHOREWALL > \${VARDIR}/.nat_POSTROUTING),
 	  qq(    $tool -t filter -S DOCKER | tail -n +2 > \${VARDIR}/.filter_DOCKER),
 	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \${VARDIR}/.filter_DOCKER-ISOLATION)
@@ -8079,14 +8081,15 @@ sub save_docker_rules($) {
 	emit( qq(    $tool -t filter -S FORWARD | egrep '^-A FORWARD.*[io] (docker0|br-[a-z0-9]{12})' > \${VARDIR}/.filter_FORWARD) );
     }
 
-    emit( qq(    [ -s \${VARDIR}/.filter_FORWARD ] || rm -f \${VARDIR}/.filter_FORWARD),
-	  qq(else),
-	  qq(    rm -f \${VARDIR}/.nat_DOCKER),
-	  qq(    rm -f \${VARDIR}/.nat_POSTROUTING),
-	  qq(    rm -f \${VARDIR}/.filter_DOCKER),
-	  qq(    rm -f \${VARDIR}/.filter_DOCKER-ISOLATION),
-	  qq(    rm -f \${VARDIR}/.filter_FORWARD),
-	  qq(fi)
+    emit( q(    [ -s ${VARDIR}/.filter_FORWARD ] || rm -f ${VARDIR}/.filter_FORWARD),
+	  q(else),
+	  q(    rm -f ${VARDIR}/.nat_DOCKER),
+	  q(    rm -f ${VARDIR}/.net_OUTPUT),
+	  q(    rm -f ${VARDIR}/.nat_POSTROUTING),
+	  q(    rm -f ${VARDIR}/.filter_DOCKER),
+	  q(    rm -f ${VARDIR}/.filter_DOCKER-ISOLATION),
+	  q(    rm -f ${VARDIR}/.filter_FORWARD),
+	  q(fi)
 	)
 }
 

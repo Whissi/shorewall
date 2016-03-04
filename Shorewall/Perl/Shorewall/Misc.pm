@@ -630,7 +630,6 @@ sub process_stoppedrules() {
 
 sub create_docker_rules() {
     add_commands( $nat_table->{PREROUTING} , '[ -n "$g_docker" ] && echo "-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
-    add_commands( $nat_table->{OUTPUT} ,     '[ -n "$g_docker" ] && echo "-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
 
     my $chainref = $filter_table->{FORWARD};
 

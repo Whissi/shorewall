@@ -644,8 +644,6 @@ sub create_docker_rules() {
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => 'docker0' ) if $dockerref->{options}{routeback};
 	decr_cmd_level( $chainref );
 	add_commands( $chainref, 'fi' );
-    } else {
-	add_commands( $chainref, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
 
     add_commands( $chainref, '[ -f ${VARDIR}/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );

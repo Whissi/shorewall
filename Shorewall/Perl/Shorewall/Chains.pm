@@ -8073,7 +8073,11 @@ sub save_docker_rules($) {
 	  qq(    [ -n "\$g_dockernetwork" ] && $tool -t filter -S DOCKER-ISOLATION | tail -n +2 > \${VARDIR}/.filter_DOCKER-ISOLATION)
 	);
 
-    emit( qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \${VARDIR}/.filter_FORWARD) );
+    if ( known_interface( 'docker0' ) ) {
+	emit( qq(    $tool -t filter -S FORWARD | grep '^-A FORWARD.*[io] br-[a-z0-9]\\{12\\}' > \${VARDIR}/.filter_FORWARD) );
+    } else {
+	emit( qq(    $tool -t filter -S FORWARD | egrep '^-A FORWARD.*[io] (docker0|br-[a-z0-9]{12})' > \${VARDIR}/.filter_FORWARD) );
+    }
 
     emit( qq(    [ -s \${VARDIR}/.filter_FORWARD ] || rm -f \${VARDIR}/.filter_FORWARD),
 	  qq(else),

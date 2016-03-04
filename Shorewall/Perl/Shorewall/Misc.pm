@@ -629,7 +629,6 @@ sub process_stoppedrules() {
 }
 
 sub create_docker_rules() {
-
     add_commands( $nat_table->{PREROUTING} , '[ -n "$g_docker" ] && echo "-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
     add_commands( $nat_table->{OUTPUT} ,     '[ -n "$g_docker" ] && echo "-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER" >&3' );
 
@@ -637,8 +636,16 @@ sub create_docker_rules() {
 
     add_commands( $chainref, '[ -n "$g_dockernetwork" ] && echo "-A FORWARD -j DOCKER-ISOLATION" >&3', );
 
-    if ( known_interface('docker0') ) {
-	add_commands( $filter_table->{FORWARD}, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
+    if ( my $dockerref = known_interface('docker0') ) {
+	add_commands( $chainref, 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $chainref );
+	add_ijump( $chainref, j => 'DOCKER', o => 'docker0' );
+	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => '! docker0' );
+	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => 'docker0' ) if $dockerref->{options}{routeback};
+	decr_cmd_level( $chainref );
+	add_commands( $chainref, 'fi' );
+    } else {
+	add_commands( $chainref, '[ -n "$g_docker" ] && echo "-A FORWARD -o docker0 -j DOCKER" >&3' );
     }
 
     add_commands( $chainref, '[ -f ${VARDIR}/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );

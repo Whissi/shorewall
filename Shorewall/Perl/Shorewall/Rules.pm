@@ -75,7 +75,7 @@ our %EXPORT_TAGS = ( Traffic => [ qw( process_tc_rule
 			              $convert
 			              $mangle
 			              $sticky
-			            ) , ] 
+			            ) , ]
     );
 
 Exporter::export_ok_tags('Traffic');
@@ -1779,7 +1779,9 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 		   'Limit'          => \&Limit,
 		 );
 
+
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1793,12 +1795,19 @@ sub process_action(\$\$$) {
     my $wholeaction = ${$wholeactionref};
     my $chainref    = ${$chainrefref};
     my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, ACTION_TUPLE_ELEMENTS;
+    my $type = $targets{$action};
 
-    if ( $targets{$action} & BUILTIN ) {
+    if ( $type & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
 	$builtinops{$action}->( $chainref, $level, $tag, $param );
 	return 0;
-    } 
+    }
+
+    if ( $type & MANGLE_TABLE ) {
+	fatal_error "Action $action may only be used in the mangle file" unless $chainref->{table} eq 'mangle';
+    } else {
+	fatal_error "Action $action may not be used in the mangle file"  if $chainref->{table} eq 'mangle';
+    }
 
     my $actionfile = find_file "action.$action";
 
@@ -1818,47 +1827,130 @@ sub process_action(\$\$$) {
     my $save_comment = push_comment;
 
     while ( read_a_line( NORMAL_READ ) ) {
+	if ( $type & MANGLE_TABLE ) {
+	    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
 
-	my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
+	    if ( $family == F_IPV4 ) {
+		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
+		    split_line2( 'mangle file',
+				 { mark => 0,
+				   action => 0,
+				   source => 1,
+				   dest => 2,
+				   proto => 3,
+				   dport => 4,
+				   sport => 5,
+				   user => 6,
+				   test => 7,
+				   length => 8,
+				   tos => 9,
+				   connbytes => 10,
+				   helper => 11,
+				   probability => 12 , 
+				   scp => 13,
+				   state => 14,
+				   time => 15,
+				 },
+				 {},
+				 16,
+				 1 );
+		$headers = '-';
+	    } else {
+		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time ) =
+		    split_line2( 'action file',
+				 { mark => 0,
+				   action => 0,
+				   source => 1,
+				   dest => 2,
+				   proto => 3,
+				   dport => 4,
+				   sport => 5,
+				   user => 6,
+				   test => 7,
+				   length => 8,
+				   tos => 9,
+				   connbytes => 10,
+				   helper => 11,
+				   headers => 12,
+				   probability => 13,
+				   dscp => 14,
+				   state => 15,
+				   time => 16,
+				 },
+				 {},
+				 17,
+				 1 );
+	    }
 
-	if ( $file_format == 1 ) {
-	    fatal_error( "FORMAT-1 actions are no longer supported" );
+	    fatal_error 'ACTION must be specified' if $originalmark eq '-';
+
+	    if ( $originalmark eq 'DEFAULTS' ) {
+		default_action_params( $action, split_list $source, 'defaults' );
+		next;
+	    }
+
+	    for my $proto (split_list( $protos, 'Protocol' ) ) {
+		process_mangle_rule1( $chainref,
+				      $originalmark,
+				      $source,
+				      $dest,
+				      $proto,
+				      $ports,
+				      $sports,
+				      $user,
+				      $testval,
+				      $length,
+				      $tos ,
+				      $connbytes,
+				      $helper,
+				      $headers,
+				      $probability ,
+				      $dscp ,
+				      $state,
+				      $time );
+	    }
 	} else {
-	    ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
-		= split_line2( 'action file',
-			       \%rulecolumns,
-			       $action_commands,
-			       undef,
-			       1 );
+	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
+
+	    if ( $file_format == 1 ) {
+		fatal_error( "FORMAT-1 actions are no longer supported" );
+	    } else {
+		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
+		    = split_line2( 'action file',
+				   \%rulecolumns,
+				   $action_commands,
+				   undef,
+				   1 );
+	    }
+
+	    fatal_error 'TARGET must be specified' if $target eq '-';
+
+	    if ( $target eq 'DEFAULTS' ) {
+		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
+		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
+	    }
+
+	    process_rule( $chainref,
+			  '',
+			  '',
+			  $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
+			  '',
+			  $source,
+			  $dest,
+			  $proto,
+			  $ports,
+			  $sports,
+			  $origdest,
+			  $rate,
+			  $user,
+			  $mark,
+			  $connlimit,
+			  $time,
+			  $headers,
+			  $condition,
+			  $helper,
+			  0 );
 	}
-
-	fatal_error 'TARGET must be specified' if $target eq '-';
-
-	if ( $target eq 'DEFAULTS' ) {
-	    default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
-	    fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
-	}
-
-	process_rule( $chainref,
-		      '',
-		      '',
-		      $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
-		      '',
-		      $source,
-		      $dest,
-		      $proto,
-		      $ports,
-		      $sports,
-		      $origdest,
-		      $rate,
-		      $user,
-		      $mark,
-		      $connlimit,
-		      $time,
-		      $headers,
-		      $condition,
-		      $helper,
-		      0 );
     }
 
     pop_comment( $save_comment );
@@ -1980,7 +2072,9 @@ sub process_actions() {
 		    $opts |= $options{$_};
 		}
 
-		$type = INLINE if $opts & INLINE_OPT;
+		unless ( $type & INLINE ) {
+		    $type = INLINE if $opts & INLINE_OPT;
+		}
 	    }
 
 	    fatal_error "Conflicting OPTIONS ($options)" if ( $opts & NOINLINE_OPT && $type == INLINE ) || ( $opts & INLINE_OPT && $opts & BUILTIN_OPT );
@@ -2020,7 +2114,9 @@ sub process_actions() {
 
 		make_terminating( $action ) if $opts & TERMINATING_OPT
 	    } else {
-		fatal_error "Table names are only allowed for builtin actions" if $opts & ( MANGLE_OPT | RAW_OPT | NAT_OPT | FILTER_OPT );
+		fatal_error "Only the 'mangle' and 'filter' table may be specified for non-builtin actions" if $opts & ( RAW_OPT | NAT_OPT );
+
+		$type |= MANGLE_TABLE if $opts & MANGLE_OPT;
 
 		new_action $action, $type, ( $opts & NOINLINE_OPT ) != 0 , ( $opts & NOLOG_OPT ) != 0;
 
@@ -2028,7 +2124,10 @@ sub process_actions() {
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		$inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT } if $type == INLINE;
+		if ( $type & INLINE ) {
+		    fatal_error "Mangle actions may not be inlined" if $type & MANGLE_TABLE;
+		    $inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT };
+		}
 	    }
 	}
     }
@@ -3614,8 +3713,8 @@ sub process_rules() {
 #
 # Process a rule from the mangle file
 #
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
-    our ( $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
+    our ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
 
     use constant {
 	PREROUTING     => 1,        #Actually tcpre
@@ -3652,6 +3751,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 			128 => 'PREROUTING',
 	);
 
+    our $inaction       = defined $chainref;
     our $target         = '';
     my  $junk           = '';
     our $raw_matches    = '';
@@ -3668,6 +3768,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
     our $ttl            = 0;
     my $fw              = firewall_zone;
     my $usergenerated;
+    my $actiontype;
 
     sub handle_mark_param( $$ ) {
 	my ( $option, $marktype ) = @_;
@@ -4222,14 +4323,57 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 		}
 	    },
 	},
-
     );
+
+    my $actionref = {
+	defaultchain      => 0,
+	allowedchains     => ALLCHAINS ,
+	minparams         => 0 ,
+	maxparams         => 16 ,
+	function          => sub() {
+	    fatal_error "A chain desginator may not be specified within an action body" if $designator;
+	    fatal_error q('$FW' may not be specified within an action body) if $chain;
+	    #
+	    # Create the action:level:tag:param tuple.
+	    #
+	    my $normalized_target = normalize_action( $cmd, '', $params );
+
+	    fatal_error( "Action $cmd invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$cmd};
+
+	    if ( my $ref = use_action( $normalized_target ) ) {
+		#
+		# First reference to this tuple
+		#
+		my $savestatematch = $statematch;
+		#
+		# process_action may modify both $normalized_target and $ref!!!
+		#
+		process_action( $normalized_target, $ref, $chain );
+		#
+		# Capture the name of the action chain
+		#
+		$target = $ref->{name};
+	    } else {
+		#
+		# We've seen this tuple before
+		#
+		$target = $usedactions{$normalized_target}->{name};
+	    }
+	}
+    };
     #
     # Function Body
     #
+    if ( $inaction ) {
+	( $inaction , undef ) = split( /:/, $chainref->{name}, 2 ) if $chainref->{action};
+	$chain = $chainref->{name};
+	$restriction = $chainref->{restriction} || 0;
+    }
+
     ( $cmd, $designator ) = split_action( $action );
 
     if ( supplied $designator ) {
+	fatal_error "A chain designator may not be specified in an action body" if $inaction;
 	my $temp = $designators{$designator};
 	fatal_error "Invalid chain designator ( $designator )" unless $temp;
 	$designator = $temp;
@@ -4237,9 +4381,14 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 
     ( $cmd , $params ) = get_target_param1( $cmd );
 
+    $actiontype = $builtin_target{$cmd} || $targets{$cmd};
+
     my $commandref = $commands{$cmd};
 
-    fatal_error "Invalid ACTION ($cmd)" unless $commandref;
+    unless ( $commandref ) {
+	fatal_error "Invalid ACTION ($cmd)" unless $actiontype & ACTION;
+	$commandref = $actionref;
+    }
 
     if ( $cmd eq 'INLINE' ) {
 	( $target, $cmd, $params, $junk, $raw_matches ) = handle_inline( MANGLE_TABLE, 'mangle', $action, $cmd, $params, '' );
@@ -4294,6 +4443,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	    fatal_error "The $cmd ACTION requires at least $commandref->{maxparams} parmeters";
 	}
     }
+
     if ( $state ne '-' ) {
 	my @state = split_list( $state, 'state' );
 	my %state = %validstates;
@@ -4317,11 +4467,13 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$ ) {
 	$chain ||= $commandref->{defaultchain};
 	$chain ||= $default_chain;
 
-	fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $chain & $commandref->{allowedchains};
+	unless ( $inaction ) {
+	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains};
+	    $chain = $chainnames{$chain};
+	    $chainref = ensure_chain( 'mangle', $chain );
+	}
 
-	$chain = $chainnames{$chain};
-
-	if ( ( my $result = expand_rule( ensure_chain( 'mangle' , $chain ) ,
+	if ( ( my $result = expand_rule( $chainref ,
 					 ( $restrictions{$chain} || 0 ) | $restriction,
 					 '',
 					 do_proto( $proto, $ports, $sports) . $matches .
@@ -4568,9 +4720,10 @@ sub process_tc_rule( ) {
     for my $proto (split_list( $protos, 'Protocol' ) ) {
 	process_tc_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state );
     }
-}    
+}   
 
-sub process_mangle_rule( ) {
+sub process_mangle_rule( $ ) {
+    my ( $chainref ) = @_;
     my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     if ( $family == F_IPV4 ) {
 	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
@@ -4625,7 +4778,7 @@ sub process_mangle_rule( ) {
     }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mangle_rule1( $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+	process_mangle_rule1( $chainref, $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     }
 }
 

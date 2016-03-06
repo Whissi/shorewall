@@ -2269,7 +2269,7 @@ sub setup_tc( $ ) {
 
 	    first_entry "$doing $fn...";
 
-	    process_mangle_rule while read_a_line( NORMAL_READ );
+	    process_mangle_rule(undef) while read_a_line( NORMAL_READ );
 	}
 
 	if ( my $fn = open_file( 'secmarks', 1, 1 ) ) {

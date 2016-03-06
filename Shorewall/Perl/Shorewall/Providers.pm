@@ -828,12 +828,12 @@ sub add_a_provider( $$ ) {
 
 	if ( ! $noautosrc ) {
 	    if ( $shared ) {
-		emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
+		emit  "qt \$IP -$family rule del from $address";
 		emit( "run_ip rule add from $address pref 20000 table $id" ,
 		      "echo \"\$IP -$family rule del from $address pref 20000> /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
 	    } else {
 		emit  ( "find_interface_addresses $physical | while read address; do" );
-		emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+		emit  ( "    qt \$IP -$family rule del from \$address" );
 		emit  ( "    run_ip rule add from \$address pref 20000 table $id",
 			"    echo \"\$IP -$family rule del from \$address pref 20000 > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
 			'    rulenum=$(($rulenum + 1))',
@@ -993,12 +993,19 @@ CEOF
 	    }
 	} elsif ( ! $noautosrc ) {
 	    if ( $shared ) {
-		emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
-		emit( "run_ip rule add from $address pref 20000 table $id" ,
-		      "echo \"\$IP -$family rule del from $address pref 20000> /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
+		if ( $persistent ) {
+		    emit( qq(if ! egrep -q "^2000:[[:space:]]+from $address lookup $id"; then),
+			  qq(    run_ip rule add from $address pref 20000 table $id),
+			  qq(    echo "\$IP -$family rule del from $address pref 20000> /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing ),
+			  qq(fi) );
+		} else {
+		    emit  "qt \$IP -$family rule del from $address" if $config{DELETE_THEN_ADD};
+		    emit( "run_ip rule add from $address pref 20000 table $id" ,
+			  "echo \"\$IP -$family rule del from $address pref 20000> /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
+		}
 	    } elsif ( ! $pseudo ) {
 		emit  ( "find_interface_addresses $physical | while read address; do" );
-		emit  ( "    qt \$IP -$family rule del from \$address" ) if $config{DELETE_THEN_ADD};
+		emit  ( "    qt \$IP -$family rule del from \$address" ) if $persistent || $config{DELETE_THEN_ADD};
 		emit  ( "    run_ip rule add from \$address pref 20000 table $id",
 			"    echo \"\$IP -$family rule del from \$address pref 20000 > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
 			'    rulenum=$(($rulenum + 1))',
@@ -1283,7 +1290,7 @@ sub add_an_rtrule1( $$$$$ ) {
     push @{$providerref->{rules}}, "run_ip rule add $source ${dest}${mark} $priority table $id";
 
     if ( $persistent ) {
-	push @{$providerref->{persistent_rules}}, "qt \$IP -$family rule del $source ${dest}${mark} $priority" if $config{DELETE_THEN_ADD};
+	push @{$providerref->{persistent_rules}}, "qt \$IP -$family rule del $source ${dest}${mark} $priority";
 	push @{$providerref->{persistent_rules}}, "run_ip rule add $source ${dest}${mark} $priority table $id";
     }
 

@@ -213,6 +213,29 @@
       example.</para>
     </section>
 
+    <section>
+      <title>USE_DEFAULT_RT</title>
+
+      <para>The behavior and configuration of Multiple ISP support is
+      dependent on the setting of USE_DEFAULT_RT in shorewall[6].conf.</para>
+
+      <para>When USE_DEFAULT_RT=Yes, packets are first routed through the main
+      routing table <emphasis>which does not contain a default
+      route</emphasis>. Packets which fail to be routed by an entry in the
+      main table are then passed to shorewall-defined routing tables based on
+      your Multi-ISP configuration. The advantage of this approach is that
+      dynamic changes to the ip configuration, such as VPNs going up and down,
+      do not require notificaiton of Shorewall. USE_DEFAULT_RT is now the
+      default and use of USE_DEFAULT_RT=No is deprecated.</para>
+
+      <para>When USE_DEFAULT_RT=No, packets are routed via Shorewall-generated
+      routing tables. As a consequence, the main routing table must be copied
+      into each of those tables and must be recopied when there is a change to
+      the main table. This can only be accomplished via a
+      <command>shorewall[6] reload</command> or <command>restart</command>
+      command.</para>
+    </section>
+
     <section id="providers">
       <title>/etc/shorewall/providers File</title>
 
@@ -672,7 +695,7 @@ fi</programlisting>
       interfaces should be routed through the main table using entries in
       <filename>/etc/shorewall/rtrules</filename> (see Example 2 <link
       linkend="Examples">below</link>) or by using <link
-      linkend="USE_DEFAULT_RT">USE_DEFAULT_RT=Yes</link>.</para>
+      linkend="USE_DEFAULT_RT">USE_DEFAULT_RT=Yes</link> (recommended)</para>
 
       <para>In addition:</para>
 
@@ -881,6 +904,43 @@ DROP:info        net:192.168.1.0/24         all</programlisting>
       <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
 ISP1    1       1       main            eth0            206.124.146.254 track,balance    eth2
 ISP2    2       2       main            eth1            130.252.99.254  track,balance    eth2</programlisting>
+
+      <para>Other configuration files go something like this:</para>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+net      eth0         detect          …          
+net      eth1         detect          …</programlisting>
+
+      <para><filename>/etc/shorewall/policy</filename>:</para>
+
+      <programlisting>#SOURCE    DESTINATION    POLICY     LOGLEVEL     LIMIT
+net        net            DROP</programlisting>
+
+      <para><filename>/etc/shorewall/masq</filename>:</para>
+
+      <programlisting>#INTERFACE       SOURCE            ADDRESS
+eth0             0.0.0.0/0         206.124.146.176
+eth1             0.0.0.0/0         130.252.99.27</programlisting>
+    </section>
+
+    <section id="Example2">
+      <title id="Example99"> Example using USE_DEFAULT_RT=Yes</title>
+
+      <para>This section shows the differences in configuring the above
+      example with USE_DEFAULT_RT=Yes. The changes are confined to the
+      DUPLICATE and COPY columns of the providers file.</para>
+
+      <para>The configuration in the figure at the top of this section would
+      be specified in <filename>/etc/shorewall/providers</filename> as
+      follows.</para>
+
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+ISP1    1       1       <emphasis role="bold">- </emphasis>              eth0            206.124.146.254 track,balance    <emphasis
+          role="bold">-</emphasis>
+ISP2    2       2       <emphasis role="bold">-</emphasis>               eth1            130.252.99.254  track,balance    <emphasis
+          role="bold">-</emphasis></programlisting>
 
       <para>Other configuration files go something like this:</para>
 

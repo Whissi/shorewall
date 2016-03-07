@@ -138,6 +138,17 @@ our %EXPORT_TAGS = (
 				       ALL_COMMANDS
 				       NOT_RESTORE
 
+				       PREROUTING
+				       INPUT
+				       FORWARD
+				       OUTPUT
+				       POSTROUTING
+				       ALLCHAINS
+				       STICKY
+				       STICKO
+				       REALPREROUTING
+				       ACTIONCHAIN
+
 				       unreachable_warning
 				       state_match
 				       state_imatch
@@ -188,6 +199,7 @@ our %EXPORT_TAGS = (
 				       ensure_raw_chain
 				       ensure_rawpost_chain
 				       new_standard_chain
+				       new_action_chain
 				       new_builtin_chain
 				       new_nat_chain
 				       optimize_chain
@@ -456,6 +468,22 @@ use constant { NO_RESTRICT         => 0,   # FORWARD chain rule     - Both -i an
 	       ALL_RESTRICT        => 12,  # fw->fw rule            - neither -i nor -o allowed
 	       DESTIFACE_DISALLOW  => 32,  # Don't allow dest interface. Similar to INPUT_RESTRICT but generates a more relevant error message
 	       };
+#
+# Mangle Table allowed chains enumeration
+#
+use constant {
+    PREROUTING     => 1,        #Actually tcpre
+    INPUT          => 2,        #Actually tcin
+    FORWARD        => 4,        #Actually tcfor
+    OUTPUT         => 8,        #Actually tcout
+    POSTROUTING    => 16,       #Actually tcpost
+    ALLCHAINS      => 31,
+    STICKY         => 32,
+    STICKO         => 64,
+    REALPREROUTING => 128,
+    ACTIONCHAIN    => 256,
+};
+
 #
 # Possible IPSET options
 #
@@ -2325,6 +2353,7 @@ sub new_chain($$)
 		     filtered       => 0,
 		     optflags       => 0,
 		     origin         => shortlineinfo( '' ),
+		     restriction    => NO_RESTRICT,
 		   };
 
     trace( $chainref, 'N', undef, '' ) if $debug;
@@ -2735,6 +2764,13 @@ sub new_builtin_chain($$$)
 sub new_standard_chain($) {
     my $chainref = new_chain 'filter' ,$_[0];
     $chainref->{referenced} = 1;
+    $chainref;
+}
+
+sub new_action_chain($$) {
+    my $chainref = &new_chain( @_ );
+    $chainref->{referenced} = 1;
+    $chainref->{allowedchains} = ALLCHAINS | REALPREROUTING | ACTIONCHAIN;
     $chainref;
 }
 

@@ -59,21 +59,21 @@ our $acctable;
 #
 
 use constant {
-	      LEGACY      => 0,
-	      PREROUTING  => 1,
-	      INPUT       => 2,
-	      OUTPUT      => 3,
-	      FORWARD     => 4,
-	      POSTROUTING => 5
+	      LEGACY_SECTION      => 0,
+	      PREROUTING_SECTION  => 1,
+	      INPUT_SECTION       => 2,
+	      OUTPUT_SECTION      => 3,
+	      FORWARD_SECTION     => 4,
+	      POSTROUTING_SECTION => 5
 	  };
 #
 # Map names to values
 #
-our %asections = ( PREROUTING  => PREROUTING,
-		   INPUT       => INPUT,
-		   FORWARD     => FORWARD,
-		   OUTPUT      => OUTPUT,
-		   POSTROUTING => POSTROUTING
+our %asections = ( PREROUTING  => PREROUTING_SECTION,
+		   INPUT       => INPUT_SECTION,
+		   FORWARD     => FORWARD_SECTION,
+		   OUTPUT      => OUTPUT_SECTION,
+		   POSTROUTING => POSTROUTING_SECTION
 		 );
 
 #
@@ -157,7 +157,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 
     $jumpchainref = 0;
 
-    $asection = LEGACY if $asection < 0;
+    $asection = LEGACY_SECTION if $asection < 0;
 
     our $disposition = '';
 

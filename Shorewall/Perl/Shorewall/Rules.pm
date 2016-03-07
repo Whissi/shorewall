@@ -63,7 +63,6 @@ our @EXPORT_OK = qw( initialize process_rule );
 
 our %EXPORT_TAGS = ( Traffic => [ qw( process_tc_rule
 			              process_mangle_rule
-			              open_mangle_for_output
 			              convert_tos
 
 			              %classids
@@ -1334,11 +1333,12 @@ sub new_action( $$$$ ) {
 # this function truncates the original chain name where necessary before
 # it adds the leading "%" and trailing sequence number.
 #
-sub createlogactionchain( $$$$$ ) {
-    my ( $normalized, $action, $level, $tag, $param ) = @_;
+sub createlogactionchain( $$$$$$ ) {
+    my ( $table, $normalized, $action, $level, $tag, $param ) = @_;
     my $chain = $action;
     my $actionref = $actions{$action};
     my $chainref;
+    my $tableref = $chain_table{$table};
 
     validate_level $level;
 
@@ -1346,14 +1346,14 @@ sub createlogactionchain( $$$$$ ) {
 
     $chain = substr $chain, 0, 28 if ( length $chain ) > 28;
 
-    if ( $filter_table->{$chain} ) {
+    if ( $tableref->{$chain} ) {
       CHECKDUP:
 	{
 	    $actionref->{actchain}++ while $chain_table{filter}{'%' . $chain . $actionref->{actchain}};
 	    $chain = substr( $chain, 0, 27 ), redo CHECKDUP if ( $actionref->{actchain} || 0 ) >= 10 and length $chain == 28;
 	}
 
-	$usedactions{$normalized} = $chainref = new_standard_chain '%' . $chain . $actionref->{actchain}++;
+	$usedactions{$normalized} = $chainref = new_action_chain( $table,  '%' . $chain . $actionref->{actchain}++ );
 
 	fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
     } else {
@@ -1386,13 +1386,13 @@ sub createlogactionchain( $$$$$ ) {
     $chainref;
 }
 
-sub createsimpleactionchain( $ ) {
-    my $action  = shift;
+sub createsimpleactionchain( $$ ) {
+    my ( $table, $action ) = @_;
     my $normalized = normalize_action_name( $action );
 
-    return createlogactionchain( $normalized, $action, 'none', '', '' ) if $filter_table->{$action} || $nat_table->{$action};
+    return createlogactionchain( $table, $normalized, $action, 'none', '', '' ) if $filter_table->{$action} || $nat_table->{$action};
 
-    my $chainref = new_standard_chain $action;
+    my $chainref = new_action_chain( $table, $action );
 
     $usedactions{$normalized} = $chainref;
 
@@ -1425,8 +1425,8 @@ sub createsimpleactionchain( $ ) {
 #
 # Create an action chain and run its associated user exit
 #
-sub createactionchain( $ ) {
-    my $normalized = shift;
+sub createactionchain( $$ ) {
+    my ( $table, $normalized ) = @_;
 
     my ( $target, $level, $tag, $caller, $param ) = split /:/, $normalized, ACTION_TUPLE_ELEMENTS;
 
@@ -1435,9 +1435,9 @@ sub createactionchain( $ ) {
     my $chainref;
 
     if ( $level eq 'none' && $tag eq '' && $param eq '' ) {
-	createsimpleactionchain $target;
+	createsimpleactionchain($table, $target );
     } else {
-	createlogactionchain $normalized, $target , $level , $tag, $param;
+	createlogactionchain( $table, $normalized, $target , $level , $tag, $param );
     }
 }
 
@@ -1445,13 +1445,13 @@ sub createactionchain( $ ) {
 # Mark an action as used and create its chain. Returns a reference to the chain if the chain was
 # created on this call or 0 otherwise.
 #
-sub use_action( $ ) {
-    my $normalized = shift;
+sub use_action( $$ ) {
+    my ( $table, $normalized ) = @_;
 
     if ( $usedactions{$normalized} ) {
 	0;
     } else {
-	createactionchain $normalized;
+	createactionchain( $table, $normalized );
     }
 }
 
@@ -2145,7 +2145,7 @@ sub process_actions() {
 sub use_policy_action( $$ ) {
     my ( $normalized_target, $caller ) = @_;
 
-    my $ref = use_action( $normalized_target );
+    my $ref = use_action( 'filter', $normalized_target );
 
     if ( $ref ) {
 	process_action( $normalized_target, $ref, $caller );
@@ -2910,7 +2910,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	fatal_error( "Action $basictarget invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$basictarget};
 
-	if ( my $ref = use_action( $normalized_target ) ) {
+	if ( my $ref = use_action( 'filter', $normalized_target ) ) {
 	    #
 	    # First reference to this tuple
 	    #
@@ -3716,18 +3716,6 @@ sub process_rules() {
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     our ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
 
-    use constant {
-	PREROUTING     => 1,        #Actually tcpre
-	INPUT          => 2,        #Actually tcin
-	FORWARD        => 4,        #Actually tcfor
-	OUTPUT         => 8,        #Actually tcout
-	POSTROUTING    => 16,       #Actually tcpost
-	ALLCHAINS      => 31,
-	STICKY         => 32,
-	STICKO         => 64,
-	REALPREROUTING => 128
-    };
-
     my %designators = (
 	P => PREROUTING,
 	I => INPUT,
@@ -3735,42 +3723,43 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	O => OUTPUT,
 	T => POSTROUTING );
 
-    our %chainlabels = ( 1  => 'PREROUTING',
-			 2  => 'INPUT',
-			 4  => 'FORWARD',
-			 8  => 'OUTPUT',
-			 16 => 'POSTROUTING' );
+    my %chainlabels = ( 1  => 'PREROUTING',
+			2  => 'INPUT',
+			4  => 'FORWARD',
+			8  => 'OUTPUT',
+			16 => 'POSTROUTING' );
 
-    our %chainnames = ( 1   => 'tcpre',
-			2   => 'tcin',
-			4   => 'tcfor',
-			8   => 'tcout',
-			16  => 'tcpost',
-			32  => 'sticky',
-			64  => 'sticko',
-			128 => 'PREROUTING',
+    my %chainnames = ( 1   => 'tcpre',
+		       2   => 'tcin',
+		       4   => 'tcfor',
+		       8   => 'tcout',
+		       16  => 'tcpost',
+		       32  => 'sticky',
+		       64  => 'sticko',
+		       128 => 'PREROUTING',
 	);
 
-    our $inaction       = defined $chainref;
-    our $target         = '';
-    my  $junk           = '';
-    our $raw_matches    = '';
-    our $chain          = 0;
-    our $matches        = '';
-    our $params         = '';
-    our $done           = 0;
-    our $default_chain  = 0;
-    our $restriction    = 0;
-    our $exceptionrule  = '';
-    my  $device         = '';
-    our $cmd;
-    our $designator;
-    our $ttl            = 0;
-    my $fw              = firewall_zone;
+    my $inaction       = defined $chainref;
+    my $target         = '';
+    my $junk           = '';
+    my $raw_matches    = '';
+    my $chain          = 0;
+    my $matches        = '';
+    my $params         = '';
+    my $done           = 0;
+    my $default_chain  = 0;
+    my $restriction    = NO_RESTRICT;
+    my $exceptionrule  = '';
+    my $device         = '';
+    my $cmd;
+    my $designator;
+    my $ttl            = 0;
+    my $fw             = firewall_zone;
     my $usergenerated;
     my $actiontype;
+    my $commandref;
 
-    sub handle_mark_param( $$ ) {
+    my $handle_mark_param = sub( ) {
 	my ( $option, $marktype ) = @_;
 	my $and_or = $params =~ s/^([|&])// ? $1 : '';
 
@@ -3875,9 +3864,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		$target = join( ' ', $target , $mark );
 	    }
 	}
-    }
+    };
 
-    sub ipset_command() {
+    my $ipset_command = sub () {
 	my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
 
 	require_capability( 'IPSET_MATCH', "$cmd rules", '' );
@@ -3889,7 +3878,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	fatal_error "Expected ipset name ($setname)" unless $setname =~ /^(6_)?[a-zA-Z][-\w]*$/;
 	fatal_error "Invalid flags ($flags)" unless defined $flags && $flags =~ /^(dst|src)(,(dst|src)){0,5}$/;
 	$target = join( ' ', 'SET --' . $xlate{$cmd} , $setname , $flags );
-    }
+    };
 
     my %commands = (
 	ADD       => {
@@ -3898,7 +3887,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub() {
-		ipset_command();
+		$ipset_command->();
 	    }
 	},
 
@@ -3950,7 +3939,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub () {
 		$target = 'CONNMARK';
-		handle_mark_param('--set-mark' , HIGHMARK );
+		$handle_mark_param->('--set-mark' , HIGHMARK );
 	    },
 	},
 
@@ -3970,7 +3959,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    minparams      => 1,
 	    maxparams      => 1,
 	    function       => sub() {
-		ipset_command();
+		$ipset_command->();
 	    }
 	},
 
@@ -4188,7 +4177,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    mask           => in_hex( $globals{TC_MASK} ),
 	    function       => sub () {
 		$target = 'MARK';
-		handle_mark_param('', , HIGHMARK );
+		$handle_mark_param->('', , HIGHMARK );
 	    },
 	},
 
@@ -4200,8 +4189,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		$target = 'CONNMARK ';
 		if ( supplied $params ) {
-		    handle_mark_param( '--restore-mark --mask ',
-				       $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
+		    $handle_mark_param->( '--restore-mark --mask ',
+					  $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
 		} else {
 		    $target .= '--restore-mark --mask ' . in_hex( $globals{TC_MASK} );
 		}
@@ -4236,8 +4225,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    function       => sub () {
 		$target = 'CONNMARK ';
 		if ( supplied $params ) {
-		    handle_mark_param( '--save-mark --mask ' ,
-				       $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
+		    $handle_mark_param->( '--save-mark --mask ' ,
+					  $config{TC_EXPERT} ? HIGHMARK : SMALLMARK );
 		} else {
 		    $target .= '--save-mark --mask ' . in_hex( $globals{TC_MASK} );
 		}
@@ -4331,8 +4320,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	minparams         => 0 ,
 	maxparams         => 16 ,
 	function          => sub() {
-	    fatal_error "A chain desginator may not be specified within an action body" if $designator;
-	    fatal_error q('$FW' may not be specified within an action body) if $chain;
+	    fatal_error q('$FW' may not be specified within an action body) if $chainref;
 	    #
 	    # Create the action:level:tag:param tuple.
 	    #
@@ -4340,7 +4328,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
 	    fatal_error( "Action $cmd invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$cmd};
 
-	    if ( my $ref = use_action( $normalized_target ) ) {
+	    my $ref = use_action( 'mangle', $normalized_target );
+
+	    if ( $ref ) {
 		#
 		# First reference to this tuple
 		#
@@ -4348,7 +4338,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		#
 		# process_action may modify both $normalized_target and $ref!!!
 		#
-		process_action( $normalized_target, $ref, $chain );
+		process_action( $normalized_target, $ref, $chainnames{$chain} );
 		#
 		# Capture the name of the action chain
 		#
@@ -4359,6 +4349,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		#
 		$target = $usedactions{$normalized_target}->{name};
 	    }
+
+	    $commandref->{allowedchains} = $ref->{allowedchains};
 	}
     };
     #
@@ -4366,8 +4358,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     #
     if ( $inaction ) {
 	( $inaction , undef ) = split( /:/, $chainref->{name}, 2 ) if $chainref->{action};
-	$chain = $chainref->{name};
-	$restriction = $chainref->{restriction} || 0;
+	$chainnames{$chain = ACTIONCHAIN} = $chainref->{name};
     }
 
     ( $cmd, $designator ) = split_action( $action );
@@ -4383,7 +4374,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
     $actiontype = $builtin_target{$cmd} || $targets{$cmd};
 
-    my $commandref = $commands{$cmd};
+    $commandref = $commands{$cmd};
 
     unless ( $commandref ) {
 	fatal_error "Invalid ACTION ($cmd)" unless $actiontype & ACTION;
@@ -4467,10 +4458,12 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	$chain ||= $commandref->{defaultchain};
 	$chain ||= $default_chain;
 
-	unless ( $inaction ) {
-	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains};
-	    $chain = $chainnames{$chain};
-	    $chainref = ensure_chain( 'mangle', $chain );
+	if ( $inaction ) {
+	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chainref->{allowedchains};;
+	    $chainref->{allowedchains} &= $commandref->{allowedchains};
+	} else {
+	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chain;
+	    $chainref = ensure_chain( 'mangle', $chainnames{$chain} );
 	}
 
 	if ( ( my $result = expand_rule( $chainref ,
@@ -4866,34 +4859,6 @@ sub convert_tos($$) {
     } elsif ( -f ( $fn = find_file( 'tos' ) ) ) {
 	unlink_tos( $fn );
     }
-}
-
-sub open_mangle_for_output() {
-    my ( $mangle, $fn1 );
-
-    if ( -f ( $fn1 = find_writable_file( 'mangle' ) ) ) {
-	open( $mangle , '>>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
-    } else {
-	open( $mangle , '>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
-	print $mangle <<'EOF';
-#
-# Shorewall version 4 - Mangle File
-#
-# For information about entries in this file, type "man shorewall-mangle"
-#
-# See http://shorewall.net/traffic_shaping.htm for additional information.
-# For usage in selecting among multiple ISPs, see
-# http://shorewall.net/MultiISP.html
-#
-# See http://shorewall.net/PacketMarking.html for a detailed description of
-# the Netfilter/Shorewall packet marking mechanism.
-####################################################################################################################################################
-#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER  PROBABILITY     DSCP
-#                                                       PORT(S) PORT(S)
-EOF
-    }
-
-    return ( $mangle, $fn1 );
 }
 
 1;

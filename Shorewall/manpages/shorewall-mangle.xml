@@ -125,6 +125,21 @@
           <variablelist>
             <varlistentry>
               <term><emphasis
+              role="bold"><replaceable>action</replaceable>[([<replaceable>param</replaceable>[,...])]</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.7.
+                <replaceable>action</replaceable> must be an action declared
+                with the <option>mangle</option> option in <ulink
+                url="manpages/shorewall-actions.html">shorewall-actions(5)</ulink>.
+                If the action accepts paramaters, they are specified as a
+                comma-separated list within parentheses following the
+                <replaceable>action</replaceable> name.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
               role="bold">ADD(<replaceable>ipset</replaceable>:<replaceable>flags</replaceable>)</emphasis></term>
 
               <listitem>
@@ -720,33 +735,6 @@ Normal-Service       =&gt; 0x00</programlisting>
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <orderedlist numeration="arabic">
-            <listitem>
-              <para><emphasis role="bold">TTL</emphasis>([<emphasis
-              role="bold">-</emphasis>|<emphasis
-              role="bold">+</emphasis>]<replaceable>number</replaceable>)</para>
-
-              <para>Added in Shorewall 4.4.24.</para>
-
-              <para>Prior to Shorewall 4.5.7.2, may be optionally followed by
-              <emphasis role="bold">:F</emphasis> but the resulting rule is
-              always added to the FORWARD chain. Beginning with Shorewall
-              4.5.7.s, it may be optionally followed by <emphasis
-              role="bold">:P</emphasis>, in which case the rule is added to
-              the PREROUTING chain.</para>
-
-              <para>If <emphasis role="bold">+</emphasis> is included, packets
-              matching the rule will have their TTL incremented by
-              <replaceable>number</replaceable>. Similarly, if <emphasis
-              role="bold">-</emphasis> is included, matching packets have
-              their TTL decremented by <replaceable>number</replaceable>. If
-              neither <emphasis role="bold">+</emphasis> nor <emphasis
-              role="bold">-</emphasis> is given, the TTL of matching packets
-              is set to <replaceable>number</replaceable>. The valid range of
-              values for <replaceable>number</replaceable> is 1-255.</para>
-            </listitem>
-          </orderedlist>
         </listitem>
       </varlistentry>
 

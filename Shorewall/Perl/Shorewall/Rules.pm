@@ -3714,14 +3714,16 @@ sub process_rules() {
 # Process a rule from the mangle file
 #
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
-    our ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+    my ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
 
     my %designators = (
 	P => PREROUTING,
 	I => INPUT,
 	F => FORWARD,
 	O => OUTPUT,
-	T => POSTROUTING );
+	T => POSTROUTING,
+	R => REALPREROUTING,
+	);
 
     my %chainlabels = ( 1  => 'PREROUTING',
 			2  => 'INPUT',

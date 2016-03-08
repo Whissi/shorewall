@@ -4322,23 +4322,19 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	minparams         => 0 ,
 	maxparams         => 16 ,
 	function          => sub() {
+	    fatal_error( qq(Action $cmd may not be used in the mangle file) ) unless $actiontype & MANGLE_TABLE;
 	    fatal_error q('$FW' may not be specified within an action body) if $chainref;
 	    #
 	    # Create the action:level:tag:param tuple.
 	    #
 	    my $normalized_target = normalize_action( $cmd, '', $params );
-
 	    fatal_error( "Action $cmd invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$cmd};
 
 	    my $ref = use_action( 'mangle', $normalized_target );
 
 	    if ( $ref ) {
 		#
-		# First reference to this tuple
-		#
-		my $savestatematch = $statematch;
-		#
-		# process_action may modify both $normalized_target and $ref!!!
+		# First reference to this tuple - process_action may modify both $normalized_target and $ref!!!
 		#
 		process_action( $normalized_target, $ref, $chainnames{$chain} );
 		#
@@ -4359,8 +4355,11 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     # Function Body
     #
     if ( $inaction ) {
-	( $inaction , undef ) = split( /:/, $chainref->{name}, 2 ) if $chainref->{action};
-	$chainnames{$chain = ACTIONCHAIN} = $chainref->{name};
+	assert( $chainref->{action} );
+	#
+	# Set chain type
+	#
+	$chain = ACTIONCHAIN;
     }
 
     ( $cmd, $designator ) = split_action( $action );
@@ -4374,7 +4373,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
     ( $cmd , $params ) = get_target_param1( $cmd );
 
-    $actiontype = $builtin_target{$cmd} || $targets{$cmd};
+    $actiontype = $builtin_target{$cmd} || $targets{$cmd} || 0;
 
     $commandref = $commands{$cmd};
 
@@ -4451,9 +4450,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     #
     # Call the command's processing function
     #
-    my $function = $commandref->{function};
-
-    $function->();
+    $commandref->{function}->();
 
     unless ( $done ) {
 	$chain ||= $designator;

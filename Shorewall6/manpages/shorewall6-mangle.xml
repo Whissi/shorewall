@@ -69,8 +69,9 @@
         <replaceable>command</replaceable>[(<replaceable>parameters</replaceable>)][:<replaceable>chain-designator</replaceable>]</term>
 
         <listitem>
-          <para>The chain-specifier indicates the Netfilter chain that the
-          entry applies to and may be one of the following:</para>
+          <para>The <replaceable>chain-designator</replaceable> indicates the
+          Netfilter chain that the entry applies to and may be one of the
+          following:</para>
 
           <variablelist>
             <varlistentry>
@@ -112,10 +113,14 @@
           url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>,
           and FORWARD when MARK_IN_FORWARD_CHAIN=Yes.</para>
 
-          <para>A chain-designator may not be specified if the SOURCE or DEST
-          columns begin with '$FW'. When the SOURCE is $FW, the generated rule
-          is always placed in the OUTPUT chain. If DEST is '$FW', then the
-          rule is placed in the INPUT chain.</para>
+          <para>A <replaceable>chain-designator</replaceable> may not be
+          specified if the SOURCE or DEST columns begin with '$FW'. When the
+          SOURCE is $FW, the generated rule is always placed in the OUTPUT
+          chain. If DEST is '$FW', then the rule is placed in the INPUT chain.
+          Additionally, a <replaceable>chain-designator</replaceable> may not
+          be specified in an action body unless the action is declared as
+          <option>inline</option> in <ulink
+          url="shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
 
           <para>Where a command takes parameters, those parameters are
           enclosed in parentheses ("(....)") and separated by commas.</para>

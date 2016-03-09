@@ -32,6 +32,8 @@
 
       <year>2013</year>
 
+      <year>2015-2016</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -396,6 +398,27 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
       <para>For additional information about actions, see the <ulink
       url="configuration_file_basics.htm#ActionVariables">Action Variables
       section</ulink> of the Configuration Basics article.</para>
+    </section>
+
+    <section>
+      <title>Mangle Actions</title>
+
+      <para>Beginning with Shorewall 5.0.7, actions may be used in <ulink
+      url="manpages/shorewall-mangle.html">shorewall-mangle(5)</ulink> and
+      <ulink
+      url="manpages6/shorewall6-mangle.html">shorewall6-mangle(5)</ulink>.
+      Because the rules and mangle files have different column layouts,
+      actions can be defined to be used in one file or the other but not in
+      both. To designate an action to be used in the mangle file, specify the
+      <option>mangle</option> option in the action's entry in <ulink
+      url="manpages/shorewall-actions.html">shorewall-actions</ulink>(5) or
+      <ulink
+      url="manpages6/shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
+
+      <para>To create a mangle action, follow the steps in the preceding
+      section, but use the
+      <filename>/usr/share/shorewall/action.mangletemplate</filename> file.
+      </para>
     </section>
   </section>
 

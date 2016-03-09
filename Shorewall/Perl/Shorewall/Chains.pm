@@ -337,6 +337,10 @@ our $VERSION = 'MODULEVERSION';
 #                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
 #                                                               Suppresses adding additional rules to the chain end of the chain
 #                                               sections     => { <section> = 1, ... } - Records sections that have been completed.
+#                                               chainnumber  => Numeric enumeration of the builtin chains (mangle table only).
+#                                               allowedchains
+#                                                            => Mangle action chains only -- specifies the set of builtin chains where
+#                                                               this action may be used.
 #                                             } ,
 #                                <chain2> => ...
 #                              }
@@ -3023,6 +3027,7 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
+
     }
 
     my $chainref;
@@ -3037,6 +3042,12 @@ sub initialize_chain_table($) {
 	    $chainref = new_nat_chain( $globals{POSTROUTING} = 'SHOREWALL' );
 	    set_optflags( $chainref, DONT_OPTIMIZE | DONT_DELETE | DONT_MOVE );
 	}
+
+	$mangle_table->{PREROUTING}{chainnumber}    = PREROUTING;
+	$mangle_table->{INPUT}{chainnumber}         = INPUT;
+	$mangle_table->{OUTPUT}{chainnumber}        = OUTPUT;
+	$mangle_table->{FORWARD}{chainnumber}       = FORWARD;
+	$mangle_table->{POSTROUTING}{chainnumber}   = POSTROUTING;
     }
 
     if ( my $docker = $config{DOCKER} ) {
@@ -4505,7 +4516,7 @@ sub clearrule() {
 sub state_match( $ ) {
     my $state = shift;
 
-    if ( $state eq 'ALL' ) {
+    if ( $state eq 'ALL' || $state eq '-' ) {
 	''
     } else {
 	have_capability( 'CONNTRACK_MATCH' ) ? ( "-m conntrack --ctstate $state " ) : ( "-m state --state $state " );

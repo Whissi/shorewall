@@ -63,7 +63,6 @@ our @EXPORT_OK = qw( initialize process_rule );
 
 our %EXPORT_TAGS = ( Traffic => [ qw( process_tc_rule
 			              process_mangle_rule
-			              convert_tos
 
 			              %classids
 			              %tcdevices
@@ -2124,10 +2123,7 @@ sub process_actions() {
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		if ( $type & INLINE ) {
-		    fatal_error "Mangle actions may not be inlined" if $type & MANGLE_TABLE;
-		    $inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT };
-		}
+		$inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT } if $type & INLINE;
 	    }
 	}
     }
@@ -3707,14 +3703,134 @@ sub process_rules() {
     $section = $next_section = DEFAULTACTION_SECTION;
 }
 
+sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
+    my ($inline, $chainref, $params, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+
+    my $oldparms   = push_action_params( $inline,
+					 $chainref,
+					 $params,
+					  'none',
+					 '' ,
+					 $chainref->{name} );
+
+    my $inlinefile = $inlines{$inline}{file};
+
+    progress_message "..Expanding inline action $inlinefile...";
+
+    push_open $inlinefile, 2, 1, undef , 2;
+
+    my $save_comment = push_comment;
+
+    while ( read_a_line( NORMAL_READ ) ) {
+	my ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability , $mdscp , $mstate, $mtime );
+	if ( $family == F_IPV4 ) {
+	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mprobability, $mdscp, $mstate, $mtime ) =
+		split_line2( 'mangle file',
+			     { mark => 0,
+			       action => 0,
+			       source => 1,
+			       dest => 2,
+			       proto => 3,
+			       dport => 4,
+			       sport => 5,
+			       user => 6,
+			       test => 7,
+			       length => 8,
+			       tos => 9,
+			       connbytes => 10,
+			       helper => 11,
+			       probability => 12 , 
+			       scp => 13,
+			       state => 14,
+			       time => 15,
+			     },
+			     {},
+			     16,
+			     1 );
+	    $headers = $mheaders = '-';
+	} else {
+	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability, $mdscp, $mstate, $mtime ) =
+		split_line2( 'mangle file',
+			     { mark => 0,
+			       action => 0,
+			       source => 1,
+			       dest => 2,
+			       proto => 3,
+			       dport => 4,
+			       sport => 5,
+			       user => 6,
+			       test => 7,
+			       length => 8,
+			       tos => 9,
+			       connbytes => 10,
+			       helper => 11,
+			       headers => 12,
+			       probability => 13,
+			       dscp => 14,
+			       state => 15,
+			       time => 16,
+			     },
+			     {},
+			     17,
+			     1 );
+	}
+
+	fatal_error 'ACTION must be specified' if $moriginalmark eq '-';
+
+	if ( $moriginalmark eq 'DEFAULTS' ) {
+	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
+	    next;
+	}
+
+	$msource = $source if $msource eq '-';
+	$mdest   = $dest   if $msource eq '-';
+	$mprotos = $protos if $mprotos eq '-';
+
+	for my $proto (split_list( $mprotos, 'Protocol' ) ) {
+	    process_mangle_rule1( $chainref,
+				  $moriginalmark,
+				  $msource,
+				  $dest,
+				  $proto,
+				  merge_macro_column( $mports,          $ports ),
+				  merge_macro_column( $msports,         $sports ),
+				  merge_macro_column( $muser,           $muser ),
+				  merge_macro_column( $mtestval,        $testval ),
+				  merge_macro_column( $mlength,         $length ),
+				  merge_macro_column( $mtos ,           $tos ),
+				  merge_macro_column( $mconnbytes,      $connbytes ),
+				  merge_macro_column( $mhelper,         $helper ),
+				  merge_macro_column( $mheaders,        $headers ),
+				  merge_macro_column( $mprobability ,   $probability ),
+				  merge_macro_column( $mdscp ,          $dscp ),
+				  merge_macro_column( $mstate,          $state ),
+				  merge_macro_column( $mtime,           $time ) );
+	}
+
+	progress_message "   Rule \"$currentline\" $done";
+    }
+
+    pop_comment( $save_comment );
+
+    pop_open;
+
+    progress_message "..End inline action $inlinefile";
+
+    pop_action_params( $oldparms );
+}
+
 ################################################################################
 #   Code moved from the Tc module in Shorewall 5.0.7                           #
 ################################################################################
 #
-# Process a rule from the mangle file
+# Process a rule from the mangle file. When the target is an action name, this
+# function will be called recursively for each rule in the action body. Recursive
+# calls pass a chain reference in the first argument and the generated rule is
+# appended to that chain. The chain with be the action's chain unless the action
+# is inlined, in which case it will be the chain which invoked the action.
 #
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
-    my ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+    my ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time) = @_;
 
     my %designators = (
 	P => PREROUTING,
@@ -3741,7 +3857,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		       128 => 'PREROUTING',
 	);
 
-    my $inaction       = defined $chainref;
+    my $inchain        = defined $chainref;
+    my $inaction;
     my $target         = '';
     my $junk           = '';
     my $raw_matches    = '';
@@ -3760,7 +3877,12 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     my $usergenerated;
     my $actiontype;
     my $commandref;
-
+    #
+    # Subroutine for handling MARK and CONNMARK. We use an enclosure so as to keep visibility of the
+    # function's local variables without making them static. process_mangle_rule1() is called
+    # recursively, so static (our) variables cannot be used unless they are saved/restored during
+    # recursion.
+    #
     my $handle_mark_param = sub( ) {
 	my ( $option, $marktype ) = @_;
 	my $and_or = $params =~ s/^([|&])// ? $1 : '';
@@ -3867,7 +3989,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     };
-
+    #
+    # Subroutine to handle ADD and DEL rules
+    #
     my $ipset_command = sub () {
 	my %xlate = ( ADD => 'add-set' , DEL => 'del-set' );
 
@@ -4315,7 +4439,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
     );
-
+    #
+    # Subroutine for handling normal actions
+    #
     my $actionref = {
 	defaultchain      => 0,
 	allowedchains     => ALLCHAINS ,
@@ -4352,14 +4478,59 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	}
     };
     #
+    # Subroutine to resolve which chain to use
+    #
+    my $resolve_chain = sub() {
+	$chain ||= $designator;
+	$chain ||= $commandref->{defaultchain};
+	$chain ||= $default_chain;
+	$chainref = ensure_chain( 'mangle', $chainnames{$chain} );
+    };
+    #
+    #
+    # Subroutine for handling inline actions
+    #
+    my $inlineref = {
+	defaultchain         => 0,
+	allowedchains        => ALLCHAINS ,
+	minparams            => 0 ,
+	maxparams            => 16 ,
+	function             => sub() {
+	    fatal_error( qq(Action $cmd may not be used in the mangle file) ) unless $actiontype & MANGLE_TABLE;
+
+	    $resolve_chain->() unless $inchain;
+
+	    process_mangle_inline( $cmd,
+				   $chainref,
+				   $params,
+				   $source,
+				   $dest,
+				   $proto,
+				   $ports,
+				   $sports,
+				   $user,
+				   $testval,
+				   $length,
+				   $tos ,
+				   $connbytes,
+				   $helper,
+				   $headers,
+				   $probability ,
+				   $dscp ,
+				   $state,
+				   $time );
+	    $done = 1;
+	}
+    };
+    #
     # Function Body
     #
-    if ( $inaction ) {
-	assert( $chainref->{action} );
+    if ( $inchain ) {
+	( $inaction, undef, undef, undef ) = split /:/, $chainref->{action}, 4 if $chainref->{action};
 	#
 	# Set chain type
 	#
-	$chain = ACTIONCHAIN;
+	$chain = $chainref->{chainnumber} || ACTIONCHAIN;
     }
 
     ( $cmd, $designator ) = split_action( $action );
@@ -4375,11 +4546,14 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
     $actiontype = $builtin_target{$cmd} || $targets{$cmd} || 0;
 
-    $commandref = $commands{$cmd};
-
-    unless ( $commandref ) {
-	fatal_error "Invalid ACTION ($cmd)" unless $actiontype & ACTION;
-	$commandref = $actionref;
+    unless ( $commandref = $commands{$cmd} ) {
+	if ( $actiontype & ACTION ) {
+	    $commandref = $actionref;
+	} elsif ( $actiontype & INLINE ) {
+	    $commandref = $inlineref;
+	} else {
+	    fatal_error "Invalid ACTION ($cmd)";
+	}
     }
 
     if ( $cmd eq 'INLINE' ) {
@@ -4444,8 +4618,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    fatal_error "Invalid STATE ($_)"   unless exists $state{$_};
 	    fatal_error "Duplicate STATE ($_)" if $state{$_}++;
 	}
-    } else {
-	$state = 'ALL';
     }
     #
     # Call the command's processing function
@@ -4453,14 +4625,15 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     $commandref->{function}->();
 
     unless ( $done ) {
-	$chain ||= $designator;
-	$chain ||= $commandref->{defaultchain};
-	$chain ||= $default_chain;
-
-	if ( $inaction ) {
-	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chainref->{allowedchains};;
-	    $chainref->{allowedchains} &= $commandref->{allowedchains};
+	if ( $inchain ) {
+	    if ( $chain == ACTIONCHAIN ) {
+		fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chainref->{allowedchains};
+		$chainref->{allowedchains} &= $commandref->{allowedchains};
+	    } else {
+		fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chain;
+	    }
 	} else {
+	    $resolve_chain->();
 	    fatal_error "$cmd rules are not allowed in the $chainlabels{$chain} chain" unless $commandref->{allowedchains} & $chain;
 	    $chainref = ensure_chain( 'mangle', $chainnames{$chain} );
 	}

@@ -6829,14 +6829,12 @@ sub get_interface_gateway ( $;$ ) {
     my $interface = get_physical $logical;
     my $variable = interface_gateway( $interface );
 
-    my $routine = $config{USE_DEFAULT_RT} ? 'detect_dynamic_gateway' : 'detect_gateway';
-
     $global_variables |= ALL_COMMANDS;
 
     if ( interface_is_optional $logical ) {
-	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface));
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface));
     } else {
-	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$($routine $interface)
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface)
 [ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface");
     }
 

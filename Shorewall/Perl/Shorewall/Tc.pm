@@ -84,6 +84,9 @@ our %flow_keys = ( 'src'            => 1,
 #
 our @tcdevices;
 our @devnums;
+#
+# %tcdevices moved to the Rules module in 5.0.7
+#
 our $devnum;
 our $ipp2p;
 
@@ -107,8 +110,12 @@ our $ipp2p;
 #                                     }
 #             }
 our @tcclasses;
-
+#
+# %tcclasses and %classids moved to the Rules module in 5.0.7
+#
 our $family;
+
+our $convert;
 
 #
 # Rather than initializing globals in an INIT block or during declaration,
@@ -129,7 +136,6 @@ sub initialize( $ ) {
     $ipp2p     = 0;
 }
 
- 
 sub rate_to_kbit( $ ) {
     my $rate = $_[0];
 

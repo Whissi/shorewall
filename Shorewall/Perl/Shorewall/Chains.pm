@@ -3027,7 +3027,6 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
-
     }
 
     my $chainref;

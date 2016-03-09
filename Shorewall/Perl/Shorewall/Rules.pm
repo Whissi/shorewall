@@ -260,8 +260,6 @@ our %tcdevices;
 our %tcclasses;
 our %classids;
 
-our $convert;
-
 our $mangle;
 
 our $sticky;
@@ -4946,4 +4944,5 @@ sub process_mangle_rule( $ ) {
 	process_mangle_rule1( $chainref, $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     }
 }
+
 1;

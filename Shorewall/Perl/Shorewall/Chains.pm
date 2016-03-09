@@ -8131,7 +8131,7 @@ sub save_docker_rules($) {
     emit( q(    [ -s ${VARDIR}/.filter_FORWARD ] || rm -f ${VARDIR}/.filter_FORWARD),
 	  q(else),
 	  q(    rm -f ${VARDIR}/.nat_DOCKER),
-	  q(    rm -f ${VARDIR}/.net_OUTPUT),
+	  q(    rm -f ${VARDIR}/.nat_OUTPUT),
 	  q(    rm -f ${VARDIR}/.nat_POSTROUTING),
 	  q(    rm -f ${VARDIR}/.filter_DOCKER),
 	  q(    rm -f ${VARDIR}/.filter_DOCKER-ISOLATION),

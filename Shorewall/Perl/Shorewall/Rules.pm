@@ -1343,7 +1343,7 @@ sub createlogactionchain( $$$$$$ ) {
 
 	fatal_error "Too many invocations of Action $action" if $actionref->{actchain} > 99;
     } else {
-	$usedactions{$normalized} = $chainref = new_standard_chain $chain;
+	$usedactions{$normalized} = $chainref = new_action_chain( $table, $chain );
     }
 
     $chainref->{action} = $normalized;
@@ -4436,7 +4436,6 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	maxparams         => 16 ,
 	function          => sub() {
 	    fatal_error( qq(Action $cmd may not be used in the mangle file) ) unless $actiontype & MANGLE_TABLE;
-	    fatal_error q('$FW' may not be specified within an action body) if $chainref;
 	    #
 	    # Create the action:level:tag:param tuple.
 	    #

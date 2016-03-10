@@ -8622,17 +8622,17 @@ sub preview_netfilter_load() {
 		if ( $name =~ /^DOCKER/ ) {
 		    if ( $name eq 'DOCKER' ) {
 			enter_cmd_mode;
-			emit( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
+			print( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
 			enter_cat_mode;
 		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
 			enter_cmd_mode;
-			emit( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
+			print( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
 			enter_cat_mode;
 		    } else {		    
-			emit_unindented ":$name - [0:0]";
+			print( ":$name - [0:0]" );
 		    }
 		} else {
-		    emit_unindented ":$name - [0:0]";
+		    print( ":$name - [0:0]" );
 		}
 
 		push @chains, $chainref;

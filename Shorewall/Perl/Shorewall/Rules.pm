@@ -70,7 +70,6 @@ our %EXPORT_TAGS = ( Traffic => [ qw( process_tc_rule
 			              %tosoptions
 			              %restrictions
 
-			              $convert
 			              $mangle
 			              $sticky
 			            ) , ]
@@ -191,7 +190,8 @@ our %actions;
 #
 our %inlines;
 #
-# Contains an entry for each used <action>:<level>[:<tag>] that maps to the associated chain.
+# Contains an entry for each used <action>:<level>:[<tag>]:[<calling chain>]:[<params>] that maps to the associated chain.
+# See normalize_action().
 #
 our %usedactions;
 
@@ -224,14 +224,6 @@ our %statetable;
 # Tracks which of the state match actions (action.Invalid, etc.) that is currently being expanded
 #
 our $statematch;
-#
-# Avoid duplicate format-1 macro warnings
-#
-our %fmt1macrowarn;
-#
-# Avoid duplicate format-1 action warnings
-#
-our %fmt1actionwarn;
 ################################################################################
 #   Declarations moved from the Tc module in 5.0.7                             #
 ################################################################################
@@ -272,7 +264,6 @@ our %validstates = ( NEW                => 0,
 		     UNTRACKED          => 0,
 		     INVALID            => 0,
 		   );
-
 #
 # Rather than initializing globals in an INIT block or during declaration,
 # we initialize them in a function. This is done for two reasons:
@@ -352,8 +343,6 @@ sub initialize( $ ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn/;
     }
 
-    %fmt1macrowarn  = ();
-    %fmt1actionwarn = ();
     ############################################################################
     # Initialize variables moved from the Tc module in Shorewall 5.0.7         #
     ############################################################################

@@ -4467,9 +4467,12 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     # Subroutine to resolve which chain to use
     #
     my $resolve_chain = sub() {
-	$chain ||= $designator;
-	$chain ||= $commandref->{defaultchain};
-	$chain ||= $default_chain;
+	unless ( $chain ) {
+	    $chain ||= $designator;
+	    $chain ||= $commandref->{defaultchain};
+	    $chain ||= $default_chain;
+	}
+
 	$chainref = ensure_chain( 'mangle', $chainnames{$chain} );
     };
     #

@@ -470,11 +470,15 @@ compiler() {
 	    [ -n "$g_doing" ] && progress_message3 "$g_doing using $g_product $SHOREWALL_VERSION..."
 	    ;;
     esac
+    #
+    # Only use the pager if 'trace' or -r was specified and -d was not
+    #
+    [ "$g_debugging" != trace -a -z "$g_preview" ] || [ -n "$g_debug" ] && g_pager=
 
     if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
-	$PERL $debugflags $pc $options $@
+	eval $PERL $debugflags $pc $options $@ $g_pager
     else
-	PERL5LIB=${PERLLIBDIR} $PERL $debugflags $pc $options $@
+	eval PERL5LIB=${PERLLIBDIR} $PERL $debugflags $pc $options $@ $g_pager
     fi
 
     status=$?

@@ -3421,15 +3421,15 @@ sub handle_first_entry() {
 sub read_a_line($) {
     my $options = $_[0];
 
+  LINE:
     while ( $currentfile ) {
-
 	$currentline = '';
 	$currentlinenumber = 0;
 
 	while ( <$currentfile> ) {
 	    chomp;
 	    #
-	    # Handle conditionals
+	    # Handle directives
 	    #
 	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
@@ -3445,7 +3445,7 @@ sub read_a_line($) {
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
-	    s/^\s*// if $currentline =~ /[,:]$/ && $options & CONFIG_CONTINUATION;
+	    s/^\s*// if $currentline && $currentline =~ /[,:]$/ && $options & CONFIG_CONTINUATION;
 	    #
 	    # If this is a continued line with a trailing comment, remove comment. Note that
 	    # the result will now end in '\'.
@@ -3456,19 +3456,20 @@ sub read_a_line($) {
 	    #
 	    chop $currentline, next if ($currentline .= $_) =~ /\\$/;
 	    #
+	    # We now have a (possibly concatenated) line
 	    # Must check for shell/perl before doing variable expansion
 	    # 
 	    if ( $options & EMBEDDED_ENABLED ) {
-		if ( $currentline =~ s/^\s*\??(BEGIN\s+)SHELL\s*;?//i || $currentline =~ s/^\s*\?SHELL\s*//i || $currentline =~ s/^\s*SHELL\s+// ) {
-		    handle_first_entry if $first_entry;
-		    embedded_shell( $1 );
-		    next;
-		}
-
 		if ( $currentline =~ s/^\s*\??(BEGIN\s+)PERL\s*;?//i || $currentline =~ s/^\s*\??PERL\s*//i ) {
 		    handle_first_entry if $first_entry;
 		    embedded_perl( $1 );
-		    next;
+		    next LINE;
+		}
+
+		if ( $currentline =~ s/^\s*\??(BEGIN\s+)SHELL\s*;?//i || $currentline =~ s/^\s*\?SHELL\s*//i || $currentline =~ s/^\s*SHELL\s+// ) {
+		    handle_first_entry if $first_entry;
+		    embedded_shell( $1 );
+		    next LINE;
 		}
 	    }
 	    #
@@ -3480,7 +3481,7 @@ sub read_a_line($) {
 		#
 		# Ignore (concatinated) blank lines
 		#
-		$currentline = '', $currentlinenumber = 0, next if $currentline =~ /^\s*$/;
+		next LINE if $currentline =~ /^\s*$/;
 		#
 		# Eliminate trailing whitespace
 		#
@@ -3511,18 +3512,16 @@ sub read_a_line($) {
 		    push_include;
 		    $currentfile = undef;
 		    do_open_file $filename;
-		} else {
-		    $currentlinenumber = 0;
 		}
 
-		$currentline = '';
-            } elsif ( ( $options & DO_SECTION ) && $currentline =~ /^\s*\?SECTION\s+(.*)/i ) {
-                my $sectionname = $1;
-                fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
-                fatal_error "This file does not allow ?SECTION" unless $section_function;
-                $section_function->($sectionname);
-                $directive_callback->( 'SECTION', $currentline ) if $directive_callback;
-                $currentline = '';
+		next LINE;
+	    } elsif ( ( $options & DO_SECTION ) && $currentline =~ /^\s*\?SECTION\s+(.*)/i ) {
+		my $sectionname = $1;
+		fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
+		fatal_error "This file does not allow ?SECTION" unless $section_function;
+		$section_function->($sectionname);
+		$directive_callback->( 'SECTION', $currentline ) if $directive_callback;
+		next LINE;
 	    } else {
 		fatal_error "Non-ASCII gunk in file" if ( $options && CHECK_GUNK ) && $currentline =~ /[^\s[:print:]]/;
 		print "IN===> $currentline\n" if $debug;

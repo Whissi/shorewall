@@ -2793,6 +2793,11 @@ sub copy( $ ) {
 		print $script $_;
 		print $script "\n";
 		$lastlineblank = 0;
+
+		if ( $debug ) {
+		    s/\n/\nGS-----> /g;
+		    print "GS-----> $_\n";
+		}
 	    }
 	}
 

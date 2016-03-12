@@ -2506,10 +2506,10 @@ sub join_parts( $$$ ) {
 }
 
 #
-# Evaluate an expression in an ?IF, ?ELSIF or ?SET directive
+# Evaluate an expression in an ?IF, ?ELSIF, ?SET or ?ERROR directive
 #
-sub evaluate_expression( $$$ ) {
-    my ( $expression , $filename , $linenumber ) = @_;
+sub evaluate_expression( $$$$ ) {
+    my ( $expression , $filename , $linenumber, $just_expand ) = @_;
     my $val;
     my $count = 0;
     my $chain = $actparms{chain};
@@ -2565,7 +2565,7 @@ sub evaluate_expression( $$$ ) {
 
     print "EXPR=> $expression\n" if $debug;
 
-    if ( $expression =~ /^\d+$/ ) {
+    if ( $just_expand || $expression =~ /^\d+$/ ) {
 	$val = $expression
     } else {
 	#
@@ -2602,7 +2602,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2620,7 +2620,7 @@ sub process_compiler_directive( $$$$ ) {
     my %directives =
 	( IF => sub() {
 	    directive_error( "Missing IF expression" , $filename, $linenumber ) unless supplied $expression;
-	    my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber );
+	    my $nextomitting = $omitting || ! evaluate_expression( $expression , $filename, $linenumber , 0 );
 	    push @ifstack, [ 'IF', $omitting, ! $nextomitting, $linenumber ];
 	    $omitting = $nextomitting;
 	  } ,
@@ -2632,7 +2632,7 @@ sub process_compiler_directive( $$$$ ) {
 		  #
 		  # We can only change to including if we were previously omitting
 		  #
-		  $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber );
+		  $omitting = $prioromit || ! evaluate_expression( $expression , $filename, $linenumber, 0 );
 		  $included = ! $omitting;
 	      } else {
 		  #
@@ -2671,12 +2671,14 @@ sub process_compiler_directive( $$$$ ) {
 		      directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
 		      my $val = $actparms{$var} = evaluate_expression ( $expression,
 									$filename,
-									$linenumber );
+									$linenumber,
+									0  );
 		      $parmsmodified = PARMSMODIFIED;
 		  } else {
 		      $variables{$2} = evaluate_expression( $expression,
 							    $filename,
-							    $linenumber );
+							    $linenumber,
+							    0 );
 		  }
 	      }
 	  } ,
@@ -2736,8 +2738,16 @@ sub process_compiler_directive( $$$$ ) {
 		      directive_error ( "?COMMENT is not allowed in this file", $filename, $linenumber );
 		  }
 	      }
-	  }
+	  } ,
 
+	  ERROR => sub() {
+	      directive_error( evaluate_expression( $expression ,
+						    $filename ,
+						    $linenumber ,
+						    1 ) ,
+			       $filename ,
+			       $linenumber ) unless $omitting;
+	  }
 	);
 
     if ( my $function = $directives{$keyword} ) {
@@ -3436,7 +3446,7 @@ sub read_a_line($) {
 	    #
 	    # Handle directives
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT|ERROR)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

@@ -936,7 +936,7 @@ sub set_rule_option( $$$ ) {
 	    #
 	    # Shorewall::Rules::perl_action_tcp_helper() can produce rules that have two -p specifications.
 	    # The first will have a modifier like '! --syn' while the second will not.  We want to retain
-	    # the first while 
+	    # the first one.
 	    if ( $option eq 'p' ) {
 		my ( $proto ) = split( ' ', $ruleref->{p} );
 		return if $proto eq $value;

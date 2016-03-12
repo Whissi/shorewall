@@ -2168,6 +2168,31 @@ SSH(ACCEPT)    net:$MYIP      $FW
 &lt;lines to be included if all three expressions evaluate to false.
 
 ?ENDIF</programlisting>
+
+    <para>Beginning in Shorewall 5.0.7, an error can be raised using the
+    ?ERROR directive:</para>
+
+    <programlisting>?ERROR <replaceable>message</replaceable></programlisting>
+
+    <para>Variables in the message are evaluated and the result appears in a
+    standard Shorewall ERROR: message. </para>
+
+    <para>Example from the 5.0.7 action.GlusterFS:</para>
+
+    <programlisting>?if @1 !~ /^\d+/ || ! @1 || @1 &gt; 1024
+    ?error Invalid value for Bricks (@1)
+?elsif @2 !~ /^[01]$/
+    ?error Invalid value for IB (@2)
+?endif
+</programlisting>
+
+    <para>The above code insures that the first action paramater is a non-zero
+    number &lt;= 1024 and that the second parameter is either 0 or 1. If 2000
+    is passed for the first parameter, the following error message is
+    generated:</para>
+
+    <programlisting>   ERROR: Invalid value for Bricks (2000) /usr/share/shorewall/action.GlusterFS (line 15)
+      from /etc/shorewall/rules (line 45)</programlisting>
   </section>
 
   <section id="Embedded">

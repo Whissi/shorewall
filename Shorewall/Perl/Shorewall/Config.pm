@@ -3450,7 +3450,7 @@ sub read_a_line($) {
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #
-	    s/^\s*// if $currentline && $currentline =~ /[,:]$/ && $options & CONFIG_CONTINUATION;
+	    s/^\s*// if $currentline && $options & CONFIG_CONTINUATION && $currentline =~ /[,:]$/;
 	    #
 	    # If this is a continued line with a trailing comment, remove comment. Note that
 	    # the result will now end in '\'.

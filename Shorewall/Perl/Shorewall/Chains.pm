@@ -7537,7 +7537,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 	log_irule_limit( $loglevel ,
 			 $echainref ,
 			 $chain ,
-			 $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
+			 $actparams{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 			 [] ,
 			 $logtag ,
 			 'add' ,
@@ -7584,7 +7584,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 
     my ( $iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl ) = 
        ( '',      '',      '',     '',     '',     '',     '',      '',     '',            '' );
-    my  $chain = $actparms{chain} || $chainref->{name};
+    my  $chain = $actparams{chain} || $chainref->{name};
     my $table = $chainref->{table};
     my ( $jump, $mac,  $targetref, $basictarget );
     our @ends = ();
@@ -7758,7 +7758,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 				       $loglevel ,
 				       $chainref ,
 				       $chain,
-				       $actparms{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
+				       $actparams{disposition} || ( $disposition eq 'reject' ? 'REJECT' : $disposition ),
 				       '' ,
 				       $logtag ,
 				       'add' ,
@@ -7769,7 +7769,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 				       $loglevel ,
 				       $chainref ,
 				       $logname || $chain,
-				       $actparms{disposition} || $disposition,
+				       $actparams{disposition} || $disposition,
 				       '',
 				       $logtag,
 				       'add',
@@ -7790,7 +7790,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 						     $loglevel,
 						     $logtag,
 						     $exceptionrule,
-						     $actparms{disposition} || $disposition,
+						     $actparams{disposition} || $disposition,
 						     $target ),
 					   $terminating{$basictarget} || ( $targetref && $targetref->{complete} ),
 					   $prerule . $matches );

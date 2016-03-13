@@ -1948,7 +1948,7 @@ sub process_action(\$\$$) {
 	    process_rule( $chainref,
 			  '',
 			  '',
-			  $nolog ? $target : merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $target ),
+			  $nolog ? $target : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $target ),
 			  '',
 			  $source,
 			  $dest,
@@ -2370,7 +2370,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 	    next;
 	}
 
-	$mtarget = merge_levels( join(':', @actparms{'chain','loglevel','logtag'}), $mtarget ) unless $nolog;
+	$mtarget = merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $mtarget ) unless $nolog;
 
 	my $action = isolate_basic_target $mtarget;
 
@@ -3194,7 +3194,7 @@ sub check_state( $ ) {
 	return 0;
     }
 
-    my $chainref   = $actparms{0};
+    my $chainref   = $actparams{0};
     my $name       = $chainref->{name};
     my $statechainref;
 
@@ -3267,7 +3267,7 @@ sub check_state( $ ) {
 sub merge_target( $$ ) {
     my ( $ref, $target ) = @_;
 
-    $ref->{inline} ? $target : merge_levels( join( ':', @actparms{'chain','loglevel','logtag'}), $target );
+    $ref->{inline} ? $target : merge_levels( join( ':', @actparams{'chain','loglevel','logtag'}), $target );
 }
 
 #
@@ -3275,8 +3275,8 @@ sub merge_target( $$ ) {
 #
 sub perl_action_helper($$;$$) {
     my ( $target, $matches, $isstatematch , $matches1 ) = @_;
-    my $action   = $actparms{action};
-    my $chainref = $actparms{0};
+    my $action   = $actparams{action};
+    my $chainref = $actparams{0};
     my $result;
 
     assert( $chainref );
@@ -3355,8 +3355,8 @@ sub perl_action_helper($$;$$) {
 #
 sub perl_action_tcp_helper($$) {
     my ( $target, $proto ) = @_;
-    my $action   = $actparms{action};
-    my $chainref = $actparms{0};
+    my $action   = $actparams{action};
+    my $chainref = $actparams{0};
     my $result;
     my $passedproto = $columns[2];
 

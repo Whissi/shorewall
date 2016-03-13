@@ -186,7 +186,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       %helpers_enabled
 				       %helpers_aliases
 
-				       %actparms
+				       %actparams
 
                                        PARMSMODIFIED
                                        USEDCALLER
@@ -553,7 +553,7 @@ our %compiler_params;
 #
 # Action parameters
 #
-our %actparms;
+our %actparams;
 our $parmsmodified;
 our $usedcaller;
 our $inline_matches;
@@ -1062,7 +1062,7 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    %actparms = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
+    %actparams = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
     $parmsmodified = 0;
     $usedcaller    = 0;
 
@@ -2513,14 +2513,14 @@ sub evaluate_expression( $$$$ ) {
     my ( $expression , $filename , $linenumber, $just_expand ) = @_;
     my $val;
     my $count = 0;
-    my $chain = $actparms{chain};
+    my $chain = $actparams{chain};
     #                         $1      $2   $3                     -     $4
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
 
 	if ( $var =~ /^\d+$/ ) {
 	    fatal_error "Action parameters (\$$var) may only be referenced within the body of an action" unless $chain;
-	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    $val = $var ? $actparams{$var} : $actparams{0}->{name};
 	} else {
 	    $val = ( exists $variables{$var} ? $variables{$var} :
 		     exists $capdesc{$var}   ? have_capability( $var ) : '' );
@@ -2535,7 +2535,7 @@ sub evaluate_expression( $$$$ ) {
 	while ( $expression =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    $var = numeric_value( $var ) if $var =~ /^\d/;
-	    $val = $var ? $actparms{$var} : $chain;
+	    $val = $var ? $actparams{$var} : $chain;
 	    $usedcaller = USEDCALLER if $var eq 'caller';
 	    $expression = join_parts( $first, $val, $rest );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
@@ -2669,8 +2669,8 @@ sub process_compiler_directive( $$$$ ) {
 		      $var = $2;
 		      $var = numeric_value( $var ) if $var =~ /^\d/;
 		      $var = $2 || 'chain';
-		      directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparms{0};
-		      my $val = $actparms{$var} = evaluate_expression ( $expression,
+		      directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparams{0};
+		      my $val = $actparams{$var} = evaluate_expression ( $expression,
 									$filename,
 									$linenumber,
 									0  );
@@ -2703,12 +2703,12 @@ sub process_compiler_directive( $$$$ ) {
 		  if ( ( $1 || '' ) eq '@' ) {
 		      $var = numeric_value( $var ) if $var =~ /^\d/;
 		      $var = $2 || 'chain';
-		      directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparms{0};
-		      if ( exists $actparms{$var} ) {
+		      directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparams{0};
+		      if ( exists $actparams{$var} ) {
 			  if ( $var =~ /^loglevel|logtag|chain|disposition|caller$/ ) {
-			      $actparms{$var} = '';
+			      $actparams{$var} = '';
 			  } else {
-			      delete $actparms{$var}
+			      delete $actparams{$var}
 			  }
 		      } else {
 			  directive_warning( "Shorewall variable $2 does not exist", $filename, $linenumber );
@@ -3223,32 +3223,32 @@ sub push_action_params( $$$$$$ ) {
     my ( $action, $chainref, $parms, $loglevel, $logtag, $caller ) = @_;
     my @parms = ( undef , split_list3( $parms , 'parameter' ) );
 
-    $actparms{modified}   = $parmsmodified;
-    $actparms{usedcaller} = $usedcaller;
+    $actparams{modified}   = $parmsmodified;
+    $actparams{usedcaller} = $usedcaller;
 
-    my %oldparms = %actparms;
+    my %oldparms = %actparams;
 
     $parmsmodified = 0;
     $usedcaller    = 0;
 
-    %actparms = ();
+    %actparams = ();
 
     for ( my $i = 1; $i < @parms; $i++ ) {
 	my $val = $parms[$i];
 
-	$actparms{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
+	$actparams{$i} = $val eq '-' ? '' : $val eq '--' ? '-' : $val;
     }
 
-    $actparms{0}           = $chainref;
-    $actparms{action}      = $action;
-    $actparms{loglevel}    = $loglevel;
-    $actparms{logtag}      = $logtag;
-    $actparms{caller}      = $caller;
-    $actparms{disposition} = '' if $chainref->{action};
+    $actparams{0}           = $chainref;
+    $actparams{action}      = $action;
+    $actparams{loglevel}    = $loglevel;
+    $actparams{logtag}      = $logtag;
+    $actparams{caller}      = $caller;
+    $actparams{disposition} = '' if $chainref->{action};
     #
     # The Shorewall variable '@chain' has the non-word charaters removed
     #
-    ( $actparms{chain} = $chainref->{name} ) =~ s/[^\w]//g;
+    ( $actparams{chain} = $chainref->{name} ) =~ s/[^\w]//g;
 
     \%oldparms;
 }
@@ -3261,10 +3261,10 @@ sub push_action_params( $$$$$$ ) {
 #
 sub pop_action_params( $ ) {
     my $oldparms       = shift;
-    %actparms          = %$oldparms;
+    %actparams          = %$oldparms;
     my $return         = $parmsmodified | $usedcaller;
-    ( $parmsmodified ) = delete $actparms{modified}   || 0;
-    ( $usedcaller )    = delete $actparms{usedcaller} || 0;
+    ( $parmsmodified ) = delete $actparams{modified}   || 0;
+    ( $usedcaller )    = delete $actparams{usedcaller} || 0;
     $return;
 }
 
@@ -3274,11 +3274,11 @@ sub default_action_params {
 
     for ( $i = 1; 1; $i++ ) {
 	last unless defined ( $val = shift );
-	my $curval = $actparms{$i};
-	$actparms{$i} = $val unless supplied( $curval );
+	my $curval = $actparams{$i};
+	$actparams{$i} = $val unless supplied( $curval );
     }
 
-    fatal_error "Too Many arguments to action $action" if defined $actparms{$i};
+    fatal_error "Too Many arguments to action $action" if defined $actparams{$i};
 }
 
 sub get_action_params( $ ) {
@@ -3289,7 +3289,7 @@ sub get_action_params( $ ) {
     my @return;
 
     for ( my $i = 1; $i <= $num; $i++ ) {
-	my $val = $actparms{$i};
+	my $val = $actparams{$i};
 	push @return, defined $val ? $val eq '-' ? '' : $val eq '--' ? '-' : $val : $val;
     }
 
@@ -3304,7 +3304,7 @@ sub setup_audit_action( $ ) {
     if ( supplied $audit ) {
 	fatal_error "Invalid parameter ($audit) to action $action" if $audit ne 'audit';
 	fatal_error "Only ACCEPT, DROP and REJECT may be audited" unless $target =~ /^(?:A_)?(?:ACCEPT|DROP|REJECT)\b/;
-	$actparms{1} = "A_$target" unless $target =~ /^A_/;
+	$actparams{1} = "A_$target" unless $target =~ /^A_/;
     }
 }
 
@@ -3313,42 +3313,42 @@ sub setup_audit_action( $ ) {
 # Returns the Level and Tag for the current action chain
 #
 sub get_action_logging() {
-    @actparms{ 'loglevel', 'logtag' };
+    @actparams{ 'loglevel', 'logtag' };
 }
 
 sub get_action_chain() {
-    $actparms{0};
+    $actparams{0};
 }
 
 sub get_action_chain_name() {
-    $actparms{chain};
+    $actparams{chain};
 }
 
 sub set_action_name_to_caller() {
-    $actparms{chain} = $actparms{caller};
+    $actparams{chain} = $actparams{caller};
 }
 
 sub get_action_disposition() {
-    $actparms{disposition};
+    $actparams{disposition};
 }
 
 sub set_action_disposition($) {
-    $actparms{disposition} = $_[0];
+    $actparams{disposition} = $_[0];
 }
 
 sub set_action_param( $$ ) {
     my $i = shift;
 
     fatal_error "Parameter numbers must be numeric" unless $i =~ /^\d+$/ && $i > 0;
-    $actparms{$i} = shift;
+    $actparams{$i} = shift;
 }
 
 #
-# Expand Shell Variables in the passed buffer using %actparms, %params, %shorewallrc1 and %config, 
+# Expand Shell Variables in the passed buffer using %actparams, %params, %shorewallrc1 and %config, 
 #
 sub expand_variables( \$ ) {
     my ( $lineref, $count ) = ( $_[0], 0 );
-    my $chain = $actparms{chain};
+    my $chain = $actparams{chain};
     #                         $1      $2   $3                   -     $4
     while ( $$lineref =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 
@@ -3362,16 +3362,16 @@ sub expand_variables( \$ ) {
 	    if ( $config{IGNOREUNKNOWNVARIABLES} ) {
 		fatal_error "Invalid action parameter (\$$var)" if ( length( $var ) > 1 && $var =~ /^0/ );
 	    } else {
-		fatal_error "Undefined parameter (\$$var)" unless ( defined $actparms{$var} &&
+		fatal_error "Undefined parameter (\$$var)" unless ( defined $actparams{$var} &&
 								    ( length( $var ) == 1 ||
 								      $var !~ /^0/ ) );
 	    }
 
-	    $val = $var ? $actparms{$var} : $actparms{0}->{name};
+	    $val = $var ? $actparams{$var} : $actparams{0}->{name};
 	} elsif ( exists $variables{$var} ) {
 	    $val = $variables{$var};
-	} elsif ( exists $actparms{$var} ) { 
-	    $val = $actparms{$var};
+	} elsif ( exists $actparams{$var} ) { 
+	    $val = $actparams{$var};
 	    $usedcaller = USEDCALLER if $var eq 'caller';
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless $config{IGNOREUNKNOWNVARIABLES} || exists $config{$var};
@@ -3390,7 +3390,7 @@ sub expand_variables( \$ ) {
 	#                         $1      $2   $3                     -     $4
 	while ( $$lineref =~ m( ^(.*?) \@({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
-	    my $val = $var ? $actparms{$var} : $actparms{chain};
+	    my $val = $var ? $actparams{$var} : $actparams{chain};
 	    $usedcaller = USEDCALLER if $var eq 'caller';
 	    $val = '' unless defined $val;
 	    $$lineref = join( '', $first , $val , $rest );
@@ -3521,7 +3521,7 @@ sub read_a_line($) {
 	    #
 	    handle_first_entry if $first_entry;
 	    #
-	    # Expand Shell Variables using %params and %actparms
+	    # Expand Shell Variables using %params and %actparams
 	    #
 	    expand_variables( $currentline ) if $options & EXPAND_VARIABLES;
 

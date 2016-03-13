@@ -12,28 +12,21 @@
 
 DEFAULTS -
 
-?begin perl;
-use strict;
-use Shorewall::Config qw(:DEFAULT F_IPV4 F_IPV6);
-use Shorewall::Chains;
-use Shorewall::Rules;
+?if @1 ne '' && @1 ne '-'
+    ?if @1 eq 'audit'
+        ?set tcpflags_action A_DROP
+    ?else
+	?error The parameter to TCPFlags must be 'audit' or '-'
+    ?endif
+?else
+    ?set tcpflags_action DROP
+?endif
 
-my $action = 'DROP';
-
-my ( $audit ) = get_action_params( 1 );
-
-if ( supplied $audit ) {
-     fatal_error "Invalid parameter ($audit) to action TCPFlags" if $audit ne 'audit';
-     $action = "A_DROP";
-}    
-
-perl_action_tcp_helper( $action, '-p tcp --tcp-flags ALL FIN,URG,PSH' );
-perl_action_tcp_helper( $action, '-p tcp --tcp-flags ALL NONE' );
-perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,RST SYN,RST' );
-perl_action_tcp_helper( $action, '-p tcp --tcp-flags SYN,FIN SYN,FIN' );
-perl_action_tcp_helper( $action, '-p tcp --syn --sport 0' );
-
-?end perl;
+$tcpflags_action	-	-	;;+ -p 6 --tcp-flags ALL FIN,URG,PSH
+$tcpflags_action	-	-	;;+ -p 6 --tcp-flags ALL NONE
+$tcpflags_action	-	-	;;+ -p 6 --tcp-flags SYN,RST SYN,RST
+$tcpflags_action	-	-	;;+ -p 6 --tcp-flags SYN,FIN SYN,FIN
+$tcpflags_action	-	-	;;+ -p tcp --syn --sport 0
 
 
 

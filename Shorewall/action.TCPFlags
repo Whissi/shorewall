@@ -14,12 +14,12 @@ DEFAULTS -
 
 ?if @1 ne '' && @1 ne '-'
     ?if @1 eq 'audit'
-        ?set tcpflags_action A_DROP
+        ?set tcpflags_action 'A_DROP'
     ?else
 	?error The parameter to TCPFlags must be 'audit' or '-'
     ?endif
 ?else
-    ?set tcpflags_action DROP
+    ?set tcpflags_action 'DROP'
 ?endif
 
 $tcpflags_action	-	-	;;+ -p 6 --tcp-flags ALL FIN,URG,PSH

@@ -2949,17 +2949,13 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	$actionresult = 0;
 
-	my $save_current_param = $current_param;
-
-	$current_param = $param;
-
 	my $generated = process_inline( $basictarget,
 					$chainref,
 					$rule . $raw_matches,
 					$matches1,
 					$loglevel,
 					$target,
-					$current_param,
+					$param,
 					$source,
 					$dest,
 					$proto,
@@ -2977,8 +2973,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 					$wildcard ) || $actionresult;
 
 	( $actionresult, @columns ) = @{pop @columnstack};
-
-	$current_param = $save_current_param;
 
 	$macro_nest_level--;
 

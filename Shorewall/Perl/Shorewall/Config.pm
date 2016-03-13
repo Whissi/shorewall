@@ -3303,7 +3303,8 @@ sub setup_audit_action( $ ) {
 
     if ( supplied $audit ) {
 	fatal_error "Invalid parameter ($audit) to action $action" if $audit ne 'audit';
-	$actparms{1} = "A_$target";
+	fatal_error "Only ACCEPT, DROP and REJECT may be audited" unless $target =~ /^(?:A_)?(?:ACCEPT|DROP|REJECT)\b/;
+	$actparms{1} = "A_$target" unless $target =~ /^A_/;
     }
 }
 

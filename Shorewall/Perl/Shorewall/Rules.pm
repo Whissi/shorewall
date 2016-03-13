@@ -2930,8 +2930,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	# process_inline() will call process_rule() recursively for each rule in the macro body
 	#
 	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
-
-	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 	#
 	# Push the current column array onto the column stack
 	#
@@ -2942,6 +2940,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	@columns = ( $source, $dest, $proto, $ports, $sports, $origdest, $ratelimit, $user, $mark, $connlimit, $time, $headers, $condition, $helper, $wildcard );
 
 	$actionresult = 0;
+
+	my $save_current_param = $current_param;
+
+	$current_param = $param;
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
@@ -2967,6 +2969,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 					$wildcard ) || $actionresult;
 
 	( $actionresult, @columns ) = @{pop @columnstack};
+
+	$current_param = $save_current_param;
 
 	$macro_nest_level--;
 

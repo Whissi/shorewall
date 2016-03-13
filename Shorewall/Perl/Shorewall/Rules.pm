@@ -2487,6 +2487,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $raw_matches = '';
     my $exceptionrule = '';
     my $usergenerated;
+    my $prerule = '';
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2498,6 +2499,13 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	( $action, $basictarget, $param, $loglevel, $raw_matches ) = handle_inline( FILTER_TABLE, 'filter', $action, $basictarget, $param, $loglevel );
     } else {
 	$raw_matches = get_inline_matches(0);
+    }
+    #
+    # Handle early matches
+    #
+    if ( $raw_matches =~ s/s*\+// ) {
+	$prerule = $raw_matches;
+	$raw_matches = '';
     }
     #
     # Determine the validity of the action
@@ -3142,7 +3150,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	expand_rule( $chainref ,
 		     $restriction ,
-		     '' ,
+		     $prerule ,
 		     $rule ,
 		     $source ,
 		     $dest ,

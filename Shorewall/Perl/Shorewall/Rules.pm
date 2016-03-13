@@ -237,6 +237,7 @@ use constant { INLINE_OPT           => 1 ,
 	       FILTER_OPT           => 64 ,
 	       NAT_OPT              => 128 ,
 	       TERMINATING_OPT      => 256 ,
+	       AUDIT_OPT            => 512 ,
 };
 
 our %options = ( inline      => INLINE_OPT ,
@@ -248,6 +249,7 @@ our %options = ( inline      => INLINE_OPT ,
 		 filter      => FILTER_OPT ,
 		 nat         => NAT_OPT ,
 		 terminating => TERMINATING_OPT ,
+		 audit       => AUDIT_OPT ,
     );
 ################################################################################
 #   Declarations moved from the Tc module in 5.0.7                             #
@@ -1829,8 +1831,10 @@ sub process_action(\$\$$) {
     push_open $actionfile, 2, 1, undef, 2;
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
+    my $options = $actions{$action}{options};
+    my $nolog = $options & NOINLINE_OPT;
 
-    my $nolog = $actions{$action}{options} & NOINLINE_OPT;
+    setup_audit_action( $action ) if $options & AUDIT_OPT;
 
     $active{$action}++;
     push @actionstack, $wholeaction;
@@ -2326,7 +2330,10 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 				       );
 
     my $inlinefile = $inlines{$inline}{file};
-    my $nolog      = $inlines{$inline}{options} & NOLOG_OPT;
+    my $options    = $inlines{$inline}{options};
+    my $nolog      = $options & NOLOG_OPT;
+
+    setup_audit_action( $inline ) if $options & AUDIT_OPT;
 
     progress_message "..Expanding inline action $inlinefile...";
 

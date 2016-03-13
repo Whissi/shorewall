@@ -139,6 +139,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       push_action_params
 				       pop_action_params
 				       default_action_params
+                                       setup_audit_action
 				       read_a_line
 				       which
 				       qt
@@ -3294,6 +3295,18 @@ sub get_action_params( $ ) {
 
     @return;
 }
+
+sub setup_audit_action( $ ) {
+    my ( $action ) = @_;
+
+    my ( $target, $audit ) = get_action_params( 2 );
+
+    if ( supplied $audit ) {
+	fatal_error "Invalid parameter ($audit) to action $action" if $audit ne 'audit';
+	$actparms{1} = "A_$target";
+    }
+}
+
 
 #
 # Returns the Level and Tag for the current action chain

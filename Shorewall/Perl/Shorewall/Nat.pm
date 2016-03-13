@@ -69,6 +69,7 @@ sub process_one_masq1( $$$$$$$$$$$ )
     my $destnets = '';
     my $baserule = '';
     my $inlinematches = '';
+    my $prerule       = '';
     #
     # Leading '+'
     #
@@ -82,6 +83,13 @@ sub process_one_masq1( $$$$$$$$$$$ )
     } else {
 	$inlinematches = get_inline_matches(0);
     }	
+    #
+    # Handle early matches
+    #
+    if ( $inlinematches =~ s/s*\+// ) {
+	$prerule = $inlinematches;
+	$inlinematches = '';
+    }
     #
     # Parse the remaining part of the INTERFACE column
     #
@@ -336,7 +344,7 @@ sub process_one_masq1( $$$$$$$$$$$ )
 	#
 	expand_rule( $chainref ,
 		     POSTROUTE_RESTRICT ,
-		     '' ,
+		     $prerule ,
 		     $baserule . $inlinematches . $rule ,
 		     $networks ,
 		     $destnets ,

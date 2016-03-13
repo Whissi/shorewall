@@ -3880,6 +3880,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     my $usergenerated;
     my $actiontype;
     my $commandref;
+    my $prerule        = '';
     #
     # Subroutine for handling MARK and CONNMARK. We use an enclosure so as to keep visibility of the
     # function's local variables without making them static. process_mangle_rule1() is called
@@ -3928,7 +3929,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
 		expand_rule( $chainref,
 			     $restrictions{$chain} | $restriction,
-			     '' ,
+			     $prerule ,
 			     $match .
 			     do_user( $user ) .
 			     do_test( $testval, $globals{TC_MASK} ) .
@@ -4566,6 +4567,13 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     } else {
 	$raw_matches = get_inline_matches(0);
     }
+    #
+    # Handle early matches
+    #
+    if ( $raw_matches =~ s/s*\+// ) {
+	$prerule = $raw_matches;
+	$raw_matches = '';
+    }
 
     if ( $source ne '-' ) {
 	if ( $source eq $fw ) {
@@ -4645,7 +4653,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
 	if ( ( my $result = expand_rule( $chainref ,
 					 ( $restrictions{$chain} || 0 ) | $restriction,
-					 '',
+					 $prerule,
 					 do_proto( $proto, $ports, $sports) . $matches .
 					 do_user( $user ) .
 					 do_test( $testval, $globals{TC_MASK} ) .

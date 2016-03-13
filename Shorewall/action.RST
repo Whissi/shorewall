@@ -30,21 +30,4 @@
 
 DEFAULTS DROP,-
 
-?begin perl;
-
-use Shorewall::Config;
-use Shorewall::Chains;
-use Shorewall::Rules;
-
-my ( $action, $audit ) = get_action_params( 2 );
-
-if ( supplied $audit ) {
-     fatal_error "Invalid parameter ($audit) to action RST" if $audit ne 'audit';
-     $action = "A_$action";
-}
-
-perl_action_tcp_helper( $action, '-p 6 --tcp-flags RST RST' );
-
-1;
-
-?end perl;
+@1	 -	-	;;+ -p 6 --tcp-flags RST RST

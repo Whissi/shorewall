@@ -224,6 +224,31 @@ our %statetable;
 # Tracks which of the state match actions (action.Invalid, etc.) that is currently being expanded
 #
 our $statematch;
+
+#
+# Action/Inline options
+#
+use constant { INLINE_OPT           => 1 ,
+	       NOINLINE_OPT         => 2 ,
+	       NOLOG_OPT            => 4 ,
+	       BUILTIN_OPT          => 8 ,
+	       RAW_OPT              => 16 ,
+	       MANGLE_OPT           => 32 ,
+	       FILTER_OPT           => 64 ,
+	       NAT_OPT              => 128 ,
+	       TERMINATING_OPT      => 256 ,
+};
+
+our %options = ( inline      => INLINE_OPT ,
+		 noinline    => NOINLINE_OPT ,
+		 nolog       => NOLOG_OPT ,
+		 builtin     => BUILTIN_OPT ,
+		 raw         => RAW_OPT ,
+		 mangle      => MANGLE_OPT ,
+		 filter      => FILTER_OPT ,
+		 nat         => NAT_OPT ,
+		 terminating => TERMINATING_OPT ,
+    );
 ################################################################################
 #   Declarations moved from the Tc module in 5.0.7                             #
 ################################################################################
@@ -1294,13 +1319,13 @@ sub external_name( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$$ ) {
+sub new_action( $$$ ) {
 
-    my ( $action , $type, $noinline, $nolog ) = @_;
+    my ( $action , $type, $options ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' , noinline => $noinline, nolog => $nolog } if $type & ACTION;
+    $actions{$action} = { actchain => '' , options => $options } if $type & ACTION;
 
     $targets{$action} = $type;
 }
@@ -1805,7 +1830,7 @@ sub process_action(\$\$$) {
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
 
-    my $nolog = $actions{$action}{nolog};
+    my $nolog = $actions{$action}{options} & NOINLINE_OPT;
 
     $active{$action}++;
     push @actionstack, $wholeaction;
@@ -2007,7 +2032,7 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, 1, 0 ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file( $file, 2 );
@@ -2020,28 +2045,6 @@ sub process_actions() {
 						    1 );   #Allow inline matches
 
 	    my $type = ( $action eq $config{REJECT_ACTION} ? INLINE : ACTION );
-
-	    use constant { INLINE_OPT           => 1 ,
-			   NOINLINE_OPT         => 2 ,
-			   NOLOG_OPT            => 4 ,
-			   BUILTIN_OPT          => 8 ,
-			   RAW_OPT              => 16 ,
-			   MANGLE_OPT           => 32 ,
-			   FILTER_OPT           => 64 ,
-			   NAT_OPT              => 128 ,
-			   TERMINATING_OPT      => 256 ,
-		       };
-
-	    my %options = ( inline      => INLINE_OPT ,
-			    noinline    => NOINLINE_OPT ,
-			    nolog       => NOLOG_OPT ,
-			    builtin     => BUILTIN_OPT ,
-			    raw         => RAW_OPT ,
-			    mangle      => MANGLE_OPT ,
-			    filter      => FILTER_OPT ,
-			    nat         => NAT_OPT ,
-			    terminating => TERMINATING_OPT ,
-			  );
 
 	    my $opts = $type == INLINE ? NOLOG_OPT : 0;
 
@@ -2067,7 +2070,7 @@ sub process_actions() {
 
 	    if ( my $actiontype = $targets{$action} ) {
 		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
-		    if ( $actions{$action}->{noinline} ) {
+		    if ( $actions{$action}{options} & NOINLINE_OPT ) {
 			warning_message "'inline' option ignored on action $action -- that action may not be in-lined";
 			next;
 		    }
@@ -2104,13 +2107,13 @@ sub process_actions() {
 
 		$type |= MANGLE_TABLE if $opts & MANGLE_OPT;
 
-		new_action $action, $type, ( $opts & NOINLINE_OPT ) != 0 , ( $opts & NOLOG_OPT ) != 0;
+		new_action ( $action, $type, $opts );
 
 		my $actionfile = find_file( "action.$action" );
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		$inlines{$action} = { file => $actionfile, nolog => $opts & NOLOG_OPT } if $type & INLINE;
+		$inlines{$action} = { file => $actionfile, options => $opts } if $type & INLINE;
 	    }
 	}
     }
@@ -2323,7 +2326,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 				       );
 
     my $inlinefile = $inlines{$inline}{file};
-    my $nolog      = $inlines{$inline}{nolog};
+    my $nolog      = $inlines{$inline}{options} & NOLOG_OPT;
 
     progress_message "..Expanding inline action $inlinefile...";
 

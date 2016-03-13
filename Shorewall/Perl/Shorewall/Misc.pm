@@ -641,6 +641,7 @@ sub create_docker_rules() {
 	add_ijump( $chainref, j => 'DOCKER', o => 'docker0' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => '! docker0' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => 'docker0' ) if $dockerref->{options}{routeback};
+	add_ijump( $filter_table->{OUTPUT}, j => 'DOCKER' );
 	decr_cmd_level( $chainref );
 	add_commands( $chainref, 'fi' );
     }

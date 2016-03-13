@@ -7762,7 +7762,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 				       '' ,
 				       $logtag ,
 				       'add' ,
-				       $matches
+				       $prerule . $matches
 				      );
 		    } elsif ( $logname || $basictarget eq 'RETURN' ) {
 			log_rule_limit(
@@ -7773,7 +7773,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 				       '',
 				       $logtag,
 				       'add',
-				       $matches );
+				       $prerule . $matches );
 
 			if ( $targetref ) {
 			    add_expanded_jump( $chainref, $targetref, 0, $matches );
@@ -7793,7 +7793,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 						     $actparms{disposition} || $disposition,
 						     $target ),
 					   $terminating{$basictarget} || ( $targetref && $targetref->{complete} ),
-					   $matches );
+					   $prerule . $matches );
 		    }
 
 		    conditional_rule_end( $chainref ) if $cond3;

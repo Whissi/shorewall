@@ -1814,7 +1814,7 @@ sub process_action(\$\$$) {
 	fatal_error "Action $action may not be used in the mangle file"  if $chainref->{table} eq 'mangle';
     }
 
-    my $actionfile = find_file "action.$action";
+    my $actionfile = $actions{$action}->{file};
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 

@@ -1826,7 +1826,7 @@ sub process_action(\$\$$) {
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
     my $options = $actionref->{options};
-    my $nolog = $options & NOINLINE_OPT;
+    my $nolog = $options & NOLOG_OPT;
 
     setup_audit_action( $action ) if $options & AUDIT_OPT;
 

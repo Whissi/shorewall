@@ -2951,7 +2951,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	my $generated = process_inline( $basictarget,
 					$chainref,
-					$rule . $raw_matches,
+					$prerule . $rule . $raw_matches,
 					$matches1,
 					$loglevel,
 					$target,

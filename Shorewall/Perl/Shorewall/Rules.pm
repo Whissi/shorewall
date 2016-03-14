@@ -1313,13 +1313,13 @@ sub external_name( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$$ ) {
+sub new_action( $$$$$ ) {
 
-    my ( $action , $type, $options , $actionfile ) = @_;
+    my ( $action , $type, $options , $actionfile , $state ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options };
+    $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options , state => $state };
 
     $targets{$action} = $type;
 }
@@ -1787,6 +1787,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ );
+sub perl_action_helper( $$;$$ );
 
 #
 # Populate an action invocation chain. As new action tuples are encountered,
@@ -1934,8 +1935,17 @@ sub process_action(\$\$$) {
 	    fatal_error 'TARGET must be specified' if $target eq '-';
 
 	    if ( $target eq 'DEFAULTS' ) {
-		default_action_params( $action, split_list $source, 'defaults' ), next if $file_format == 2;
-		fatal_error 'DEFAULTS only allowed in FORMAT-2 actions';
+		default_action_params( $action, split_list $source, 'defaults' );
+
+		if ( my $state = $actionref->{state} ) {
+		    my ( $action ) = get_action_params( 1 );
+
+		    if ( my $check = check_state( $state ) ) {
+			perl_action_helper( $action, $check == 1 ? state_match( $state ) : '' , $state );
+		    }
+		}
+
+		next;
 	    }
 
 	    process_rule( $chainref,
@@ -2029,7 +2039,7 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT, '' ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT, '' , '' ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file( $file, 2 );
@@ -2045,6 +2055,8 @@ sub process_actions() {
 
 	    my $opts = $type == INLINE ? NOLOG_OPT : 0;
 
+	    my $state = '';
+
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
 		$action =~ s/:.*$//;
@@ -2054,8 +2066,12 @@ sub process_actions() {
 
 	    if ( $options ne '-' ) {
 		for ( split_list( $options, 'option' ) ) {
-		    fatal_error "Invalid option ($_)" unless $options{$_};
-		    $opts |= $options{$_};
+		    if ( /^state=(NEW|ESTABLISHED|RELATED|INVALID|UNTRACKED)$/ ) {
+			$state = $1;
+		    } else {
+			fatal_error "Invalid option ($_)" unless $options{$_};
+			$opts |= $options{$_};
+		    }
 		}
 
 		unless ( $type & INLINE ) {
@@ -2071,7 +2087,7 @@ sub process_actions() {
 			warning_message "'inline' option ignored on action $action -- that action may not be in-lined";
 			next;
 		    }
-		    
+
 		    delete $actions{$action};
 		    delete $targets{$action};
 		} else {
@@ -2108,7 +2124,7 @@ sub process_actions() {
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		new_action ( $action, $type, $opts, $actionfile );
+		new_action ( $action, $type, $opts, $actionfile , $state );
 	    }
 	}
     }
@@ -2320,8 +2336,9 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 					 $chainref->{name} ,
 				       );
 
-    my $inlinefile = $actions{$inline}{file};
-    my $options    = $actions{$inline}{options};
+    my $actionref  = $actions{$inline};
+    my $inlinefile = $actionref->{file};
+    my $options    = $actionref->{options};
     my $nolog      = $options & NOLOG_OPT;
 
     setup_audit_action( $inline ) if $options & AUDIT_OPT;
@@ -2358,6 +2375,15 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 
 	if ( $mtarget eq 'DEFAULTS' ) {
 	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
+
+	    if ( my $state = $actionref->{state} ) {
+		my ( $action ) = get_action_params( 1 );
+
+		if ( my $check = check_state( $state ) ) {
+		    perl_action_helper( $action, $check == 1 ? state_match( $state ) : '' , $state );
+		}
+	    }
+
 	    next;
 	}
 

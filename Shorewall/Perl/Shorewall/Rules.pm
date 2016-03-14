@@ -1801,6 +1801,7 @@ sub process_action(\$\$$) {
     my $chainref    = ${$chainrefref};
     my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, ACTION_TUPLE_ELEMENTS;
     my $type = $targets{$action};
+    my $actionref = $actions{$action};
 
     if ( $type & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
@@ -1814,7 +1815,7 @@ sub process_action(\$\$$) {
 	fatal_error "Action $action may not be used in the mangle file"  if $chainref->{table} eq 'mangle';
     }
 
-    my $actionfile = $actions{$action}->{file};
+    my $actionfile = $actionref->{file};
 
     fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
@@ -1823,7 +1824,7 @@ sub process_action(\$\$$) {
     push_open $actionfile, 2, 1, undef, 2;
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
-    my $options = $actions{$action}{options};
+    my $options = $actionref->{options};
     my $nolog = $options & NOINLINE_OPT;
 
     setup_audit_action( $action ) if $options & AUDIT_OPT;

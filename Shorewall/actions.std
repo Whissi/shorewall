@@ -8,21 +8,18 @@
 #
 # Builtin Actions are:
 #
-#    A_ACCEPT           # Audits then accepts a connection request
-#    A_DROP             # Audits then drops a connection request
-#    A_REJECT		# Audits then drops a connection request
-#    allowBcast		# Silently Allow Broadcast/multicast
-#    dropBcast		# Silently Drop Broadcast/multicast
-#    dropNotSyn		# Silently Drop Non-syn TCP packets
-#    rejNotSyn		# Silently Reject Non-syn TCP packets
-#    allowoutUPnP	# Allow traffic from local command 'upnpd' (does not
-#                       # work with kernel 2.6.14 and later).
-#    allowinUPnP	# Allow UPnP inbound (to firewall) traffic
-#    forwardUPnP	# Allow traffic that upnpd has redirected from
-#			# 'upnp' interfaces.
-#    Limit              # Limit the rate of connections from each individual
-#                       # IP address
-#
+?if 0
+A_ACCEPT                        # Audits then accepts a connection request
+A_DROP                          # Audits then drops a connection request
+A_REJECT		        # Audits then drops a connection request
+allowBcast		        # Silently Allow Broadcast/multicast
+dropBcast		        # Silently Drop Broadcast/multicast
+dropNotSyn		        # Silently Drop Non-syn TCP packets
+rejNotSyn		        # Silently Reject Non-syn TCP packets
+allowinUPnP	                # Allow UPnP inbound (to firewall) traffic
+forwardUPnP	                # Allow traffic that upnpd has redirected from 'upnp' interfaces.
+Limit                           # Limit the rate of connections from each individual IP address
+?endif
 ###############################################################################
 #ACTION
 A_Drop 		                # Audited Default Action for DROP policy
@@ -35,16 +32,20 @@ DNSAmp                          # Matches one-question recursive DNS queries
 Drop		                # Default Action for DROP policy
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 DropSmurfs   noinline           # Drop smurf packets
-Established  inline		# Handles packets in the ESTABLISHED state
+Established  inline,\		# Handles packets in the ESTABLISHED state
+	     state=ESTABLISHED  #
 GlusterFS    inline		# Handles GlusterFS
 IfEvent      noinline           # Perform an action based on an event
-Invalid      inline             # Handles packets in the INVALID conntrack state
-New	     inline             # Handles packets in the NEW conntrack state
+Invalid      inline,audit,\     # Handles packets in the INVALID conntrack state
+             state=INVALID      #
+New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn       inline,audit       # Handles TCP packets which do not have SYN=1 and ACK=0
 Reject                          # Default Action for REJECT policy
-Related      inline             # Handles packets in the RELATED conntrack state
+Related      inline,\		# Handles packets in the RELATED conntrack state
+             state=RELATED      #
 ResetEvent   inline		# Reset an Event
 RST	     inline,audit       # Handle packets with RST set
 SetEvent     inline		# Initialize an event
 TCPFlags    			# Handle bad flag combinations.
-Untracked    inline             # Handles packets in the UNTRACKED conntrack state
+Untracked    inline,\           # Handles packets in the UNTRACKED conntrack state
+	     state=UNTRACKED    #

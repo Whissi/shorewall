@@ -8,11 +8,12 @@
 #
 # Builtin Actions are:
 #
-#    allowBcasts        # Accept multicast and anycast packets
-#    dropBcasts         # Silently Drop multicast and anycast packets
-#    dropNotSyn		# Silently Drop Non-syn TCP packets
-#    rejNotSyn		# Silently Reject Non-syn TCP packets
-#
+?if 0
+allowBcasts                     # Accept multicast and anycast packets
+dropBcasts                      # Silently Drop multicast and anycast packets
+dropNotSyn		        # Silently Drop Non-syn TCP packets
+rejNotSyn		        # Silently Reject Non-syn TCP packets
+?endif
 ###############################################################################
 #ACTION
 A_Drop	                        # Audited Default Action for DROP policy
@@ -26,15 +27,19 @@ Broadcast    noinline      	# Handles Broadcast/Multicast/Anycast
 Drop		        	# Default Action for DROP policy
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 DropSmurfs   noinline     	# Handles packets with a broadcast source address
-Established  inline		# Handles packets in the ESTABLISHED state
+Established  inline,\		# Handles packets in the ESTABLISHED state
+	     state=ESTABLISHED
 IfEvent      noinline           # Perform an action based on an event
-Invalid	     inline		# Handles packets in the INVALID conntrack state
-New	     inline             # Handles packets in the NEW conntrack state
+Invalid      inline,audit,\     # Handles packets in the INVALID conntrack state
+             state=INVALID
+New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		        	# Default Action for REJECT policy
-Related      inline             # Handles packets in the RELATED conntrack state
+Related      inline,\		# Handles packets in the RELATED conntrack state
+             state=RELATED
 ResetEvent   inline		# Reset an Event
 RST	     inline             # Handle packets with RST set
 SetEvent     inline		# Initialize an event
 TCPFlags    			# Handles bad flags combinations
-Untracked    inline             # Handles packets in the UNTRACKED conntrack state
+Untracked    inline,\           # Handles packets in the UNTRACKED conntrack state
+	     state=UNTRACKED

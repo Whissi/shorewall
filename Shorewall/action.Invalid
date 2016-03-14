@@ -30,24 +30,6 @@
 
 DEFAULTS DROP,-
 
-?begin perl;
-
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
-use Shorewall::Rules;
-
-my ( $action, $audit ) = get_action_params( 2 );
-
-if ( supplied $audit ) {
-     fatal_error "Invalid parameter ($audit) to action Invalid" if $audit ne 'audit';
-     $action = "A_$action";
-}
-
-if ( my $check = check_state( 'INVALID' ) ) {
-    perl_action_helper( $action, $check == 1 ? state_match( 'INVALID' ) : '' , 'INVALID' );
-}
-
-1;
-
-?end perl;
+#
+# All logic for this action is triggered by the 'audit' and 'state' options in actions.std
+#

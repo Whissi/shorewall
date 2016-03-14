@@ -30,19 +30,6 @@
 
 DEFAULTS ACCEPT
 
-?begin perl;
-
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
-use Shorewall::Rules;
-
-my ( $action ) = get_action_params( 1 );
-
-if ( my $check = check_state( 'ESTABLISHED' ) ) {
-    perl_action_helper( $action, $check == 1 ? state_match('ESTABLISHED') : '', 'ESTABLISHED' );
-}
-
-1;
-
-?end perl;
+#
+# All logic for this action is supplied by the 'state' option in actions.std
+#

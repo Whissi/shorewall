@@ -22,7 +22,7 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-#   Untracked[([<action>])]
+#   New[([<action>])]
 #
 #       Default action is ACCEPT
 #
@@ -30,19 +30,6 @@
 
 DEFAULTS ACCEPT
 
-?begin perl;
-
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
-use Shorewall::Rules;
-
-my ( $action ) = get_action_params( 1 );
-
-if ( my $check = check_state( 'NEW' ) ) {
-    perl_action_helper( $action, $check == 1 ? state_match( 'NEW' ) : '' , 'NEW' );
-}
-
-1;
-
-?end perl;
+#
+# All logic for this action is supplied by the 'state' option in actions.std
+#

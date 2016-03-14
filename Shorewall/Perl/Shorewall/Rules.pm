@@ -2067,7 +2067,11 @@ sub process_actions() {
 	    if ( $options ne '-' ) {
 		for ( split_list( $options, 'option' ) ) {
 		    if ( /^state=(NEW|ESTABLISHED|RELATED|INVALID|UNTRACKED)$/ ) {
-			$state = $1;
+			if ( $file eq 'actions.std' ) {
+			    $state = $1;
+			} else {
+			    warning_message( q(The 'state' option is ignored in the actions file) );
+			}
 		    } else {
 			fatal_error "Invalid option ($_)" unless $options{$_};
 			$opts |= $options{$_};

@@ -186,10 +186,6 @@ our %active;
 #
 our %actions;
 #
-#  Inline Action Table
-#
-our %inlines;
-#
 # Contains an entry for each used <action>:<level>:[<tag>]:[<calling chain>]:[<params>] that maps to the associated chain.
 # See normalize_action().
 #
@@ -352,10 +348,6 @@ sub initialize( $ ) {
     # All builtin actions plus those mentioned in /etc/shorewall[6]/actions and /usr/share/shorewall[6]/actions
     #
     %actions           = ();
-    #
-    # Inline Actions -- value is file.
-    #
-    %inlines           = ();
     #
     # Action variants actually used. Key is <action>:<loglevel>:<tag>:<params>; value is corresponding chain name
     #
@@ -536,7 +528,7 @@ sub process_default_action( $$$$ ) {
 	    }
 
 	    $default = 'none';
-	} elsif ( $actions{$def} ) {
+	} elsif ( ( $targets{$def} || 0 ) == ACTION ) {
 	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
@@ -1321,13 +1313,13 @@ sub external_name( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$ ) {
+sub new_action( $$$$ ) {
 
-    my ( $action , $type, $options ) = @_;
+    my ( $action , $type, $options , $actionfile ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { actchain => '' , options => $options } if $type & ACTION;
+    $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options };
 
     $targets{$action} = $type;
 }
@@ -2036,7 +2028,7 @@ sub process_actions() {
     #
     # Add built-in actions to the target table and create those actions
     #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT ) for @builtins;
+    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT, '' ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file( $file, 2 );
@@ -2111,13 +2103,11 @@ sub process_actions() {
 
 		$type |= MANGLE_TABLE if $opts & MANGLE_OPT;
 
-		new_action ( $action, $type, $opts );
-
 		my $actionfile = find_file( "action.$action" );
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		$inlines{$action} = { file => $actionfile, options => $opts } if $type & INLINE;
+		new_action ( $action, $type, $opts, $actionfile );
 	    }
 	}
     }
@@ -2329,8 +2319,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 					 $chainref->{name} ,
 				       );
 
-    my $inlinefile = $inlines{$inline}{file};
-    my $options    = $inlines{$inline}{options};
+    my $inlinefile = $actions{$inline}{file};
+    my $options    = $actions{$inline}{options};
     my $nolog      = $options & NOLOG_OPT;
 
     setup_audit_action( $inline ) if $options & AUDIT_OPT;
@@ -3309,7 +3299,11 @@ sub perl_action_helper($$;$$) {
 	}
     }
 
-    if ( my $ref = $inlines{$action} ) {
+    my $ref = $actions{$action};
+
+    assert( $ref, $action );
+
+    if ( $ref->{type} & INLINE ) {
 	$result = &process_rule( $chainref,
 				 $matches,
 				 $matches1,
@@ -3317,8 +3311,6 @@ sub perl_action_helper($$;$$) {
 				 '',                              # CurrentParam
 				 @columns );
     } else {
-	assert $actions{$action};
-
 	$result = process_rule( $chainref,
 				$matches,
 				$matches1,
@@ -3370,7 +3362,11 @@ sub perl_action_tcp_helper($$) {
 	#
 	# For other protos, a 'no rule generated' warning will be issued
 	#
-	if ( my $ref = $inlines{$action} ) {
+	my $ref = $actions{$action};
+
+	assert( $ref, $action );
+
+	if ( $ref->{type} & INLINE ) {
 	    $result = &process_rule( $chainref,
 				     $proto,
 				     '',
@@ -3720,7 +3716,7 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 					 '' ,
 					 $chainref->{name} );
 
-    my $inlinefile = $inlines{$inline}{file};
+    my $inlinefile = $actions{$inline}{file};
 
     progress_message "..Expanding inline action $inlinefile...";
 

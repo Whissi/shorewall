@@ -2070,7 +2070,7 @@ sub process_actions() {
 			if ( $file eq 'actions.std' ) {
 			    $state = $1;
 			} else {
-			    warning_message( q(The 'state' option is ignored in the actions file) );
+			    fatal_error( q(The 'state' option is reserved for use in the actions.std file) );
 			}
 		    } else {
 			fatal_error "Invalid option ($_)" unless $options{$_};

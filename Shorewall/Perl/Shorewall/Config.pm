@@ -61,6 +61,7 @@ our @EXPORT = qw(
 		 progress_message3
 
 		 supplied
+                 passed
 		 split_list
 
 		 shorewall
@@ -86,7 +87,7 @@ our @EXPORT = qw(
 		 kernel_version
                 );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
+our @EXPORT_OK = qw( $shorewall_dir initialize shorewall passed);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
                                        generate_sha1
@@ -2151,6 +2152,12 @@ sub supplied( $ ) {
     defined $val && $val ne '';
 }
 
+sub passed( $ ) {
+    my $val = shift;
+
+    defined $val && $val ne '' && $val ne '-';
+}
+
 #
 # Pre-process a line from a configuration file.
 
@@ -2514,6 +2521,20 @@ sub evaluate_expression( $$$$ ) {
     my $val;
     my $count = 0;
     my $chain = $actparams{chain};
+
+    #                     $1                   $2
+    if ( $expression =~ /^(!)?\s*passed\([\$@](\d+)\)$/ ) {
+	my $val = passed($actparams{$2});
+
+	return $1 ? ! $val : $val unless $debug;
+
+	$val = $1 ? ! $val : $val;
+
+	print "EXPR=> '$val'\n" if $debug;
+
+	return $val;
+    }
+
     #                         $1      $2   $3                     -     $4
     while ( $expression =~ m( ^(.*?) \$({)? (\d+|[a-zA-Z_]\w*) (?(2)}) (.*)$ )x ) {
 	my ( $first, $var, $rest ) = ( $1, $3, $4);
@@ -2572,7 +2593,10 @@ sub evaluate_expression( $$$$ ) {
 	#
 	# Not a simple one-term expression -- compile it
 	#
-	$val = eval qq(package Shorewall::User;\nuse strict;\n# line $linenumber "$filename"\n$expression);
+	$val = eval qq(package Shorewall::User;
+                       use strict;
+                       use Shorewall::Config \(qw/supplied/\);
+                       # line $linenumber "$filename"\n$expression);
 
 	unless ( $val ) {
 	    directive_error( "Couldn't parse expression ($expression): $@" , $filename, $linenumber ) if $@;
@@ -3136,7 +3160,7 @@ sub embedded_shell( $ ) {
 sub embedded_perl( $ ) {
     my $multiline = shift;
 
-    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config (qw/shorewall/);\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
+    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config (qw/shorewall supplied/);\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
 
     $directive_callback->( 'PERL', $currentline ) if $directive_callback;
 
@@ -3307,7 +3331,6 @@ sub setup_audit_action( $ ) {
 	$actparams{1} = "A_$target" unless $target =~ /^A_/;
     }
 }
-
 
 #
 # Returns the Level and Tag for the current action chain

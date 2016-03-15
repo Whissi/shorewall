@@ -61,7 +61,6 @@ our @EXPORT = qw(
 		 progress_message3
 
 		 supplied
-                 passed
 		 split_list
 
 		 shorewall
@@ -87,7 +86,7 @@ our @EXPORT = qw(
 		 kernel_version
                 );
 
-our @EXPORT_OK = qw( $shorewall_dir initialize shorewall passed);
+our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
 
 our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
                                        generate_sha1
@@ -671,6 +670,8 @@ use constant { PLAIN_READ          => 0,     # No read_a_line options
 our %variables; # Symbol table for expanding shell variables
 
 our $section_function; #Function Reference for handling ?section
+
+our $evals = 0; # Number of times eval() called out of evaluate_expression() or embedded_perl().
 
 sub process_shorewallrc($$);
 sub add_variables( \% );
@@ -2514,6 +2515,21 @@ sub join_parts( $$$ ) {
 }
 
 #
+# Declare passed() in Shorewall::User
+#
+sub declare_passed() {
+    my $result = ( eval q(package Shorewall::User;
+                          use strict;
+                          sub passed( $ ) {
+                              my $val = shift;
+                              defined $val && $val ne '' && $val ne '-';
+                          }
+
+                          1;) );
+    assert( $result, $@ );
+}
+
+#
 # Evaluate an expression in an ?IF, ?ELSIF, ?SET or ?ERROR directive
 #
 sub evaluate_expression( $$$$ ) {
@@ -2593,9 +2609,11 @@ sub evaluate_expression( $$$$ ) {
 	#
 	# Not a simple one-term expression -- compile it
 	#
+
+	declare_passed unless $evals++;
+
 	$val = eval qq(package Shorewall::User;
                        use strict;
-                       use Shorewall::Config \(qw/supplied/\);
                        # line $linenumber "$filename"
                        $expression);
 
@@ -3161,7 +3179,7 @@ sub embedded_shell( $ ) {
 sub embedded_perl( $ ) {
     my $multiline = shift;
 
-    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config (qw/shorewall supplied/);\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
+    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
 
     $directive_callback->( 'PERL', $currentline ) if $directive_callback;
 
@@ -3187,6 +3205,8 @@ sub embedded_perl( $ ) {
     }
 
     $embedded++;
+
+    declare_passed unless $evals++;
 
     unless (my $return = eval $command ) {
 	#
@@ -6569,6 +6589,7 @@ sub report_used_capabilities() {
 }
 
 END {
+    print "eval() called $evals times\n" if $debug;
     cleanup;
 }
 

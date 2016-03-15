@@ -1985,6 +1985,33 @@ SSH(ACCEPT)    net:$MYIP      $FW
     @disposition are used to generated the --log-prefix in logging rules. When
     either is empty, the historical value is used to generate the
     --log-prefix.</para>
+
+    <para>Within an action body, if a parameter is omitted in a DEFAULTS
+    statement, then the value of the corresponding action and Shorewall
+    variables is '-', while if the parameter is specified as '-' in the
+    parameter list, the value of the action/Shorewall variable is '', if it is
+    expanded before the DEFAULTS statement.</para>
+
+    <para>Additionally, when an expression is evaluated, the value 0 evaluates
+    as false, so '?IF @n' and '?IF $n' fail if the nth parameter is passed
+    with value zero. To make testing of the presense of parameters more
+    efficient and uniform, an new function has been added in Shorewall 5.0.7
+    for use in ?IF and ?ELSEIF:</para>
+
+    <simplelist>
+      <member>?IF [!] passed(&lt;variable&gt;)</member>
+    </simplelist>
+
+    <para>where &lt;variable&gt; is an action or Shorewall variable.</para>
+
+    <para>'passed(@n)' and 'passed($n)' evaluate to true if the nth parameter
+    is not empty and its contents are other than '-'. If '!' is present, the
+    result is inverted.</para>
+
+    <para>In this simple form, the expression is evaluated by the compiler
+    without having to invoke the (expensive) Perl exec() function. The
+    'passed' function may also be used in more complex expressions, but exec()
+    will be invoked to evaluate those expressions. </para>
   </section>
 
   <section id="Conditional">
@@ -2175,7 +2202,7 @@ SSH(ACCEPT)    net:$MYIP      $FW
     <programlisting>?ERROR <replaceable>message</replaceable></programlisting>
 
     <para>Variables in the message are evaluated and the result appears in a
-    standard Shorewall ERROR: message. </para>
+    standard Shorewall ERROR: message.</para>
 
     <para>Example from the 5.0.7 action.GlusterFS:</para>
 

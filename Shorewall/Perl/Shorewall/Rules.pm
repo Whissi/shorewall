@@ -3288,7 +3288,7 @@ sub check_state( $ ) {
 sub merge_target( $$ ) {
     my ( $ref, $target ) = @_;
 
-    $ref->{inline} ? $target : merge_levels( join( ':', @actparams{'chain','loglevel','logtag'}), $target );
+    merge_levels( join( ':', @actparams{'chain','loglevel','logtag'}), $target );
 }
 
 #

@@ -1818,8 +1818,6 @@ sub process_action(\$\$$) {
 
     my $actionfile = $actionref->{file};
 
-    fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
-
     progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
     push_open $actionfile, 2, 1, undef, 2;

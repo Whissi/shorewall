@@ -2596,7 +2596,8 @@ sub evaluate_expression( $$$$ ) {
 	$val = eval qq(package Shorewall::User;
                        use strict;
                        use Shorewall::Config \(qw/supplied/\);
-                       # line $linenumber "$filename"\n$expression);
+                       # line $linenumber "$filename"
+                       $expression);
 
 	unless ( $val ) {
 	    directive_error( "Couldn't parse expression ($expression): $@" , $filename, $linenumber ) if $@;

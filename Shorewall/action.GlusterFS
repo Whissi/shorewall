@@ -12,9 +12,9 @@
 DEFAULTS 2,0
 
 ?if @1 !~ /^\d+/ || ! @1 || @1 > 1024
-?error Invalid value for Bricks (@1)
+    ?error Invalid value for Bricks (@1)
 ?elsif @2 !~ /^[01]$/
-?error Invalid value for IB (@2)
+    ?error Invalid value for IB (@2)
 ?endif
 
 #ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER

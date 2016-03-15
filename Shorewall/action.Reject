@@ -28,7 +28,7 @@
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
 
-?if @1 ne '' && @1 ne '-'
+?if passed(@1)
     ?if @1 eq 'audit'
 DEFAULTS -,-,A_REJECT,A_ACCEPT,A_DROP
     ?else
@@ -46,7 +46,7 @@ COUNT
 #
 # Special handling for Auth
 #
-?if @2 ne '-'
+?if passed(@2)
 Auth(@2)
 ?endif
 #

@@ -12,7 +12,7 @@
 
 DEFAULTS -
 
-?if @1 ne '' && @1 ne '-'
+?if passed(@1)
     ?if @1 eq 'audit'
         ?set tcpflags_action 'A_DROP'
     ?else

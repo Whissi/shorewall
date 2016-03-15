@@ -29,7 +29,7 @@
 #
 ###############################################################################
 
-?if @1 ne '' && @1 ne '-'
+?if passed(@1)
     ?if @1 eq 'audit'
 DEFAULTS -,-,A_DROP,A_ACCEPT,A_DROP
     ?else
@@ -47,7 +47,7 @@ COUNT
 #
 # Special Handling for Auth
 #
-?if @2 ne '-'
+?if passed(@2)
 Auth(@2)
 ?endif
 #

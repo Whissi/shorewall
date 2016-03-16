@@ -31,37 +31,24 @@
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
-#
-# The following magic provides different defaults for $2 thru $5, when $1 is
-# 'audit'.
-#
-?begin perl;
-use Shorewall::Config;
 
-my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
-
-if ( defined $p1 ) {
-    if ( $p1 eq 'audit' ) {
-	set_action_param( 2, 'A_REJECT')   unless supplied $p2;
-	set_action_param( 3, 'A_DROP')     unless supplied $p3;
-	set_action_param( 4, 'A_ACCEPT' )  unless supplied $p4;
-	set_action_param( 5, 'A_DROP' )    unless supplied $p5;
-    } else {
-	fatal_error "Invalid value ($p1) for first Drop parameter" if supplied $p1;
-    }
-}
-
-1;
-
-?end perl;
-
+?if passed($1)
+    ?if $1 eq 'audit'
+DEFAULTS -,A_REJECT,A_DROP,A_ACCEPT,A_DROP
+    ?else
+        ?error The first parameter to Drop must be 'audit' or '-'
+    ?endif
+?else
 DEFAULTS -,REJECT,DROP,ACCEPT,DROP
+?endif
 
 #TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Reject 'auth'
 #
+?if passed($2)
 Auth($2)
+?endif
 #
 # ACCEPT critical ICMP types
 #

@@ -27,37 +27,24 @@
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
-#
-# The following magic provides different defaults for $2 thru $5, when $1 is
-# 'audit'.
-#
-?begin perl;
-use Shorewall::Config;
 
-my ( $p1, $p2, $p3 , $p4, $p5 ) = get_action_params( 5 );
-
-if ( defined $p1 ) {
-    if ( $p1 eq 'audit' ) {
-	set_action_param( 2, 'A_REJECT')  unless supplied $p2;
-	set_action_param( 3, 'A_REJECT')  unless supplied $p3;
-	set_action_param( 4, 'A_ACCEPT' ) unless supplied $p4;
-	set_action_param( 5, 'A_DROP' )   unless supplied $p5;
-    } else {
-	fatal_error "Invalid value ($p1) for first Reject parameter" if supplied $p1;
-    }
-}
-
-1;
-
-?end perl;
-
+?if passed(@1)
+    ?if @1 eq 'audit'
+DEFAULTS -,A_REJECT,A_REJECT,A_ACCEPT,A_DROP
+    ?else
+	?error The first parameter to Reject must be 'audit' or '-'
+    ?endif
+?else
 DEFAULTS -,REJECT,REJECT,ACCEPT,DROP
+?endif
 
 #TARGET		SOURCE	DEST	PROTO
 #
 # Don't log 'auth' -- REJECT
 #
+?if passed($2)
 Auth($2)
+?endif
 #
 # Drop Multicasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).

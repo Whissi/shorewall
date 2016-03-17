@@ -2964,7 +2964,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	$action = $basictarget; # Remove params, if any, from $action.
     } elsif ( $actiontype & INLINE ) {
 	#
-	# process_inline() will call process_rule() recursively for each rule in the macro body
+	# process_inline() will call process_rule() recursively for each rule in the action body
 	#
 	fatal_error "Macro/Inline invocations nested too deeply" if ++$macro_nest_level > MAX_MACRO_NEST_LEVEL;
 	#

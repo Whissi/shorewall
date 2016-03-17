@@ -28,25 +28,12 @@
 
 DEFAULTS -
 
-?begin perl;
-
-use strict;
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
-use Shorewall::Rules;
-
-my $action = 'ACCEPT';
-
-my ( $audit ) = get_action_params( 1 );
-
-if ( supplied $audit ) {
-     fatal_error "Invalid parameter ($audit) to action allowInvalid" if $audit ne 'audit';
-     $action = "A_ACCEPT";
-}    
-
-perl_action_helper( "Invalid($action)", '' );
-
-1;
-
-?end perl;
+?if passed(@1)
+    ?if @1 eq 'audit'
+Invalid(A_ACCEPT)
+    ?else
+        ?error The first parameter to allowInvalid must be 'audit' or '-'
+    ?endif
+?else
+Invalid(ACCEPT)
+?endif

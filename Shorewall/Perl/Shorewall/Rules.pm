@@ -4098,7 +4098,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub () {
 		$target = 'CONNMARK';
-		$handle_mark_param->('--set-mark' , HIGHMARK );
+		$handle_mark_param->('' , HIGHMARK );
 	    },
 	},
 

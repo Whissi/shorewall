@@ -673,6 +673,11 @@ our $section_function; #Function Reference for handling ?section
 
 our $evals = 0; # Number of times eval() called out of evaluate_expression() or embedded_perl().
 
+#
+# Files located via find_file()
+#
+our %filecache;
+
 sub process_shorewallrc($$);
 sub add_variables( \% );
 #
@@ -1902,6 +1907,10 @@ sub find_file($)
     my ( $filename, $nosearch ) = @_;
 
     return $filename if $filename =~ '/';
+
+    my $file = $filecache{$filename};
+
+    return $file if $file;
 
     for my $directory ( @config_path ) {
 	my $file = "$directory$filename";

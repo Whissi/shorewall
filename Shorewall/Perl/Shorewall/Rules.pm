@@ -4544,14 +4544,14 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 		#
 		# Capture the name of the action chain
 		#
-		$target = $ref->{name};
 	    } else {
 		#
 		# We've seen this tuple before
 		#
-		$target = $usedactions{$normalized_target}->{name};
+		$ref = $usedactions{$normalized_target};
 	    }
 
+	    $target = $ref->{name};
 	    $commandref->{allowedchains} = $ref->{allowedchains};
 	}
     };

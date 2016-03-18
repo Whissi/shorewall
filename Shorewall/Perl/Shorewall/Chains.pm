@@ -647,7 +647,7 @@ our %ipset_exists;
 #                    => CMD_MODE if the rule contains a shell command or if it
 #                                part of a loop or conditional block. If it is a
 #                                shell command, the text of the command is in
-#                                the cmd
+#                                the cmd member
 #         cmd        => Shell command, if mode == CMD_MODE and cmdlevel == 0
 #         cmdlevel   => nesting level within loops and conditional blocks.
 #                       determines indentation

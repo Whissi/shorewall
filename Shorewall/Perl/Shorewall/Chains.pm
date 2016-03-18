@@ -8623,18 +8623,20 @@ sub preview_netfilter_load() {
 		assert( $chainref->{cmdlevel} == 0 , $name );
 		if ( $name =~ /^DOCKER/ ) {
 		    if ( $name eq 'DOCKER' ) {
-			enter_cmd_mode;
+			enter_cmd_mode1;
 			print( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
-			enter_cat_mode;
+			print "\n";
 		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
-			enter_cmd_mode;
+			enter_cmd_mode1 unless $mode = CMD_MODE;
 			print( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
-			enter_cat_mode;
+			print "\n";
+			enter_cat_mode1;
 		    } else {		    
-			print( ":$name - [0:0]" );
+			enter_cmd_mode1 unless $mode = CMD_MODE;
+			print( ":$name - [0:0]\n" );
 		    }
 		} else {
-		    print( ":$name - [0:0]" );
+		    print( ":$name - [0:0]\n" );
 		}
 
 		push @chains, $chainref;

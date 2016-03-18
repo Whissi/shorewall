@@ -2517,6 +2517,44 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $exceptionrule = '';
     my $usergenerated;
     my $prerule = '';
+    #
+    # Subroutine for handling MARK and CONNMARK.
+    #
+    sub handle_mark( $$$ ) {
+	my ( $target, $param, $marktype ) = @_;
+	my $and_or = $param =~ s/^([|&])// ? $1 : '';
+
+	require_capability( 'MARK_ANYWHERE', "The $target action", 's' );
+
+	fatal_error "Mark Ranges are not supported in the rules file" if $param =~ /-/;
+	#
+	# A Single Mark
+	#
+	my $mark = $param;
+	my $val;
+
+	if ( supplied $mark ) {
+	    if ( $marktype == SMALLMARK ) {
+		$val = verify_small_mark( $mark );
+	    } else {
+		$val = validate_mark( $mark );
+	    }
+	} else {
+	    $val = numeric_value( $mark = $globals{TC_MASK} );
+	}
+
+	$target = join( ' ', $target, $and_or eq '|' ? '--or-mark' : $and_or ? '--and-mark' : '--set-mark' );
+
+	( $mark, my $mask ) = split '/', $mark;
+
+	if ( supplied $mask ) {
+	    $target = join( ' ', $target , join( '/', $mark , $mask ) );
+	} else {
+	    $target = join( ' ', $target , $mark );
+	}
+
+	$target;
+    };
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 4 if $chainref->{action};
@@ -2602,7 +2640,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    $action   = 'LOG';
 	} elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES | TARPIT ) ) ) {
 	    fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
-	    fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '';
+	    fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '' || $actiontype & OPTIONS;
 	}
     }
     #
@@ -2646,6 +2684,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	      AUDIT => sub() {
 		  $action = "AUDIT --type $param";
+	      } ,
+
+	      CONNMARK => sub() {
+		  $action = handle_mark( 'CONNMARK', $param, HIGHMARK );
 	      } ,
 
 	      REDIRECT => sub () {
@@ -2714,6 +2756,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		      $action = '';
 		  }
 	      },
+
+	      MARK => sub() {
+		  $action = handle_mark( 'MARK', $param, HIGHMARK );
+	      } ,
 
 	      TARPIT => sub {
 		  require_capability 'TARPIT_TARGET', 'TARPIT', 's';

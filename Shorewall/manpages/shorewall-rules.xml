@@ -329,6 +329,18 @@
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis
+              role="bold">CONMARK({<replaceable>mark</replaceable>})</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.7, CONNMARK is identical to MARK
+                with the exception that the mark is assigned to connection to
+                which the packet belongs is marked rather than to the packet
+                itself.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">CONTINUE</emphasis></term>
 
               <listitem>
@@ -543,6 +555,35 @@
                 <para>The older syntax where the macro name and the target are
                 separated by a slash (e.g. FTP/ACCEPT) is still allowed but is
                 deprecated.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">MARK({<replaceable>mark</replaceable>})</emphasis></term>
+
+              <listitem>
+                <para>where <replaceable>mark</replaceable> is a packet mark
+                value.</para>
+
+                <para>Added in Shorewall 5.0.7, MARK requires "Mark in filter
+                table" support in your kernel and iptables.</para>
+
+                <para>Normally will set the mark value of the current packet.
+                If preceded by a vertical bar ("|"), the mark value will be
+                logically ORed with the current mark value to produce a new
+                mark value. If preceded by an ampersand ("&amp;"), will be
+                logically ANDed with the current mark value to produce a new
+                mark value.</para>
+
+                <para>Both "|" and "&amp;" require Extended MARK Target
+                support in your kernel and iptables.</para>
+
+                <para>The mark value may be optionally followed by "/" and a
+                mask value (used to determine those bits of the connection
+                mark to actually be set). When a mask is specified, the result
+                of logically ANDing the mark value with the mask must be the
+                same as the mark value.</para>
               </listitem>
             </varlistentry>
 

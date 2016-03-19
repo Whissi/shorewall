@@ -213,14 +213,14 @@ sub process_in_bandwidth( $ ) {
     [ $in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ];
 }
 
-sub handle_in_bandwidth( $$ ) {
-    my ($physical, $arrayref ) = @_;
+sub handle_in_bandwidth( $$$ ) {
+    my ($physical, $stab, $arrayref ) = @_;
 
     return 1 unless $arrayref;
 
     my ($in_rate, $in_burst, $in_avrate, $in_interval, $in_decay ) = @$arrayref;
 
-    emit ( "run_tc qdisc add dev $physical handle ffff: ingress" );
+    emit ( "run_tc qdisc add dev $physical handle ffff: ${stab}ingress" );
 
     if ( have_capability 'BASIC_FILTER' ) {
 	if ( $in_rate ) {
@@ -302,7 +302,7 @@ sub process_simple_device() {
 	   "qt \$TC qdisc del dev $physical ingress\n"
 	 );
 
-    handle_in_bandwidth( $physical, $in_rate );
+    handle_in_bandwidth( $physical, '', $in_rate );
 
     if ( $out_part ne '-' ) {
 	my ( $out_bandwidth, $burst, $latency, $peak, $minburst ) = split ':', $out_part;
@@ -1856,7 +1856,7 @@ sub process_traffic_shaping() {
 		      qq(fi) );
 	    }
 
-	    handle_in_bandwidth( $device, $devref->{in_bandwidth} );
+	    handle_in_bandwidth( $device, $stab, $devref->{in_bandwidth} );
 
 	    for my $rdev ( @{$devref->{redirected}} ) {
 		my $phyrdev = physical_name( $rdev );

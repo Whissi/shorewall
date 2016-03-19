@@ -225,11 +225,11 @@ sub handle_in_bandwidth( $$$ ) {
     if ( have_capability 'BASIC_FILTER' ) {
 	if ( $in_rate ) {
 	    emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 basic \\",
-		  "    police mpu 64 rate ${in_rate}kbit burst $in_burst action drop\n" );
+		  "    police mpu 64 drop rate ${in_rate}kbit burst $in_burst\n" );
 	} else {
 	    emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 \\",
 		  "    estimator $in_interval $in_decay basic \\",
-		  "    police avrate ${in_avrate}kbit action drop\n" );
+		  "    police drop avrate ${in_avrate}kbit\n" );
 	}
     } else {
 	emit( "run_tc filter add dev $physical parent ffff: protocol all prio 10 \\" ,

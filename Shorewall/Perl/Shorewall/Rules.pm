@@ -4607,7 +4607,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
     # Function Body
     #
     if ( $inchain ) {
-	( $inaction, undef, undef, undef ) = split /:/, $chainref->{action}, 4 if $chainref->{action};
+	( $inaction ) = split /:/, $chainref->{action} if $chainref->{action};
 	#
 	# Set chain type
 	#

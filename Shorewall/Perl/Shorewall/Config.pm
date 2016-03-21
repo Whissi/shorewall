@@ -6106,7 +6106,7 @@ sub get_configuration( $$$$ ) {
 
     default_log_level 'SFILTER_LOG_LEVEL', 'info';
 
-    if ( $val = $config{SFILTER_DISPOSITION} ) {
+    if ( supplied( $val = $config{SFILTER_DISPOSITION} ) ) {
 	fatal_error "Invalid SFILTER_DISPOSITION setting ($val)" unless $val =~ /^(A_)?(DROP|REJECT)$/;
 	require_capability 'AUDIT_TARGET' , "SFILTER_DISPOSITION=$val", 's' if $1;
     } else {
@@ -6115,14 +6115,14 @@ sub get_configuration( $$$$ ) {
 
     default_log_level 'RPFILTER_LOG_LEVEL', 'info';
 
-    if ( $val = $config{RPFILTER_DISPOSITION} ) {
+    if ( supplied ( $val = $config{RPFILTER_DISPOSITION} ) ) {
 	fatal_error "Invalid RPFILTER_DISPOSITION setting ($val)" unless $val =~ /^(A_)?(DROP|REJECT)$/;
 	require_capability 'AUDIT_TARGET' , "RPFILTER_DISPOSITION=$val", 's' if $1;
     } else {
 	$config{RPFILTER_DISPOSITION} = 'DROP';
     }
 
-    if ( $val = $config{MACLIST_DISPOSITION} ) {
+    if ( supplied( $val = $config{MACLIST_DISPOSITION} ) ) {
 	if ( $val =~ /^(?:A_)?DROP$/ ) {
 	    $globals{MACLIST_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
@@ -6141,7 +6141,7 @@ sub get_configuration( $$$$ ) {
 	$globals{MACLIST_TARGET}      = 'reject';
     }
 
-    if ( $val = $config{RELATED_DISPOSITION} ) {
+    if ( supplied( $val = $config{RELATED_DISPOSITION} ) ) {
 	if ( $val =~ /^(?:A_)?(?:DROP|ACCEPT)$/ ) {
 	    $globals{RELATED_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
@@ -6160,7 +6160,7 @@ sub get_configuration( $$$$ ) {
 	$globals{RELATED_TARGET}      = 'ACCEPT';
     }
 
-    if ( $val = $config{INVALID_DISPOSITION} ) {
+    if ( supplied( $val = $config{INVALID_DISPOSITION} ) ) {
 	if ( $val =~ /^(?:A_)?DROP$/ ) {
 	    $globals{INVALID_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
@@ -6179,7 +6179,7 @@ sub get_configuration( $$$$ ) {
 	$globals{INVALID_TARGET}      = '';
     }
 
-    if ( $val = $config{UNTRACKED_DISPOSITION} ) {
+    if ( supplied( $val = $config{UNTRACKED_DISPOSITION} ) ) {
 	if ( $val =~ /^(?:A_)?(?:DROP|ACCEPT)$/ ) {
 	    $globals{UNTRACKED_TARGET} = $val;
 	} elsif ( $val eq 'REJECT' ) {
@@ -6198,7 +6198,7 @@ sub get_configuration( $$$$ ) {
 	$globals{UNTRACKED_TARGET}        = '';
     }
 
-    if ( $val = $config{MACLIST_TABLE} ) {
+    if ( supplied( $val = $config{MACLIST_TABLE} ) ) {
 	if ( $val eq 'mangle' ) {
 	    fatal_error 'MACLIST_DISPOSITION=$1 is not allowed with MACLIST_TABLE=mangle' if $config{MACLIST_DISPOSITION} =~ /^((?:A)?REJECT)$/;
 	} else {
@@ -6208,7 +6208,7 @@ sub get_configuration( $$$$ ) {
 	default 'MACLIST_TABLE' , 'filter';
     }
 
-    if ( $val = $config{TCP_FLAGS_DISPOSITION} ) {
+    if ( supplied( $val = $config{TCP_FLAGS_DISPOSITION} ) ) {
 	fatal_error "Invalid value ($config{TCP_FLAGS_DISPOSITION}) for TCP_FLAGS_DISPOSITION" unless $val =~ /^(?:(A_)?(?:REJECT|DROP))|ACCEPT$/;
 	require_capability 'AUDIT_TARGET' , "TCP_FLAGS_DISPOSITION=$val", 's' if $1;
     } else {
@@ -6239,7 +6239,7 @@ sub get_configuration( $$$$ ) {
 	require_capability 'MANGLE_ENABLED', "TC_ENABLED=$config{TC_ENABLED}", 's';
     }
 
-    if ( $val = $config{TC_PRIOMAP} ) {
+    if ( supplied( $val = $config{TC_PRIOMAP} ) ) {
 	my @priomap = split ' ',$val;
 	fatal_error "Invalid TC_PRIOMAP ($val)" unless @priomap == 16;
 	for ( @priomap ) {
@@ -6258,11 +6258,12 @@ sub get_configuration( $$$$ ) {
     default 'QUEUE_DEFAULT'         , 'none';
     default 'NFQUEUE_DEFAULT'       , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';
-    default 'OPTIMIZE'              , 0;
 
     for my $default ( qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
+
+    default 'OPTIMIZE' , 0;
 
     if ( ( $val = $config{OPTIMIZE} ) =~ /^all$/i ) {
 	$config{OPTIMIZE} = $val = OPTIMIZE_ALL;

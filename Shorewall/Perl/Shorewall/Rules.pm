@@ -205,10 +205,6 @@ our %auditpolicies = ( ACCEPT => 1,
 #
 our @columns;
 #
-# Used to handle recursive inline invocations.
-#
-our @columnstack;
-#
 # Hidden return from perl_action_[tcp_]helper that indicates that a rule was generated
 #
 our $actionresult;
@@ -354,7 +350,6 @@ sub initialize( $ ) {
     %usedactions       = ();
 
     @columns           = ( ( '-' ) x LAST_COLUMN, 0 );
-    @columnstack       = ();
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
@@ -3016,7 +3011,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Push the current column array onto the column stack
 	#
-	push @columnstack, [ ( $actionresult, @columns ) ];
+        my $savecolumns = [ ( $actionresult, @columns ) ];
 	#
 	# And store the (modified) columns into the columns array for use by perl_action[_tcp]_helper
 	#
@@ -3047,7 +3042,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 					$helper,
 					$wildcard ) || $actionresult;
 
-	( $actionresult, @columns ) = @{pop @columnstack};
+	( $actionresult, @columns ) = @$savecolumns;;
 
 	$macro_nest_level--;
 

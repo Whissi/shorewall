@@ -854,22 +854,16 @@ DNAT      net       dmz:10.10.11.2:80   tcp        5000</programlisting></para>
             with:<programlisting>#ACTION   SOURCE    DEST            PROTO  DPORT         SPORT    ORIGDEST
 DNAT      loc       dmz:10.10.11.2  tcp    80            -        <emphasis>&lt;external IP&gt;</emphasis></programlisting>If
             you have a dynamic IP then you must ensure that your external
-            interface is up before starting Shorewall and you must take steps
-            as follows (assume that your external interface is <filename
-            class="devicefile">eth0</filename>):<orderedlist>
-                <listitem>
-                  <para>Include the following in /etc/shorewall/params:</para>
+            interface is up before starting Shorewall and you must code the
+            rule as follows (assume that your external interface is <filename
+            class="devicefile">eth0</filename>):</para>
 
-                  <para><command>ETH0_IP=$(find_first_interface_address
-                  eth0)</command></para>
-                </listitem>
+            <programlisting>#ACTION   SOURCE    DEST             PROTO   DPORT         SPORT    ORIGDEST
+DNAT      loc       dmz:10.10.11.2   tcp     80            -        &amp;eth0</programlisting>
 
-                <listitem>
-                  <para>Make your <literal>loc-&gt;dmz</literal> rule:
-                  <programlisting>#ACTION   SOURCE    DEST             PROTO   DPORT         SPORT    ORIGDEST
-DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</programlisting></para>
-                </listitem>
-              </orderedlist></para>
+            <para>'&amp;eth0' expands to the IP address of eth0 (see <ulink
+            url="configuration_file_basics.htm#AddressVariables">this
+            article</ulink>).</para>
           </listitem>
 
           <listitem>

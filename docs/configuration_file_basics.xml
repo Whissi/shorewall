@@ -175,20 +175,23 @@
 
         <listitem>
           <para><filename>/etc/shorewall/init</filename> - commands that you
-          wish to execute at the beginning of a <quote>shorewall start</quote>
-          or <quote>shorewall restart</quote>.</para>
+          wish to execute at the beginning of a <quote>shorewall
+          start</quote>, "shorewall reload" or <quote>shorewall
+          restart</quote>.</para>
         </listitem>
 
         <listitem>
           <para><filename>/etc/shorewall/start</filename> - commands that you
           wish to execute near the completion of a <quote>shorewall
-          start</quote> or <quote>shorewall restart</quote></para>
+          start</quote>, "shorewall reload" or <quote>shorewall
+          restart</quote></para>
         </listitem>
 
         <listitem>
           <para><filename>/etc/shorewall/started</filename> - commands that
           you wish to execute after the completion of a <quote>shorewall
-          start</quote> or <quote>shorewall restart</quote></para>
+          start</quote>, "shorewall reload" or <quote>shorewall
+          restart</quote></para>
         </listitem>
 
         <listitem>
@@ -1780,6 +1783,10 @@ SSH(ACCEPT)    net:$MYIP      $FW
       </listitem>
 
       <listitem>
+        <para><ulink url="Actions.html">Action</ulink> files</para>
+      </listitem>
+
+      <listitem>
         <para><ulink
         url="manpages/shorewall-rules.html">shorewall-rules</ulink> (5)</para>
       </listitem>
@@ -2011,7 +2018,7 @@ SSH(ACCEPT)    net:$MYIP      $FW
     <para>In this simple form, the expression is evaluated by the compiler
     without having to invoke the (expensive) Perl exec() function. The
     'passed' function may also be used in more complex expressions, but exec()
-    will be invoked to evaluate those expressions. </para>
+    will be invoked to evaluate those expressions.</para>
   </section>
 
   <section id="Conditional">
@@ -2570,6 +2577,44 @@ Shorewall has detected the following iptables/netfilter capabilities:
     "!tcp").</para>
   </section>
 
+  <section id="Ranges">
+    <title>Port Ranges</title>
+
+    <para>If you need to specify a range of ports, the proper syntax is
+    &lt;low port number&gt;:&lt;high port number&gt;. For example, if you want
+    to forward the range of tcp ports 4000 through 4100 to local host
+    192.168.1.3, the entry in /etc/shorewall/rules is:</para>
+
+    <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DPORT
+DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100</emphasis></programlisting>
+
+    <para>If you omit the low port number, a value of zero is assumed; if you
+    omit the high port number, a value of 65535 is assumed.</para>
+
+    <para>Also, unless otherwise documented, a port range can be preceded by
+    '!' to specify "All ports except those in this range" (e.g.,
+    "!4000:4100").</para>
+  </section>
+
+  <section id="Portlists">
+    <title>Port Lists</title>
+
+    <para>In most cases where a port or port range may appear, a
+    comma-separated list of ports or port ranges may also be entered.
+    Shorewall requires the Netfilter <emphasis
+    role="bold">multiport</emphasis> match capability if ports lists are used
+    (see the output of "<emphasis role="bold">shorewall show
+    capabilities</emphasis>").</para>
+
+    <para>Also, unless otherwise documented, a port list can be preceded by
+    '!' to specify "All ports except these" (e.g., "!80,443").</para>
+
+    <para>Prior to Shorewall 4.4.4, port lists appearing in the <ulink
+    url="manpages/shorewall-routestopped.html">shorewall-routestopped</ulink>
+    (5) file may specify no more than 15 ports; port ranges appearing in a
+    list count as two ports each.</para>
+  </section>
+
   <section id="ICMP">
     <title>ICMP and ICMP6 Types and Codes</title>
 
@@ -2646,44 +2691,6 @@ redirect                      =&gt; 137</programlisting>
     Shorewall 4.4.19.</para>
   </section>
 
-  <section id="Ranges">
-    <title>Port Ranges</title>
-
-    <para>If you need to specify a range of ports, the proper syntax is
-    &lt;low port number&gt;:&lt;high port number&gt;. For example, if you want
-    to forward the range of tcp ports 4000 through 4100 to local host
-    192.168.1.3, the entry in /etc/shorewall/rules is:</para>
-
-    <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DPORT
-DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100</emphasis></programlisting>
-
-    <para>If you omit the low port number, a value of zero is assumed; if you
-    omit the high port number, a value of 65535 is assumed.</para>
-
-    <para>Also, unless otherwise documented, a port range can be preceded by
-    '!' to specify "All ports except those in this range" (e.g.,
-    "!4000:4100").</para>
-  </section>
-
-  <section id="Portlists">
-    <title>Port Lists</title>
-
-    <para>In most cases where a port or port range may appear, a
-    comma-separated list of ports or port ranges may also be entered.
-    Shorewall requires the Netfilter <emphasis
-    role="bold">multiport</emphasis> match capability if ports lists are used
-    (see the output of "<emphasis role="bold">shorewall show
-    capabilities</emphasis>").</para>
-
-    <para>Also, unless otherwise documented, a port list can be preceded by
-    '!' to specify "All ports except these" (e.g., "!80,443").</para>
-
-    <para>Prior to Shorewall 4.4.4, port lists appearing in the <ulink
-    url="manpages/shorewall-routestopped.html">shorewall-routestopped</ulink>
-    (5) file may specify no more than 15 ports; port ranges appearing in a
-    list count as two ports each.</para>
-  </section>
-
   <section id="MAC">
     <title>Using MAC Addresses</title>
 
@@ -2736,9 +2743,7 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
     url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5):</para>
 
     <simplelist>
-      <member>LOGRATE=10/minute</member>
-
-      <member>LOGBURST=5</member>
+      <member>LOGLIMIT=10/minute:5</member>
     </simplelist>
 
     <para>For each logging rule, the first time the rule is reached, the
@@ -2749,11 +2754,6 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
     passes, one of the bursts will be regained; if no packets hit the rule for
     30 seconds, the burst will be fully recharged; back where we
     started.</para>
-
-    <note>
-      <para>The LOGRATE and LOGBURST options are deprecated in favor of
-      LOGLIMIT.</para>
-    </note>
 
     <para>Shorewall also supports per-IP rate limiting.</para>
 
@@ -2788,8 +2788,7 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
     <firstterm>Condition Match Support</firstterm> and you must be running
     Shorewall 4.4.24 or later. See the output of <command>shorewall show
     capabilities</command> and <command>shorewall version</command> to
-    determine if you can use this feature. As of this writing, Condition Match
-    Support requires that you install xtables-addons.</para>
+    determine if you can use this feature.</para>
 
     <para>The SWITCH column contains the name of a
     <firstterm>switch.</firstterm> Each switch is initially in the <emphasis
@@ -2953,8 +2952,8 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
         <para>If <emphasis role="bold">detect</emphasis> is specified in the
         ADDRESS column of an entry in <ulink
         url="manpages/shorewall-masq.html">shorewall-masq</ulink> (5) then the
-        firewall still start if the optional interface in the INTERFACE column
-        does not have an IP address.</para>
+        firewall still startS if the optional interface in the INTERFACE
+        column does not have an IP address.</para>
       </listitem>
     </itemizedlist>
 
@@ -2972,7 +2971,8 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
 
     <para>Shorewall allows you to have configuration directories other than
     <filename class="directory">/etc/shorewall</filename>. The shorewall
-    check, start and restart commands allow you to specify an alternate
+    <command>check</command>, <command>start</command> and
+    <command>restart</command> commands allow you to specify an alternate
     configuration directory and Shorewall will use the files in the alternate
     directory rather than the corresponding files in /etc/shorewall. The
     alternate directory need not contain a complete configuration; those files

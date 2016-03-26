@@ -1477,9 +1477,9 @@ sub hex_value( $ ) {
 # Strip off superfluous leading zeros from a hex number
 #
 sub normalize_hex( $ ) {
-    my $val = lc shift;
+    my $val = lc $_[0];
 
-    $val =~ s/^0// while $val =~ /^0/ && length $val > 1;
+    $val =~ s/^0+/0/;
     $val;
 }
 

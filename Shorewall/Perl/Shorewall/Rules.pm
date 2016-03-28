@@ -2309,6 +2309,10 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
     }
 
     pop_open;
+    #
+    # Clear the inline matches if we are the lowest level macro/inline invocation
+    #
+    set_inline_matches( '' ) if $macro_nest_level == 1;
 
     progress_message "..End Macro $macrofile";
 
@@ -2453,6 +2457,10 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
     progress_message "..End inline action $inlinefile";
 
     pop_action_params( $oldparms );
+    #
+    # Clear the inline matches if we are the lowest level macro/inline invocation
+    #
+    set_inline_matches( '' ) if $macro_nest_level == 1;
 
     return $generated;
 }
@@ -3662,10 +3670,6 @@ sub process_raw_rule ( ) {
 					   $wild ) ) {
 			    $generated = 1;
 			}
-			#
-			# Clear inline matches
-			#
-			set_inline_matches( '' );
 		    }
 		}
 	    }

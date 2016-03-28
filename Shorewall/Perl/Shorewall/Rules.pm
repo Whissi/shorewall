@@ -4173,7 +4173,9 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    minparams      => 0,
 	    maxparams      => 0,
 	    function       => sub () {
-		fatal_error 'DIVERT is only allowed in the PREROUTING chain' if $designator && $designator != PREROUTING;
+		fatal_error 'DIVERT is only allowed in the PREROUTING chain' if $designator && 
+		    $designator != PREROUTING &&
+		    $designator != REALPREROUTING;
 		my $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );
 
 		unless ( $divertref ) {

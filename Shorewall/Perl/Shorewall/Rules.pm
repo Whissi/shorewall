@@ -1798,6 +1798,7 @@ sub process_action(\$\$$) {
     my ( $action, $level, $tag, undef, $param ) = split /:/, $wholeaction, ACTION_TUPLE_ELEMENTS;
     my $type = $targets{$action};
     my $actionref = $actions{$action};
+    my $matches   = fetch_inline_matches;
 
     if ( $type & BUILTIN ) {
 	$level = '' if $level =~ /none!?/;
@@ -1910,6 +1911,7 @@ sub process_action(\$\$$) {
 				      $dscp ,
 				      $state,
 				      $time );
+		set_inline_matches( $matches );
 	    }
 	} else {
 	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
@@ -1961,6 +1963,8 @@ sub process_action(\$\$$) {
 			  $condition,
 			  $helper,
 			  0 );
+
+	    set_inline_matches( $matches );
 	}
     }
 
@@ -2198,7 +2202,8 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
     my $generated = 0;
 
 
-    my $macrofile = $macros{$macro};
+    my $macrofile    = $macros{$macro};
+    my $save_matches = fetch_inline_matches;
 
     progress_message "..Expanding Macro $macrofile...";
 
@@ -2306,13 +2311,11 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 				  );
 
 	progress_message "   Rule \"$currentline\" $done";
+
+	set_inline_matches( $save_matches );
     }
 
     pop_open;
-    #
-    # Clear the inline matches if we are the lowest level macro/inline invocation
-    #
-    set_inline_matches( '' ) if $macro_nest_level == 1;
 
     progress_message "..End Macro $macrofile";
 
@@ -2337,10 +2340,11 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 					 $chainref->{name} ,
 				       );
 
-    my $actionref  = $actions{$inline};
-    my $inlinefile = $actionref->{file};
-    my $options    = $actionref->{options};
-    my $nolog      = $options & NOLOG_OPT;
+    my $actionref    = $actions{$inline};
+    my $inlinefile   = $actionref->{file};
+    my $options      = $actionref->{options};
+    my $nolog        = $options & NOLOG_OPT;
+    my $save_matches = fetch_inline_matches;
 
     setup_audit_action( $inline ) if $options & AUDIT_OPT;
 
@@ -2448,6 +2452,8 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 				  );
 
 	progress_message "   Rule \"$currentline\" $done";
+
+	set_inline_matches( $save_matches );
     }
 
     pop_comment( $save_comment );
@@ -2457,10 +2463,6 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
     progress_message "..End inline action $inlinefile";
 
     pop_action_params( $oldparms );
-    #
-    # Clear the inline matches if we are the lowest level macro/inline invocation
-    #
-    set_inline_matches( '' ) if $macro_nest_level == 1;
 
     return $generated;
 }

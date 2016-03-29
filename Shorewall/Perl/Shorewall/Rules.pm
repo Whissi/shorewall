@@ -3793,6 +3793,7 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 					 $chainref->{name} );
 
     my $inlinefile = $actions{$inline}{file};
+    my $matches    = fetch_inline_matches;
 
     progress_message "..Expanding inline action $inlinefile...";
 
@@ -3887,6 +3888,8 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 	}
 
 	progress_message "   Rule \"$currentline\" $done";
+
+	set_inline_matches( $matches );
     }
 
     pop_comment( $save_comment );

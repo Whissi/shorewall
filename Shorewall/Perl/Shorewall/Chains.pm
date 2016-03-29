@@ -8627,12 +8627,12 @@ sub preview_netfilter_load() {
 			print( '[ -n "$g_docker" ] && echo ":DOCKER - [0:0]" >&3' );
 			print "\n";
 		    } elsif ( $name eq 'DOCKER-ISOLATION' ) {
-			enter_cmd_mode1 unless $mode = CMD_MODE;
+			enter_cmd_mode1 unless $mode == CMD_MODE;
 			print( '[ -n "$g_dockernetwork" ] && echo ":DOCKER-ISOLATION - [0:0]" >&3' );
 			print "\n";
 			enter_cat_mode1;
 		    } else {		    
-			enter_cmd_mode1 unless $mode = CMD_MODE;
+			enter_cmd_mode1 unless $mode == CMD_MODE;
 			print( ":$name - [0:0]\n" );
 		    }
 		} else {

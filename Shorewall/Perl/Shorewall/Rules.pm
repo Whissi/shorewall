@@ -1914,12 +1914,12 @@ sub process_action(\$\$$) {
 		set_inline_matches( $matches );
 	    }
 	} else {
-	    my ($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper );
+	    my ($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper );
 
 	    if ( $file_format == 1 ) {
 		fatal_error( "FORMAT-1 actions are no longer supported" );
 	    } else {
-		($target, $source, $dest, $proto, $ports, $sports, $origdest, $rate, $user, $mark, $connlimit, $time, $headers, $condition, $helper )
+		($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
 		    = split_line2( 'action file',
 				   \%rulecolumns,
 				   $action_commands,
@@ -1943,28 +1943,32 @@ sub process_action(\$\$$) {
 		next;
 	    }
 
-	    process_rule( $chainref,
-			  '',
-			  '',
-			  $nolog ? $target : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $target ),
-			  '',
-			  $source,
-			  $dest,
-			  $proto,
-			  $ports,
-			  $sports,
-			  $origdest,
-			  $rate,
-			  $user,
-			  $mark,
-			  $connlimit,
-			  $time,
-			  $headers,
-			  $condition,
-			  $helper,
-			  0 );
+	    for my $proto ( split_list( $protos, 'Protocol' ) ) {
+		for my $user ( split_list( $users, 'User/Group' ) ) {
+		    process_rule( $chainref,
+				  '',
+				  '',
+				  $nolog ? $target : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $target ),
+				  '',
+				  $source,
+				  $dest,
+				  $proto,
+				  $ports,
+				  $sports,
+				  $origdest,
+				  $rate,
+				  $user,
+				  $mark,
+				  $connlimit,
+				  $time,
+				  $headers,
+				  $condition,
+				  $helper,
+				  0 );
 
-	    set_inline_matches( $matches );
+		    set_inline_matches( $matches );
+		}
+	    }
 	}
     }
 
@@ -2213,7 +2217,7 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 
     while ( read_a_line( NORMAL_READ ) ) {
 
-	my ( $mtarget, $msource, $mdest, $mproto, $mports, $msports, $morigdest, $mrate, $muser, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
+	my ( $mtarget, $msource, $mdest, $mprotos, $mports, $msports, $morigdest, $mrate, $musers, $mmark, $mconnlimit, $mtime, $mheaders, $mcondition, $mhelper);
 
 	if ( $file_format == 1 ) {
 	    fatal_error( "FORMAT-1 macros are no longer supported" );
@@ -2221,12 +2225,12 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 	    ( $mtarget,
 	      $msource,
 	      $mdest,
-	      $mproto,
+	      $mprotos,
 	      $mports,
 	      $msports,
 	      $morigdest,
 	      $mrate,
-	      $muser,
+	      $musers,
 	      $mmark,
 	      $mconnlimit,
 	      $mtime,
@@ -2287,32 +2291,35 @@ sub process_macro ($$$$$$$$$$$$$$$$$$$$$) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule(
-				   $chainref,
-	                           $matches,
-	                           $matches1,
-				   $mtarget,
-				   $param,
-				   $msource,
-				   $mdest,
-				   merge_macro_column( $mproto,     $proto ) ,
-				   merge_macro_column( $mports,     $ports ) ,
-				   merge_macro_column( $msports,    $sports ) ,
-				   merge_macro_column( $morigdest,  $origdest ) ,
-				   merge_macro_column( $mrate,      $rate ) ,
-				   merge_macro_column( $muser,      $user ) ,
-				   merge_macro_column( $mmark,      $mark ) ,
-				   merge_macro_column( $mconnlimit, $connlimit) ,
-				   merge_macro_column( $mtime,      $time ),
-				   merge_macro_column( $mheaders,   $headers ),
-				   merge_macro_column( $mcondition, $condition ),
-				   merge_macro_column( $mhelper,    $helper ),
-				   $wildcard
-				  );
+	for my $mp ( split_list( $mprotos, 'Protocol' ) ) {
+	    for my $mu ( split_list( $musers, 'User/Group' ) ) {
+		$generated |= process_rule( $chainref,
+					    $matches,
+					    $matches1,
+					    $mtarget,
+					    $param,
+					    $msource,
+					    $mdest,
+					    merge_macro_column( $mp,         $proto ) ,
+					    merge_macro_column( $mports,     $ports ) ,
+					    merge_macro_column( $msports,    $sports ) ,
+					    merge_macro_column( $morigdest,  $origdest ) ,
+					    merge_macro_column( $mrate,      $rate ) ,
+					    merge_macro_column( $mu,         $user ) ,
+					    merge_macro_column( $mmark,      $mark ) ,
+					    merge_macro_column( $mconnlimit, $connlimit) ,
+					    merge_macro_column( $mtime,      $time ),
+					    merge_macro_column( $mheaders,   $headers ),
+					    merge_macro_column( $mcondition, $condition ),
+					    merge_macro_column( $mhelper,    $helper ),
+					    $wildcard
+		                          );
+
+		set_inline_matches( $save_matches );
+	    }
+	}
 
 	progress_message "   Rule \"$currentline\" $done";
-
-	set_inline_matches( $save_matches );
     }
 
     pop_open;
@@ -2358,12 +2365,12 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 	my  ( $mtarget,
 	      $msource,
 	      $mdest,
-	      $mproto,
+	      $mprotos,
 	      $mports,
 	      $msports,
 	      $morigdest,
 	      $mrate,
-	      $muser,
+	      $musers,
 	      $mmark,
 	      $mconnlimit,
 	      $mtime,
@@ -2428,32 +2435,35 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 	    $mdest = '';
 	}
 
-	$generated |= process_rule(
-				   $chainref,
-	                           $matches,
-	                           $matches1,
-				   $mtarget,
-				   $param,
-				   $msource,
-				   $mdest,
-				   merge_macro_column( $mproto,     $proto ) ,
-				   merge_macro_column( $mports,     $ports ) ,
-				   merge_macro_column( $msports,    $sports ) ,
-				   merge_macro_column( $morigdest,  $origdest ) ,
-				   merge_macro_column( $mrate,      $rate ) ,
-				   merge_macro_column( $muser,      $user ) ,
-				   merge_macro_column( $mmark,      $mark ) ,
-				   merge_macro_column( $mconnlimit, $connlimit) ,
-				   merge_macro_column( $mtime,      $time ),
-				   merge_macro_column( $mheaders,   $headers ),
-				   merge_macro_column( $mcondition, $condition ),
-				   merge_macro_column( $mhelper,    $helper ),
-				   $wildcard
-				  );
+	for my $mp ( split_list( $mprotos, 'Protocol' ) ) {
+	    for my $mu ( split_list( $musers, 'User/Group' ) ) {
+		$generated |= process_rule( $chainref,
+					    $matches,
+					    $matches1,
+					    $mtarget,
+					    $param,
+					    $msource,
+					    $mdest,
+					    merge_macro_column( $mp,          $proto ) ,
+					    merge_macro_column( $mports,     $ports ) ,
+					    merge_macro_column( $msports,    $sports ) ,
+					    merge_macro_column( $morigdest,  $origdest ) ,
+					    merge_macro_column( $mrate,      $rate ) ,
+					    merge_macro_column( $mu,         $user ) ,
+					    merge_macro_column( $mmark,      $mark ) ,
+					    merge_macro_column( $mconnlimit, $connlimit) ,
+					    merge_macro_column( $mtime,      $time ),
+					    merge_macro_column( $mheaders,   $headers ),
+					    merge_macro_column( $mcondition, $condition ),
+					    merge_macro_column( $mhelper,    $helper ),
+					    $wildcard
+		                          );
+
+		set_inline_matches( $save_matches );
+	    }
+	}
 
 	progress_message "   Rule \"$currentline\" $done";
-
-	set_inline_matches( $save_matches );
     }
 
     pop_comment( $save_comment );

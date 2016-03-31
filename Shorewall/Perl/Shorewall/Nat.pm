@@ -173,7 +173,9 @@ sub process_one_masq1( $$$$$$$$$$$ )
 
 	fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
-	unless ( $interfaceref->{root} ) {
+	if ( $interfaceref->{root} ) {
+	    $interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+	} else {
 	    $rule .= match_dest_dev( $interface );
 	    $interface = $interfaceref->{name};
 	}

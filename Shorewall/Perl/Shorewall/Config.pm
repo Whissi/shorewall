@@ -6003,7 +6003,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
     default_yes_no 'WARNOLDCAPVERSION'          , 'Yes';
     default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
-    default_yes_no 'MINIUPNPD'                  , 'No';
+    default_yes_no 'MINIUPNPD'                  , '';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset';
 

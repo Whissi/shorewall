@@ -89,6 +89,7 @@ sub setup_ecn()
 {
     my %interfaces;
     my @hosts;
+    my $interfaceref;
 
     if ( my $fn = open_file 'ecn' ) {
 
@@ -105,7 +106,13 @@ sub setup_ecn()
 						    2 );
 
 	    fatal_error 'INTERFACE must be specified' if $interface eq '-';
-	    fatal_error "Unknown interface ($interface)" unless known_interface $interface;
+	    fatal_error "Unknown interface ($interface)" unless $interfaceref = known_interface( $interface );
+
+	    if ( $interfaceref->{root} ) {
+		$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+	    } else {
+		$interface = $interfaceref->{name};
+	    }
 
 	    my $lineinfo = shortlineinfo( '' );
 

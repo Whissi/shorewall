@@ -1095,10 +1095,18 @@ sub add_common_rules ( $ ) {
 
 	    add_commands( $chainref, '[ -s /${VARDIR}/.UPnP ] && cat ${VARDIR}/.UPnP >&3' );
 
+	    my $chainref1;
+
+	    if ( $config{MINIUPNPD} ) {
+		$chainref1 = set_optflags( new_nat_chain( 'MINIUPNPD-POSTROUTING' ), DONT_OPTIMIZE ); 
+		add_commands( $chainref, '[ -s /${VARDIR}/.MINIUPNPD-POSTROUTING ] && cat ${VARDIR}/.MINIUPNPD-POSTROUTING >&3' );
+	    }
+
 	    $announced = 1;
 
 	    for $interface ( @$list ) {
-		add_ijump_extended $nat_table->{PREROUTING} , j => 'UPnP', get_interface_origin($interface), imatch_source_dev ( $interface );
+		add_ijump_extended $nat_table->{PREROUTING} ,  j => 'UPnP',                   get_interface_origin($interface), imatch_source_dev ( $interface );
+		add_ijump_extended $nat_table->{POSTROUTING} , j => 'MINIUPNPD-POSTROUTING' , $origin{MINIUPNPD}              , imatch_dest_dev   ( $interface ) if $chainref1;
 	    }
 	}
 

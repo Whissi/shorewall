@@ -885,6 +885,7 @@ sub initialize( $;$$) {
 	  RESTART => undef ,
 	  DOCKER => undef ,
 	  PAGER => undef ,
+	  MINIUPNPD => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -5942,7 +5943,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
-    default_yes_no 'DOCKER'                      , '';
+    default_yes_no 'DOCKER'                     , '';
 
     if ( $config{DOCKER} ) {
 	fatal_error "DOCKER=Yes is not allowed in Shorewall6" if $family == F_IPV6;
@@ -6002,8 +6003,9 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'IGNOREUNKNOWNVARIABLES'     , 'Yes';
     default_yes_no 'WARNOLDCAPVERSION'          , 'Yes';
     default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
+    default_yes_no 'MINIUPNPD'                  , 'No';
 
-    $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset'; 
+    $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset';
 
     require_capability 'MARK' , 'FORWARD_CLEAR_MARK=Yes', 's', if $config{FORWARD_CLEAR_MARK};
 

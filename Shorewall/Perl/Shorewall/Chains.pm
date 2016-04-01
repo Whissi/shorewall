@@ -8172,6 +8172,15 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
+	if ( $config{MINIUPNPD} ) {
+	    emit << "EOF";
+if chain_exists 'MINIUPNPD-POSTROUTING -t nat'; then
+    $tool -t nat -S MINIUPNPD-POSTROUTING | tail -n +2 > \${VARDIR}/.MINIUPNPD-POSTROUTING
+else
+    rm -f \${VARDIR}/.MINIUPNPD-POSTROUTING
+fi
+EOF
+	}
     } else {
 	emit <<"EOF";
 if chain_exists 'UPnP -t nat'; then
@@ -8192,6 +8201,15 @@ else
     rm -f \${VARDIR}/.dynamic
 fi
 EOF
+	if ( $config{MINIUPNPD} ) {
+	    emit << "EOF";
+if chain_exists 'MINIUPNPD-POSTROUTING -t nat'; then
+    $utility -t nat | grep '^-A MINIUPNPD-POSTROUTING' > \${VARDIR}/.MINIUPNPD-POSTROUTING
+else
+    rm -f \${VARDIR}/.MINIUPNPD-POSTROUTING    
+fi
+EOF
+	}
     }
 
     pop_indent;

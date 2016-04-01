@@ -459,7 +459,9 @@ sub do_one_nat( $$$$$ )
 
     fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
-    unless ( $interfaceref->{root} ) {
+    if ( $interfaceref->{root} ) {
+	$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+    } else {
 	$rulein  = match_source_dev $interface;
 	$ruleout = match_dest_dev $interface;
 	$interface = $interfaceref->{name};
@@ -561,7 +563,9 @@ sub setup_netmap() {
 		    $net1 = validate_net $net1, 0;
 		    $net2 = validate_net $net2, 0;
 
-		    unless ( $interfaceref->{root} ) {
+		    if ( $interfaceref->{root} ) {
+			$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+		    } else {
 			@rulein  = imatch_source_dev( $interface );
 			@ruleout = imatch_dest_dev( $interface );
 			$interface = $interfaceref->{name};

@@ -2030,7 +2030,7 @@ sub chain_base( $ ) {
 sub forward_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_fwd';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_fwd';
 }
 
 #
@@ -2085,7 +2085,7 @@ sub use_forward_chain($$) {
 #
 sub input_option_chain($) {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_iop';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_iop';
 }
 
 #
@@ -2093,7 +2093,7 @@ sub input_option_chain($) {
 #
 sub output_option_chain($) {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_oop';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_oop';
 }
 
 #
@@ -2101,7 +2101,7 @@ sub output_option_chain($) {
 #
 sub forward_option_chain($) {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_fop';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_fop';
 }
 
 #
@@ -2110,7 +2110,7 @@ sub forward_option_chain($) {
 sub input_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_in';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_in';
 }
 
 #
@@ -2173,7 +2173,7 @@ sub use_input_chain($$) {
 sub output_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_out';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_out';
 }
 
 #
@@ -2182,7 +2182,7 @@ sub output_chain($)
 sub prerouting_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_pre';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_pre';
 }
 
 #
@@ -2191,7 +2191,7 @@ sub prerouting_chain($)
 sub postrouting_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_post';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_post';
 }
 
 #
@@ -2244,7 +2244,7 @@ sub use_output_chain($$) {
 sub masq_chain($)
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_masq';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_masq';
 }
 
 #
@@ -2260,7 +2260,7 @@ sub syn_flood_chain ( $ ) {
 sub mac_chain( $ )
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_mac';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_mac';
 }
 
 sub macrecent_target($)
@@ -2297,7 +2297,7 @@ sub load_chain( $ ) {
 sub snat_chain( $ )
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_snat';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_snat';
 }
 
 #
@@ -2306,7 +2306,7 @@ sub snat_chain( $ )
 sub ecn_chain( $ )
 {
     my $interface = shift;
-    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : $interface ) . '_ecn';
+    ( $config{USE_PHYSICAL_NAMES} ? chain_base( get_physical( $interface ) ) : get_logical( $interface ) ) . '_ecn';
 }
 
 #

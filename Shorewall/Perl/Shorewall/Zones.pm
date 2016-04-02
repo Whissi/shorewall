@@ -82,6 +82,7 @@ our @EXPORT = ( qw( NOTHING
 		    find_interface
 		    known_interface
 		    get_physical
+		    get_logical
 		    physical_name
 		    have_bridges
 		    port_to_bridge
@@ -210,7 +211,6 @@ our %interfaces;
 our %roots;
 our @bport_zones;
 our %ipsets;
-our %physical;
 our %basemap;
 our %basemap1;
 our %mapbase;
@@ -327,7 +327,6 @@ sub initialize( $$ ) {
     %interfaces = ();
     @bport_zones = ();
     %ipsets = ();
-    %physical = ();
     %basemap = ();
     %basemap1 = ();
     %mapbase = ();
@@ -1311,7 +1310,7 @@ sub process_interface( $$ ) {
 		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value !~ /%/;
 		    fatal_error "Virtual interfaces ($value) are not supported" if $value =~ /:\d+$/;
 
-		    fatal_error "Duplicate physical interface name ($value)" if ( $physical{$value} && ! $port );
+		    fatal_error "Duplicate physical interface name ($value)" if ( $interfaces{$value} && ! $port );
 
 		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" if $wildcard && ! $value =~ /\+$/;
 		    $physical = $value;
@@ -1385,21 +1384,23 @@ sub process_interface( $$ ) {
 	$options{tcpflags} = $hostoptionsref->{tcpflags} = 1 unless exists $options{tcpflags};
     }
 
-    $physical{$physical} = $interfaces{$interface} = { name       => $interface ,
-						       bridge     => $bridge ,
-						       filter     => $filterref ,
-						       nets       => 0 ,
-						       number     => $nextinum ,
-						       root       => $root ,
-						       broadcasts => $broadcasts ,
-						       options    => \%options ,
-						       zone       => '',
-						       physical   => $physical ,
-						       base       => var_base( $physical ),
-						       zones      => {},
-						       origin     => shortlineinfo( '' ),
-						       wildcard   => $wildcard,
-						     };
+    my $interfaceref = $interfaces{$interface} = { name       => $interface ,
+						   bridge     => $bridge ,
+						   filter     => $filterref ,
+						   nets       => 0 ,
+						   number     => $nextinum ,
+						   root       => $root ,
+						   broadcasts => $broadcasts ,
+						   options    => \%options ,
+						   zone       => '',
+						   physical   => $physical ,
+						   base       => var_base( $physical ),
+						   zones      => {},
+						   origin     => shortlineinfo( '' ),
+						   wildcard   => $wildcard,
+					         };
+
+    $interfaces{$physical} = $interfaceref if $physical ne $interface;
 
     if ( $zone ) {
 	fatal_error "Unmanaged interfaces may not be associated with a zone" if $options{unmanaged};
@@ -1570,20 +1571,21 @@ sub known_interface($)
 
 		my $physical = map_physical( $interface, $interfaceref );
 
-		return $interfaces{$interface} = { options  => $interfaceref->{options} ,
-						   bridge   => $interfaceref->{bridge} ,
-						   name     => $i ,
-						   number   => $interfaceref->{number} ,
-						   physical => $physical ,
-						   base     => var_base( $physical ) ,
-						   wildcard => $interfaceref->{wildcard} ,
-						   zones    => $interfaceref->{zones} ,
-						 };
+		$interfaces{$interface} = $interfaces{$physical} = { options  => $interfaceref->{options} ,
+								     bridge   => $interfaceref->{bridge} ,
+								     name     => $i ,
+								     number   => $interfaceref->{number} ,
+								     physical => $physical ,
+								     base     => var_base( $physical ) ,
+								     wildcard => $interfaceref->{wildcard} ,
+								     zones    => $interfaceref->{zones} ,
+						                   };
+
 	    }
 	}
     }
 
-    $physical{$interface} || 0;
+    0;
 }
 
 # 
@@ -1655,10 +1657,17 @@ sub find_interface( $ ) {
 }
 
 #
-# Returns the physical interface associated with the passed logical name
+# Returns the physical interface associated with the passed interface name
 #
 sub get_physical( $ ) {
     $interfaces{ $_[0] }->{physical};
+}
+
+#
+# Returns the logical interface associated with the passed interface name
+#
+sub get_logical( $ ) {
+    $interfaces{ $_[0] }->{name};
 }
 
 #

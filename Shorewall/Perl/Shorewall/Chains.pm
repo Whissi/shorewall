@@ -6335,7 +6335,7 @@ sub log_rule_limit( $$$$$$$$;$ ) {
     my ($level, $chainref, $chn, $dispo, $limit, $tag, $command, $matches, $origin ) = @_;
 
     my $prefix = '';
-    my $chain            = get_action_chain_name  || $chn;
+    my $chain            = $actparams{0} ? $actparams{0}->{name} : $chn;
     my $disposition      = get_action_disposition || $dispo;
     my $original_matches = $matches;
     my $ruleref;
@@ -6435,7 +6435,7 @@ sub log_irule_limit( $$$$$$$$@ ) {
 
     my $prefix = '';
     my %matches;
-    my $chain       = get_action_chain_name  || $chn;
+    my $chain       = $actparams{0} ? $actparams{0}->{name} : $chn;
     my $disposition = get_action_disposition || $dispo;
     my $original_matches = @matches;
 

@@ -2049,6 +2049,7 @@ sub process_host( ) {
 	    $interface = $1;
 	    $hosts = $2;
 	    fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
+	    $interface = $interfaceref->{name};
 	} else {
 	    fatal_error "Invalid HOST(S) column contents: $hosts";
 	}
@@ -2062,6 +2063,8 @@ sub process_host( ) {
 
 	fatal_error "Unknown interface ($interface)" unless ($interfaceref = $interfaces{$interface}) && $interfaceref->{root};
 	fatal_error "Unmanaged interfaces may not be associated with a zone" if $interfaceref->{unmanaged};
+
+	$interface = $interfaceref->{name};
 
 	if ( $interfaceref->{physical} eq $loopback_interface ) {
 	    fatal_error "Only a loopback zone may be associated with the loopback interface ($loopback_interface)" if $type != LOOPBACK;

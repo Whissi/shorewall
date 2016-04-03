@@ -85,7 +85,7 @@
     problem reporting process. It will ensure that you provide us with the
     information we need to solve your problem as quickly as possible.</para>
 
-    <graphic align="center" fileref="images/Troubleshoot.png" />
+    <graphic align="center" fileref="images/Troubleshoot.png"/>
 
     <orderedlist>
       <important>
@@ -126,12 +126,10 @@
 
           <para>If that didn't solve your problem, then please</para>
 
-          <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
+          <programlisting><command>/sbin/shorewall trace start &gt; /tmp/trace 2&gt;&amp;1</command></programlisting>
 
           <para>Forward the <filename>/tmp/trace</filename> file as an
-          attachment compressed with gzip or bzip2 (If you are running
-          Shorewall-perl, there is no need to compress the file — it will be
-          very short).</para>
+          attachment compressed with gzip or bzip2.</para>
 
           <para>If compilation succeeds but the compiled program fails, then
           please include the compiled program with your report. The compiled
@@ -203,7 +201,7 @@
         message produced by Shorewall is "done.":</para>
 
         <blockquote>
-          <para></para>
+          <para/>
 
           <programlisting>…
 Activating Rules...

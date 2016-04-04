@@ -3301,7 +3301,7 @@ sub push_action_params( $$$$$$ ) {
     $actparams{caller}      = $caller;
     $actparams{disposition} = '' if $chainref->{action};
     #
-    # The Shorewall variable '@chain' has offensive characters removed
+    # The Shorewall variable '@chain' has non-word characters other than hyphen removed
     #
     ( $actparams{chain} = $chainref->{name} ) =~ s/[^\w-]//g;
 

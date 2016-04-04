@@ -1571,16 +1571,18 @@ sub known_interface($)
 
 		my $physical = map_physical( $interface, $interfaceref );
 
-		$interfaces{$interface} = $interfaces{$physical} = { options  => $interfaceref->{options} ,
-								     bridge   => $interfaceref->{bridge} ,
-								     name     => $i ,
-								     number   => $interfaceref->{number} ,
-								     physical => $physical ,
-								     base     => var_base( $physical ) ,
-								     wildcard => $interfaceref->{wildcard} ,
-								     zones    => $interfaceref->{zones} ,
-		                                                    };
-		return $interfaces{$interface};
+		$interfaceref =
+		    $interfaces{$interface} =
+		    $interfaces{$physical} = { options  => $interfaceref->{options} ,
+					       bridge   => $interfaceref->{bridge} ,
+					       name     => $i ,
+					       number   => $interfaceref->{number} ,
+					       physical => $physical ,
+					       base     => var_base( $physical ) ,
+					       wildcard => $interfaceref->{wildcard} ,
+					       zones    => $interfaceref->{zones} ,
+		                              };
+		return $interfaceref;
 	    }
 	}
     }

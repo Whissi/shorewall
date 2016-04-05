@@ -1,13 +1,14 @@
 #
-# Shorewall version 5 - GlusterFS Handler for GlusterFS 3.4 and Later
+# Shorewall -- /usr/share/shorewall/action.GlusterFS
 #
-# /etc/shorewall/action.GlusterFS
+# GlusterFS Handler for GlusterFS 3.4 and Later
 #
 # Parameters:
-#	Bricks:		Number of bricks
-#	IB:		0 or 1, indicating whether Infiniband is used or not
 #
-#########################################################################################
+# Bricks - Number of bricks
+# IB     - 0 or 1, indicating whether Infiniband is used or not
+#
+###############################################################################
 
 DEFAULTS 2,0
 
@@ -17,8 +18,8 @@ DEFAULTS 2,0
     ?error Invalid value for IB (@2)
 ?endif
 
-#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
-#							PORT	PORT(S)		DEST		LIMIT		GROUP
+#ACTION		SOURCE		DEST		PROTO	DPORT
+
 ACCEPT		-		-		udp	111,2049
 ACCEPT		-		-		tcp	38465:38467
 
@@ -31,4 +32,3 @@ ACCEPT		-		-		tcp	24007
 ?set last_port 49150 + @{1}
 
 ACCEPT		-		-		tcp	49151:$last_port
-

@@ -673,11 +673,37 @@
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">REJECT</emphasis></term>
+              <term><emphasis
+              role="bold">REJECT[(<replaceable>option</replaceable>)]</emphasis></term>
 
               <listitem>
                 <para>disallow the request and return an icmp-unreachable or
-                an RST packet.</para>
+                an RST packet. If no option is passed, Shorewall selects the
+                appropriate option based on the protocol of the packet.</para>
+
+                <para>Beginning with Shorewall 5.0.8, the type of reject may
+                be specified in the <replaceable>option</replaceable>
+                paramater. Valid <replaceable>option</replaceable> values
+                are:</para>
+
+                <simplelist>
+                  <member><option>icmp6-no-route</option></member>
+
+                  <member><option>no-route</option></member>
+
+                  <member><option>i</option><option>cmp6-adm-prohibited</option></member>
+
+                  <member><option>adm-prohibited</option></member>
+
+                  <member><option>icmp6-addr-unreachable</option></member>
+
+                  <member><option>addr-unreach</option></member>
+
+                  <member><option>icmp6-port-unreachable</option></member>
+
+                  <member><option>tcp-reset</option> (the PROTO column must
+                  specify TCP)</member>
+                </simplelist>
               </listitem>
             </varlistentry>
 

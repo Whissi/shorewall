@@ -619,7 +619,7 @@ our %builtin_target = ( ACCEPT      => STANDARD + FILTER_TABLE + NAT_TABLE + MAN
 			RAWDNAT     => STANDARD                                           + RAW_TABLE,
 			RAWSNAT     => STANDARD                                           + RAW_TABLE,
 			REDIRECT    => STANDARD                + NAT_TABLE,
-			REJECT      => STANDARD + FILTER_TABLE,
+			REJECT      => STANDARD + FILTER_TABLE + OPTIONS,
 			RETURN      => STANDARD                            + MANGLE_TABLE + RAW_TABLE,
 			SAME        => STANDARD,
 			SECMARK     => STANDARD                            + MANGLE_TABLE,

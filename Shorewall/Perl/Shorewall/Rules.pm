@@ -243,6 +243,8 @@ our %options = ( inline      => INLINE_OPT ,
 		 terminating => TERMINATING_OPT ,
 		 audit       => AUDIT_OPT ,
     );
+
+our %reject_options;
 ################################################################################
 #   Declarations moved from the Tc module in 5.0.7                             #
 ################################################################################
@@ -353,8 +355,27 @@ sub initialize( $ ) {
 
     if ( $family == F_IPV4 ) {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
+	%reject_options = ( 'icmp-net-unreachable'   => 1,
+			    'icmp-host-unreachable'  => 1,
+			    'icmp-port-unreachable'  => 1,
+			    'icmp-proto-unreachable' => 1,
+			    'icmp-net-prohibited'    => 1,
+			    'icmp-host-prohibited'   => 1,
+			    'icmp-admin-prohibited'  => 1,
+			    'icmp-tcp-reset'         => 2,
+	                  );
+			    
     } else {
 	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn/;
+	%reject_options = ( 'icmp6-no-route'         => 1,
+			    'no-route'               => 1,
+			    'icmp6-adm-prohibited'   => 1,
+			    'adm-prohibited'         => 1,
+			    'icmp6-addr-unreachable' => 1,
+			    'addr-unreach'           => 1,
+			    'icmp6-port-unreachable' => 1,
+			    'tcp-reset'              => 2,
+	                  );
     }
 
     ############################################################################
@@ -2654,7 +2675,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    $loglevel = supplied $loglevel ? join( ':', $action, $loglevel ) : $action;
 	    $action   = 'LOG';
 	} elsif ( ! ( $actiontype & (ACTION | INLINE | IPTABLES | TARPIT ) ) ) {
-	    fatal_error "'builtin' actions may only be used in INLINE rules" if $actiontype == USERBUILTIN;
+	    fatal_error "'builtin' actions may only be used in INLINE or IP[6]TABLES rules" if $actiontype == USERBUILTIN;
 	    fatal_error "The $basictarget TARGET does not accept a parameter" unless $param eq '' || $actiontype & OPTIONS;
 	}
     }
@@ -2728,7 +2749,22 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		  }
 	      } ,
 
-	      REJECT => sub { $action = 'reject'; } ,
+	      REJECT => sub {
+		  if ( supplied( $param ) ) {
+		      my $option = $reject_options{$param};
+		      fatal_error "Invalid REJECT option ($param)" unless $option;
+		      if ( $option == 2 ) {
+			  #
+			  # tcp-reset
+			  #
+			  fatal_error "tcp-reset may only be used with PROTO tcp" unless ( resolve_proto( $proto ) || 0 ) == TCP;
+		      }
+
+		      $action = "REJECT --reject-with $param";
+		  } else {		      
+		      $action = 'reject';
+		  }
+	      },
 
 	      CONTINUE => sub { $action = 'RETURN'; } ,
 

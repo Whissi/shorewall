@@ -230,6 +230,7 @@ use constant { INLINE_OPT           => 1 ,
 	       NAT_OPT              => 128 ,
 	       TERMINATING_OPT      => 256 ,
 	       AUDIT_OPT            => 512 ,
+	       LOGJUMP_OPT          => 1024 ,
 };
 
 our %options = ( inline      => INLINE_OPT ,
@@ -242,6 +243,7 @@ our %options = ( inline      => INLINE_OPT ,
 		 nat         => NAT_OPT ,
 		 terminating => TERMINATING_OPT ,
 		 audit       => AUDIT_OPT ,
+		 logjump     => LOGJUMP_OPT ,
     );
 
 our %reject_options;
@@ -1278,8 +1280,14 @@ sub normalize_action( $$$ ) {
 
     ( $level, my $tag ) = split ':', $level;
 
-    $level = 'none' unless supplied $level;
-    $tag   = ''     unless defined $tag;
+    if ( $actions{$action}{options} & LOGJUMP_OPT ) {
+	$level = 'none';
+	$tag   = '';
+    } else {
+	$level = 'none' unless supplied $level;
+	$tag   = ''     unless defined $tag;
+    }
+
     $param = ''     unless defined $param;
     $param = ''     if $param eq '-';
 
@@ -1841,7 +1849,7 @@ sub process_action(\$\$$) {
 
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
     my $options = $actionref->{options};
-    my $nolog = $options & NOLOG_OPT;
+    my $nolog = $options & ( NOLOG_OPT | LOGJUMP_OPT );
 
     setup_audit_action( $action ) if $options & AUDIT_OPT;
 
@@ -2084,7 +2092,7 @@ sub process_actions() {
 		$action =~ s/:.*$//;
 	    }
 
-	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*$/;
+	    fatal_error "Invalid Action Name ($action)" unless $action =~ /^[a-zA-Z][\w-]*!?$/;
 
 	    if ( $options ne '-' ) {
 		for ( split_list( $options, 'option' ) ) {
@@ -3253,7 +3261,12 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	if ( $actiontype & ACTION ) {
 	    $action = $actionchain;
-	    $loglevel = '';
+
+	    if ( $actions{$basictarget}{options} & LOGJUMP_OPT ) {
+		$log_action = $basictarget;
+	    } else {
+		$loglevel = '';
+	    }
 	}
 
 	if ( $origdest ) {
@@ -3754,6 +3767,11 @@ sub process_rules() {
 			RELATED_SECTION,     'RELATED',
 			INVALID_SECTION,     'INVALID',
 			UNTRACKED_SECTION,   'UNTRACKED' );
+
+    #
+    # If A_REJECT was specified in shorewall[6].conf, the A_REJECT chain will already exist.
+    #
+    $actions{normalize_action_name( 'A_REJECT' )} = 'A_REJECT' if $filter_table->{A_REJECT};
     #
     # Create zone-forwarding chains if required
     #

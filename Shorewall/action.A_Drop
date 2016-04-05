@@ -1,30 +1,25 @@
 #
-# Shorewall version 5 - Drop Action
+# Shorewall -- /usr/share/shorewall/action.A_Drop
 #
-# /usr/share/shorewall/action.A_Drop
+# The audited default DROP common rules
 #
-#	The audited default DROP common rules
+# This action is invoked before a DROP policy is enforced. The purpose
+# of the action is:
 #
-#	This action is invoked before a DROP policy is enforced. The purpose
-#	of the action is:
-#
-#	a) Avoid logging lots of useless cruft.
-#	b) Ensure that 'auth' requests are rejected, even if the policy is
-#	   DROP. Otherwise, you may experience problems establishing
-#	   connections with servers that use auth.
-#	c) Ensure that certain ICMP packets that are necessary for successful
-#	   internet operation are always ACCEPTed.
+# a) Avoid logging lots of useless cruft.
+# b) Ensure that certain ICMP packets that are necessary for successful
+#    internet operation are always ACCEPTed.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
-#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#ACTION		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Count packets that come through here
 #
 COUNT
 #
-# Silently DROP 'auth'
+# Special Handling for Auth
 #
 Auth(A_DROP)
 #

@@ -1,29 +1,27 @@
 #
-# Shorewall version 5 - Drop Action
+# Shorewall -- /usr/share/shorewall/action.Drop
 #
-# /usr/share/shorewall/action.Drop
+# The default DROP common rules
 #
-#	The default DROP common rules
+# This action is invoked before a DROP policy is enforced. The purpose
+# of the action is:
 #
-#	This action is invoked before a DROP policy is enforced. The purpose
-#	of the action is:
+# a) Avoid logging lots of useless cruft.
+# b) Ensure that certain ICMP packets that are necessary for successful
+#    internet operation are always ACCEPTed.
 #
-#	a) Avoid logging lots of useless cruft.
-#	b) Ensure that certain ICMP packets that are necessary for successful
-#	   internet operation are always ACCEPTed.
+# The action accepts five optional parameters:
 #
-#  The action accepts five optional parameters:
-#
-#	1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
-#           actions.
-#       2 - Action to take with Auth requests. Default is to do nothing special
-#	    with them.
-#	3 - Action to take with SMB requests. Default is DROP or A_DROP,
-#           depending on the setting of the first parameter.
-#       4 - Action to take with required ICMP packets. Default is ACCEPT or
-#           A_ACCEPT depending on the first parameter.
-#       5 - Action to take with late UDP replies (UDP source port 53). Default
-#           is DROP or A_DROP depending on the first parameter.
+# 1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
+#     actions.
+# 2 - Action to take with Auth requests. Default is to do nothing special
+#     with them.
+# 3 - Action to take with SMB requests. Default is DROP or A_DROP,
+#     depending on the setting of the first parameter.
+# 4 - Action to take with required ICMP packets. Default is ACCEPT or
+#     A_ACCEPT depending on the first parameter.
+# 5 - Action to take with late UDP replies (UDP source port 53). Default
+#     is DROP or A_DROP depending on the first parameter.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
@@ -39,7 +37,7 @@ DEFAULTS -,-,A_DROP,A_ACCEPT,A_DROP
 DEFAULTS -,-,DROP,ACCEPT,DROP
 ?endif
 
-#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#ACTION		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Count packets that come through here
 #

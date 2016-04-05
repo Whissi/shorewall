@@ -1,22 +1,24 @@
 #
-# Shorewall version 5 - Auto Blacklist Action
+# Shorewall -- /usr/share/shorewall/action.AutoBL
+#
+# Auto Blacklist Action
 #
 # Parameters are:
 #
-#    Event          - Name of the event to associate with this blacklist
-#    Interval
-#    Count          - Interval and number of Packets to trigger blacklisting
-#                     Default is 60 seconds and 5 packets.
-#    Successive     - If a matching packet arrives within this many
-#                     seconds of the preceding one, it should be logged
-#                     and dealt with according to the Disposition and
-#                     Log Level parameters below. Default is 2 seconds.
-#    Blacklist time - Number of seconds to blacklist
-#                     Default is 300 (5 minutes)
-#    Disposition    - Disposition of blacklisted packets
-#                     Default is DROP
-#    Log Level      - Level to Log Rejects
-#                     Default is info (6)
+# Event          - Name of the event to associate with this blacklist
+#                  Interval
+# Count          - Interval and number of Packets to trigger blacklisting
+#                  Default is 60 seconds and 5 packets.
+# Successive     - If a matching packet arrives within this many
+#                  seconds of the preceding one, it should be logged
+#                  and dealt with according to the Disposition and
+#                  Log Level parameters below. Default is 2 seconds.
+# Blacklist time - Number of seconds to blacklist
+#                  Default is 300 (5 minutes)
+# Disposition    - Disposition of blacklisted packets
+#                  Default is DROP
+# Log Level      - Level to Log Rejects
+#                  Default is info (6)
 #
 ###############################################################################
 
@@ -37,7 +39,7 @@ validate_level( $level );
 1;
 ?end perl
 ###############################################################################
-#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
+#ACTION		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Silently reject the client if blacklisted
 #

@@ -1,20 +1,18 @@
 #
-# Shorewall version 5 - Reject Action
+# Shorewall -- /usr/share/shorewall/action.A_Reject
 #
-# /usr/share/shorewall/action.A_Reject
+# The audited default REJECT action common rules
 #
-#	The audited default REJECT action common rules
+# This action is invoked before a REJECT policy is enforced. The purpose
+# of the action is:
 #
-#	This action is invoked before a REJECT policy is enforced. The purpose
-#	of the action is:
-#
-#	a) Avoid logging lots of useless cruft.
-#	b) Ensure that certain ICMP packets that are necessary for successful
-#	   internet operation are always ACCEPTed.
+# a) Avoid logging lots of useless cruft.
+# b) Ensure that certain ICMP packets that are necessary for successful
+#    internet operation are always ACCEPTed.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
-#TARGET		SOURCE	DEST	PROTO
+#ACTION		SOURCE	DEST	PROTO
 #
 # Count packets that come through here
 #

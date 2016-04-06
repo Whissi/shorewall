@@ -3771,7 +3771,7 @@ sub process_rules() {
     #
     # If A_REJECT was specified in shorewall[6].conf, the A_REJECT chain will already exist.
     #
-    $actions{normalize_action_name( 'A_REJECT' )} = 'A_REJECT' if $filter_table->{A_REJECT};
+    $usedactions{normalize_action_name( 'A_REJECT' )} = $filter_table->{A_REJECT} if $filter_table->{A_REJECT};
     #
     # Create zone-forwarding chains if required
     #

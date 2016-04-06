@@ -7744,7 +7744,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 			# No logging or user-specified logging -- add the target rule with matches to the rule chain
 			#
 			if ( $targetref ) {
-			    add_expanded_jump( $chainref, $targetref , 0, $prerule . $matches );
+			    add_expanded_jump( $chainref , $targetref , $targetref->{name} eq 'reject' , $prerule . $matches );
 			} else {
 			    add_rule( $chainref, $prerule . $matches . $jump , 1 );
 			}

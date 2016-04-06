@@ -3769,7 +3769,7 @@ sub process_rules() {
 			UNTRACKED_SECTION,   'UNTRACKED' );
 
     #
-    # If A_REJECT was specified in shorewall[6].conf, the A_REJECT chain will already exist.
+    # If A_REJECT was specified in shorewall[6].conf, the A_REJECT chain may already exist.
     #
     $usedactions{normalize_action_name( 'A_REJECT' )} = $filter_table->{A_REJECT} if $filter_table->{A_REJECT};
     #

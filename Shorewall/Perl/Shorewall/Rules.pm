@@ -2196,7 +2196,7 @@ sub process_reject_action() {
     #
     # This gets called very early in the compilation process so we fake the section
     #
-    $section = NEW_SECTION;
+    $section = DEFAULTACTION_SECTION;
 
     if ( ( $targets{$action} || 0 ) == ACTION ) {
 	add_ijump $rejectref, j => use_policy_action( $action, $rejectref->{name} );

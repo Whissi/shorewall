@@ -1309,6 +1309,8 @@ sub push_rule( $$ ) {
     my $complete = 0;
     my $ruleref  = transform_rule( $_[1], $complete );
 
+    fatal_error "Chain $chainref->{name} jumps to itself" if ( $ruleref->{target} || '' ) eq $chainref->{name};
+
     set_irule_comment( $chainref, $ruleref );
 
     $ruleref->{mode}    = CMD_MODE if $ruleref->{cmdlevel} = $chainref->{cmdlevel};

@@ -286,6 +286,7 @@ our %EXPORT_TAGS = (
 				       create_chainlist_reload
 				       create_stop_load
 				       initialize_switches
+				       terminating
 				       %targets
 				       %builtin_target
 				       %dscpmap
@@ -808,14 +809,13 @@ sub initialize( $$$ ) {
 		     NETMAP       => 1,
 		     NFQUEUE      => 1,
 		     NOTRACK      => 1,
-		     REDIRECT     => 1,
 		     RAWDNAT      => 1,
+		     REDIRECT     => 1,
 		     RAWSNAT      => 1,
 		     REJECT       => 1,
 		     SAME         => 1,
 		     SNAT         => 1,
 		     TPROXY       => 1,
-		     reject       => 1,
 		   );
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
@@ -840,6 +840,15 @@ sub decr_cmd_level( $ ) {
 #
 sub make_terminating( $ ) {
     $terminating{$_[0]} = 1;
+}
+
+#
+# Determine if a chain is terminating
+#
+sub terminating( $ ) {
+    my ( $chainref ) = @_;
+
+    return $chainref->{complete} && ! ( $chainref->{optflags} & RETURNS );
 }
 
 #
@@ -7749,7 +7758,7 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 			if ( $targetref ) {
 			    add_expanded_jump( $chainref ,
 					       $targetref ,
-					       $targetref->{complete} && ! ( $targetref->{optflags} & RETURNS ),
+					       terminating( $targetref ) ,
 					       $prerule . $matches );
 			} else {
 			    add_rule( $chainref, $prerule . $matches . $jump , 1 );

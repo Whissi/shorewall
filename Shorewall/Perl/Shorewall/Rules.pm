@@ -2193,6 +2193,10 @@ sub use_policy_action( $$ ) {
 sub process_reject_action() {
     my $rejectref = $filter_table->{reject};
     my $action    = $config{REJECT_ACTION};
+    #
+    # This gets called very early in the compilation process so we fake the section
+    #
+    $section = NEW_SECTION;
 
     if ( ( $targets{$action} || 0 ) == ACTION ) {
 	add_ijump $rejectref, j => use_policy_action( $action, $rejectref->{name} );
@@ -2221,6 +2225,8 @@ sub process_reject_action() {
 			0,            #Wildcard
 	    );
     }
+
+    $section = '';
 }
 
 ################################################################################

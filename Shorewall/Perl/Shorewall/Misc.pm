@@ -677,6 +677,7 @@ sub add_common_rules ( $ ) {
 
     if ( $config{REJECT_ACTION} ) {
 	process_reject_action;
+	fatal_eror( "The REJECT_ACTION ($config{REJECT_ACTION}) is not terminating" ) unless terminating( $rejectref );
     } else {
 	if ( have_capability( 'ADDRTYPE' ) ) {
 	    add_ijump $rejectref , j => 'DROP' , addrtype => '--src-type BROADCAST';

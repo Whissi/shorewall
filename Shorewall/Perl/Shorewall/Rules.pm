@@ -2201,6 +2201,8 @@ sub process_reject_action() {
     if ( ( $targets{$action} || 0 ) == ACTION ) {
 	add_ijump $rejectref, j => use_policy_action( $action, $rejectref->{name} );
     } else {
+	progress_message2 "$doing $actions{$action}->{file} for chain reject...";
+
 	process_inline( $action,      #Inline
 			$rejectref,   #Chain
 			'',           #Matches
@@ -2390,7 +2392,7 @@ sub process_inline ($$$$$$$$$$$$$$$$$$$$$$) {
 
     setup_audit_action( $inline ) if $options & AUDIT_OPT;
 
-    progress_message "..Expanding inline action $inlinefile...";
+    progress_message "..Expanding inline action $inlinefile..." unless $inline eq $config{REJECT_ACTION};
 
     push_open $inlinefile, 2, 1, undef , 2;
 

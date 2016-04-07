@@ -1539,6 +1539,7 @@ sub create_irule( $$$;@ ) {
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
 	$chainref->{optflags} |= RETURNS_DONT_MOVE if $target eq 'RETURN';
+	$chainref->{complete} ||= $terminating{$target} && ! @matches;
 	$ruleref->{targetopts} = $targetopts if $targetopts;
     } else {
 	$ruleref->{target} = '';
@@ -7744,7 +7745,10 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 			# No logging or user-specified logging -- add the target rule with matches to the rule chain
 			#
 			if ( $targetref ) {
-			    add_expanded_jump( $chainref , $targetref , $targetref->{name} eq 'reject' , $prerule . $matches );
+			    add_expanded_jump( $chainref ,
+					       $targetref ,
+					       $targetref->{complete} && ! ( $targetref->{optflags} & RETURNS ),
+					       $prerule . $matches );
 			} else {
 			    add_rule( $chainref, $prerule . $matches . $jump , 1 );
 			}

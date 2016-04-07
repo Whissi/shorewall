@@ -867,10 +867,6 @@ sub compiler {
     #
     complete_policy_chains;
     #
-    # Reject Action
-    #
-    process_reject_action if $config{REJECT_ACTION};
-    #
     # Accounting.
     #
     setup_accounting if $config{ACCOUNTING};

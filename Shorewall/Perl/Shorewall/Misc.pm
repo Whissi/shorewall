@@ -674,6 +674,49 @@ sub add_common_rules ( $ ) {
     my $level     = $config{BLACKLIST_LOG_LEVEL};
     my $tag       = $globals{BLACKLIST_LOG_TAG};
     my $rejectref = $filter_table->{reject};
+
+    if ( $config{REJECT_ACTION} ) {
+	process_reject_action;
+    } else {
+	if ( have_capability( 'ADDRTYPE' ) ) {
+	    add_ijump $rejectref , j => 'DROP' , addrtype => '--src-type BROADCAST';
+	} else {
+	    if ( $family == F_IPV4 ) {
+		add_commands $rejectref, 'for address in $ALL_BCASTS; do';
+	    } else {
+		add_commands $rejectref, 'for address in $ALL_ACASTS; do';
+	    }
+
+	    incr_cmd_level $rejectref;
+	    add_ijump $rejectref, j => 'DROP', d => '$address';
+	    decr_cmd_level $rejectref;
+	    add_commands $rejectref, 'done';
+	}
+
+	if ( $family == F_IPV4 ) {
+	    add_ijump $rejectref , j => 'DROP', s => '224.0.0.0/4';
+	} else {
+	    add_ijump $rejectref , j => 'DROP', s => IPv6_MULTICAST;
+	}
+
+	add_ijump $rejectref , j => 'DROP', p => 2;
+	add_ijump $rejectref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
+
+	if ( have_capability( 'ENHANCED_REJECT' ) ) {
+	    add_ijump $rejectref , j => 'REJECT', p => 17;
+
+	    if ( $family == F_IPV4 ) {
+		add_ijump $rejectref, j => 'REJECT --reject-with icmp-host-unreachable', p => 1;
+		add_ijump $rejectref, j => 'REJECT --reject-with icmp-host-prohibited';
+	    } else {
+		add_ijump $rejectref, j => 'REJECT --reject-with icmp6-addr-unreachable', p => 58;
+		add_ijump $rejectref, j => 'REJECT --reject-with icmp6-adm-prohibited';
+	    }
+	} else {
+	    add_ijump $rejectref , j => 'REJECT';
+	}
+    }
+
     #
     # Insure that Docker jumps are early in the builtin chains
     #
@@ -944,46 +987,6 @@ sub add_common_rules ( $ ) {
 	    for $chain ( option_chains $interface ) {
 		add_ijump_extended( $filter_table->{$chain} , j => $target, $origin, @state, imatch_source_net( $net ), @policy );
 	    }
-	}
-    }
-
-    unless ( $config{REJECT_ACTION} ) {
-	if ( have_capability( 'ADDRTYPE' ) ) {
-	    add_ijump $rejectref , j => 'DROP' , addrtype => '--src-type BROADCAST';
-	} else {
-	    if ( $family == F_IPV4 ) {
-		add_commands $rejectref, 'for address in $ALL_BCASTS; do';
-	    } else {
-		add_commands $rejectref, 'for address in $ALL_ACASTS; do';
-	    }
-
-	    incr_cmd_level $rejectref;
-	    add_ijump $rejectref, j => 'DROP', d => '$address';
-	    decr_cmd_level $rejectref;
-	    add_commands $rejectref, 'done';
-	}
-
-	if ( $family == F_IPV4 ) {
-	    add_ijump $rejectref , j => 'DROP', s => '224.0.0.0/4';
-	} else {
-	    add_ijump $rejectref , j => 'DROP', s => IPv6_MULTICAST;
-	}
-
-	add_ijump $rejectref , j => 'DROP', p => 2;
-	add_ijump $rejectref , j => 'REJECT', targetopts => '--reject-with tcp-reset', p => 6;
-
-	if ( have_capability( 'ENHANCED_REJECT' ) ) {
-	    add_ijump $rejectref , j => 'REJECT', p => 17;
-
-	    if ( $family == F_IPV4 ) {
-		add_ijump $rejectref, j => 'REJECT --reject-with icmp-host-unreachable', p => 1;
-		add_ijump $rejectref, j => 'REJECT --reject-with icmp-host-prohibited';
-	    } else {
-		add_ijump $rejectref, j => 'REJECT --reject-with icmp6-addr-unreachable', p => 58;
-		add_ijump $rejectref, j => 'REJECT --reject-with icmp6-adm-prohibited';
-	    }
-	} else {
-	    add_ijump $rejectref , j => 'REJECT';
 	}
     }
 

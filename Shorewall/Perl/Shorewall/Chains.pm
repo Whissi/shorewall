@@ -851,6 +851,15 @@ sub terminating( $ ) {
     return $chainref->{complete} && ! ( $chainref->{optflags} & RETURNS );
 }
 
+sub is_terminating( $$ ) {
+    my ( $table, $target ) = @_;
+
+    if ( my $chainref = $chain_table{$table}{$target} ) {
+	terminating( $chainref );
+    } else {
+	$terminating{$target};
+    }
+}
 #
 # Transform the passed iptables rule into an internal-form hash reference.
 # Most of the compiler has been converted to use the new form natively.
@@ -1550,7 +1559,7 @@ sub create_irule( $$$;@ ) {
 	$ruleref->{jump}       = $jump;
 	$ruleref->{target}     = $target;
 	$chainref->{optflags} |= RETURNS_DONT_MOVE if $target eq 'RETURN';
-	$chainref->{complete} ||= $terminating{$target} && ! @matches;
+	$chainref->{complete} ||= ( ! @matches && ( $jump eq 'g' || is_terminating( $chainref->{table}, $target ) ) );
 	$ruleref->{targetopts} = $targetopts if $targetopts;
     } else {
 	$ruleref->{target} = '';
@@ -2497,7 +2506,7 @@ sub add_ijump_internal( $$$$$;@ ) {
     }
 
     if ( $ruleref->{simple} ) {
-	$fromref->{complete} = 1 if $jump eq 'g' || $terminating{$to};
+	$fromref->{complete} = 1 if $jump eq 'g' || ( $toref ? terminating( $toref ) : $terminating{$to} );
     }
 
     $ruleref->{origin} = $origin if $origin;

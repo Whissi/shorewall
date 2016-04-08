@@ -10,7 +10,7 @@
 # b) Ensure that certain ICMP packets that are necessary for successful
 #    internet operation are always ACCEPTed.
 #
-# The action accepts five optional parameters:
+# The action accepts six optional parameters:
 #
 # 1 - 'audit' or '-'. Default is '-' which means don't audit in builtin
 #     actions.
@@ -22,18 +22,20 @@
 #     A_ACCEPT depending on the first parameter.
 # 5 - Action to take with late UDP replies (UDP source port 53). Default
 #     is DROP or A_DROP depending on the first parameter.
+# 6 - Action to take with UPnP packets. Default is DROP or A_DROP
+#     depending on the first parameter.
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
 
 ?if passed(@1)
     ?if @1 eq 'audit'
-DEFAULTS -,-,A_REJECT,A_ACCEPT,A_DROP
+DEFAULTS -,-,A_REJECT,A_ACCEPT,A_DROP,A_DROP
     ?else
 	?error The first parameter to Reject must be 'audit' or '-'
     ?endif
 ?else
-DEFAULTS -,-,REJECT,ACCEPT,DROP
+DEFAULTS -,-,REJECT,ACCEPT,DROP,DROP
 ?endif
 
 #ACTION		SOURCE	DEST	PROTO
@@ -66,7 +68,7 @@ Invalid(DROP,@1)
 # Reject Microsoft noise so that it doesn't clutter up the log.
 #
 SMB(@3)
-DropUPnP(@5)
+DropUPnP(@6)
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #

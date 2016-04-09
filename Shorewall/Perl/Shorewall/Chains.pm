@@ -8388,16 +8388,8 @@ sub load_ipsets() {
 		emit ( '' );
 		ensure_ipset( $_ ) for @ipsets;
 		emit ( '' );
-
-		emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		       '        $IPSET flush' ,
-		       '        $IPSET destroy' ,
-		       '        $IPSET restore < ${VARDIR}/ipsets.save' ,
-		       "    fi\n" ) for @{$globals{SAVED_IPSETS}};
 	    }
 	} else {
-	    ensure_ipset( $_ ) for @ipsets;
-
 	    if ( @{$globals{SAVED_IPSETS}} ) {
 		emit ( '' );
 
@@ -8405,8 +8397,12 @@ sub load_ipsets() {
 		       '        $IPSET flush' ,
 		       '        $IPSET destroy' ,
 		       '        $IPSET restore < ${VARDIR}/ipsets.save' ,
-		       "    fi\n" ) for @{$globals{SAVED_IPSETS}};
+		       "    fi\n" );
 	    }
+
+	    emit( '' );
+	    ensure_ipset( $_ ) for @ipsets;
+	    emit( '' );
 	}
 
 	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' );
@@ -8435,7 +8431,13 @@ sub load_ipsets() {
 		   '        $IPSET flush' ,
 		   '        $IPSET destroy' ,
 		   '        $IPSET restore < ${VARDIR}/ipsets.save' ,
-		   "    fi\n" ) for @{$globals{SAVED_IPSETS}};
+		   "    fi\n" );
+
+	    if ( @ipsets ) {
+		emit ( '' );
+		ensure_ipset( $_ ) for @ipsets;
+		emit ( '' );
+	    }
 	}
 
 	if ( @ipsets ) {
@@ -8449,7 +8451,9 @@ sub load_ipsets() {
 
 	if ( @ipsets ) {
 	    emit( 'elif [ "$COMMAND" = refresh ]; then' );
+	    emit ( '' );
 	    ensure_ipset( $_ ) for @ipsets;
+	    emit ( '' );
 	};
 
 	emit ( 'fi' ,

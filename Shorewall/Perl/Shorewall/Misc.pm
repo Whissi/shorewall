@@ -859,13 +859,13 @@ sub add_common_rules ( $ ) {
 		}
 	    }
 
-	    if ( $dbl_ipset ) {
+	    if ( $dbl_ipset && ! get_interface_option( $interface, 'nodbl' ) ) {
 		add_ijump_extended( $filter_table->{input_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
 		add_ijump_extended( $filter_table->{input_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" ) if $dbl_type =~ /,src-dst$/;
 	    }
 	    
 	    for ( option_chains( $interface ) ) {
-		add_ijump_extended( $filter_table->{$_}, j => $dynamicref, $origin{DYNAMIC_BLACKLIST}, @state ) if $dynamicref;
+		add_ijump_extended( $filter_table->{$_}, j => $dynamicref, $origin{DYNAMIC_BLACKLIST}, @state ) if $dynamicref && ! get_interface_option( $interface, 'nodbl' );
 		add_ijump_extended( $filter_table->{$_}, j => 'ACCEPT',    $origin{FASTACCEPT},        state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};
 	    }
 	}

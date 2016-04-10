@@ -824,7 +824,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           packets until these packets reach the chain in which the original
           connection was accepted. So for packets going from the 'loc' zone to
           the 'net' zone, ESTABLISHED/RELATED packets are ACCEPTED in the
-          'loc2net' chain.</para>
+          'loc-net' or 'loc2net' chain, depending on the setting of ZONE2ZONE
+          (see below).</para>
 
           <para>If you set FASTACCEPT=Yes, then ESTABLISHED/RELATED packets
           are accepted early in the INPUT, FORWARD and OUTPUT chains. If you

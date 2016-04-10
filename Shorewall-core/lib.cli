@@ -340,6 +340,7 @@ show_classifiers() {
 # Display blacklist chains
 #
 show_bl() {
+    [ -n "$g_blacklistipset" ] && ipset -L $
     $g_tool -L $g_ipt_options | \
 	awk 'BEGIN           {prnt=0; };
             /^$/             {if (prnt == 1) print ""; prnt=0; };
@@ -3444,6 +3445,30 @@ reject_command() {
     fi
 }
 
+blacklist_command() {
+    local family
+
+    [ $# -gt 0 ] || fatal_error "Missing address"
+
+    [ -z "$g_blacklistipset" ] && fatal_error "The blacklist command is not supported in the current $g_product configuration"
+
+    case ${IPSET:=ipset} in
+	*/*)
+	    if [ ! -x "$IPSET" ]; then
+		fatal_error "IPSET=$IPSET does not exist or is not executable"
+	    fi
+	    ;;
+	*)
+	    IPSET="$(mywhich $IPSET)"
+	    [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
+	    ;;
+    esac
+
+    $IPSET -A $g_blacklistipset $@ || fatal_error "Address $1 not blacklisted"
+
+    return 0
+}    
+
 save_command() {
     local finished
     finished=0
@@ -3793,6 +3818,38 @@ get_config() {
 	g_pager="| $g_pager"
      fi
 
+    if [ -n "$DYNAMIC_BLACKLIST" ]; then
+	case $DYNAMIC_BLACKLIST in
+	    [Nn]o)
+		DYNAMIC_BLACKLIST='';
+		;;
+	    [Yy]es)
+	        ;;
+	    ipset|ipset::*|ipset-only|ipset-only::*|ipset,src-dst|ipset-only,src-dst::*)
+		g_blacklistipset=SW_DBL$g_family
+		;;
+	    ipset:[a-zA-Z]*)
+		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset:}
+		g_blacklistipset=${g_blacklistipset%%:*}
+		;;
+	    ipset,src-dst:[a-zA-Z]*)
+		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset,src-dst:}
+		g_blacklistipset=${g_blacklistipset%%:*}
+		;;
+	    ipset-only:[a-zA-Z]*)
+		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only:}
+		g_blacklistipset=${g_blacklistipset%%:*}
+		;;
+	    ipset-only,src-dst:[a-zA-Z]*)
+		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only,src-dst:}
+		g_blacklistipset=${g_blacklistipset%%:*}
+		;;
+	    *)
+		fatal_error "Invalid value ($DYNAMIC_BLACKLIST) for DYNAMIC_BLACKLIST"
+		;;
+	esac
+    fi
+
     lib=$(find_file lib.cli-user)
 
     [ -f $lib ] && . $lib
@@ -3983,6 +4040,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
+    echo "   blacklist <address> [ <option> ... ]"
     ecko "   [ check | ck ] [ -e ] [ -r ] [ -p ] [ -r ] [ -T ] [ -i ] [ <directory> ]"
     echo "   clear"
     ecko "   [ compile | co ] [ -e ] [ -p ] [ -t ] [ -c ] [ -d ] [ -T ] [ -i ] [ <directory name> ] [ <path name> ]"
@@ -4134,6 +4192,7 @@ shorewall_cli() {
     g_loopback=
     g_compiled=
     g_pager=
+    g_blacklistipset=
 
     VERBOSE=
     VERBOSITY=1
@@ -4324,6 +4383,13 @@ shorewall_cli() {
 	    else
 		fatal_error "$g_product is not running"
 	    fi
+	    ;;
+	blacklist)
+	    get_config Yes
+	    shift
+	    [ -n "$g_nolock" ] || mutex_on
+	    blacklist_command $@
+	    [ -n "$g_nolock" ] || mutex_off
 	    ;;
 	run)
 	    [ $# -gt 1 ] || fatal_error "Missing function name"

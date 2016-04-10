@@ -623,15 +623,31 @@
 
       <varlistentry>
         <term><emphasis role="bold">DYNAMIC_BLACKLIST=</emphasis>{<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>||<emphasis
+        role="bold">ipset</emphasis>[<emphasis
+        role="bold">-only</emphasis>][,<emphasis
+        role="bold">src-dst</emphasis>][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.7. When set to <emphasis
           role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
-          dynamic blacklisting using the <command>shorewall6 drop</command>,
-          <command>shorewall6 reject</command>, <command>shorewall6
-          logdrop</command> and <command>shorewall6 logreject</command> is
-          disabled. Default is <emphasis role="bold">Yes</emphasis>.</para>
+          chain-based dynamic blacklisting using the <command>shorewall6
+          drop</command>, <command>shorewall6 reject</command>,
+          <command>shorewall6 logdrop</command> and <command>shorewall6
+          logreject</command> is disabled. Default is <emphasis
+          role="bold">Yes</emphasis>. Beginning with Shorewall 5.0.8,
+          ipset-based dynamic blacklisting is also supported. The name of the
+          set (<replaceable>setname</replaceable>) and the level
+          (<replaceable>log_level</replaceable>), if any, at which blacklisted
+          traffic is to be logged may also be specified. The default set name
+          is SW_DBL6 and the default log level is <option>none</option> (no
+          logging). if <option>ipset-only</option> is given, then chain-based
+          dynamic blacklisting is disabled just as if DYNAMIC_BLACKLISTING=No
+          had been specified. Normally, only packets whose source address
+          matches an entry in the ipsec are dropped. If
+          <option>src-dst</option> is included, then packets whose destination
+          address matches an entry in the ipset are also dropped.</para>
         </listitem>
       </varlistentry>
 

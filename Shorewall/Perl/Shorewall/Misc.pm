@@ -674,6 +674,11 @@ sub add_common_rules ( $ ) {
     my $level     = $config{BLACKLIST_LOG_LEVEL};
     my $tag       = $globals{BLACKLIST_LOG_TAG};
     my $rejectref = $filter_table->{reject};
+    my $dbl_type;
+    my $dbl_ipset;
+    my $dbl_level;
+    my $dbl_tag;
+    my $dbl_target;
 
     if ( $config{REJECT_ACTION} ) {
 	process_reject_action;
@@ -723,11 +728,34 @@ sub add_common_rules ( $ ) {
     #
     create_docker_rules if $config{DOCKER};
 
-    if ( $config{DYNAMIC_BLACKLIST} ) {
-	add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);
-	add_rule_pair( set_optflags( new_standard_chain( 'logreject' ), DONT_OPTIMIZE | DONT_DELETE ), '' , 'reject' , $level , $tag);
-	$dynamicref =  set_optflags( new_standard_chain( 'dynamic' ) ,  DONT_OPTIMIZE );
-	add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
+    if ( my $val = $config{DYNAMIC_BLACKLIST} ) {
+	( $dbl_type, $dbl_ipset, $dbl_level, $dbl_tag ) = split( ':', $val );
+
+	unless ( $dbl_type =~ /^ipset-only/ ) {
+	    add_rule_pair( set_optflags( new_standard_chain( 'logdrop' )  , DONT_OPTIMIZE | DONT_DELETE ), '' , 'DROP'   , $level , $tag);
+	    add_rule_pair( set_optflags( new_standard_chain( 'logreject' ), DONT_OPTIMIZE | DONT_DELETE ), '' , 'reject' , $level , $tag);
+	    $dynamicref =  set_optflags( new_standard_chain( 'dynamic' ) ,  DONT_OPTIMIZE );
+	    add_commands( $dynamicref, '[ -f ${VARDIR}/.dynamic ] && cat ${VARDIR}/.dynamic >&3' );
+	}
+
+	if ( $dbl_ipset ) {
+	    if ( $dbl_level ) {
+		my $chainref = set_optflags( new_standard_chain( $dbl_target = 'dbl_log' ) , DONT_OPTIMIZE | DONT_DELETE );
+
+		log_rule_limit( $dbl_level,
+				$chainref,
+				'dbl_log',
+				'DROP',
+				$globals{LOGLIMIT},
+				$dbl_tag,
+				'add',
+				'',
+				$origin{DYNAMIC_BLACKLIST} );
+		add_ijump_extended( $chainref, j => 'DROP', $origin{DYNAMIC_BLACKLIST} );
+	    } else {
+		$dbl_target = 'DROP'; 
+	    }
+	}
     }
 
     setup_mss;
@@ -831,6 +859,11 @@ sub add_common_rules ( $ ) {
 		}
 	    }
 
+	    if ( $dbl_ipset ) {
+		add_ijump_extended( $filter_table->{input_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
+		add_ijump_extended( $filter_table->{input_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" ) if $dbl_type =~ /,src-dst$/;
+	    }
+	    
 	    for ( option_chains( $interface ) ) {
 		add_ijump_extended( $filter_table->{$_}, j => $dynamicref, $origin{DYNAMIC_BLACKLIST}, @state ) if $dynamicref;
 		add_ijump_extended( $filter_table->{$_}, j => 'ACCEPT',    $origin{FASTACCEPT},        state_imatch $faststate )->{comment} = '' if $config{FASTACCEPT};

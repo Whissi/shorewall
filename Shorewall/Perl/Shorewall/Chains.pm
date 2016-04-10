@@ -8254,8 +8254,8 @@ sub ensure_ipset( $ ) {
     if ( $family == F_IPV4 ) {
 	if ( have_capability 'IPSET_V5' ) {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:ip set") ,
-		   qq(        \$IPSET -N $set hash:ip family inet) ,
+		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		   qq(        \$IPSET -N $set hash:net family inet timeout 0) ,
 		   qq(    fi) );
 	} else {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
@@ -8265,8 +8265,8 @@ sub ensure_ipset( $ ) {
 	}
     } else {
 	emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-	       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:ip set") ,
-	       qq(        \$IPSET -N $set hash:ip family inet6) ,
+	       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+	       qq(        \$IPSET -N $set hash:net family inet6 timeout 0) ,
 	       qq(    fi) );
     }
 }
@@ -8277,7 +8277,7 @@ sub ensure_ipset( $ ) {
 sub create_save_ipsets() {
     my @ipsets = all_ipsets;
 
-    emit( "#\n#Save the ipsets specified by the SAVE_IPSETS setting and by dynamic zones\n#",
+    emit( "#\n#Save the ipsets specified by the SAVE_IPSETS setting and by dynamic zones and blacklisting\n#",
 	  'save_ipsets() {' );
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
@@ -8360,7 +8360,7 @@ sub create_save_ipsets() {
 
 sub load_ipsets() {
 
-    my @ipsets = all_ipsets;
+    my @ipsets = all_ipsets; #Dynamic Zone IPSETS
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit ( '', );
@@ -8425,8 +8425,6 @@ sub load_ipsets() {
 		emit ( '' );
 	    }
 	} else {
-	    ensure_ipset( $_ ) for @ipsets;
-
 	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
 		   '        $IPSET flush' ,
 		   '        $IPSET destroy' ,

@@ -56,6 +56,19 @@
 
       <arg>-<replaceable>options</replaceable></arg>
 
+      <arg choice="plain"><option>blacklist</option></arg>
+
+      <arg choice="plain"><replaceable>address</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall6</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>-<replaceable>options</replaceable></arg>
+
       <arg choice="plain"><option>call</option></arg>
 
       <arg
@@ -920,6 +933,25 @@
           role="bold">logdrop</emphasis>, <emphasis
           role="bold">reject</emphasis>, or <emphasis
           role="bold">logreject</emphasis> command.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">blacklist</emphasis>
+        <replaceable>address</replaceable> [ <replaceable>option</replaceable>
+        ... ]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.8 and requires
+          DYNAMIC_BLACKLIST=ipset.. in <ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).
+          Causes packets from the given host or network
+          <replaceable>address</replaceable> to be dropped, based on the
+          setting of BLACKLIST in <ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).
+          The <replaceable>address</replaceable> along with any
+          <replaceable>option</replaceable>s are passed to the <command>ipset
+          add</command> command.</para>
         </listitem>
       </varlistentry>
 

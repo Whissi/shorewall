@@ -161,6 +161,8 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
                                        set_section_function
                                        clear_section_function
                                        directive_callback
+		                       add_ipset
+		                       all_ipsets
 
 				       $product
 				       $Product
@@ -673,6 +675,7 @@ our $section_function; #Function Reference for handling ?section
 
 our $evals = 0; # Number of times eval() called out of evaluate_expression() or embedded_perl().
 
+our %ipsets; # All required IPsets
 #
 # Files located via find_file()
 #
@@ -1073,6 +1076,7 @@ sub initialize( $;$$) {
     %actparams = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
     $parmsmodified = 0;
     $usedcaller    = 0;
+    %ipsets = ();
 
     %helpers_enabled = (
 			amanda       => 1,
@@ -1170,6 +1174,14 @@ sub initialize( $;$$) {
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
+
+sub add_ipset( $ ) {
+    $ipsets{$_[0]} = 1;
+}
+
+sub all_ipsets() {
+    sort keys %ipsets;
+}
 
 #
 # Create 'currentlineinfo'
@@ -5991,7 +6003,33 @@ sub get_configuration( $$$$ ) {
 	$config{ACCOUNTING_TABLE} = 'filter';
     }
 
-    default_yes_no 'DYNAMIC_BLACKLIST'          , 'Yes';
+    if ( supplied( $val = $config{DYNAMIC_BLACKLIST} ) ) {
+	if ( $val =~ /^ipset/ ) {
+	    my ( $key, $set, $level, $tag, $rest ) = split( ':', $val , 5 );
+
+	    fatal_error "Invalid DYNAMIC_BLACKLIST setting ( $val )" if $key !~ /^ipset(?:-only)?(?:,src-dst)?$/ || defined $rest;
+
+	    if ( supplied( $set ) ) {
+		fatal_error "Invalid DYNAMIC_BLACKLIST ipset name" unless $set =~ /^[A-Za-z][\w-]*/;
+	    } else {
+		$set = 'SW_DBL' . $family;
+	    }
+
+	    add_ipset( $set );
+	    
+	    $level = validate_level( $level );
+
+	    $tag = '' unless defined $tag;
+
+	    $config{DYNAMIC_BLACKLIST} = join( ':', $key, $set, $level, $tag );
+
+	    require_capability( 'IPSET_V5', 'DYNAMIC_BLACKLIST=ipset...', 's' );
+
+	} else {
+	    default_yes_no( 'DYNAMIC_BLACKLIST'     , 'Yes' );
+	}
+    }
+
     default_yes_no 'REQUIRE_INTERFACE'          , '';
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability( 'MARK' ) ? 'Yes' : '';
     default_yes_no 'COMPLETE'                   , '';
@@ -6503,7 +6541,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS RESTART) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS RESTART DYNAMIC_BLACKLIST) ) {
 	conditionally_add_option $option;
     }
 

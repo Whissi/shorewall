@@ -103,7 +103,6 @@ our @EXPORT = ( qw( NOTHING
 		    find_hosts_by_option
 		    find_zone_hosts_by_option
 		    find_zones_by_option
-		    all_ipsets
 		    have_ipsec
 		 ),
 	      );
@@ -210,7 +209,6 @@ our @interfaces;
 our %interfaces;
 our %roots;
 our @bport_zones;
-our %ipsets;
 our %basemap;
 our %basemap1;
 our %mapbase;
@@ -326,7 +324,6 @@ sub initialize( $$ ) {
     %roots = ();
     %interfaces = ();
     @bport_zones = ();
-    %ipsets = ();
     %basemap = ();
     %basemap1 = ();
     %mapbase = ();
@@ -1344,7 +1341,7 @@ sub process_interface( $$ ) {
 	    my $ipset = $family == F_IPV4 ? "${zone}" : "6_${zone}";
 	    $ipset = join( '_', $ipset, var_base1( $physical ) ) unless $zoneref->{options}{in_out}{dynamic_shared};	    
 	    $netsref = [ "+$ipset" ];
-	    $ipsets{$ipset} = 1;
+	    add_ipset($ipset);
 	}
 
 	if ( $options{bridge} ) {
@@ -2153,7 +2150,7 @@ sub process_host( ) {
 
 	$hosts = "+$set";
 	$optionsref->{dynamic} = 1;
-	$ipsets{$set} = 1;
+	add_ipset($set);
     }
 
     #
@@ -2271,10 +2268,6 @@ sub find_zones_by_option( $$ ) {
     }
 
     \@zns;
-}
-
-sub all_ipsets() {
-    sort keys %ipsets;
 }
 
 1;

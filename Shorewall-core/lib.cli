@@ -339,8 +339,15 @@ show_classifiers() {
 #
 # Display blacklist chains
 #
+blacklist_filter() {
+    awk \
+	'BEGIN          { prnt=0; }; \
+        /^Members:/     { print "Dynamic:"; prnt=1; next; }; \
+                        { if (prnt == 1) print; };'
+}
+
 show_bl() {
-    [ -n "$g_blacklistipset" ] && ipset -L $
+    [ -n "$g_blacklistipset" ] && ipset -L $g_blacklistipset | blacklist_filter && echo
     $g_tool -L $g_ipt_options | \
 	awk 'BEGIN           {prnt=0; };
             /^$/             {if (prnt == 1) print ""; prnt=0; };
@@ -3464,11 +3471,10 @@ blacklist_command() {
 	    ;;
     esac
 
-    $IPSET -A $g_blacklistipset $@ || fatal_error "Address $1 not blacklisted"
+    $IPSET -A $g_blacklistipset $@ || { error_message "ERROR: Address $1 not blacklisted"; return 1; }
 
     return 0
-}    
-
+}
 save_command() {
     local finished
     finished=0

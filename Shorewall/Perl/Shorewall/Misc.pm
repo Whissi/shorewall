@@ -1838,12 +1838,14 @@ sub add_output_jumps( $$$$$$$$ ) {
     my $use_output        = 0;
     my @dest              = imatch_dest_net $net;
     my @ipsec_out_match   = match_ipsec_out $zone , $hostref;
+    my @zone_interfaces   = keys %{zone_interfaces( $zone )};
 
-    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) ) {
+    if ( @vservers || use_output_chain( $interface, $interfacechainref ) || ( @{$interfacechainref->{rules}} && ! $chain1ref ) || @zone_interfaces > 1 ) {
 	#
 	# - There are vserver zones (so OUTPUT will have multiple source; or
 	# - We must use the interface output chain; or
 	# - There are rules in the interface chain and none in the rules chain
+	# - The zone has multiple interfaces
 	#
 	#   In any of these cases use the inteface output chain
 	#
@@ -1860,7 +1862,7 @@ sub add_output_jumps( $$$$$$$$ ) {
 		unless $output_jump_added{$interface}++;
 	} else {
 	    #
-	    # Not a bridge -- match the input interface
+	    # Not a bridge -- match the output interface
 	    #
 	    add_ijump_extended $filter_table->{OUTPUT}, j => $outputref, $origin, imatch_dest_dev( $interface ) unless $output_jump_added{$interface}++;
 	}

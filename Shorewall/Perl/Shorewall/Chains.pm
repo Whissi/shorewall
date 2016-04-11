@@ -8301,11 +8301,6 @@ sub create_save_ipsets() {
 		      '    local set' ,
 		    );
 
-		if ( @ipsets ) {
-		    emit '';
-		    emit( "    \$IPSET -S $_ >> \$file" ) for @ipsets;
-		}
-
 		emit( '',
 		      "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
 		      "        \$IPSET save \$set >> \$file" ,

@@ -8255,7 +8255,7 @@ sub ensure_ipset( $ ) {
 	if ( have_capability 'IPSET_V5' ) {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
 		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-		   qq(        \$IPSET -N $set hash:net family inet timeout 0) ,
+		   qq(        \$IPSET -N $set hash:net family inet timeout 0 counters) ,
 		   qq(    fi) );
 	} else {
 	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
@@ -8266,7 +8266,7 @@ sub ensure_ipset( $ ) {
     } else {
 	emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
 	       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-	       qq(        \$IPSET -N $set hash:net family inet6 timeout 0) ,
+	       qq(        \$IPSET -N $set hash:net family inet6 timeout 0 counters) ,
 	       qq(    fi) );
     }
 }

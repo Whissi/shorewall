@@ -1149,8 +1149,8 @@ sub add_common_rules ( $ ) {
 	    $announced = 1;
 
 	    for $interface ( @$list ) {
-		add_ijump_extended $nat_table->{PREROUTING} ,  j => 'UPnP',                   get_interface_origin($interface), imatch_source_dev ( $interface );
-		add_ijump_extended $nat_table->{POSTROUTING} , j => 'MINIUPNPD-POSTROUTING' , $origin{MINIUPNPD}              , imatch_dest_dev   ( $interface ) if $chainref1;
+		add_ijump_extended $nat_table->{PREROUTING} ,            j => 'UPnP',                   get_interface_origin($interface), imatch_source_dev ( $interface );
+		add_ijump_extended $nat_table->{$globals{POSTROUTING}} , j => 'MINIUPNPD-POSTROUTING' , $origin{MINIUPNPD}              , imatch_dest_dev   ( $interface ) if $chainref1;
 	    }
 	}
 

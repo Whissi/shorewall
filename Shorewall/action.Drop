@@ -51,13 +51,13 @@ COUNT
 Auth(@2)
 ?endif
 #
-# Don't log broadcasts
-#
-Broadcast(DROP,@1)
-#
 # ACCEPT critical ICMP types
 #
 AllowICMPs(@4)	-	-	icmp
+#
+# Don't log broadcasts
+#
+Broadcast(DROP,@1)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log.

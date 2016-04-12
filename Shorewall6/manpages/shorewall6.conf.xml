@@ -648,6 +648,13 @@
           matches an entry in the ipsec are dropped. If
           <option>src-dst</option> is included, then packets whose destination
           address matches an entry in the ipset are also dropped.</para>
+
+          <para>When ipset-based dynamic blacklisting is enabled, the contents
+          of the blacklist will be preserved over
+          <command>stop</command>/<command>reboot</command>/<command>start</command>
+          sequences if SAVE_IPSETS=Yes or if
+          <replaceable>setname</replaceable> is included in the list of sets
+          to be saved in SAVE_IPSETS.</para>
         </listitem>
       </varlistentry>
 

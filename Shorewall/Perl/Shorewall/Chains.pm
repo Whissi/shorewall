@@ -8276,12 +8276,41 @@ sub ensure_ipset( $ ) {
 #
 sub create_save_ipsets() {
     my @ipsets = all_ipsets;
+    my $setting = $config{SAVE_IPSETS};
+    my $havesets =  @ipsets || @{$globals{SAVED_IPSETS}} || ( $setting && have_ipset_rules );
+
+    if ( $havesets ) {
+	my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
+
+	emit ( "#\n#Flush and Destroy the sets that we will subsequently attempt to restore\n#",
+	       'zap_ipsets() {',
+	       '    local set',
+	       '' );
+
+	if ( $family == F_IPV6 || $setting !~ /yes/i ) {
+	    emit( '' ,
+		  "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
+		  '        $IPSET -F $set' ,
+		  '        $IPSET -X $set' ,
+		  "    done" ,
+		  '',
+		);
+	} else {
+	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
+		   '        $IPSET -F' ,
+		   '        $IPSET -X' ,
+		   '    fi' );
+	};
+
+	emit( '}' );
+    }
 
     emit( "#\n#Save the ipsets specified by the SAVE_IPSETS setting and by dynamic zones and blacklisting\n#",
 	  'save_ipsets() {' );
 
-    if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
+    if ( $havesets ) {
 	emit( '    local file' ,
+	      '    local set' ,
 	      '',
 	      '    file=${1:-${VARDIR}/save.ipsets}'
 	    );
@@ -8303,7 +8332,7 @@ sub create_save_ipsets() {
 
 		emit( '',
 		      "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
-		      "        \$IPSET save \$set >> \$file" ,
+		      "        \$IPSET -S \$set >> \$file" ,
 		      "    done" ,
 		      '',
 		    );
@@ -8316,28 +8345,45 @@ sub create_save_ipsets() {
 	    }
 
 	    emit( "    return 0",
-		  '',
 		  "}\n" );
 	} elsif ( @ipsets || $globals{SAVED_IPSETS} ) {
+	    my %ipsets;
+	    #
+	    # Remove duplicates
+	    #
+	    $ipsets{$_} = 1 for ( @ipsets, @{$globals{SAVED_IPSETS}} );
+
+	    my @sets = sort keys %ipsets;
+
 	    emit( '' ,
+		  '    rm -f $file' ,
+		  '    touch $file' ,
 		  '    rm -f ${VARDIR}/ipsets.tmp' ,
 		  '    touch ${VARDIR}/ipsets.tmp' ,
 		);
 
-	    if ( @ipsets ) {
-		emit '';
-		emit( "    \$IPSET -S $_ >> \${VARDIR}/ipsets.tmp" ) for @ipsets;
+	    if ( @sets > 1 ) {
+		emit( '' ,
+		      "    for set in @sets; do" , 
+		      '        if qt $IPSET -L $set; then' ,
+		      '            $IPSET -S $set >> ${VARDIR}/ipsets.tmp' ,
+		      '        else' ,
+		      '            error_message "ipset $set not saved (not found)"' ,
+		      '        fi' ,
+		      '    done' );
+	    } else {
+		my $set = $sets[0];
+
+		emit( '' ,
+		      "    if qt \$IPSET -L $set; then" ,
+		      "        \$IPSET -S $set >> \${VARDIR}/ipsets.tmp" ,
+		      '    else' ,
+		      "        error_message 'ipset $set not saved (not found)'" ,
+		      '    fi' );
 	    }
 
 	    emit( '' ,
-		  "    if qt \$IPSET list $_; then" ,
-		  "        \$IPSET save $_ >> \${VARDIR}/ipsets.tmp" ,
-		  '    else' ,
-		  "        error_message 'ipset $_ not saved (not found)'" ,
-		  "    fi\n" ) for @{$globals{SAVED_IPSETS}};
-
-	    emit( '' ,
-		  "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && cat \${VARDIR}/ipsets.tmp >> \$file\n" ,
+		  "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file\n" ,
 		  '' ,
 		  '    return 0',
 		  '' ,
@@ -8358,8 +8404,7 @@ sub load_ipsets() {
     my @ipsets = all_ipsets; #Dynamic Zone IPSETS
 
     if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
-	emit ( '', );
-	emit ( '',
+	emit(  '',
 	       'case $IPSET in',
 	       '    */*)',
 	       '        [ -x "$IPSET" ] || startup_error "IPSET=$IPSET does not exist or is not executable"',
@@ -8370,80 +8415,48 @@ sub load_ipsets() {
 	       '        ;;',
 	       'esac' ,
 	       '' ,
-	       'if [ "$COMMAND" = start ]; then' );
+	       'if [ "$COMMAND" = start ]; then' );         ##################### Start Command ##################
 
-	if ( $config{SAVE_IPSETS} ) {
-	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		   '        $IPSET -F' ,
-		   '        $IPSET -X' ,
-		   '        $IPSET -R < ${VARDIR}/ipsets.save' ,
-		   '    fi' );
-
-	    if ( @ipsets ) {
-		emit ( '' );
-		ensure_ipset( $_ ) for @ipsets;
-		emit ( '' );
-	    }
-	} else {
-	    if ( @{$globals{SAVED_IPSETS}} ) {
-		emit ( '' );
-
-		emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		       '        $IPSET flush' ,
-		       '        $IPSET destroy' ,
-		       '        $IPSET restore < ${VARDIR}/ipsets.save' ,
-		       "    fi\n" );
-	    }
-
-	    emit( '' );
-	    ensure_ipset( $_ ) for @ipsets;
-	    emit( '' );
+	if ( $config{SAVE_IPSETS} || @{$globals{SAVED_IPSETS}} ) {
+	    emit( '    if [ -f ${VARDIR}/ipsets.save ]; then',
+		  '        zap_ipsets',
+		  '        $IPSET -R < ${VARDIR}/ipsets.save',
+		  '    fi' );
 	}
 
-	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' );
+	if ( @ipsets ) {
+	    emit ( '' );
+	    ensure_ipset( $_ ) for @ipsets;
+	}
 
-	if ( $config{SAVE_IPSETS} ) {
+	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ); ### Restore Command #################
+
+	if ( $config{SAVE_IPSETS} || @{$globals{SAVED_IPSETS}} ) {
 	    emit( '    if [ -f $(my_pathname)-ipsets ]; then' ,
 		  '        if chain_exists shorewall; then' ,
 		  '            startup_error "Cannot restore $(my_pathname)-ipsets with Shorewall running"' ,
 		  '        else' ,
-		  '            $IPSET -F' ,
-		  '            $IPSET -X' ,
+		  '            zap_ipsets' ,
 		  '            $IPSET -R < $(my_pathname)-ipsets' ,
 		  '        fi' ,
 		  '    fi' ,
 		);
-
-	    if ( @ipsets ) {
-		emit ( '' );
-		ensure_ipset( $_ ) for @ipsets;
-		emit ( '' );
-	    }
-	} else {
-	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		   '        $IPSET flush' ,
-		   '        $IPSET destroy' ,
-		   '        $IPSET restore < ${VARDIR}/ipsets.save' ,
-		   "    fi\n" );
-
-	    if ( @ipsets ) {
-		emit ( '' );
-		ensure_ipset( $_ ) for @ipsets;
-		emit ( '' );
-	    }
 	}
 
 	if ( @ipsets ) {
-	    emit ( 'elif [ "$COMMAND" = reload ]; then' );
+	    emit ( '' );
+	    ensure_ipset( $_ ) for @ipsets;
+
+	    emit ( 'elif [ "$COMMAND" = reload ]; then' );   ################### Reload Command ####################
 	    ensure_ipset( $_ ) for @ipsets;
 	}
 
-	emit( 'elif [ "$COMMAND" = stop ]; then' ,
+	emit( 'elif [ "$COMMAND" = stop ]; then' ,           #################### Stop Command #####################
 	      '   save_ipsets'
 	    );
 
 	if ( @ipsets ) {
-	    emit( 'elif [ "$COMMAND" = refresh ]; then' );
+	    emit( 'elif [ "$COMMAND" = refresh ]; then' );   ################### Refresh Command ###################
 	    emit ( '' );
 	    ensure_ipset( $_ ) for @ipsets;
 	    emit ( '' );

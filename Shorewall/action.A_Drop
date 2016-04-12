@@ -23,13 +23,16 @@ COUNT
 #
 Auth(A_DROP)
 #
+# ACCEPT critical ICMP types
+#
+# For IPv6 connectivity ipv6-icmp broadcasting is required so
+# AllowICMPs must be before broadcast Drop.
+#
+A_AllowICMPs	-	-	icmp
+#
 # Don't log broadcasts
 #
 dropBcast(audit)
-#
-# ACCEPT critical ICMP types
-#
-A_AllowICMPs	-	-	icmp
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log.

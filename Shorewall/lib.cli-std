@@ -530,7 +530,6 @@ compiler() {
 start_command() {
     local finished
     finished=0
-    local object
     local rc
     rc=0
 
@@ -640,7 +639,7 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if ! uptodate ${VARDIR}/$object; then
+	if ! uptodate ${VARDIR}/firewall; then
 	    g_fast=
 	    AUTOMAKE=
 	fi

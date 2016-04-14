@@ -8279,38 +8279,6 @@ sub create_save_ipsets() {
     my $setting = $config{SAVE_IPSETS};
     my $havesets =  @ipsets || @{$globals{SAVED_IPSETS}} || ( $setting && have_ipset_rules );
 
-    if ( $havesets ) {
-	my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
-
-	emit ( "#\n#Flush and Destroy the sets that we will subsequently attempt to restore\n#",
-	       'zap_ipsets() {',
-	       '    local set',
-	       '' );
-
-	if ( $family == F_IPV6 || $setting !~ /yes/i ) {
-	    #
-	    # Requires V5 or later
-	    #
-	    emit( '' ,
-		  "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
-		  '        $IPSET flush $set' ,
-		  '        $IPSET destroy $set' ,
-		  "    done" ,
-		  '',
-		);
-	} else {
-	    #
-	    # Restoring all ipsets (IPv4 and IPv6, if any)
-	    #
-	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
-		   '        $IPSET -F' ,
-		   '        $IPSET -X' ,
-		   '    fi' );
-	};
-
-	emit( '}' );
-    }
-
     emit( "#\n#Save the ipsets specified by the SAVE_IPSETS setting and by dynamic zones and blacklisting\n#",
 	  'save_ipsets() {' );
 
@@ -8411,6 +8379,40 @@ sub create_save_ipsets() {
     } else {
 	emit( '    true',
 	      "}\n" );
+    }
+    #
+    # Now generate a function that flushes and destroys sets prior to restoring them
+    #
+    if ( $havesets ) {
+	my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
+
+	emit ( "#\n#Flush and Destroy the sets that we will subsequently attempt to restore\n#",
+	       'zap_ipsets() {',
+	       '    local set',
+	       '' );
+
+	if ( $family == F_IPV6 || $setting !~ /yes/i ) {
+	    #
+	    # Requires V5 or later
+	    #
+	    emit( '' ,
+		  "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
+		  '        $IPSET flush $set' ,
+		  '        $IPSET destroy $set' ,
+		  "    done" ,
+		  '',
+		);
+	} else {
+	    #
+	    # Restoring all ipsets (IPv4 and IPv6, if any)
+	    #
+	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
+		   '        $IPSET -F' ,
+		   '        $IPSET -X' ,
+		   '    fi' );
+	};
+
+	emit( '}' );
     }
 }
 

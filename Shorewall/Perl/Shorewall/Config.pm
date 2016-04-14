@@ -4906,8 +4906,16 @@ sub ensure_config_path() {
 
     @config_path = split /:/, $config{CONFIG_PATH};
 
+    #
+    # To accomodate Cygwin-based compilation, we have separate directories for files whose names
+    # clash on a case-insensitive filesystem.
+    #
+    push @config_path, $globals{SHAREDIR}    . "/deprecated";
+    push @config_path, $shorewallrc{SHAREDIR}. '/shorewall/deprecated' unless $globals{PRODUCT} eq 'shorewall';
+
     for ( @config_path ) {
 	$_ .= '/' unless m|/$|;
+        s|//|/|g;
     }
 
     if ( $shorewall_dir ) {

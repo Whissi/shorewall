@@ -1279,7 +1279,7 @@ sub process_interface( $$ ) {
 		    fatal_error q("nets=" may not be specified for a multi-zone interface) unless $zone;
 		    fatal_error "Duplicate $option option" if $netsref;
 		    if ( $value eq 'dynamic' ) {
-			require_capability( 'IPSET_MATCH', 'Dynamic nets', '');
+			require_capability( 'IPSET_V5', 'Dynamic nets', '');
 			$hostoptions{dynamic} = 1;
 			#
 			# Defer remaining processing until we have the final physical interface name

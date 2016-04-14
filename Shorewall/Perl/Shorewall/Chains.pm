@@ -8288,14 +8288,20 @@ sub create_save_ipsets() {
 	       '' );
 
 	if ( $family == F_IPV6 || $setting !~ /yes/i ) {
+	    #
+	    # Requires V5 or later
+	    #
 	    emit( '' ,
 		  "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
-		  '        $IPSET -F $set' ,
-		  '        $IPSET -X $set' ,
+		  '        $IPSET flush $set' ,
+		  '        $IPSET destroy $set' ,
 		  "    done" ,
 		  '',
 		);
 	} else {
+	    #
+	    # Restoring all ipsets (IPv4 and IPv6, if any)
+	    #
 	    emit ( '    if [ -f ${VARDIR}/ipsets.save ]; then' ,
 		   '        $IPSET -F' ,
 		   '        $IPSET -X' ,
@@ -8322,6 +8328,9 @@ sub create_save_ipsets() {
 
 	if ( $config{SAVE_IPSETS} ) {
 	    if ( $family == F_IPV6 || $config{SAVE_IPSETS} eq 'ipv4' ) {
+		#
+		# Requires V5 or later
+		#
 		my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
 
 		emit( '' ,
@@ -8332,11 +8341,14 @@ sub create_save_ipsets() {
 
 		emit( '',
 		      "    for set in \$(\$IPSET save | grep '$select' | cut -d' ' -f2); do" ,
-		      "        \$IPSET -S \$set >> \$file" ,
+		      "        \$IPSET save \$set >> \$file" ,
 		      "    done" ,
 		      '',
 		    );
 	    } else {
+		#
+		# Saving all ipsets (IPv4 and IPv6, if any )
+		# 
 		emit ( 
 		       '',
 		       '    if eval $IPSET -S > ${VARDIR}/ipsets.tmp; then' ,
@@ -8347,9 +8359,12 @@ sub create_save_ipsets() {
 	    emit( "    return 0",
 		  "}\n" );
 	} elsif ( @ipsets || $globals{SAVED_IPSETS} ) {
+	    #
+	    # Requires V5 or later
+	    #
 	    my %ipsets;
 	    #
-	    # Remove duplicates
+	    # Requires V
 	    #
 	    $ipsets{$_} = 1 for ( @ipsets, @{$globals{SAVED_IPSETS}} );
 
@@ -8365,8 +8380,8 @@ sub create_save_ipsets() {
 	    if ( @sets > 1 ) {
 		emit( '' ,
 		      "    for set in @sets; do" , 
-		      '        if qt $IPSET -L $set; then' ,
-		      '            $IPSET -S $set >> ${VARDIR}/ipsets.tmp' ,
+		      '        if qt $IPSET list $set; then' ,
+		      '            $IPSET save $set >> ${VARDIR}/ipsets.tmp' ,
 		      '        else' ,
 		      '            error_message "ipset $set not saved (not found)"' ,
 		      '        fi' ,
@@ -8375,15 +8390,15 @@ sub create_save_ipsets() {
 		my $set = $sets[0];
 
 		emit( '' ,
-		      "    if qt \$IPSET -L $set; then" ,
-		      "        \$IPSET -S $set >> \${VARDIR}/ipsets.tmp" ,
+		      "    if qt \$IPSET list $set; then" ,
+		      "        \$IPSET save $set >> \${VARDIR}/ipsets.tmp" ,
 		      '    else' ,
 		      "        error_message 'ipset $set not saved (not found)'" ,
 		      '    fi' );
 	    }
 
 	    emit( '' ,
-		  "    grep -qE -- \"(-N|^create )\" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file\n" ,
+		  "    grep -q -- \"^create \" \${VARDIR}/ipsets.tmp && mv -f \${VARDIR}/ipsets.tmp \$file\n" ,
 		  '' ,
 		  '    return 0',
 		  '' ,

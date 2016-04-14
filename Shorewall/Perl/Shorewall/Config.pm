@@ -346,7 +346,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
                                  => 'Ipset Match nomatch',
 		 IPSET_MATCH_COUNTERS
                                  => 'Ipset Match counters',
-		 IPSET_V5        => 'Version 5 ipsets',
+		 IPSET_V5        => 'Version 5 or later ipset',
 		 CONNMARK        => 'CONNMARK Target',
 		 XCONNMARK       => 'Extended CONNMARK Target',
 		 CONNMARK_MATCH  => 'Connmark Match',
@@ -5863,15 +5863,20 @@ sub get_configuration( $$$$ ) {
     unsupported_yes_no         'BRIDGING';
     unsupported_yes_no_warning 'RFC1918_STRICT';
 
+    $val = $config{SAVE_IPSETS};
+
     unless (default_yes_no 'SAVE_IPSETS', '', '*' ) {
-	$val = $config{SAVE_IPSETS};
-	unless ( $val eq 'ipv4' ) {
+	if ( $val eq 'ipv4' ) {
+	    fatal_error 'SAVE_IPSETS=ipv4 is invalid in shorewall6.conf' if $family == F_IPV6;
+	} else {
 	    my @sets = split_list( $val , 'ipset' );
 	    $globals{SAVED_IPSETS} = \@sets;
-	    require_capability 'IPSET_V5', 'A saved ipset list', 's';
 	    $config{SAVE_IPSETS} = '';
 	}
+
+	require_capability( 'IPSET_V5', "SAVE_IPSETS=$val", 's' ) if $config{SAVE_IPSETS};
     }
+
 
     default_yes_no 'SAVE_ARPTABLES'             , '';
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';

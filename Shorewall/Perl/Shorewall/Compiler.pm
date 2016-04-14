@@ -368,6 +368,7 @@ sub generate_script_3($) {
     create_arptables_load( $test ) if $have_arptables;
     create_chainlist_reload( $_[0] );
     create_save_ipsets;
+    create_load_ipsets;
 
     emit "#\n# Start/Reload the Firewall\n#";
 
@@ -406,7 +407,9 @@ sub generate_script_3($) {
 	   'fi',
 	   '' );
 
-    load_ipsets;
+    emit( 'load_ipsets' ,
+	  '' );
+
     create_nfobjects;
     verify_address_variables;
     save_dynamic_chains;

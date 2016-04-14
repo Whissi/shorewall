@@ -279,6 +279,7 @@ our %EXPORT_TAGS = (
 				       save_docker_rules
 				       load_ipsets
 				       create_save_ipsets
+				       create_load_ipsets
 				       validate_nfobject
 				       create_nfobjects
 				       create_netfilter_load
@@ -8248,8 +8249,16 @@ EOF
     emit( '' ), save_docker_rules( $tool ), emit( '' ) if $config{DOCKER};
 }
 
-sub ensure_ipset( $ ) {
-    my $set = shift;
+sub ensure_ipsets( @ ) {
+    my $set;
+
+    if ( @_ > 1 ) {
+	push_indent;
+	emit( "for set in @_; do" );
+	$set = '$set';
+    } else {
+	$set = $_[0];
+    }
 
     if ( $family == F_IPV4 ) {
 	if ( have_capability 'IPSET_V5' ) {
@@ -8269,6 +8278,11 @@ sub ensure_ipset( $ ) {
 	       qq(        \$IPSET -N $set hash:net family inet6 timeout 0 counters) ,
 	       qq(    fi) );
     }
+
+    if ( @_ > 1 ) {
+	emit 'done';
+	pop_indent;
+    }
 }
 
 #
@@ -8276,13 +8290,11 @@ sub ensure_ipset( $ ) {
 #
 sub create_save_ipsets() {
     my @ipsets = all_ipsets;
-    my $setting = $config{SAVE_IPSETS};
-    my $havesets =  @ipsets || @{$globals{SAVED_IPSETS}} || ( $setting && have_ipset_rules );
 
     emit( "#\n#Save the ipsets specified by the SAVE_IPSETS setting and by dynamic zones and blacklisting\n#",
 	  'save_ipsets() {' );
 
-    if ( $havesets ) {
+    if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
 	emit( '    local file' ,
 	      '    local set' ,
 	      '',
@@ -8291,7 +8303,7 @@ sub create_save_ipsets() {
 
 	if ( @ipsets ) {
 	    emit '';
-	    ensure_ipset( $_ ) for @ipsets;
+	    ensure_ipsets( @ipsets );
 	}
 
 	if ( $config{SAVE_IPSETS} ) {
@@ -8380,8 +8392,18 @@ sub create_save_ipsets() {
 	emit( '    true',
 	      "}\n" );
     }
+}
+
+sub create_load_ipsets() {
+
+    my @ipsets = all_ipsets; #Dynamic Zone IPSETS
+
+    my $setting = $config{SAVE_IPSETS};
+
+    my $havesets =  @ipsets || @{$globals{SAVED_IPSETS}} || ( $setting && have_ipset_rules );
+
     #
-    # Now generate a function that flushes and destroys sets prior to restoring them
+    # Generate a function that flushes and destroys sets prior to restoring them
     #
     if ( $havesets ) {
 	my $select = $family == F_IPV4 ? '^create.*family inet ' : 'create.*family inet6 ';
@@ -8414,13 +8436,15 @@ sub create_save_ipsets() {
 
 	emit( '}' );
     }
-}
+    #
+    # Now generate load_ipsets()
+    
+    emit ( "#\n#Flush and Destroy the sets then load fresh copy from a saved ipset file\n#",
+	   'load_ipsets() {' );
 
-sub load_ipsets() {
+    push_indent;
 
-    my @ipsets = all_ipsets; #Dynamic Zone IPSETS
-
-    if ( @ipsets || @{$globals{SAVED_IPSETS}} || ( $config{SAVE_IPSETS} && have_ipset_rules ) ) {
+    if ( $havesets ) {
 	emit(  '',
 	       'case $IPSET in',
 	       '    */*)',
@@ -8443,7 +8467,7 @@ sub load_ipsets() {
 
 	if ( @ipsets ) {
 	    emit ( '' );
-	    ensure_ipset( $_ ) for @ipsets;
+	    ensure_ipsets( @ipsets );
 	}
 
 	emit ( 'elif [ "$COMMAND" = restore -a -z "$g_recovering" ]; then' ); ### Restore Command #################
@@ -8462,26 +8486,26 @@ sub load_ipsets() {
 
 	if ( @ipsets ) {
 	    emit ( '' );
-	    ensure_ipset( $_ ) for @ipsets;
+	    ensure_ipsets( @ipsets );
 
 	    emit ( 'elif [ "$COMMAND" = reload ]; then' );   ################### Reload Command ####################
-	    ensure_ipset( $_ ) for @ipsets;
-	}
+	    ensure_ipsets( @ipsets );
 
-	emit( 'elif [ "$COMMAND" = stop ]; then' ,           #################### Stop Command #####################
-	      '   save_ipsets'
-	    );
-
-	if ( @ipsets ) {
 	    emit( 'elif [ "$COMMAND" = refresh ]; then' );   ################### Refresh Command ###################
 	    emit ( '' );
-	    ensure_ipset( $_ ) for @ipsets;
+	    ensure_ipsets( @ipsets );
 	    emit ( '' );
 	};
 
 	emit ( 'fi' ,
 	       '' );
+    } else {
+	emit '    true';
     }
+
+    pop_indent;
+
+    emit '}';	    
 }
 
 #

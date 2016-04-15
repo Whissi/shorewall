@@ -578,7 +578,7 @@ case $COMMAND in
     start)
         mylogger kern.info "$g_product started"
         ;;
-    reloaded)
+    reload)
         mylogger kern.info "$g_product reloaded"
         ;;
     refresh)

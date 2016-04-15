@@ -3882,7 +3882,7 @@ start_command() {
 	    rc=$?
 	else
 	    error_message "${VARDIR}/firewall is missing or is not executable"
-	    logger -p kern.err "ERROR:$g_product start failed"
+	    mylogger kern.err "ERROR:$g_product start failed"
 	    rc=6
 	fi
 
@@ -4015,7 +4015,7 @@ restart_command() {
 	rc=$?
     else
 	error_message "${VARDIR}/firewall is missing or is not executable"
-	logger -p kern.err "ERROR:$g_product $COMMAND failed"
+	mylogger kern.err "ERROR:$g_product $COMMAND failed"
 	rc=6
     fi
 

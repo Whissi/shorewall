@@ -26,6 +26,22 @@
 #
 #########################################################################################
 #
+# Wrapper around logger that sets the tag according to $SW_LOGGERTAG
+#
+mylogger() {
+    local level
+
+    level=$1
+    shift
+
+    if [ -n "$SW_LOGGERTAG" ]; then
+	logger -p $level -t "$SW_LOGGERTAG" $*
+    else
+	logger -p $level $*
+    fi
+}
+
+#
 # Issue a message and stop
 #
 startup_error() # $* = Error Message
@@ -39,13 +55,13 @@ startup_error() # $* = Error Message
 
     case $COMMAND in
         start)
-	    logger -p kern.err "ERROR:$g_product start failed:Firewall state not changed"
+	    mylogger kern.err "ERROR:$g_product start failed:Firewall state not changed"
 	    ;;
 	restart)
-	    logger -p kern.err "ERROR:$g_product restart failed:Firewall state not changed"
+	    mylogger kern.err "ERROR:$g_product restart failed:Firewall state not changed"
 	    ;;
 	restore)
-	    logger -p kern.err "ERROR:$g_product restore failed:Firewall state not changed"
+	    mylogger kern.err "ERROR:$g_product restore failed:Firewall state not changed"
 	    ;;
     esac
 

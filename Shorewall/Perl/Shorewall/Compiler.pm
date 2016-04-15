@@ -576,16 +576,16 @@ date > ${VARDIR}/restarted
 
 case $COMMAND in
     start)
-        logger -p kern.info "$g_product started"
+        mylogger kern.info "$g_product started"
         ;;
     reloaded)
-        logger -p kern.info "$g_product reloaded"
+        mylogger kern.info "$g_product reloaded"
         ;;
     refresh)
-        logger -p kern.info "$g_product refreshed"
+        mylogger kern.info "$g_product refreshed"
         ;;
     restore)
-        logger -p kern.info "$g_product restored"
+        mylogger kern.info "$g_product restored"
         ;;
 esac
 EOF

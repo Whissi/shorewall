@@ -2472,16 +2472,16 @@ EOF
     emit <<'EOF';
             case $COMMAND in
 	        start)
-	            logger -p kern.err "ERROR:$g_product start failed"
+	            mylogger kern.err "ERROR:$g_product start failed"
 	            ;;
 	        reload)
-	            logger -p kern.err "ERROR:$g_product reload failed"
+	            mylogger kern.err "ERROR:$g_product reload failed"
 	            ;;
 	        refresh)
-	            logger -p kern.err "ERROR:$g_product refresh failed"
+	            mylogger kern.err "ERROR:$g_product refresh failed"
 	            ;;
                 enable)
-                    logger -p kern.err "ERROR:$g_product 'enable $g_interface' failed"
+                    mylogger kern.err "ERROR:$g_product 'enable $g_interface' failed"
                     ;;
             esac
 
@@ -2690,7 +2690,7 @@ EOF
     emit '
 
     set_state "Stopped"
-    logger -p kern.info "$g_product Stopped"
+    mylogger kern.info "$g_product Stopped"
 
     case $COMMAND in
     stop|clear)

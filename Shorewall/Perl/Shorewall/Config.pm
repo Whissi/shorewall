@@ -5431,7 +5431,7 @@ sub get_params( $ ) {
 		#
 		delete $params{$_};
 	    } else {
-		unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' ) {
+		unless ( $_ eq 'SHOREWALL_INIT_SCRIPT' || $_ eq 'SW_LOGGERTAG' ) {
 		    fatal_error "The variable name $_ is reserved and may not be set in the params file"
 			if /^SW_/ || /^SHOREWALL_/ || ( exists $config{$_} && ! exists $ENV{$_} ) || exists $reserved{$_};
 		}

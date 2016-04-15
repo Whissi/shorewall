@@ -548,7 +548,7 @@ start_command() {
 		[ -n "$nolock" ] || mutex_off
 	    else
 		rc=$?
-		logger -p kern.err "ERROR:$g_product start failed"
+		mylogger kern.err "ERROR:$g_product start failed"
 	    fi
 	fi
 
@@ -1028,7 +1028,7 @@ restart_command() {
 	    [ -n "$nolock" ] || mutex_off
 	else
 	    rc=$?
-	    logger -p kern.err "ERROR:$g_product ${COMMAND} failed"
+	    mylogger kern.err "ERROR:$g_product ${COMMAND} failed"
 	fi
     else
 	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"

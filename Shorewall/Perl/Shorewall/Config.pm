@@ -1257,6 +1257,34 @@ sub shortlineinfo( $ ) {
 sub handle_first_entry();
 
 #
+# Issue a Information Message
+#
+sub info_message
+{
+    my $currentlineinfo = currentlineinfo;
+    our @localtime;
+
+    handle_first_entry if $first_entry;
+
+    $| = 1; #Reset output buffering (flush any partially filled buffers).
+
+    if ( $log ) {
+	@localtime = localtime;
+	printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+    }
+
+    if ( $confess ) {
+	print        longmess( "   INFO: @_$currentlineinfo" );
+	print $log   longmess( "   INFO: @_$currentlineinfo\n" ) if $log;
+    } else {
+	print        "   INFO: @_$currentlineinfo\n";
+	print $log   "   INFO: @_$currentlineinfo\n" if $log;
+    }
+
+    $| = 0; #Re-allow output buffering
+}
+
+#
 # Issue a Warning Message
 #
 sub warning_message
@@ -2522,6 +2550,13 @@ sub directive_warning( $$$ ) {
     ( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
 }
 
+sub directive_info( $$$ ) {
+    my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
+    ( my $info, $currentfilename, $currentlinenumber ) = @_;
+    info_message $info;
+    ( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
+}
+
 #
 # Add quotes to the passed value if the passed 'first part' has an odd number of quotes
 # Return an expression that concatenates $first, $val and $rest
@@ -2668,7 +2703,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2813,7 +2848,26 @@ sub process_compiler_directive( $$$$ ) {
 						    1 ) ,
 			       $filename ,
 			       $linenumber ) unless $omitting;
-	  }
+	  } ,
+
+	  WARNING => sub() {
+	      directive_warning( evaluate_expression( $expression ,
+						      $filename ,
+						      $linenumber ,
+						      1 ),
+				 $filename ,
+				 $linenumber ) unless $omitting;
+	  } ,
+
+	  INFO => sub() {
+	      directive_info( evaluate_expression( $expression ,
+						   $filename ,
+						   $linenumber ,
+						   1 ),
+			      $filename ,
+			      $linenumber ) unless $omitting;
+	  } ,
+
 	);
 
     if ( my $function = $directives{$keyword} ) {
@@ -3526,7 +3580,7 @@ sub read_a_line($) {
 	    #
 	    # Handle directives
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT|ERROR)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT|ERROR|WARNING|INFO)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

@@ -156,20 +156,23 @@
 
       <varlistentry>
         <term><emphasis role="bold">MARK</emphasis> -
-        {-|<emphasis>value</emphasis>}</term>
+        {-|<replaceable>value</replaceable>[:<replaceable>priority</replaceable>]}</term>
 
         <listitem>
           <para>The mark <emphasis>value</emphasis> which is an integer in the
           range 1-255. You set mark values in the <ulink
           url="/manpages/shorewall-mangle.html">shorewall-mangle</ulink>(5)
           file, marking the traffic you want to fit in the classes defined in
-          here. Must be specified as '-' if the <emphasis
-          role="bold">classify</emphasis> option is given for the interface in
-          <ulink
-          url="/manpages/shorewall-tcdevices.html">shorewall-tcdevices</ulink>(5)
-          and you are running Shorewall 4.5.5 or earlier.</para>
+          here. You can use the same marks for different interfaces.</para>
 
-          <para>You can use the same marks for different interfaces.</para>
+          <para>The <replaceable>priority</replaceable>, if specified, is an
+          integer in the range 1-65535 and determines the relative order in
+          which the tc mark classification filter for this class is to be
+          applied to packets being sent on the
+          <replaceable>interface</replaceable>. Filters are applied in
+          ascending numerical order. If not supplied, the value is derived
+          from the class priority (PRIORITY column value below):
+          (<replaceable>class priority</replaceable> &lt;&lt; 8) | 20.</para>
         </listitem>
       </varlistentry>
 
@@ -293,7 +296,7 @@
                 <para>This is the default class for that interface where all
                 traffic should go, that is not classified otherwise.</para>
 
-                <para></para>
+                <para/>
 
                 <note>
                   <para>You must define <emphasis
@@ -320,7 +323,7 @@
                 priority determines the order in which filter rules are
                 processed during packet classification. If not specified, the
                 value (<replaceable>class priority</replaceable> &lt;&lt; 8) |
-                10) is used.</para>
+                15) is used.</para>
               </listitem>
             </varlistentry>
 
@@ -339,7 +342,7 @@
                 (":") and a <replaceable>priority</replaceable>. This priority
                 determines the order in which filter rules are processed
                 during packet classification. If not specified, the value
-                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 10)
+                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 15)
                 is used.</para>
 
                 <programlisting>        <emphasis role="bold">tos-minimize-delay</emphasis>       0x10/0x10
@@ -372,7 +375,7 @@
                 (":") and a <replaceable>priority</replaceable>. This priority
                 determines the order in which filter rules are processed
                 during packet classification. If not specified, the value
-                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 20)
+                (<replaceable>class priority</replaceable> &lt;&lt; 8) | 10)
                 is used.</para>
 
                 <note>

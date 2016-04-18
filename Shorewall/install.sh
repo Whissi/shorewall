@@ -1063,9 +1063,9 @@ fi
 #
 for f in action.* ; do
     case $f in
-	action.A_Reject)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/$f 0644
-	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/$f"
+	*.deprecated)
+	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*} 0644
+	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*}"
 	    ;;
 	*)
 	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
@@ -1078,9 +1078,9 @@ cd Macros
 
 for f in macro.* ; do
     case $f in
-	macro.SNMPTrap)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/$f 0644
-	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/$f"
+	*.deprecated)
+	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*} 0644
+	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*}"
 	    ;;
 	*)
 	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644

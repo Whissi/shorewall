@@ -646,6 +646,7 @@ sub create_docker_rules() {
 	add_commands( $chainref, 'if [ -n "$g_docker" ]; then' );
 	incr_cmd_level( $chainref );
 	add_ijump( $chainref, j => 'DOCKER', o => 'docker0' );
+	add_ijump( $chainref, j => 'ACCEPT', o => 'docker0', state_imatch 'ESTABLISHED,RELATED' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => '! docker0' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => 'docker0' ) if $dockerref->{options}{routeback};
 	add_ijump( $filter_table->{OUTPUT}, j => 'DOCKER' );

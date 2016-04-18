@@ -8500,7 +8500,7 @@ sub create_load_ipsets() {
 	emit ( 'fi' ,
 	       '' );
     } else {
-	emit '    true';
+	emit 'true';
     }
 
     pop_indent;

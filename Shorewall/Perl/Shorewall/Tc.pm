@@ -674,7 +674,7 @@ sub validate_tc_class( ) {
 	$markval = numeric_value( $mark );
 	fatal_error "Invalid MARK ($markval)" unless defined $markval;
 
-	fatal_error "Invalid Mark ($mark)"        unless $markval <= $globals{TC_MAX};
+	fatal_error "MARK value too large"        unless $markval <= $globals{TC_MAX};
 	fatal_error "MARK value must be non-zero" unless $markval;
 
 	if ( $classnumber ) {

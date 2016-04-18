@@ -1274,10 +1274,10 @@ sub info_message
     }
 
     if ( $confess ) {
-	print        longmess( "   INFO: @_$currentlineinfo" );
+	print STDERR longmess( "   INFO: @_$currentlineinfo" );
 	print $log   longmess( "   INFO: @_$currentlineinfo\n" ) if $log;
     } else {
-	print        "   INFO: @_$currentlineinfo\n";
+	print STDERR "   INFO: @_$currentlineinfo\n";
 	print $log   "   INFO: @_$currentlineinfo\n" if $log;
     }
 

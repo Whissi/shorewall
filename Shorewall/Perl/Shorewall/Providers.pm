@@ -392,7 +392,7 @@ sub start_provider( $$$$$ ) {
 }
 
 #
-# Look up a provider and return it's number. If unknown provider, 0 is returned
+# Look up a provider and return a reference to its table entry. If unknown provider, undef is returned
 #
 sub lookup_provider( $ ) {
     my $provider    = $_[0];
@@ -408,7 +408,7 @@ sub lookup_provider( $ ) {
 	}
     }
 
-    $providerref ? $providerref->{number} : 0;
+    $providerref;
 }
 
 #
@@ -666,7 +666,9 @@ sub process_a_provider( $ ) {
     if ( $duplicate ne '-' ) {
 	fatal_error "The DUPLICATE column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	my $p = lookup_provider( $duplicate );
-	warning_message "Unknown routing table ($duplicate)" unless $p && ( $p == MAIN_TABLE || $p < BALANCE_TABLE );
+	my $n = $p ? $p->{number} : 0;
+	warning_message "Unknown routing table ($duplicate)" unless $n && ( $n == MAIN_TABLE || $n < BALANCE_TABLE );
+	warning_message "An optional provider ($duplicate) is listed in the DUPLICATE column - enable and disable will not work correctly on that provider" if $p && $p->{optional};
     } elsif ( $copy ne '-' ) {
 	fatal_error "The COPY column must be empty when USE_DEFAULT_RT=Yes" if $config{USE_DEFAULT_RT};
 	fatal_error 'A non-empty COPY column requires that a routing table be specified in the DUPLICATE column' unless $copy eq 'none';

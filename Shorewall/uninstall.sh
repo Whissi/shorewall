@@ -215,7 +215,7 @@ rm -rf ${SHAREDIR}/shorewall/configfiles/
 rm -rf ${SHAREDIR}/shorewall/Samples/
 rm -rf ${SHAREDIR}/shorewall/Shorewall/
 rm -f  ${SHAREDIR}/shorewall/lib.cli-std
-rm -f  ${SHAREDIR}/shorewall/lib.core
+rm -f  ${SHAREDIR}/shorewall/lib.runtime
 rm -f  ${SHAREDIR}/shorewall/compiler.pl
 rm -f  ${SHAREDIR}/shorewall/prog.*
 rm -f  ${SHAREDIR}/shorewall/module*

@@ -117,6 +117,7 @@ fi
 echo "Uninstalling Shorewall Core $VERSION"
 
 rm -rf ${SHAREDIR}/shorewall
+rm -f ~/.shorewallrc
 
 echo "Shorewall Core Uninstalled"
 

@@ -495,7 +495,7 @@ done
 # Install the Man Pages
 #
 
-if [ -d manpages ]; then
+if [ -d manpages -a -n "$MANDIR" ]; then
     cd manpages
 
     mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/

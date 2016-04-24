@@ -514,7 +514,7 @@ echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/confi
 # Install the Standard Actions file
 #
 install_file actions.std ${DESTDIR}${SHAREDIR}/$PRODUCT/actions.std 0644
-echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}d/$PRODUCT/actions.std"
+echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/actions.std"
 
 cd configfiles
 
@@ -1177,6 +1177,8 @@ fi
 # Install the Man Pages
 #
 
+if [ -n "$MANDIR" ]; then
+
 cd manpages
 
 [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
@@ -1196,6 +1198,7 @@ done
 cd ..
 
 echo "Man Pages Installed"
+fi
 
 if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
     run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT

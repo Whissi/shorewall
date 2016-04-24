@@ -572,9 +572,9 @@ if [ -z "$DESTDIR" ]; then
 		    cant_autostart
 		fi
 	    elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
-		/etc/init.d/shorewall-inir enable
+		/etc/init.d/$PRODUCT enable
 		if /etc/init.d/shorewall-init enabled; then
-		    echo "Shorrewall Init will start automatically at boot"
+		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi

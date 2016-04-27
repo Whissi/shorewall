@@ -731,6 +731,22 @@ list_zone() {
     done
 }
 
+option_error() {
+    fatal_error "The $COMMAND command does not accept this option: -$1"
+}
+
+too_many_arguments() {
+    fatal_error "Too many arguments: $1"
+}
+
+missing_argument() {
+    fatal_error "Missing argument"
+}
+
+missing_option_value() {
+    fatal_error "The $1 option requires a value"
+}
+
 version_command() {
     local finished
     finished=0
@@ -755,7 +771,7 @@ version_command() {
 			    option=${option#a}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -767,7 +783,7 @@ version_command() {
 	esac
     done
 
-    [ $# -gt 0 ] && usage 1
+    [ $# -gt 0 ] && too_many_arguments
 
     if [ -n "$all" ]; then
 	echo "shorewall-core: $(cat ${SHAREDIR}/shorewall/coreversion)"
@@ -1065,7 +1081,7 @@ show_connections() {
 	    shift
 	    conntrack -f ipv4 -L $@ | show_connections_filter
 	else
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments
 	    if [ -f /proc/net/ip_conntrack ]; then
 		cat /proc/net/ip_conntrack | show_connections_filter
 	    else
@@ -1078,7 +1094,7 @@ show_connections() {
 	echo
 	conntrack -f ipv6 -L $@ | show_connections_filter
     else
-	[ $# -gt 1 ] && usage 1
+	[ $# -gt 1 ] && too_many_arguments
 	if [ -f /proc/sys/net/netfilter/nf_conntrack_count -a -f /proc/sys/net/nf_conntrack ]; then
 	    local count=$(cat /proc/sys/net/netfilter/nf_conntrack_count)
 	    local max=$(cat /proc/sys/net/netfilter/nf_conntrack_max)
@@ -1199,7 +1215,7 @@ show_command() {
 			    option=${option#f}
 			    ;;
 			t)
-			    [ $# -eq 1 ] && usage 1
+			    [ $# -eq 1 ] && missing_option_value -t
 
 			    case $2 in
 				mangle|nat|filter|raw|rawpost)
@@ -1227,7 +1243,7 @@ show_command() {
 			    option=${option#b}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -1249,37 +1265,37 @@ show_command() {
 	    eval show_connections $@ $g_pager
 	    ;;
 	nat)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_nat $g_pager
 	    ;;
 	raw)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_raw $g_pager
 	    ;;
 	rawpost)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_rawpost $g_pager
 	    ;;
 	tos|mangle)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_mangle $g_pager
 	    ;;
 	log)
-	    [ $# -gt 2 ] && usage 1
+	    [ $# -gt 2 ] && too_many_arguments $2
 
 	    setup_logread
 	    eval show_log $g_pager
 	    ;;
 	tc)
-	    [ $# -gt 2 ] && usage 1
+	    [ $# -gt 2 ] && too_many_arguments $2
 	    eval show_tc $@ $g_pager
 	    ;;
 	classifiers|filters)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_classifiers_command $g_pager
 	    ;;
 	zones)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    if [ -f ${VARDIR}/zones ]; then
 		echo "$g_product $SHOREWALL_VERSION Zones at $g_hostname - $(date)"
 		echo
@@ -1302,7 +1318,7 @@ show_command() {
 	    fi
 	    ;;
 	capabilities)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    determine_capabilities
 	    VERBOSITY=2
 	    if [ -n "$g_filemode" ]; then
@@ -1312,11 +1328,11 @@ show_command() {
 	    fi
 	    ;;
 	ip)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_ip_addresses $g_pager
 	    ;;
 	routing)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_routing_command $g_pager
 	    ;;
 	config)
@@ -1345,26 +1361,26 @@ show_command() {
 	    echo $VARDIR;
 	    ;;
 	policies)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_policies $g_pager
 	    ;;
 	ipa)
-	    [ $g_family -eq 4 ] || usage 1
-	    [ $# -gt 1 ] && usage 1
+	    [ $g_family -eq 4 ] || fatal_error "'show ipa' is now available in $g_product"
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_ipa $g_pager
 	    ;;
 	marks)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    echo "$g_product $SHOREWALL_VERSION Mark Layout at $g_hostname - $(date)"
 	    echo
 	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
 	    ;;
 	nfacct)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_nfacct_command $g_pager
 	    ;;
 	arptables)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    resolve_arptables
 	    if [ -n "$arptables" -a -x $arptables ]; then
 		eval show_arptables $g_pager
@@ -1373,22 +1389,22 @@ show_command() {
 	    fi
 	    ;;
 	event)
-	    [ $# -gt 1 ] || usage 1
+	    [ $# -gt 1 ] || too_many_arguments $2
 	    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
 	    echo
 	    shift
 	    show_events $@
 	    ;;
 	events)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_events_command $g_pager
 	    ;;
 	bl|blacklists)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_blacklists $g_pager
 	    ;;
 	opens)
-	    [ $# -gt 1 ] && usage 1
+	    [ $# -gt 1 ] && too_many_arguments $2
 	    echo "$g_product $SHOREWALL_VERSION Temporarily opened connections at $g_hostname - $(date)"
 
 	    if chain_exists dynamic; then
@@ -1404,12 +1420,12 @@ show_command() {
 	    	*)
 		    case $1 in
 			actions)
-			    [ $# -gt 1 ] && usage 1
+			    [ $# -gt 1 ] && too_many_arguments $2
 			    eval show_actions_sorted $g_pager
 			    return
 			    ;;
 			macro)
-			    [ $# -ne 2 ] && usage 1
+			    [ $# -ne 2 ] && too_many_arguments $2
 			    for directory in $(split $CONFIG_PATH); do
 				if [ -f ${directory}/macro.$2 ]; then
 				    echo "Shorewall $SHOREWALL_VERSION Macro $2 at $g_hostname - $(date)"
@@ -1421,7 +1437,7 @@ show_command() {
 			    return
 			    ;;
 			macros)
-			    [ $# -gt 1 ] && usage 1
+			    [ $# -gt 1 ] && too_many_arguments $2
 			    eval show_macros $g_pager
 			    return
 			    ;;
@@ -1432,7 +1448,7 @@ show_command() {
 	    if [ $# -gt 0 ]; then
 		if [ $1 = dynamic -a $# -gt 1 ]; then
 		    shift
-		    [ $# -eq 1 ] || usage 1
+		    [ $# -eq 1 ] || too_many_arguments $2
 		    list_zone $1
 		    return;
                 fi
@@ -1546,7 +1562,7 @@ do_dump_command() {
 			    option=${option#c}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -1565,7 +1581,7 @@ do_dump_command() {
     [ $VERBOSITY -lt 2 ] && VERBOSITY=2
 
     [ -n "$g_debugging" ] && set -x
-    [ $# -eq 0 ] || usage 1
+    [ $# -eq 0 ] || too_many_arguments $1
     clear_term
     echo "$g_product $SHOREWALL_VERSION Dump at $g_hostname - $(date)"
     echo
@@ -1760,7 +1776,7 @@ restore_command() {
 			    option=${option#C}
 			    ;;
 			*)
-			    usage 1
+			    option_error
 			    ;;
 		    esac
 		done
@@ -1780,7 +1796,7 @@ restore_command() {
 	validate_restorefile '<restore file>'
 	;;
     *)
-	usage 1
+	too_many_arguments $2
 	;;
     esac
 
@@ -2386,7 +2402,7 @@ hits_command() {
 			    option=${option#t}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -2398,7 +2414,7 @@ hits_command() {
 	esac
     done
 
-    [ $# -eq 0 ] || usage 1
+    [ $# -eq 0 ] || too_many_arguments $1
 
     clear_term
     echo "$g_product $SHOREWALL_VERSION Hits at $g_hostname - $(date)"
@@ -2455,7 +2471,7 @@ hits_command() {
 #
 allow_command() {
     [ -n "$g_debugging" ] && set -x
-    [ $# -eq 1 ] && usage 1
+    [ $# -eq 1 ] && missing_argument
     if product_is_started ; then
 	local which
 	which='-s'
@@ -2525,8 +2541,6 @@ logwatch_command() {
 	    -*)
 		option=${option#-}
 
-		[ -z "$option" ] && usage 1
-
 		while [ -n "$option" ]; do
 		    case $option in
 			v*)
@@ -2546,7 +2560,7 @@ logwatch_command() {
 			    option=
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -2565,7 +2579,7 @@ logwatch_command() {
     elif [ $# -eq 0 ]; then
 	logwatch 30
     else
-	usage 1
+	too_many_arguments $2
     fi
 }
 
@@ -3392,7 +3406,7 @@ status_command() {
 			    option=${option#i}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -3404,7 +3418,7 @@ status_command() {
 	esac
     done
 
-    [ $# -eq 0 ] || usage 1
+    [ $# -eq 0 ] || missing_argument
 
     [ $VERBOSITY -ge 1 ] && echo "${g_product}-$SHOREWALL_VERSION Status at $g_hostname - $(date)" && echo
     show_status
@@ -3498,7 +3512,7 @@ save_command() {
 			    option=${option#C}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -3518,7 +3532,7 @@ save_command() {
 	    validate_restorefile '<restore file>'
 	    ;;
 	*)
-	    usage 1
+	    too_many_arguments $2
 	    ;;
 	esac
 
@@ -3537,6 +3551,9 @@ save_command() {
 
 forget_command() {
     case $# in
+	0)
+	    missing_argument
+	    ;;
 	1)
 	    ;;
 	2)
@@ -3544,7 +3561,7 @@ forget_command() {
 	    validate_restorefile '<restore file>'
 	    ;;
 	*)
-	    usage 1
+	    too_many_arguments $3
 	    ;;
     esac
 
@@ -3566,7 +3583,7 @@ ipcalc_command() {
     local address
     local vlsm
 
-    [ $g_family -eq 6 ] && usage 1
+    [ $g_family -eq 6 ] && fatal_error "$g_product does not support the ipcalc command"
 
     if [ $# -eq 2 ]; then
 	address=${2%/*}
@@ -3574,13 +3591,15 @@ ipcalc_command() {
     elif [ $# -eq 3 ]; then
 	address=$2
 	vlsm=$(ip_vlsm $3)
+    elif [ $# -eq 0 ]; then
+	missing_argument
     else
-	usage 1
+	too_many_arguments $4
     fi
 
     valid_address $address || fatal_error "Invalid IP address: $address"
-    [ -z "$vlsm" ] && usage 2
-    [ "x$address" = "x$vlsm" ] && usage 2
+    [ -z "$vlsm" ] && fatal_error "Missing VLSM"
+    [ "x$address" = "x$vlsm" ] && "Invalid VLSM"
     [ $vlsm -gt 32 ] && fatal_error "Invalid VLSM: /$vlsm"
 
     address=$address/$vlsm
@@ -3594,7 +3613,7 @@ ipcalc_command() {
 iprange_command() {
     local range
 
-    [ $g_family -eq 6 ] && usage 1
+    [ $g_family -eq 6 ] && fatal_error "$g_product does not support the iprange command"
 
     range=''
 
@@ -3612,15 +3631,19 @@ iprange_command() {
 	    ip_range $range
 	    ;;
 	*)
-	    usage 1
+	    fatal_error "Invalid ip range: $range"
 	    ;;
     esac
 }
 
 ipdecimal_command() {
-    [ $# -eq 2 ] || usage 1
+    if [ $# eq 1 ]; then
+	missing_argument
+    else
+	[ $# -eq 2 ] || too_many_arguments $3
+    fi
 
-    [ $g_family -eq 6 ] && usage 1
+    [ $g_family -eq 6 ] && fatal_error "$g_product does not support the iprange command"
 
     case $2 in
 	*.*.*.*)
@@ -3928,7 +3951,7 @@ start_command() {
 			    option=${option%p}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -3944,7 +3967,7 @@ start_command() {
 	0)
 	    ;;
 	*)
-	    usage 1
+	    too_many_arguments $1
 	    ;;
     esac
 
@@ -3988,7 +4011,7 @@ restart_command() {
 			    option=${option#C}
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -4004,7 +4027,7 @@ restart_command() {
 	0)
 	    ;;
 	*)
-	    usage 1
+	    too_many_arguments $1
 	    ;;
     esac
 
@@ -4220,7 +4243,8 @@ shorewall_cli() {
 		while [ -n "$option" ]; do
 		    case $option in
 			c)
-			    [ $# -eq 1 -o -n "$g_lite" ] && usage 1
+			    [ $# -eq 1 ]     && missing_option_value -c
+			    [ -n "$g_lite" ] && fatal_error "$g_product does not support the -c option"
 
 			    if [ ! -d $2 ]; then
 				if [ -e $2 ]; then
@@ -4235,7 +4259,7 @@ shorewall_cli() {
 			    shift
 			    ;;
 			e*)
-			    [ -n "$g_lite" ] && usage 1
+			    [ -n "$g_lite" ] && fatal_error "$g_product does not support the -e option"
 			    g_export=Yes
 			    option=${option#e}
 			    ;;
@@ -4297,7 +4321,7 @@ shorewall_cli() {
 			    option=
 			    ;;
 			*)
-			    usage 1
+			    option_error $option
 			    ;;
 		    esac
 		done
@@ -4362,7 +4386,7 @@ shorewall_cli() {
 	    start_command $@
 	    ;;
 	stop|clear)
-	    [ $# -ne 1 ] && usage 1
+	    [ $# -ne 1 ] && too_many_arguments $2
 	    get_config
 	    [ -x $g_firewall ] || fatal_error "$g_product has never been started"
 	    [ -n "$g_nolock" ] || mutex_on
@@ -4419,7 +4443,7 @@ shorewall_cli() {
     	    dump_command $@
 	    ;;
 	hits)
-	    [ $g_family -eq 6 ] && usage 1
+	    [ $g_family -eq 6 ] && fatal_error "$g_product does not support the hits command"
 	    get_config Yes No Yes
 	    [ -n "$g_debugging" ] && set -x
 	    shift
@@ -4437,19 +4461,19 @@ shorewall_cli() {
 	drop)
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
-	    [ $# -eq 1 ] && usage 1
+	    [ $# -eq 1 ] && missing_argument
 	    drop_command $@
 	    ;;
 	logdrop)
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
-	    [ $# -eq 1 ] && usage 1
+	    [ $# -eq 1 ] && missing_argument
 	    logdrop_command $@
 	    ;;
 	reject|logreject)
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
-	    [ $# -eq 1 ] && usage 1
+	    [ $# -eq 1 ] && missing_argument
 	    reject_command $@
 	    ;;
 	open|close)
@@ -4522,7 +4546,7 @@ shorewall_cli() {
 		    run_it $g_firewall $g_debugging call $@
 		fi
 	    else
-		usage 1
+		missing_argument
 	    fi
 	    ;;
 	help)
@@ -4540,7 +4564,7 @@ shorewall_cli() {
 	    noiptrace_command $@
 	    ;;
 	savesets)
-	    [ $# -eq 1 ] || usage 1
+	    [ $# -eq 1 ] || too_many_arguments $2
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    savesets1
@@ -4549,7 +4573,7 @@ shorewall_cli() {
 	    if [ -z "$g_lite" ]; then
 		compiler_command $@
 	    else
-		usage 1
+		fatal_error "Invalid command: $COMMAND"
 	    fi
 	    ;;
     esac

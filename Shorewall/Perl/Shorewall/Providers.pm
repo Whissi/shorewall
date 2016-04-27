@@ -1096,7 +1096,7 @@ CEOF
 
     if ( $optional ) {
 	if ( $persistent ) {
-	    emit( "persistent_${what}_${table}\n" );
+	    emit( "do_persistent_${what}_${table}\n" );
 	}
 
 	if ( $shared ) {

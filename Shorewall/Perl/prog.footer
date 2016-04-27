@@ -25,6 +25,7 @@ usage() {
     echo "   savesets <file>"
     echo "   call <function> [ <parameter> ... ]"
     echo "   version"
+    echo "   date"
     echo
     echo "Options are:"
     echo
@@ -468,6 +469,10 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	echo $SHOREWALL_VERSION
 	status=0
+	;;
+    date)
+	[ $# -ne 1 ] && usage 2
+	date_command
 	;;
     help)
 	[ $# -ne 1 ] && usage 2

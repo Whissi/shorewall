@@ -597,6 +597,17 @@ EOF
 }
 
 #
+# Generate date_command()
+#
+sub compile_date_command() {
+    my $date = localtime;
+
+    emit( "\ndate_command() {" ,
+	  "    echo $date" ,
+	  "}" );
+}   
+
+#
 #  The Compiler.
 #
 #     Arguments are named -- see %parms below.
@@ -921,6 +932,10 @@ sub compiler {
 	#               (Writes the updown() function to the compiled script)
 	#
 	compile_updown;
+	#
+	# Echo the compilation time and date
+	#
+	compile_date_command;
 	#
 	# Copy the footer to the script
 	#

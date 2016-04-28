@@ -83,7 +83,7 @@ case "$command" in
 	exec ${SBINDIR}/shorewall6 $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
-	exec ${SBINDIR}/shorewall6 $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall6 $OPTIONS $command
 	;;
     *)
 	usage

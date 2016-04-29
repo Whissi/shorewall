@@ -1532,6 +1532,49 @@ dump_filter_wrapper() {
     eval dump_filter $g_pager
 }
 
+show_status() {
+    local compiletime
+    local state
+
+    if product_is_started ; then
+	[ $VERBOSITY -ge 1 ] && echo "$g_product is running"
+	status=0
+    else
+	[ $VERBOSITY -ge 1 ] && echo "$g_product is stopped"
+	status=4
+    fi
+
+    if [ -f ${VARDIR}/state ]; then
+	state="$(cat ${VARDIR}/state)"
+	case $state in
+	    Stopped*|Closed*|Clear*)
+		status=3
+		;;
+	esac
+    else
+	state=Unknown
+    fi
+
+    if [ $VERBOSITY -ge 1 ]; then 
+	if [ -f $g_firewall ]; then
+	    compiletime=$(run_it $g_firewall info 2>/dev/null)
+
+	    case $compiletime in
+		compiled\ *)
+		    state="$state ($g_firewall $compiletime)"
+		    ;;
+		*)
+		    state="$state ($g_firewall compiled by Shorewall version $(run_it $g_firewall version))"
+		    ;;
+	    esac
+	fi
+
+	echo "State:$state"
+	echo
+    fi
+
+}
+
 #
 # Dump Command Executor
 #
@@ -3330,49 +3373,6 @@ report_capabilities1() {
     echo "# $g_product $SHOREWALL_VERSION detected the following iptables/netfilter capabilities - $(date)"
     echo "#"
     report_capabilities_unsorted1 | sort
-}
-
-show_status() {
-    local compiletime
-    local state
-
-    if product_is_started ; then
-	[ $VERBOSITY -ge 1 ] && echo "$g_product is running"
-	status=0
-    else
-	[ $VERBOSITY -ge 1 ] && echo "$g_product is stopped"
-	status=4
-    fi
-
-    if [ -f ${VARDIR}/state ]; then
-	state="$(cat ${VARDIR}/state)"
-	case $state in
-	    Stopped*|Closed*|Clear*)
-		status=3
-		;;
-	esac
-    else
-	state=Unknown
-    fi
-
-    if [ $VERBOSITY -ge 1 ]; then 
-	if [ -f $g_firewall ]; then
-	    compiletime=$(run_it $g_firewall info 2>/dev/null)
-
-	    case $compiletime in
-		compiled\ *)
-		    state="$state ($g_firewall $compiletime)"
-		    ;;
-		*)
-		    state="$state ($g_firewall compiled by Shorewall version $(run_it $g_firewall version))"
-		    ;;
-	    esac
-	fi
-
-	echo "State:$state"
-	echo
-    fi
-
 }
 
 interface_status() {

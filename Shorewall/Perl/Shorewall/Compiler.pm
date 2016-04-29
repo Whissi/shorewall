@@ -604,7 +604,7 @@ sub compile_info_command() {
 
     emit( "\n",
 	  "#",
-	  "# Echo the time and date when this script was compiled",
+	  "# Echo the date and time when this script was compiled along with the Shorewall version",
 	  "#",
 	  "info_command() {" ,
 	  qq(    echo "compiled $date by Shorewall version \$SHOREWALL_VERSION") ,

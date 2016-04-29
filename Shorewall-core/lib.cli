@@ -3325,6 +3325,7 @@ report_capabilities1() {
 
 show_status() {
     local compiletime
+    local state
 
     if product_is_started ; then
 	[ $VERBOSITY -ge 1 ] && echo "$g_product is running"
@@ -3347,14 +3348,14 @@ show_status() {
 
     if [ $VERBOSITY -ge 1 ]; then 
 	if [ -f $g_firewall ]; then
-	    compiletime=$($g_firewall date)
+	    compiletime=$($g_firewall info 2>/dev/null)
 
 	    case $compiletime in
-		Usage*)
-		    state="$state ($g_firewall compiled by Shorewall version $($g_firewall version))"
+		compiled\ *)
+		    state="$state ($g_firewall $compiletime)"
 		    ;;
 		*)
-		    state="$state ($g_firewall compiled $compiletime by Shorewall version $($g_firewall version))"
+		    state="$state ($g_firewall compiled by Shorewall version $($g_firewall version))"
 		    ;;
 	    esac
 	fi

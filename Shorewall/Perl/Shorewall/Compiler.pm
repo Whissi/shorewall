@@ -599,12 +599,16 @@ EOF
 #
 # Generate date_command()
 #
-sub compile_date_command() {
+sub compile_info_command() {
     my $date = localtime;
 
-    emit( "\ndate_command() {" ,
-	  "    echo $date" ,
-	  "}" );
+    emit( "\n",
+	  "#",
+	  "# Echo the time and date when this script was compiled",
+	  "#",
+	  "info_command() {" ,
+	  qq(    echo "compiled $date by Shorewall version \$SHOREWALL_VERSION") ,
+	  "}\n" );
 }   
 
 #
@@ -935,7 +939,7 @@ sub compiler {
 	#
 	# Echo the compilation time and date
 	#
-	compile_date_command;
+	compile_info_command unless $test;
 	#
 	# Copy the footer to the script
 	#

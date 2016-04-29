@@ -753,6 +753,7 @@ version_command() {
     local all
     all=
     local product
+    local compiletime
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -795,8 +796,16 @@ version_command() {
 	done
 
 	if [ "$(id -u)" -eq 0 -a -f $g_firewall ]; then
-	    echo $g_echo_n "$g_firewall was compiled by Shorewall version "
-	    $g_firewall version
+	    compiletime=$(run_it $g_firewall info 2>/dev/null)
+
+	    case $compiletime in
+		compiled\ *)
+		    echo "$g_firewall was $compiletime"
+		    ;;
+		*)
+		    echo "$g_firewall was compiled by Shorewall version $(run_it $g_firewall version))"
+		    ;;
+	    esac
 	fi
     else
 	echo $SHOREWALL_VERSION
@@ -3348,17 +3357,18 @@ show_status() {
 
     if [ $VERBOSITY -ge 1 ]; then 
 	if [ -f $g_firewall ]; then
-	    compiletime=$($g_firewall info 2>/dev/null)
+	    compiletime=$(run_it $g_firewall info 2>/dev/null)
 
 	    case $compiletime in
 		compiled\ *)
 		    state="$state ($g_firewall $compiletime)"
 		    ;;
 		*)
-		    state="$state ($g_firewall compiled by Shorewall version $($g_firewall version))"
+		    state="$state ($g_firewall compiled by Shorewall version $(run_it $g_firewall version))"
 		    ;;
 	    esac
 	fi
+
 	echo "State:$state"
 	echo
     fi

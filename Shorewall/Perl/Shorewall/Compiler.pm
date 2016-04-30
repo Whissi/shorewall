@@ -597,7 +597,7 @@ EOF
 }
 
 #
-# Generate date_command()
+# Generate info_command()
 #
 sub compile_info_command() {
     my $date = localtime;
@@ -607,7 +607,7 @@ sub compile_info_command() {
 	  "# Echo the date and time when this script was compiled along with the Shorewall version",
 	  "#",
 	  "info_command() {" ,
-	  qq(    echo "compiled $date by Shorewall version \$SHOREWALL_VERSION") ,
+	  qq(    echo "compiled $date by Shorewall version $globals{VERSION}") ,
 	  "}\n" );
 }   
 

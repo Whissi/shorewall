@@ -889,6 +889,7 @@ sub initialize( $;$$) {
 	  DOCKER => undef ,
 	  PAGER => undef ,
 	  MINIUPNPD => undef ,
+	  VERBOSE_MESSAGES => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -2543,18 +2544,54 @@ sub directive_error( $$$ ) {
     fatal_error $_[0];
 }
 
-sub directive_warning( $$$ ) {
-    my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
-    ( my $warning, $currentfilename, $currentlinenumber ) = @_;
-    warning_message $warning;
-    ( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
+sub directive_warning( $$$$ ) {
+    if ( shift ) {
+	my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
+	( my $warning, $currentfilename, $currentlinenumber ) = @_;
+	warning_message $warning;
+	( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
+    } else {
+	our @localtime;
+
+	handle_first_entry if $first_entry;
+
+	$| = 1; #Reset output buffering (flush any partially filled buffers).
+
+	if ( $log ) {
+	    @localtime = localtime;
+	    printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	    print $log  "   WARNING: $_[0]\n";
+	}
+
+	print STDERR "   WARNING: $_[0]\n";
+
+	$| = 0; #Re-allow output buffering
+    }
 }
 
-sub directive_info( $$$ ) {
-    my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
-    ( my $info, $currentfilename, $currentlinenumber ) = @_;
-    info_message $info;
-    ( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
+sub directive_info( $$$$ ) {
+    if ( shift ) {
+	my ( $savefilename, $savelineno ) = ( $currentfilename, $currentlinenumber );
+	( my $info, $currentfilename, $currentlinenumber ) = @_;
+	info_message $info;
+	( $currentfilename, $currentlinenumber ) = ( $savefilename, $savelineno );
+    } else {
+	our @localtime;
+
+	handle_first_entry if $first_entry;
+
+	$| = 1; #Reset output buffering (flush any partially filled buffers).
+
+	if ( $log ) {
+	    @localtime = localtime;
+	    printf $log '%s %2d %02d:%02d:%02d ', $abbr[$localtime[4]], @localtime[3,2,1,0];
+	    print $log  "   INFO: $_[0]\n";
+	}
+
+	print STDERR "   INFO: $_[0]\n";
+
+	$| = 0; #Re-allow output buffering
+    }
 }
 
 #
@@ -2703,7 +2740,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+|WARNING!\s+|INFO!\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2811,14 +2848,14 @@ sub process_compiler_directive( $$$$ ) {
 			      delete $actparams{$var}
 			  }
 		      } else {
-			  directive_warning( "Shorewall variable $2 does not exist", $filename, $linenumber );
+			  directive_warning( 'Yes', "Shorewall variable $2 does not exist", $filename, $linenumber );
 		      }
 
 		  } else {
 		      if ( exists $variables{$2} ) {
 			  delete $variables{$2};
 		      } else {
-			  directive_warning( "Shell variable $2 does not exist", $filename, $linenumber );
+			  directive_warning( 'Yes', "Shell variable $2 does not exist", $filename, $linenumber );
 		      }
 		  }
 	      }
@@ -2832,7 +2869,7 @@ sub process_compiler_directive( $$$$ ) {
 			      ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
 			      $comment =~ s/\s*$//;
 			  } else {
-			      directive_warning( "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
+			      directive_warning( 'Yes', "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
 			  }
 		      }
 		  } else {
@@ -2851,7 +2888,8 @@ sub process_compiler_directive( $$$$ ) {
 	  } ,
 
 	  WARNING => sub() {
-	      directive_warning( evaluate_expression( $expression ,
+	      directive_warning( $config{VERBOSE_MESSAGES} ,
+		                 evaluate_expression( $expression ,
 						      $filename ,
 						      $linenumber ,
 						      1 ),
@@ -2860,7 +2898,28 @@ sub process_compiler_directive( $$$$ ) {
 	  } ,
 
 	  INFO => sub() {
-	      directive_info( evaluate_expression( $expression ,
+	      directive_info( $config{VERBOSE_MESSAGES} ,
+			      evaluate_expression( $expression ,
+						   $filename ,
+						   $linenumber ,
+						   1 ),
+			      $filename ,
+			      $linenumber ) unless $omitting;
+	  } ,
+
+	  'WARNING!' => sub() {
+	      directive_warning( ! $config{VERBOSE_MESSAGES} ,
+		                 evaluate_expression( $expression ,
+						      $filename ,
+						      $linenumber ,
+						      1 ),
+				 $filename ,
+				 $linenumber ) unless $omitting;
+	  } ,
+
+	  'INFO!' => sub() {
+	      directive_info( ! $config{VERBOSE_MESSAGES} ,
+			      evaluate_expression( $expression ,
 						   $filename ,
 						   $linenumber ,
 						   1 ),
@@ -6109,6 +6168,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'WARNOLDCAPVERSION'          , 'Yes';
     default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
     default_yes_no 'MINIUPNPD'                  , '';
+    default_yes_no 'VERBOSE_MESSAGES'           , 'Yes';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset';
 

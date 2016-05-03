@@ -595,9 +595,32 @@
                 <para>Added in Shorewall 4.5.9.3. Queues matching packets to a
                 back end logging daemon via a netlink socket then continues to
                 the next rule. See <ulink
-                url="/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
+                url="/shorewall.logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.
+                </para>
 
-                <para>Similar to<emphasis role="bold">
+                <para>The <replaceable>nflog-parameters</replaceable> are a
+                comma-separated list of up to 3 numbers:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>The first number specifies the netlink group
+                    (0-65535). If omitted (e.g., NFLOG(,0,10)) then a value of
+                    0 is assumed.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The second number specifies the maximum number of
+                    bytes to copy. If omitted, 0 (no limit) is assumed.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The third number specifies the number of log
+                    messages that should be buffered in the kernel before they
+                    are sent to user space. The default is 1.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>NFLOG is similar to<emphasis role="bold">
                 LOG:NFLOG</emphasis>[(<replaceable>nflog-parameters</replaceable>)],
                 except that the log level is not changed when this ACTION is
                 used in an action or macro body and the invocation of that

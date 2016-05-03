@@ -4464,6 +4464,16 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
+	NFLOG      => {
+	    defaultchain  => 0,
+	    allowedchains => ALLCHAINS,
+	    minparams     => 0,
+	    maxparams     => 3,
+	    function      => sub () {
+		$target = validate_level( "NFLOG($params)" );
+	    }
+	},
+
 	RESTORE    => {
 	    defaultchain   => 0,
 	    allowedchains  => PREROUTING | INPUT | FORWARD | OUTPUT | POSTROUTING,

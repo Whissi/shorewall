@@ -737,7 +737,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.0.1",
+		    VERSION                 => "5.0.9-Beta2",
 		    CAPVERSION              => 50004 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -5736,6 +5736,14 @@ sub get_configuration( $$$$ ) {
     } else {
 	$ENV{PATH} = $default_path;
     }
+
+    fatal_error "Shorewall-core does not appear to be installed" unless open_file "$globals{SHAREDIRPL}coreversion";
+
+    fatal_error "$globals{SHAREDIRPL}coreversion is empty" unless read_a_line( PLAIN_READ );
+
+    close_file;
+
+    warning_message "Version Mismatch: Shorewall-core is version $currentline, while the Shorewall version is $globals{VERSION}" unless $currentline eq $globals{VERSION};
 
     my $have_capabilities;
 

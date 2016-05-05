@@ -5745,6 +5745,16 @@ sub get_configuration( $$$$ ) {
 
     warning_message "Version Mismatch: Shorewall-core is version $currentline, while the Shorewall version is $globals{VERSION}" unless $currentline eq $globals{VERSION};
 
+    if ( $family == F_IPV6 ) {
+	open_file( "$globals{SHAREDIR}/version" ) || fatal_error "Unable to open $globals{SHAREDIR}/version";
+
+	fatal_error "$globals{SHAREDIR}/version is empty" unless read_a_line( PLAIN_READ );
+
+	close_file;
+
+	warning_message "Version Mismatch: Shorewall6 is version $currentline, while the Shorewal version is $globals{VERSION}" unless $currentline eq $globals{VERSION};
+    }
+
     my $have_capabilities;
 
     if ( $export || $> != 0 ) {

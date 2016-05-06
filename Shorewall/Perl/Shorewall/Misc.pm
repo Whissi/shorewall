@@ -302,7 +302,7 @@ sub convert_blacklist() {
 	if ( @rules ) {
 	    my $fn1 = find_writable_file( 'blrules' );
 	    my $blrules;
-	    my $date = localtime;
+	    my $date = compiletime;
 
 	    if ( -f $fn1 ) {
 		open $blrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
@@ -393,7 +393,7 @@ sub convert_routestopped() {
 	my ( @allhosts, %source, %dest , %notrack, @rule );
 
 	my $seq  = 0;
-	my $date = localtime;
+	my $date = compiletime;
 
 	my ( $stoppedrules, $fn1 );
 
@@ -421,7 +421,7 @@ EOF
 
 	first_entry(
 		    sub {
-			my $date = localtime;
+			my $date = compiletime;
 			progress_message2 "$doing $fn...";
 			print( $stoppedrules
 			       "#\n" ,

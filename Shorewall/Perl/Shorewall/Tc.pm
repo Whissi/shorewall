@@ -2166,7 +2166,7 @@ sub convert_tos($$) {
     if ( my $fn = open_file 'tos' ) {
 	first_entry(
 		    sub {
-			my $date = localtime;
+			my $date = compiletime;
 			progress_message2 "Converting $fn...";
 			print( $mangle
 			       "#\n" ,
@@ -2332,7 +2332,7 @@ sub setup_tc( $ ) {
 
 		first_entry(
 			    sub {
-				my $date = localtime;
+				my $date = compiletime;
 				progress_message2 "Converting $fn...";
 				print( $mangle
 				       "#\n" ,

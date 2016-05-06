@@ -84,6 +84,8 @@ our @EXPORT = qw(
 		 require_capability
 		 report_used_capabilities
 		 kernel_version
+
+                 compiletime
                 );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
@@ -681,6 +683,8 @@ our %ipsets; # All required IPsets
 #
 our %filecache;
 
+our $compiletime;
+
 sub process_shorewallrc($$);
 sub add_variables( \% );
 #
@@ -1172,6 +1176,10 @@ sub initialize( $;$$) {
     %shorewallrc1 = %shorewallrc unless $shorewallrc1;
 
     add_variables %shorewallrc1;
+
+    $compiletime = `date`;
+
+    chomp $compiletime;
 }
 
 my @abbr = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
@@ -1182,6 +1190,10 @@ sub add_ipset( $ ) {
 
 sub all_ipsets() {
     sort keys %ipsets;
+}
+
+sub compiletime() {
+    $compiletime;
 }
 
 #

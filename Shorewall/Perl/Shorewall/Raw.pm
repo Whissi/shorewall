@@ -368,7 +368,7 @@ sub setup_conntrack($) {
     if ( $convert ) {
 	my $conntrack;
 	my $empty  = 1;
-	my $date = localtime;
+	my $date = compiletime;
 
 	if ( $fn ) {
 	    open $conntrack, '>>', $fn or fatal_error "Unable to open $fn for notrack conversion: $!";

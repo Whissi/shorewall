@@ -649,9 +649,15 @@ sub create_docker_rules() {
 	add_ijump( $chainref, j => 'ACCEPT', o => 'docker0', state_imatch 'ESTABLISHED,RELATED' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => '! docker0' );
 	add_ijump( $chainref, j => 'ACCEPT', i => 'docker0', o => 'docker0' ) if $dockerref->{options}{routeback};
-	add_ijump( $filter_table->{OUTPUT}, j => 'DOCKER' );
 	decr_cmd_level( $chainref );
 	add_commands( $chainref, 'fi' );
+
+	my $outputref;
+	add_commands( $outputref = $filter_table->{OUTPUT}, 'if [ -n "$g_docker" ]; then' );
+	incr_cmd_level( $outputref );
+	add_ijump( $outputref, j => 'DOCKER' );
+	decr_cmd_level( $outputref );
+	add_commands( $outputref, 'fi' );
     }
 
     add_commands( $chainref, '[ -f ${VARDIR}/.filter_FORWARD ] && cat $VARDIR/.filter_FORWARD >&3', );

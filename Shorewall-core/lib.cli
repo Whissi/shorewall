@@ -4560,6 +4560,11 @@ shorewall_cli() {
 		    # It's a shell function -- call it
 		    #
 		    $@
+		elif type $1 2> /dev/null | fgrep -q 'is a shell function'; then
+		    #
+		    # It's a shell function -- call it
+		    #
+		    $@
 		else
 		    #
 		    # It isn't a function visible to this script -- try

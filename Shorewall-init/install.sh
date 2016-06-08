@@ -585,7 +585,7 @@ if [ -z "$DESTDIR" ]; then
     fi
 else
     if [ $configure -eq 1 -a -n "$first_install" ]; then
-	if [ $HOST = debian ]; then
+	if [ $HOST = debian -a -z "$SERVICEDIR" ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi

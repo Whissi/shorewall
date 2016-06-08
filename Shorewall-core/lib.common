@@ -776,7 +776,7 @@ mutex_on()
 		error_message "WARNING: Stale lockfile ${lockf} removed"
 	    elif [ $lockpid -eq $$ ]; then
                 return 0
-	    elif ! qt ps | grep -v grep | grep ${lockpid}; then
+	    elif ! ps | grep -v grep | qt grep ${lockpid}; then
 		rm -f ${lockf}
 		error_message "WARNING: Stale lockfile ${lockf} from pid ${lockpid} removed"
 	    fi
@@ -788,9 +788,8 @@ mutex_on()
 	    echo $$ > ${lockf}
 	    chmod u-w ${lockf}
 	elif qt mywhich lock; then
-            echo $$ > ${lockf}
-            chmod u=r ${lockf}
             lock ${lockf}
+            chmod u=r ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
 		sleep 1

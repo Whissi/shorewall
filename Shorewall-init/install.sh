@@ -412,7 +412,7 @@ if [ $HOST = debian ]; then
 
     if [ ! -f ${DESTDIR}${CONFDIR}/default/shorewall-init ]; then
 	if [ -n "${DESTDIR}" ]; then
-	    mkdir ${DESTDIR}${ETC}/default
+	    mkdir -p ${DESTDIR}${ETC}/default
 	fi
 
 	[ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/default
@@ -585,7 +585,7 @@ if [ -z "$DESTDIR" ]; then
     fi
 else
     if [ $configure -eq 1 -a -n "$first_install" ]; then
-	if [ $HOST = debian ]; then
+	if [ $HOST = debian -a -z "$SERVICEDIR" ]; then
 	    if [ -n "${DESTDIR}" ]; then
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi

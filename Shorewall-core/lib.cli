@@ -2525,54 +2525,81 @@ allow_command() {
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 1 ] && missing_argument
     if product_is_started ; then
-	local which
-	which='-s'
-	local range
-	range='--src-range'
+	if [ -n "$g_blacklistipset" ]; then
 
-	if ! chain_exists dynamic; then
-	    fatal_error "Dynamic blacklisting is not enabled in the current $g_product configuration"
-	fi
-
-	[ -n "$g_nolock" ] || mutex_on
-	while [ $# -gt 1 ]; do
-	    shift
-	    case $1 in
-		from)
-		    which='-s'
-		    range='--src-range'
-		    continue
-		    ;;
-		to)
-		    which='-d'
-		    range='--dst-range'
-		    continue
-		    ;;
-		*-*)
-		    if  qt $g_tool -D dynamic -m iprange $range $1 -j reject    ||\
-			qt $g_tool -D dynamic -m iprange $range $1 -j DROP      ||\
-			qt $g_tool -D dynamic -m iprange $range $1 -j logdrop   ||\
-			qt $g_tool -D dynamic -m iprange $range $1 -j logreject
-			then
-			echo "$1 Allowed"
-		    else
-			echo "$1 Not Dropped or Rejected"
+	    case ${IPSET:=ipset} in
+		*/*)
+		    if [ ! -x "$IPSET" ]; then
+			fatal_error "IPSET=$IPSET does not exist or is not executable"
 		    fi
 		    ;;
 		*)
-		    if  qt $g_tool -D dynamic $which $1 -j reject    ||\
-			qt $g_tool -D dynamic $which $1 -j DROP      ||\
-			qt $g_tool -D dynamic $which $1 -j logdrop   ||\
-			qt $g_tool -D dynamic $which $1 -j logreject
-			then
-			echo "$1 Allowed"
-		    else
-			echo "$1 Not Dropped or Rejected"
-		    fi
+		    IPSET="$(mywhich $IPSET)"
+		    [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
 		    ;;
 	    esac
-	done
-	[ -n "$g_nolock" ] || mutex_off
+
+	    [ -n "$g_nolock" ] || mutex_on
+
+	    while [ $# -gt 1 ]; do
+		shift
+
+		qt $IPSET -D $g_blacklistipset $1 && progress_message2 "$1 Allowed" || error_message "WARNING: Address $1 was not currently blacklisted"
+	    done
+
+	    [ -n "$g_nolock" ] || mutex_off
+	else
+	    local which
+	    which='-s'
+	    local range
+	    range='--src-range'
+
+	    if ! chain_exists dynamic; then
+		fatal_error "Dynamic blacklisting is not enabled in the current $g_product configuration"
+	    fi
+
+	    [ -n "$g_nolock" ] || mutex_on
+
+	    while [ $# -gt 1 ]; do
+		shift
+		case $1 in
+		    from)
+			which='-s'
+			range='--src-range'
+			continue
+			;;
+		    to)
+			which='-d'
+			range='--dst-range'
+			continue
+			;;
+		    *-*)
+			if  qt $g_tool -D dynamic -m iprange $range $1 -j reject    ||\
+				qt $g_tool -D dynamic -m iprange $range $1 -j DROP      ||\
+				qt $g_tool -D dynamic -m iprange $range $1 -j logdrop   ||\
+				qt $g_tool -D dynamic -m iprange $range $1 -j logreject
+			then
+			    echo "$1 Allowed"
+			else
+			    echo "$1 Not Dropped or Rejected"
+			fi
+			;;
+		    *)
+			if  qt $g_tool -D dynamic $which $1 -j reject    ||\
+			    qt $g_tool -D dynamic $which $1 -j DROP      ||\
+		            qt $g_tool -D dynamic $which $1 -j logdrop   ||\
+			    qt $g_tool -D dynamic $which $1 -j logreject
+			then
+			    echo "$1 Allowed"
+			else
+			    echo "$1 Not Dropped or Rejected"
+			fi
+			;;
+		esac
+	    done
+
+	    [ -n "$g_nolock" ] || mutex_off
+	fi
     else
 	error_message "ERROR: $g_product is not started"
 	exit 2
@@ -3507,7 +3534,7 @@ blacklist_command() {
 	    ;;
     esac
 
-    $IPSET -A $g_blacklistipset $@ || { error_message "ERROR: Address $1 not blacklisted"; return 1; }
+    $IPSET -A $g_blacklistipset $@ && progress_message2 "$1 Blacklisted" || { error_message "ERROR: Address $1 not blacklisted"; return 1; }
 
     return 0
 }

@@ -3894,9 +3894,10 @@ my %logoptions = ( tcp_sequence         => '--log-tcp-sequence',
 
 sub validate_level( $;$ ) {
     my ( $rawlevel, $option ) = @_;
-    my $level    = uc $rawlevel;
+    my $level;
 
-    if ( supplied ( $level ) ) {
+    if ( supplied ( $rawlevel ) ) {
+	$level = uc $rawlevel;
 	$level =~ s/!$//;
 	my $value = $level;
 	my $qualifier;

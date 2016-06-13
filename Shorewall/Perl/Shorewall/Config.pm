@@ -5767,7 +5767,7 @@ sub get_configuration( $$$$ ) {
 
 	close_file;
 
-	warning_message "Version Mismatch: Shorewall6 is version $currentline, while the Shorewal version is $globals{VERSION}" unless $currentline eq $globals{VERSION};
+	warning_message "Version Mismatch: Shorewall6 is version $currentline, while the Shorewall version is $globals{VERSION}" unless $currentline eq $globals{VERSION};
     }
 
     my $have_capabilities;

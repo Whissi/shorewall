@@ -2522,9 +2522,18 @@ hits_command() {
 # 'allow' command executor
 #
 allow_command() {
+
     [ -n "$g_debugging" ] && set -x
     [ $# -eq 1 ] && missing_argument
+
     if product_is_started ; then
+	local allowed
+	local which
+	which='-s'
+	local range
+	range='--src-range'
+	local dynexists
+
 	if [ -n "$g_blacklistipset" ]; then
 
 	    case ${IPSET:=ipset} in
@@ -2538,68 +2547,76 @@ allow_command() {
 		    [ -n "$IPSET" ] || fatal_error "The ipset utility cannot be located"
 		    ;;
 	    esac
+	fi
 
-	    [ -n "$g_nolock" ] || mutex_on
+	if chain_exists dynamic; then
+	    dynexists=Yes
+	elif [ -z "$g_blacklistipset" ]; then
+	    fatal_error "Dynamic blacklisting is not enabled in the current $g_product configuration"
+	fi
 
-	    while [ $# -gt 1 ]; do
-		shift
+	[ -n "$g_nolock" ] || mutex_on
 
-		qt $IPSET -D $g_blacklistipset $1 && progress_message2 "$1 Allowed" || error_message "WARNING: Address $1 was not currently blacklisted"
-	    done
+	while [ $# -gt 1 ]; do
+	    shift
 
-	    [ -n "$g_nolock" ] || mutex_off
-	else
-	    local which
-	    which='-s'
-	    local range
-	    range='--src-range'
+	    allowed=''
 
-	    if ! chain_exists dynamic; then
-		fatal_error "Dynamic blacklisting is not enabled in the current $g_product configuration"
-	    fi
-
-	    [ -n "$g_nolock" ] || mutex_on
-
-	    while [ $# -gt 1 ]; do
-		shift
-		case $1 in
-		    from)
-			which='-s'
-			range='--src-range'
-			continue
-			;;
-		    to)
-			which='-d'
-			range='--dst-range'
-			continue
-			;;
-		    *-*)
-			if  qt $g_tool -D dynamic -m iprange $range $1 -j reject    ||\
-				qt $g_tool -D dynamic -m iprange $range $1 -j DROP      ||\
-				qt $g_tool -D dynamic -m iprange $range $1 -j logdrop   ||\
-				qt $g_tool -D dynamic -m iprange $range $1 -j logreject
-			then
-			    echo "$1 Allowed"
-			else
-			    echo "$1 Not Dropped or Rejected"
+	    case $1 in
+		from)
+		    which='-s'
+		    range='--src-range'
+		    continue
+		    ;;
+		to)
+		    which='-d'
+		    range='--dst-range'
+		    continue
+		    ;;
+		*-*)
+		    if [ -n "$g_blacklistipset" ]; then
+			if qt $IPSET -D $g_blacklistipset $1; then
+			    allowed=Yes
 			fi
-			;;
-		    *)
+		    fi
+
+		    if [ -n "$dynexists" ]; then
+			if  qt $g_tool -D dynamic -m iprange $range $1 -j reject    ||\
+			    qt $g_tool -D dynamic -m iprange $range $1 -j DROP      ||\
+			    qt $g_tool -D dynamic -m iprange $range $1 -j logdrop   ||\
+			    qt $g_tool -D dynamic -m iprange $range $1 -j logreject
+			then
+			    allowed=Yes
+			fi
+		    fi
+		    ;;
+		*)
+		    if [ -n "$g_blacklistipset" ]; then
+			if qt $IPSET -D $g_blacklistipset $1; then
+			    allowed=Yes
+			fi
+		    fi
+
+		    if [ -n "$dynexists" ]; then
 			if  qt $g_tool -D dynamic $which $1 -j reject    ||\
 			    qt $g_tool -D dynamic $which $1 -j DROP      ||\
-		            qt $g_tool -D dynamic $which $1 -j logdrop   ||\
+			    qt $g_tool -D dynamic $which $1 -j logdrop   ||\
 			    qt $g_tool -D dynamic $which $1 -j logreject
 			then
-			    echo "$1 Allowed"
-			else
-			    echo "$1 Not Dropped or Rejected"
+			    allowed=Yes
 			fi
-			;;
-		esac
-	    done
+		    fi
+		    ;;
+	    esac
 
-	    [ -n "$g_nolock" ] || mutex_off
-	fi
+	    if [ -n "$allowed" ]; then
+		progress_message2 "$1 Allowed"
+	    else
+		error_message "WARNING: $1 already allowed (not dynamically blacklisted)"
+	    fi
+	done
+
+	[ -n "$g_nolock" ] || mutex_off
     else
 	error_message "ERROR: $g_product is not started"
 	exit 2

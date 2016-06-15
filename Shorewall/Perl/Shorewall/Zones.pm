@@ -337,6 +337,7 @@ sub initialize( $$ ) {
 				  arp_ignore  => ENUM_IF_OPTION,
 				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  bridge      => SIMPLE_IF_OPTION,
+				  dbl         => ENUM_IF_OPTION,
 				  destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -387,6 +388,7 @@ sub initialize( $$ ) {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
 				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
+				    dbl         => ENUM_IF_OPTION,
 				    destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
@@ -1191,6 +1193,7 @@ sub process_interface( $$ ) {
     my %options;
 
     $options{port} = 1 if $port;
+    $options{dbl}  = $config{DYNAMIC_BLACKLIST} =~ /^ipset(-only)?,src-dst/ ? '1:2' : $config{DYNAMIC_BLACKLIST} ? '1:0' : '0:0';
 
     my $hostoptionsref = {};
 
@@ -1234,6 +1237,8 @@ sub process_interface( $$ ) {
 		    } else {
 			warning_message "The 'blacklist' option is ignored on multi-zone interfaces";
 		    }
+		} elsif ( $option eq 'nodbl' ) {
+		    $options{dbl} = '0:0';
 		} else {
 		    $options{$option} = 1;
 		    $hostoptions{$option} = 1 if $hostopt;
@@ -1256,6 +1261,11 @@ sub process_interface( $$ ) {
 		    } else {
 			$options{arp_ignore} = 1;
 		    }
+		} elsif ( $option eq 'dbl' ) {
+		    my %values = ( none => '0:0', src => '1:0', dst => '2:0', 'src-dst' => '1:2' );
+
+		    fatal_error q(The 'dbl' option requires a value) unless defined $value;
+		    fatal_error qq(Invalid setting ($value) for 'dbl') unless defined ( $options{dbl} = $values{$value} );
 		} else {
 		    assert( 0 );
 		}
@@ -1906,7 +1916,7 @@ sub verify_required_interfaces( $ ) {
 
     my $returnvalue = 0;
 
-    my $interfaces = find_interfaces_by_option 'wait';
+    my $interfaces = find_interfaces_by_option( 'wait');
 
     if ( @$interfaces ) {
 	my $first = 1;
@@ -1972,7 +1982,7 @@ sub verify_required_interfaces( $ ) {
 
     }
 
-    $interfaces = find_interfaces_by_option 'required';
+    $interfaces = find_interfaces_by_option( 'required' );
 
     if ( @$interfaces ) {
 

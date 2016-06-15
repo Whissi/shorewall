@@ -6185,8 +6185,10 @@ sub get_configuration( $$$$ ) {
 	    require_capability( 'IPSET_V5', 'DYNAMIC_BLACKLIST=ipset...', 's' );
 
 	} else {
-	    default_yes_no( 'DYNAMIC_BLACKLIST'     , 'Yes' );
+	    default_yes_no( 'DYNAMIC_BLACKLIST', 'Yes' );
 	}
+    } else {
+	default_yes_no( 'DYNAMIC_BLACKLIST', 'Yes' );
     }
 
     default_yes_no 'REQUIRE_INTERFACE'          , '';

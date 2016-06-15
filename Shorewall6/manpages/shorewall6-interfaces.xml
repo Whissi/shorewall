@@ -238,6 +238,66 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis
+              role="bold">dbl={none|src|dst|src-dst}</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.10. This option defined whether
+                or not dynamic blacklisting is applied to packets entering the
+                firewall through this interface and whether the source address
+                and/or destination address is to be compared against the
+                ipset-based dynamic blacklist (DYNAMIC_BLACKLIST=ipset... in
+                <ulink
+                url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>).
+                The default is determine by the setting of
+                DYNAMIC_BLACKLIST:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term>DYNAMIC_BLACKLIST=No</term>
+
+                    <listitem>
+                      <para>Default is <emphasis role="bold">none</emphasis>
+                      (e.g., no dynamic blacklist checking).</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>DYNAMIC_BLACKLIST=Yes</term>
+
+                    <listitem>
+                      <para>Default is <emphasis role="bold">src</emphasis>
+                      (e.g., the source IP address is checked against the
+                      ipset).</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>DYNAMIC_BLACKLIST=ipset[-only]</term>
+
+                    <listitem>
+                      <para>Default is <emphasis
+                      role="bold">src</emphasis>.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>DYNAMIC_BLACKLIST=ipset[-only],src-dst...</term>
+
+                    <listitem>
+                      <para>Default is <emphasis
+                      role="bold">src-dst</emphasis> (e.g., the source IP
+                      addresses in checked against the ipset on input and the
+                      destination IP address is checked against the ipset on
+                      packets originating from the firewall and leaving
+                      through this interface).</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">destonly</emphasis></term>
 
               <listitem>
@@ -370,7 +430,10 @@ loc     eth2            -</programlisting>
 
               <listitem>
                 <para>Added in Shorewall 5.0.8. When specified, dynamic
-                blacklisting is disabled on the interface.</para>
+                blacklisting is disabled on the interface. Beginning with
+                Shorewall 5.0.10, <emphasis role="bold">nodbl</emphasis> is
+                equivalent to <emphasis
+                role="bold">dbl=none</emphasis>.</para>
               </listitem>
             </varlistentry>
 

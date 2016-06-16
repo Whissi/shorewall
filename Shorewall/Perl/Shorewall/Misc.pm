@@ -200,6 +200,7 @@ sub remove_blacklist( $ ) {
     if ( $changed ) {
 	rename $fn, "$fn.bak" or fatal_error "Unable to rename $fn to $fn.bak: $!";
 	rename "$fn.new", $fn or fatal_error "Unable to rename $fn.new to $fn: $!";
+	transfer_permissions( "$fn.bak", $fn );
 	progress_message2 "\u$file file $fn saved in $fn.bak"
     }
 }
@@ -308,6 +309,7 @@ sub convert_blacklist() {
 		open $blrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
 	    } else {
 		open $blrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
+		transfer_permissions( $fn, $fn1 );
 		print $blrules <<'EOF';
 #
 # Shorewall version 5.0 - Blacklist Rules File
@@ -401,6 +403,7 @@ sub convert_routestopped() {
 	    open $stoppedrules, '>>', $fn1 or fatal_error "Unable to open $fn1: $!";
 	} else {
 	    open $stoppedrules, '>',  $fn1 or fatal_error "Unable to open $fn1: $!";
+	    transfer_permissions( $fn, $fn1 );
 	    print $stoppedrules <<'EOF';
 #
 # Shorewall version 5 - Stopped Rules File

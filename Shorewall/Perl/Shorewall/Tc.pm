@@ -2234,13 +2234,19 @@ sub convert_tos($$) {
     }
 }
 
-sub open_mangle_for_output() {
+sub open_mangle_for_output( $ ) {
+    my ($fn ) = @_;
     my ( $mangle, $fn1 );
 
     if ( -f ( $fn1 = find_writable_file( 'mangle' ) ) ) {
 	open( $mangle , '>>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
     } else {
 	open( $mangle , '>', $fn1 ) || fatal_error "Unable to open $fn1:$!";
+	#
+	# Transfer permissions from the existing tcrules file to the new mangle file
+	#
+	transfer_permissions( $fn, $fn1 );
+
 	print $mangle <<'EOF';
 #
 # Shorewall version 4 - Mangle File
@@ -2326,7 +2332,7 @@ sub setup_tc( $ ) {
 		#
 		# We are going to convert this tcrules file to the equivalent mangle file
 		#
-		( $mangle, $fn1 ) = open_mangle_for_output;
+		( $mangle, $fn1 ) = open_mangle_for_output( $fn );
 
 		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
 
@@ -2376,7 +2382,7 @@ sub setup_tc( $ ) {
 		    #
 		    # We are going to convert this tosfile to the equivalent mangle file
 		    #
-		    ( $mangle, $fn1 ) = open_mangle_for_output;
+		    ( $mangle, $fn1 ) = open_mangle_for_output( $fn );
 		    convert_tos( $mangle, $fn1 );
 		    close $mangle;
 		}

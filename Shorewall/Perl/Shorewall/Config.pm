@@ -165,6 +165,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
                                        directive_callback
 		                       add_ipset
 		                       all_ipsets
+                                       transfer_permissions
 
 				       $product
 				       $Product
@@ -5089,6 +5090,19 @@ sub update_default($$) {
     $config{$var} = $val unless defined $config{$var};
 }
 
+#
+# Transfer the permissions from an old .bak file to a newly-created file
+#
+sub transfer_permissions( $$ ) {
+    my ( $old, $new ) = @_;
+
+    my @stat = stat $old;
+
+    if ( @stat ) {
+	fatal_error "Can't transfer permissions from $old to $new" unless chmod( $stat[2] & 0777, $new );
+    }
+}
+
 sub update_config_file( $ ) {
     my ( $annotate ) = @_;
 
@@ -5238,6 +5252,7 @@ EOF
 
 	if ( system( "diff -q $configfile $configfile.bak > /dev/null" ) ) {
 	    progress_message3 "Configuration file $configfile updated - old file renamed $configfile.bak";
+	    transfer_permissions( "$configfile.bak", $configfile );
 	} else {
 	    if ( rename "$configfile.bak", $configfile ) {
 		progress_message3 "No update required to configuration file $configfile; $configfile.bak not saved";

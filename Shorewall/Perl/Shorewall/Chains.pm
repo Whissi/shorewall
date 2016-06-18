@@ -5220,6 +5220,8 @@ sub do_user( $ ) {
 
     if ( supplied $2 ) {
 	$user  = $2;
+	$user =~ s/:$//;
+
 	if ( $user =~ /^(\d+)(-(\d+))?$/ ) {
 	    if ( supplied $2 ) {
 		fatal_error "Invalid User Range ($user)" unless $3 >= $1;

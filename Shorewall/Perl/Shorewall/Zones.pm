@@ -2170,7 +2170,7 @@ sub process_host( ) {
     #
     $interface = '%vserver%' if $type & VSERVER;
 
-    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref, 1 );
+    add_group_to_zone( $zone, $type , $interface, [ split_list( $hosts, 'host' ) ] , $optionsref, 0 );
 
     progress_message "   Host \"$currentline\" validated";
 

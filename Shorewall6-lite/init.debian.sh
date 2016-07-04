@@ -5,7 +5,7 @@
 # Required-Start:    $network $remote_fs
 # Required-Stop:     $network $remote_fs
 # Default-Start:     S
-# Default-Stop:      0 6
+# Default-Stop:      0 1 6
 # Short-Description: Configure the firewall at boot time
 # Description:       Configure the firewall according to the rules specified in
 #                    /etc/shorewall6-lite

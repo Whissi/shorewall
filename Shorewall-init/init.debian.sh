@@ -30,7 +30,7 @@
 # Required-Stop:     $local_fs
 # X-Stop-After:      $network
 # Default-Start:     S
-# Default-Stop:      0 6
+# Default-Stop:      0 1 6
 # Short-Description: Initialize the firewall at boot time
 # Description:       Place the firewall in a safe state at boot time prior to
 #                    bringing up the network

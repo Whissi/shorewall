@@ -97,10 +97,11 @@ shorewall_start () {
 
 # stop the firewall
 shorewall_stop () {
-  echo -n "Stopping \"Shorewall firewall\": "
   if [ "$SAFESTOP" = 1 ]; then
+      echo -n "Stopping \"Shorewall firewall\": "
       $SRWL $SRWL_OPTS stop >> $INITLOG 2>&1 && echo "done." || echo_notdone
   else
+      echo -n "Clearing all \"Shorewall firewall\" rules: "
       $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
   fi
   return 0

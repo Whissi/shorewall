@@ -146,7 +146,7 @@ case "$1" in
   restart)
      shorewall_restart
      ;;
-  force0reload|reload)
+  force-reload|reload)
      shorewall_reload
      ;;
   status)

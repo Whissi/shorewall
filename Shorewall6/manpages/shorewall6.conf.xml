@@ -1166,7 +1166,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
       <varlistentry>
         <term><emphasis
-        role="bold">LOGFILE=</emphasis>[<emphasis>pathname</emphasis>]</term>
+        role="bold">LOGFILE=</emphasis>[<emphasis>pathname</emphasis>|<option>systemd</option>]</term>
 
         <listitem>
           <para>This parameter tells the /sbin/shorewall6 program where to
@@ -1175,7 +1175,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           role="bold">logwatch</emphasis>, <emphasis role="bold">show
           log</emphasis>, and <emphasis role="bold">hits</emphasis> commands.
           If not assigned or if assigned an empty value, /var/log/messages is
-          assumed.</para>
+          assumed. Beginning with Shorewall 5.0.10.1, you may specify
+          <option>systemd</option> to use <command>journelctl -r</command> to
+          read the log.</para>
         </listitem>
       </varlistentry>
 

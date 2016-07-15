@@ -191,6 +191,8 @@ setup_logread() {
 	else
 	    g_logread="logread"
 	fi
+    elif [ "$LOGFILE" == "systemd" ]; then
+	g_logread="journalctl -r"
     elif [ -r $LOGFILE ]; then
 	if qt mywhich tac; then
 	    g_logread="tac $LOGFILE"

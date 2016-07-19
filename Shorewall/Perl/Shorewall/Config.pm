@@ -2157,6 +2157,47 @@ sub split_list3( $$ ) {
 }
 
 #
+# This version spits a list on white-space with optional leading comma. It prevents double-quoted
+# strings from being split.
+#
+sub split_list4( $ ) {
+    my ($list ) = @_;
+    my @list1 = split( /,?\s+/, $list );
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+    return @list1 unless $list =~ /"/;
+
+    @list1 = split( /(,?\s+)/, $list );
+
+    for ( my $i = 0; $i < @list1; $i += 2 ) {
+	my $e = $list1[$i];
+
+	if ( $e =~ /[^\\]"/ ) {
+	    if ( $e =~ /[^\\]".*[^\\]"/ ) {
+		fatal_error 'Unescaped embedded quote (' . join( $list1[$i - 1], $element, $e ) . ')' if $element ne '';
+		push @list2, $e;
+	    } elsif ( $element ne '' ) {
+		fatal_error 'Quoting Error (' . join( $list1[$i - 1], $element, $e ) . ')' unless $e =~ /"$/;
+		push @list2, join( $list1[$i - 1], $element, $e );
+		$element = '';
+	    } else {
+		$element = $e;
+	    }
+	} elsif ( $element ne '' ) {
+	    $element = join( $list1[$i - 1], $element, $e );
+	} else {
+	    push @list2, $e;
+	}
+    }
+
+    fatal_error "Mismatched_quotes ($list)" if $element ne '';
+
+    @list2;
+}
+
+#
 # Splits the columns of a config file record
 #
 sub split_columns( $ ) {
@@ -2354,18 +2395,36 @@ sub split_line2( $$;$$$ ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;
 
-	my @pairs = split( /,?\s+/, $pairs );
+	my @pairs = split_list4( $pairs );
 
 	for ( @pairs ) {
 	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
 	    my ( $column, $value ) = ( lc( $1 ), $2 );
-	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-	    $column = $columnsref->{$column};
-	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
-	    $value = $1 if $value =~ /^"([^"]+)"$/;
-	    fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
-	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
-	    $line[$column] = $value;
+
+	    if ( $value =~ /"$/ ) {
+		fatal_error "Invalid value ( $value )" unless $value =~ /^"(.*)"$/;
+		$value = $1;
+	    }
+
+	    if ( $column eq 'comment' ) {
+		if ( $comments_allowed ) {
+		    if ( have_capability( 'COMMENTS' ) ) {
+			$comment = $value;
+		    } else {
+			warning_message '"comment" ignored -- requires comment support in iptables/Netfilter' unless $warningcount++;
+		    }
+		} else {
+		    fatal_error '"comment" is not allowed in this file';
+		}
+	    } else {
+		fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+		$column = $columnsref->{$column};
+		fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+		$value = $1 if $value =~ /^"([^"]+)"$/;
+		$value =~ s/\\"/"/g;
+		fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
+		$line[$column] = $value;
+	    }
 	}
     }
 

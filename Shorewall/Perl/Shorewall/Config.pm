@@ -577,6 +577,7 @@ our $max_format;             # Max format value
 our $comment;                # Current COMMENT
 our $comments_allowed;       # True if [?]COMMENT is allowed in the current file
 our $nocomment;              # When true, ignore [?]COMMENT in the current file
+our $sr_comment;             # When true, $comment should only be applied to the current rule
 our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
 our $checkinline;            # The -i option to check/compile/etc.
 our $directive_callback;     # Function to call in compiler_directive
@@ -731,6 +732,7 @@ sub initialize( $;$$) {
     # Contents of last COMMENT line.
     #
     $comment       = '';
+    $sr_comment    = '';
     $warningcount  = 0;
     #
     # Misc Globals
@@ -2157,6 +2159,47 @@ sub split_list3( $$ ) {
 }
 
 #
+# This version spits a list on white-space with optional leading comma. It prevents double-quoted
+# strings from being split.
+#
+sub split_list4( $ ) {
+    my ($list ) = @_;
+    my @list1 = split( /,?\s+/, $list );
+    my @list2;
+    my $element   = '';
+    my $opencount = 0;
+
+    return @list1 unless $list =~ /"/;
+
+    @list1 = split( /(,?\s+)/, $list );
+
+    for ( my $i = 0; $i < @list1; $i += 2 ) {
+	my $e = $list1[$i];
+
+	if ( $e =~ /[^\\]"/ ) {
+	    if ( $e =~ /[^\\]".*[^\\]"/ ) {
+		fatal_error 'Unescaped embedded quote (' . join( $list1[$i - 1], $element, $e ) . ')' if $element ne '';
+		push @list2, $e;
+	    } elsif ( $element ne '' ) {
+		fatal_error 'Quoting Error (' . join( $list1[$i - 1], $element, $e ) . ')' unless $e =~ /"$/;
+		push @list2, join( $list1[$i - 1], $element, $e );
+		$element = '';
+	    } else {
+		$element = $e;
+	    }
+	} elsif ( $element ne '' ) {
+	    $element = join( $list1[$i - 1], $element, $e );
+	} else {
+	    push @list2, $e;
+	}
+    }
+
+    fatal_error "Mismatched_quotes ($list)" if $element ne '';
+
+    @list2;
+}
+
+#
 # Splits the columns of a config file record
 #
 sub split_columns( $ ) {
@@ -2225,6 +2268,8 @@ sub passed( $ ) {
     defined $val && $val ne '' && $val ne '-';
 }
 
+sub clear_comment();
+
 #
 # Pre-process a line from a configuration file.
 
@@ -2248,6 +2293,8 @@ sub split_line2( $$;$$$ ) {
     }
 
     $inline_matches = '';
+
+    clear_comment if $sr_comment;
     #
     # First, see if there are double semicolons on the line; what follows will be raw iptables input
     #
@@ -2354,18 +2401,37 @@ sub split_line2( $$;$$$ ) {
 	$pairs =~ s/^\s*//;
 	$pairs =~ s/\s*$//;
 
-	my @pairs = split( /,?\s+/, $pairs );
+	my @pairs = split_list4( $pairs );
 
 	for ( @pairs ) {
 	    fatal_error "Invalid column/value pair ($_)" unless /^(\w+)(?:=>?|:)(.+)$/;
 	    my ( $column, $value ) = ( lc( $1 ), $2 );
-	    fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-	    $column = $columnsref->{$column};
-	    fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
-	    $value = $1 if $value =~ /^"([^"]+)"$/;
-	    fatal_error "Column values may not contain embedded double quotes, single back quotes or backslashes" if $columns =~ /["`\\]/;
-	    fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
-	    $line[$column] = $value;
+
+	    if ( $value =~ /"$/ ) {
+		fatal_error "Invalid value ( $value )" unless $value =~ /^"(.*)"$/;
+		$value = $1;
+	    }
+
+	    if ( $column eq 'comment' ) {
+		if ( $comments_allowed ) {
+		    if ( have_capability( 'COMMENTS' ) ) {
+			$comment = $value;
+			$sr_comment = 1;
+		    } else {
+			warning_message '"comment" ignored -- requires comment support in iptables/Netfilter' unless $warningcount++;
+		    }
+		} else {
+		    fatal_error '"comment" is not allowed in this file';
+		}
+	    } else {
+		fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
+		$column = $columnsref->{$column};
+		fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
+		$value = $1 if $value =~ /^"([^"]+)"$/;
+		$value =~ s/\\"/"/g;
+		fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
+		$line[$column] = $value;
+	    }
 	}
     }
 
@@ -2395,6 +2461,7 @@ sub no_comment() {
 sub clear_comment() {
     $comment   = '';
     $nocomment = 0;
+    $sr_comment = '';
 }
 
 #
@@ -2490,7 +2557,8 @@ sub push_include() {
 			  $max_format,
 			  $comment,
 			  $nocomment,
-			  $section_function ];
+			  $section_function,
+			  $sr_comment ];
 }
 
 #
@@ -2514,7 +2582,8 @@ sub pop_include() {
 	  $max_format,
 	  $comment,
 	  $nocomment,
-	  $section_function ) = @$arrayref;
+	  $section_function,
+	  $sr_comment ) = @$arrayref;
     } else {
 	$currentfile       = undef;
 	$currentlinenumber = 'EOF';
@@ -2883,6 +2952,7 @@ sub process_compiler_directive( $$$$ ) {
 			  if ( have_capability( 'COMMENTS' ) ) {
 			      ( $comment = $line ) =~ s/^\s*\?COMMENT\s*//;
 			      $comment =~ s/\s*$//;
+			      $sr_comment = '';
 			  } else {
 			      directive_warning( 'Yes', "COMMENTs ignored -- require comment support in iptables/Netfilter" , $filename, $linenumber ) unless $warningcount++;
 			  }
@@ -3236,6 +3306,7 @@ sub push_open( $;$$$$ ) {
     push @openstack, \@a;
     @includestack = ();
     $currentfile = undef;
+    $sr_comment = '';
     open_file( $file , $max, $comments_allowed || $ca, $nc , $cf );
 }
 

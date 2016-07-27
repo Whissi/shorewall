@@ -4299,7 +4299,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	},
 
 	DSCP       => {
-	    defaultchain   => 0,
+	    defaultchain   => POSTROUTING,
 	    allowedchains  => PREROUTING | FORWARD | OUTPUT | POSTROUTING,
 	    minparams      => 1,
 	    maxparams      => 1,

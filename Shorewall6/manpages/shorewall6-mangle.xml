@@ -356,7 +356,8 @@ DIVERTHA        -               -               tcp</programlisting>
     EF   =&gt; 0x2e</programlisting>
 
                 <para>To indicate more than one class, add their hex values
-                together and specify the result.</para>
+                together and specify the result. By default, DSCP rules are
+                placed in the POSTROUTING chain.</para>
               </listitem>
             </varlistentry>
 
@@ -633,7 +634,7 @@ INLINE                eth0              -                 ; -p tcp -j MARK --set
                   <listitem>
                     <para>The third number specifies the number of log
                     messages that should be buffered in the kernel before they
-                    are sent to user space. The default is 1. </para>
+                    are sent to user space. The default is 1.</para>
                   </listitem>
                 </itemizedlist>
               </listitem>

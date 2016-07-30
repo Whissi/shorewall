@@ -1337,7 +1337,14 @@ sub push_rule( $$ ) {
     push @{$chainref->{rules}}, $ruleref;
     $chainref->{referenced} = 1;
     $chainref->{optflags} |= RETURNS_DONT_MOVE if ( $ruleref->{target} || '' ) eq 'RETURN';
-    trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1] $ruleref->{comment}" ) if $debug;
+
+    if ( $debug ) {
+	if ( $ruleref->{comment} ) {
+	    trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1] -m comment --comment \"$ruleref->{comment}\"" );
+	} else {
+	    trace( $chainref, 'A', @{$chainref->{rules}}, "-A $chainref->{name} $_[1]" );
+	}
+    }
 
     $chainref->{complete} = 1 if $complete;
 

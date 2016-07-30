@@ -4012,7 +4012,7 @@ sub delete_duplicates {
 	my $docheck;
 	my $duplicate = 0;
 
-	if ( $baseref->{mode} == CAT_MODE ) {
+	if ( $baseref->{mode} == CAT_MODE && $baseref->{target} ) {
 	    my $ports1;
 	    my @keys1    = sort( grep ! $skip{$_}, keys( %$baseref ) );
 	    my $rulenum  = @_;

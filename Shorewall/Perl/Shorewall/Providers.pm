@@ -686,6 +686,7 @@ sub process_a_provider( $ ) {
 			   interface         => $interface ,
 			   physical          => $physical ,
 			   optional          => $optional ,
+			   wildcard          => $interfaceref->{wildcard} || 0,
 			   gateway           => $gateway ,
 			   gatewaycase       => $gatewaycase ,
 			   shared            => $shared ,
@@ -2113,9 +2114,31 @@ sub provider_realm( $ ) {
 #
 sub handle_optional_interfaces( $ ) {
 
-    my ( $interfaces, $wildcards )  = find_interfaces_by_option1 'optional';
+    my @interfaces;
+    my $wildcards;
 
-    if ( @$interfaces ) {
+    #
+    # First do the provider interfacess. Those that are real providers will never have wildcard physical
+    # names but they might derive from wildcard interface entries. Optional interfaces which do not have
+    # wildcard physical names are also included in the providers table.
+    #
+    for my $providerref ( grep $_->{optional} , sort { $a->{number} <=> $b->{number} } values %providers ) {
+	push @interfaces, $providerref->{interface};
+	$wildcards ||= $providerref->{wildcard};
+    }
+
+    #
+    # Now do the optional wild interfaces
+    #
+    for my $interface ( grep interface_is_optional($_) && ! $provider_interfaces{$_}, all_real_interfaces ) {
+	push@interfaces, $interface;
+	unless ( $wildcards ) {
+	    my $interfaceref = find_interface($interface);
+	    $wildcards = 1 if $interfaceref->{wildcard};
+	}
+    }
+
+    if ( @interfaces ) {
 	my $require     = $config{REQUIRE_INTERFACE};
 	my $gencase     = shift;
 
@@ -2126,7 +2149,7 @@ sub handle_optional_interfaces( $ ) {
 	#
 	# Clear the '_IS_USABLE' variables
 	#
-	emit( join( '_', 'SW', uc var_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @$interfaces;
+	emit( join( '_', 'SW', uc var_base( get_physical( $_ ) ) , 'IS_USABLE=' ) ) for @interfaces;
 
 	if ( $wildcards ) {
 	    #
@@ -2143,74 +2166,76 @@ sub handle_optional_interfaces( $ ) {
 	    emit '';
 	}
 
-	for my $interface ( grep $provider_interfaces{$_}, @$interfaces ) {
-	    my $provider    = $provider_interfaces{$interface};
-	    my $physical    = get_physical $interface;
-	    my $base        = uc var_base( $physical );
-	    my $providerref = $providers{$provider};
+	for my $interface ( @interfaces ) {
+	    if ( my $provider = $provider_interfaces{ $interface } ) {
+		my $physical     = get_physical $interface;
+		my $base         = uc var_base( $physical );
+		my $providerref  = $providers{$provider};
+		my $interfaceref = known_interface( $interface );
+		my $wildbase     = uc $interfaceref->{base};
 
-	    emit( "$physical)" ), push_indent if $wildcards;
+		emit( "$physical)" ), push_indent if $wildcards;
 
-	    if ( $provider eq $physical ) {
-		#
-		# Just an optional interface, or provider and interface are the same
-		#
-		emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
-	    } else {
-		#
-		# Provider
-		#
-		emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
-	    }
+		if ( $provider eq $physical ) {
+		    #
+		    # Just an optional interface, or provider and interface are the same
+		    #
+		    emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
+		} else {
+		    #
+		    # Provider
+		    #
+		    emit qq(if [ -z "\$interface" -o "\$interface" = "$physical" ]; then);
+		}
 
-	    push_indent;
-	    if ( $providerref->{gatewaycase} eq 'detect' ) {
-		emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
-	    } else {
-		emit qq(if interface_is_usable $physical; then);
-	    }
-
-	    emit( '    HAVE_INTERFACE=Yes' ) if $require;
-
-	    emit( "    SW_${base}_IS_USABLE=Yes" ,
-		  'fi' );
-
-	    pop_indent;
-
-	    emit( "fi\n" );
-
-	    emit( ';;' ), pop_indent if $wildcards;
-	}
-
-	for my $interface ( grep ! $provider_interfaces{$_}, @$interfaces ) {
-	    my $physical    = get_physical $interface;
-	    my $base        = uc var_base( $physical );
-	    my $case        = $physical;
-	    my $wild        = $case =~ s/\+$/*/;
-
-	    if ( $wildcards ) {
-		emit( "$case)" );
 		push_indent;
+		if ( $providerref->{gatewaycase} eq 'detect' ) {
+		    emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
+		} else {
+		    emit qq(if interface_is_usable $physical; then);
+		}
 
-		if ( $wild ) {
-		    emit( qq(if [ -z "\$SW_${base}_IS_USABLE" ]; then) );
+		emit( '    HAVE_INTERFACE=Yes' ) if $require;
+
+		emit( "    SW_${base}_IS_USABLE=Yes" );
+		emit( "    SW_${wildbase}_IS_USABLE=Yes" ) if $interfaceref->{wildcard};
+		emit( 'fi' );
+
+		pop_indent;
+
+		emit( "fi\n" );
+
+		emit( ';;' ), pop_indent if $wildcards;
+	    } else {
+		my $physical    = get_physical $interface;
+		my $base        = uc var_base( $physical );
+		my $case        = $physical;
+		my $wild        = $case =~ s/\+$/*/;
+
+		if ( $wildcards ) {
+		    emit( "$case)" );
 		    push_indent;
-		    emit ( 'if interface_is_usable $interface; then' );
+
+		    if ( $wild ) {
+			emit( qq(if [ -z "\$SW_${base}_IS_USABLE" ]; then) );
+			push_indent;
+			emit ( 'if interface_is_usable $interface; then' );
+		    } else {
+			emit ( "if interface_is_usable $physical; then" );
+		    }
 		} else {
 		    emit ( "if interface_is_usable $physical; then" );
 		}
-	    } else {
-		emit ( "if interface_is_usable $physical; then" );
-	    }
 
-	    emit ( '    HAVE_INTERFACE=Yes' ) if $require;
-	    emit ( "    SW_${base}_IS_USABLE=Yes" ,
-		   'fi' );
+		emit ( '    HAVE_INTERFACE=Yes' ) if $require;
+		emit ( "    SW_${base}_IS_USABLE=Yes" ,
+		       'fi' );
 
-	    if ( $wildcards ) {
-		pop_indent, emit( 'fi' ) if $wild;
-		emit( ';;' );
-		pop_indent;
+		if ( $wildcards ) {
+		    pop_indent, emit( 'fi' ) if $wild;
+		    emit( ';;' );
+		    pop_indent;
+		}
 	    }
 	}
 

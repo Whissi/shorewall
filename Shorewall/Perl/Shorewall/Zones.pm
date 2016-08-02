@@ -1587,7 +1587,7 @@ sub known_interface($)
 					       name     => $i ,
 					       number   => $interfaceref->{number} ,
 					       physical => $physical ,
-					       base     => var_base( $physical ) ,
+					       base     => $interfaceref->{base} ,
 					       wildcard => $interfaceref->{wildcard} ,
 					       zones    => $interfaceref->{zones} ,
 		                              };

@@ -337,7 +337,7 @@ our $VERSION = 'MODULEVERSION';
 #                                               digest       => SHA1 digest of the string representation of the chain's rules for use in optimization
 #                                                               level 8.
 #                                               complete     => The last rule in the chain is a -g or a simple -j to a terminating target
-#                                                               Suppresses adding additional rules to the chain end of the chain
+#                                                               Suppresses adding additional rules to the end of the chain
 #                                               sections     => { <section> = 1, ... } - Records sections that have been completed.
 #                                               chainnumber  => Numeric enumeration of the builtin chains (mangle table only).
 #                                               allowedchains

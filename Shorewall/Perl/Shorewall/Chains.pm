@@ -3186,17 +3186,17 @@ sub delete_references( $ ) {
 #
 sub calculate_digest( $ ) {
     my $chainref = shift;
-    my $digest = '';
+    my $rules = '';
 
     for ( @{$chainref->{rules}} ) {
-	if ( $digest ) {
-	    $digest .= ' |' . format_rule( $chainref, $_, 1 );
+	if ( $rules ) {
+	    $rules .= ' |' . format_rule( $chainref, $_, 1 );
 	} else {
-	    $digest = format_rule( $chainref, $_, 1 );
+	    $rules = format_rule( $chainref, $_, 1 );
 	}
     }
 
-    $chainref->{digest} = sha1_hex $digest;
+    $chainref->{digest} = sha1_hex $rules;
 }
 
 #

@@ -307,6 +307,9 @@
                 that were active when Shorewall stopped continue to work and
                 all new connections from the firewall system itself are
                 allowed.</para>
+
+                <para>Note that the routestopped file is not supported in
+                Shorewall 5.0 and later versions.</para>
               </listitem>
             </varlistentry>
 
@@ -481,8 +484,8 @@
 
           <para>ALL sends all packets through the blacklist chains.</para>
 
-          <para>Note: The ESTABLISHED state may not be specified if FASTACCEPT
-          is specified.</para>
+          <para>Note: The ESTABLISHED state may not be specified if
+          FASTACCEPT=Yes is specified.</para>
         </listitem>
       </varlistentry>
 
@@ -577,13 +580,14 @@
         <listitem>
           <para>If this option is set to <emphasis role="bold">No</emphasis>
           then Shorewall won't clear the current traffic control rules during
-          [re]start. This setting is intended for use by people who prefer to
-          configure traffic shaping when the network interfaces come up rather
-          than when the firewall is started. If that is what you want to do,
-          set TC_ENABLED=Yes and CLEAR_TC=No and do not supply an
-          /etc/shorewall/tcstart file. That way, your traffic shaping rules
-          can still use the “fwmark” classifier based on packet marking
-          defined in <ulink
+          [<command>re</command>]<command>start</command> or
+          <command>reload</command>. This setting is intended for use by
+          people who prefer to configure traffic shaping when the network
+          interfaces come up rather than when the firewall is started. If that
+          is what you want to do, set TC_ENABLED=Yes and CLEAR_TC=No and do
+          not supply an /etc/shorewall/tcstart file. That way, your traffic
+          shaping rules can still use the “fwmark” classifier based on packet
+          marking defined in <ulink
           url="/manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>(5).
           If not specified, CLEAR_TC=Yes is assumed.</para>
         </listitem>
@@ -677,8 +681,8 @@
 
         <listitem>
           <para>If set to Yes (the default value), entries in the
-          /etc/shorewall/route_stopped files cause an 'ip rule del' command to
-          be generated in addition to an 'ip rule add' command. Setting this
+          /etc/shorewall/rtrules files cause an 'ip rule del' command to be
+          generated in addition to an 'ip rule add' command. Setting this
           option to No, causes the 'ip rule del' command to be omitted.</para>
         </listitem>
       </varlistentry>
@@ -829,7 +833,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           helpers file from the administrative system into the script. When
           set to No or not specified, the compiler will not copy the modules
           or helpers file from <filename>/usr/share/shorewall</filename> but
-          will copy the found in another location on the CONFIG_PATH.</para>
+          will copy those found in another location on the CONFIG_PATH.</para>
 
           <para>When compiling for direct use by Shorewall, causes the
           contents of the local module or helpers file to be copied into the
@@ -863,7 +867,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>Added in Shorewall 4.4.11 Beta 3. Traditionally, Shorewall has
+          <para>Added in Shorewall 4.4.11. Traditionally, Shorewall has
           cleared the packet mark in the first rule in the mangle FORWARD
           chain. This behavior is maintained with the default setting of this
           option (FORWARD_CLEAR_MARK=Yes). If FORWARD_CLEAR_MARK is set to
@@ -2194,18 +2198,18 @@ LOG:info:,bar                        net                    fw</programlisting>
 #TARGET         SOURCE  DEST    PROTO
 Broadcast(DROP) -       -       -
 DROP            -       -       2
-INLINE          -       -       6       ; -j REJECT --reject-with tcp-reset
+INLINE          -       -       6       ;; -j REJECT --reject-with tcp-reset
 ?if __ENHANCED_REJECT
-INLINE          -       -       17      ; -j REJECT
+INLINE          -       -       17      ;; -j REJECT
 ?if __IPV4
-INLINE          -       -       1       ; -j REJECT --reject-with icmp-host-unreachable
-INLINE          -       -       -       ; -j REJECT --reject-with icmp-host-prohibited
+INLINE          -       -       1       ;; -j REJECT --reject-with icmp-host-unreachable
+INLINE          -       -       -       ;; -j REJECT --reject-with icmp-host-prohibited
 ?else
-INLINE          -       -       58      ; -j REJECT --reject-with icmp6-addr-unreachable
-INLINE          -       -       -       ; -j REJECT --reject-with icmp6-adm-prohibited
+INLINE          -       -       58      ;; -j REJECT --reject-with icmp6-addr-unreachable
+INLINE          -       -       -       ;; -j REJECT --reject-with icmp6-adm-prohibited
 ?endif
 ?else
-INLINE          -       -       -       ; -j REJECT
+INLINE          -       -       -       ;; -j REJECT
 ?endif</programlisting>
         </listitem>
       </varlistentry>
@@ -2275,7 +2279,7 @@ INLINE          -       -       -       ; -j REJECT
           restored unconditionally at the top of the mangle OUTPUT and
           PREROUTING chains, even if the saved mark is zero. When this option
           is set to <emphasis role="bold">No</emphasis>, the mark is restored
-          even when it is zero. If you have problems with IPSEC ESP packets
+          only if it is non-zero. If you have problems with IPSEC ESP packets
           not being routed correctly on output, try setting this option to
           <emphasis role="bold">No</emphasis>.</para>
         </listitem>
@@ -2451,10 +2455,9 @@ INLINE          -       -       -       ; -j REJECT
 
         <listitem>
           <para>This option is used to specify the shell program to be used to
-          run the Shorewall compiler and to interpret the compiled script. If
-          not specified or specified as a null value, /bin/sh is assumed.
-          Using a light-weight shell such as ash or dash can significantly
-          improve performance.</para>
+          interpret the compiled script. If not specified or specified as a
+          null value, /bin/sh is assumed. Using a light-weight shell such as
+          ash or dash can significantly improve performance.</para>
         </listitem>
       </varlistentry>
 

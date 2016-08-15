@@ -3485,7 +3485,7 @@ sub optimize_level4( $$ ) {
 				$progress = 1;
 			    } elsif ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
 				#
-				# This case requires a new rule merging algorithm. Ignore this chain for
+				# This case requires a new rule merging algorithm. Ignore this chain from
 				# now on.
 				#
 				$chainref->{optflags} |= DONT_OPTIMIZE;
@@ -3493,7 +3493,7 @@ sub optimize_level4( $$ ) {
 				#
 				# Replace references to this chain with the target and add the matches
 				#
-				$progress = 1 if replace_references1 $chainref, $firstrule;
+				$progress = 1 if replace_references1( $chainref, $firstrule );
 			    }
 			}
 		    } else {
@@ -3539,7 +3539,7 @@ sub optimize_level4( $$ ) {
 				#empty builtin chain -- change it's policy
 				#
 				$chainref->{policy} = $target;
-				trace( $chainref, 'P', undef, 'ACCEPT' ) if $debug;
+				trace( $chainref, 'P', undef, $target ) if $debug;
 				$count++;
 			    }
 
@@ -3693,7 +3693,12 @@ sub optimize_level8( $$$ ) {
 		if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		    $progress = 1;
-		    replace_references $chainref1, $chainref->{name}, undef, '', '', 1;
+		    replace_references( $chainref1,
+					$chainref->{name},
+					undef,   # Target Opts
+					'',      # Comment
+					'',      # Origin
+					1 );     # Recalculate digests of modified chains
 
 		    unless ( $chainref->{name} =~ /^~/ || $chainref1->{name} =~ /^%/ ) {
 			#

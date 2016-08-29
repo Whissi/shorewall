@@ -41,10 +41,7 @@
 #         --shorewallrc1=<path>       # Path to export shorewallrc file.
 #         --config_path=<path-list>   # Search path for config files
 #         --inline                    # Update alternative column specifications
-#         --update                    # Update configuration to this release
-#         --tcrules                   # Create mangle from tcrules
-#         --routestopped              # Create stoppedrules from routestopped
-#         --notrack                   # Create conntrack from notrack
+#         --update                    # Update configuration to current release
 #
 use strict;
 use FindBin;

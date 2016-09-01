@@ -774,6 +774,17 @@ DNAT            net               loc:10.0.0.1    tcp     80    ; mark="88"</pro
     <programlisting>{ action=&gt;DNAT, source=&gt;net, dest=&gt;loc:10.0.0.1, proto=&gt;tcp, dport=&gt;80, mark=&gt;88 }
 ; action:"DNAT" source:"net"  dest:"loc:10.0.0.1" proto:"tcp" dport:"80" mark:"88"
 DNAT { source=net dest=loc:10.0.0.1 proto=tcp dport=80 mark=88 }</programlisting>
+
+    <para>Beginning with Shorewall 5.0.11, ip[6]table comments can be attached
+    to individual rules using the <option>comment</option> keyword.</para>
+
+    <para>Example from the rules file:</para>
+
+    <programlisting>        ACCEPT net $FW { proto=tcp, dport=22, comment="Accept \"SSH\"" }</programlisting>
+
+    <para> As shown in that example, when the comment contains whitespace, it
+    must be enclosed in double quotes and any embedded double quotes must be
+    escaped using a backslash ("\").</para>
   </section>
 
   <section>
@@ -1371,6 +1382,10 @@ SSH(ACCEPT)    net:$MYIP      $FW
     ?COMMENT line in the rules file and the generated rule will show <emphasis
     role="bold">/* Allow SSH from home */</emphasis> when displayed through
     the Shorewall show and dump commands.</para>
+
+    <para>Beginning with Shorewall 5.0.11, the <link linkend="Pairs">alternate
+    input format </link>allows attaching comments to individual rules in the
+    files listed above.</para>
   </section>
 
   <section id="CONFIG_PATH">

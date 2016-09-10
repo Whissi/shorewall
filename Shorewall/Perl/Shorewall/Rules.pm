@@ -628,15 +628,15 @@ sub handle_nfqueue( $$ ) {
 #
 # Process an entry in the policy file.
 #
-sub process_a_policy1($$$$$$) {
+sub process_a_policy1($$$$$$$) {
 
     our %validpolicies;
     our @zonelist;
 
-    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = @_;
+    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit, $intrazone ) = @_;
 
     my $clientwild = ( "\L$client" =~ /^all(\+)?$/ );
-    my $intrazone  = $clientwild && $1;
+    $intrazone  = $clientwild && $1;
 
     fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
 
@@ -761,13 +761,24 @@ sub process_a_policy() {
     $synparams = '' if $synparams eq '-';
     $connlimit = '' if $connlimit eq '-';
 
+    my $intrazone;
+
+    if ( $intrazone = $clients =~ /.*,.*\+$/) {
+	$clients =~ s/\+$//;
+    }
+
+    if ( $servers =~ /.*,.*\+$/ ) {
+	$servers =~ s/\+$//;
+	$intrazone = 1;
+    }	
+
     fatal_error 'SOURCE must be specified' if $clients eq '-';
     fatal_error 'DEST must be specified'   if $servers eq '-';
     fatal_error 'POLICY must be specified' if $policy  eq '-';
 
     for my $client ( split_list( $clients, 'zone' ) ) {
 	for my $server ( split_list( $servers, 'zone' ) ) {
-	    process_a_policy1( $client, $server, $policy, $loglevel, $synparams, $connlimit );
+	    process_a_policy1( $client, $server, $policy, $loglevel, $synparams, $connlimit, $intrazone );
 	}
     }
 }

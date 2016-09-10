@@ -61,7 +61,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> -
-        <emphasis>zone</emphasis>[,...]|<emphasis
+        <emphasis>zone</emphasis>[,...[+]]|<emphasis
         role="bold">$FW</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">all+</emphasis></term>
@@ -76,13 +76,16 @@
           does.</para>
 
           <para>Beginning with Shorewall 5.0.12, multiple zones may be listed
-          separated by commas.</para>
+          separated by commas. As above, if '+' is specified after two or more
+          zone names, then the policy overrides the implicit intra-zone ACCEPT
+          policy if the same <replaceable>zone</replaceable> appears in both
+          the SOURCE and DEST columns.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
-        <emphasis>zone</emphasis>[,...]|<emphasis
+        <emphasis>zone</emphasis>[,...[+]]|<emphasis
         role="bold">$FW</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">all+</emphasis></term>
@@ -100,7 +103,10 @@
           does.</para>
 
           <para>Beginning with Shorewall 5.0.12, multiple zones may be listed
-          separated by commas.</para>
+          separated by commas. As above, if '+' is specified after two or more
+          zone names, then the policy overrides the implicit intra-zone ACCEPT
+          policy if the same <replaceable>zone</replaceable> appears in both
+          the SOURCE and DEST columns.</para>
         </listitem>
       </varlistentry>
 

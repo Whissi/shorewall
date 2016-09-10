@@ -628,21 +628,12 @@ sub handle_nfqueue( $$ ) {
 #
 # Process an entry in the policy file.
 #
-sub process_a_policy() {
+sub process_a_policy1($$$$$$) {
 
     our %validpolicies;
     our @zonelist;
 
-    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) =
-	split_line 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
-
-    $loglevel  = '' if $loglevel  eq '-';
-    $synparams = '' if $synparams eq '-';
-    $connlimit = '' if $connlimit eq '-';
-
-    fatal_error 'SOURCE must be specified' if $client eq '-';
-    fatal_error 'DEST must be specified'   if $server eq '-';
-    fatal_error 'POLICY must be specified' if $originalpolicy eq '-';
+    my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit ) = @_;
 
     my $clientwild = ( "\L$client" =~ /^all(\+)?$/ );
     my $intrazone  = $clientwild && $1;
@@ -755,6 +746,29 @@ sub process_a_policy() {
 
     } else {
 	print_policy $client, $server, $originalpolicy, $chain;
+    }
+}
+
+sub process_a_policy() {
+
+    our %validpolicies;
+    our @zonelist;
+
+    my ( $clients, $servers, $policy, $loglevel, $synparams, $connlimit ) =
+	split_line 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
+
+    $loglevel  = '' if $loglevel  eq '-';
+    $synparams = '' if $synparams eq '-';
+    $connlimit = '' if $connlimit eq '-';
+
+    fatal_error 'SOURCE must be specified' if $clients eq '-';
+    fatal_error 'DEST must be specified'   if $servers eq '-';
+    fatal_error 'POLICY must be specified' if $policy  eq '-';
+
+    for my $client ( split_list( $clients, 'zone' ) ) {
+	for my $server ( split_list( $servers, 'zone' ) ) {
+	    process_a_policy1( $client, $server, $policy, $loglevel, $synparams, $connlimit );
+	}
     }
 }
 

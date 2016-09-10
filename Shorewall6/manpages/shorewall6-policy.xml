@@ -35,7 +35,7 @@
       <para>This file determines what to do with a new connection request if
       we don't get a match from the /etc/shorewall6/rules file . For each
       source/destination pair, the file is processed in order until a match is
-      found ("all" will match any client or server).</para>
+      found ("all" will match any source or destination).</para>
     </important>
 
     <important>
@@ -61,7 +61,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis role="bold">SOURCE</emphasis> -
-        <emphasis>zone</emphasis>|<emphasis
+        <emphasis>zone</emphasis>[,...]|<emphasis
         role="bold">$FW</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">all+</emphasis></term>
@@ -74,12 +74,15 @@
           <para>Support for "all+" was added in Shorewall 4.5.17. "all" does
           not override the implicit intra-zone ACCEPT policy while "all+"
           does.</para>
+
+          <para>Beginning with Shorewall 5.0.12, multiple zones may be listed
+          separated by commas.</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
-        <emphasis>zone</emphasis>|<emphasis
+        <emphasis>zone</emphasis>[,...]|<emphasis
         role="bold">$FW</emphasis>|<emphasis
         role="bold">all</emphasis>|<emphasis
         role="bold">all+</emphasis></term>
@@ -95,6 +98,9 @@
           <para>Support for "all+" was added in Shorewall 4.5.17. "all" does
           not override the implicit intra-zone ACCEPT policy while "all+"
           does.</para>
+
+          <para>Beginning with Shorewall 5.0.12, multiple zones may be listed
+          separated by commas.</para>
         </listitem>
       </varlistentry>
 

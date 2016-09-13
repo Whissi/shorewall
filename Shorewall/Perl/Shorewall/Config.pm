@@ -3853,7 +3853,7 @@ sub process_shorewallrc( $$ ) {
 	    $shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
 	}
     } elsif ( supplied $shorewallrc{VARLIB} ) {
-	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product" unless supplied $shorewallrc{VARDIR};
+	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
     }
 }
 

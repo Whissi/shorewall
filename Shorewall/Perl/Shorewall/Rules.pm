@@ -4196,8 +4196,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	},
 
 	CHECKSUM   => {
-	    defaultchain   => 0,
-	    allowedchains  => ALLCHAINS,
+	    defaultchain   => POSTROUTING,
+	    allowedchains  => POSTROUTING | FORWARD | OUTPUT,
 	    minparams      => 0,
 	    maxparams      => 0 ,
 	    function       => sub() {

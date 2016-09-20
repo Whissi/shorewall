@@ -3400,7 +3400,7 @@ sub embedded_shell( $ ) {
 sub embedded_perl( $ ) {
     my $multiline = shift;
 
-    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
+    my ( $command , $linenumber ) = ( qq(package Shorewall::User;\nno strict;\nuse Shorewall::Config (qw/shorewall/);\n# line $currentlinenumber "$currentfilename"\n$currentline), $currentlinenumber );
 
     $directive_callback->( 'PERL', $currentline ) if $directive_callback;
 
@@ -3853,7 +3853,7 @@ sub process_shorewallrc( $$ ) {
 	    $shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
 	}
     } elsif ( supplied $shorewallrc{VARLIB} ) {
-	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product" unless supplied $shorewallrc{VARDIR};
+	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
     }
 }
 

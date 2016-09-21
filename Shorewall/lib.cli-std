@@ -316,6 +316,8 @@ get_config() {
 
     g_loopback=$(find_loopback_interfaces)
 
+    [ -n "$PAGER" ] || PAGER=$DEFAULT_PAGER
+
     if [ -n "$PAGER" -a -t 1 ]; then
 	case $PAGER in
 	    /*)
@@ -323,7 +325,7 @@ get_config() {
 		[ -f "$g_pager" ] || fatal_error "PAGER $PAGER does not exist"
 		;;
 	    *)
-		g_pager=$(mywhich pager 2> /dev/null)
+		g_pager=$(mywhich $PAGER 2> /dev/null)
 		[ -n "$g_pager" ] || fatal_error "PAGER $PAGER not found"
 		;;
 	esac

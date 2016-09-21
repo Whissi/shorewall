@@ -3855,6 +3855,8 @@ sub process_shorewallrc( $$ ) {
     } elsif ( supplied $shorewallrc{VARLIB} ) {
 	$shorewallrc{VARDIR} = "$shorewallrc{VARLIB}/$product";
     }
+
+    $shorewallrc{DEFAULT_PAGER} = '' unless supplied $shorewallrc{DEFAULT_PAGER};
 }
 
 #
@@ -5228,7 +5230,7 @@ sub update_config_file( $ ) {
     update_default( 'USE_DEFAULT_RT', 'No' );
     update_default( 'EXPORTMODULES',  'No' );
     update_default( 'RESTART',        'reload' );
-    update_default( 'PAGER',          '' );
+    update_default( 'PAGER',          $shorewallrc1{DEFAULT_PAGER} );
 
     my $fn;
 

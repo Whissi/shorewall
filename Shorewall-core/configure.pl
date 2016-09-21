@@ -209,7 +209,8 @@ for ( qw/ HOST
 	  SPARSE
 	  ANNOTATED
 	  VARLIB
-	  VARDIR / ) {
+	  VARDIR
+          DEFAULT_PAGER / ) {
 
     my $val = $options{$_} || '';
 

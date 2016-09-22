@@ -5190,7 +5190,7 @@ sub do_time( $ ) {
 	    $result .= "--monthday $days ";
 	} elsif ( $element =~ /^(datestart|datestop)=(\d{4}(-\d{2}(-\d{2}(T\d{1,2}(:\d{1,2}){0,2})?)?)?)$/ ) {
 	    $result .= "--$1 $2 ";
-	} elsif ( $element =~ /^(utc|localtz|kerneltz)$/ ) {
+	} elsif ( $element =~ /^(utc|localtz|kerneltz|contiguous)$/ ) {
 	    $result .= "--$1 ";
 	} else {
 	    fatal_error "Invalid time element ($element)";

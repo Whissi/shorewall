@@ -125,6 +125,10 @@ sub setup_route_marking() {
     my $exmask = have_capability( 'EXMARK' ) ? "/$mask" : '';
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
+    #
+    # Clear the mark -- we have seen cases where the mark is non-zero even in the raw table chains!
+    #
+    add_ijump( $mangle_table->{$_}, j => 'MARK', targetopts => '--set-mark 0' ) for qw/PREROUTING OUTPUT/;
 
     if ( $config{RESTORE_ROUTEMARKS} ) {
 	add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;

@@ -3118,8 +3118,8 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
     role="bold">optional</emphasis> option in the OPTIONS column.</para>
 
     <para>When an interface is marked as optional, Shorewall will determine
-    the interface state at <command>start</command> and
-    <command>restart</command> and adjust its configuration
+    the interface state at <command>start</command>, <command>reload</command>
+    and <command>restart</command> and adjust its configuration
     accordingly.</para>
 
     <itemizedlist>
@@ -3172,13 +3172,13 @@ Comcast 2        0x20000 main       <emphasis role="bold">COM_IF</emphasis>     
 
     <para>Shorewall allows you to have configuration directories other than
     <filename class="directory">/etc/shorewall</filename>. The shorewall
-    <command>check</command>, <command>start</command> and
-    <command>restart</command> commands allow you to specify an alternate
-    configuration directory and Shorewall will use the files in the alternate
-    directory rather than the corresponding files in /etc/shorewall. The
-    alternate directory need not contain a complete configuration; those files
-    not in the alternate directory will be read from <filename
-    class="directory">/etc/shorewall</filename>.<important>
+    <command>check</command>, <command>start</command>,
+    <command>reload</command> and <command>restart</command> commands allow
+    you to specify an alternate configuration directory and Shorewall will use
+    the files in the alternate directory rather than the corresponding files
+    in /etc/shorewall. The alternate directory need not contain a complete
+    configuration; those files not in the alternate directory will be read
+    from <filename class="directory">/etc/shorewall</filename>.<important>
         <para>Shorewall requires that the file
         <filename>/etc/shorewall/shorewall.conf</filename> to always exist.
         Certain global settings are always obtained from that file. If you

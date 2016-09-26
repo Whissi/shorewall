@@ -897,6 +897,7 @@ sub initialize( $;$$) {
 	  PAGER => undef ,
 	  MINIUPNPD => undef ,
 	  VERBOSE_MESSAGES => undef ,
+	  ZERO_MARKS => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -6292,6 +6293,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'DEFER_DNS_RESOLUTION'       , 'Yes';
     default_yes_no 'MINIUPNPD'                  , '';
     default_yes_no 'VERBOSE_MESSAGES'           , 'Yes';
+    default_yes_no 'ZERO_MARKS'                 , '';
 
     $config{IPSET} = '' if supplied $config{IPSET} && $config{IPSET} eq 'ipset';
 

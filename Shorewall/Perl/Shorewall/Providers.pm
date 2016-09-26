@@ -128,7 +128,10 @@ sub setup_route_marking() {
     #
     # Clear the mark -- we have seen cases where the mark is non-zero even in the raw table chains!
     #
-    add_ijump( $mangle_table->{$_}, j => 'MARK', targetopts => '--set-mark 0' ) for qw/PREROUTING OUTPUT/;
+
+    if ( $config{ZERO_MARKS} ) {
+	add_ijump( $mangle_table->{$_}, j => 'MARK', targetopts => '--set-mark 0' ) for qw/PREROUTING OUTPUT/;
+    }
 
     if ( $config{RESTORE_ROUTEMARKS} ) {
 	add_ijump $mangle_table->{$_} , j => 'CONNMARK', targetopts => "--restore-mark --mask $mask" for qw/PREROUTING OUTPUT/;

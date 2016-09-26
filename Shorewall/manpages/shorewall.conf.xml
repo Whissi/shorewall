@@ -2948,6 +2948,23 @@ INLINE          -       -       -       ;; -j REJECT
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">ZERO_MARKS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.12, this is a workaround for an issue
+          where packet marks are not zeroed by the kernel. It should be set to
+          No (the default) unless you find that incoming packets are being
+          mis-routed for no apparent reasons.</para>
+
+          <caution>
+            <para>Do not set this option to Yes if you have IPSEC software
+            running on the firewall system.</para>
+          </caution>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">ZONE_BITS</emphasis>=[<replaceable>number</replaceable>]</term>
 

@@ -809,6 +809,10 @@ sub add_a_provider( $$ ) {
 
 	push_indent;
 
+	emit( "if interface_is_up $physical; then" );
+
+	push_indent;
+
 	if ( $gatewaycase eq 'omitted' ) {
 	    if ( $tproxy ) {
 		emit 'run_ip route add local ' . ALLIP . " dev $physical table $id";
@@ -862,7 +866,9 @@ sub add_a_provider( $$ ) {
 	    }
 	}
 
-	emit( qq(\n),
+	pop_indent;
+
+	emit( qq(fi\n),
 	      qq(rm -f \${VARDIR}/${physical}_enabled) );
 
 

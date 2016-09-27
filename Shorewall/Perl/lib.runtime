@@ -996,9 +996,16 @@ delete_gateway() # $! = Description of the Gateway $2 = table number $3 = device
 
     if [ -n "$route" ]; then
 	if echo $route | grep -qF ' nexthop '; then
-	    gateway="nexthop $gateway"
-	    eval route=\`echo $route \| sed \'s/$gateway/ /\'\`
-	    run_ip route replace table $2 $route
+	    if interface_is_up $3; then
+		gateway="nexthop $gateway"
+	    else
+		gateway="nexthop $gateway dead"
+	    fi
+
+	    if eval echo $route \| fgrep -q \'$gateway\'; then
+		eval route=\`echo $route \| sed \'s/$gateway/ /\'\`
+		run_ip route replace table $2 $route
+	    fi
 	else
 	    dev=$(find_device $route)
 	    [ "$dev" = "$3" ] && run_ip route delete default table $2

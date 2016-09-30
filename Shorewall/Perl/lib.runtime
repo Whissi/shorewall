@@ -599,7 +599,11 @@ debug_restore_input() {
 }
 
 interface_enabled() {
-    return $(cat ${VARDIR}/$1.status)
+    status=0
+
+    [ -f ${VARDIR}/${1}.status ] && status=$(cat ${VARDIR}/${1}.status)
+
+    return status
 }
 
 distribute_load() {

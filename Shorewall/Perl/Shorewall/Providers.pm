@@ -830,14 +830,19 @@ sub add_a_provider( $$ ) {
 		if ( $family == F_IPV4 ) {
 		    emit qq(run_ip route replace $gateway src $address dev $physical ${mtu});
 		    emit qq(run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm);
+		    emit qq(echo "\$IP route del $gateway src $address dev $physical ${mtu} > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
+		    emit qq(echo "\$IP route del $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 		} else {
 		    emit qq(qt \$IP -6 route add $gateway src $address dev $physical ${mtu});
 		    emit qq(qt \$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm);
 		    emit qq(run_ip route add $gateway src $address dev $physical ${mtu}table $id $realm);
+		    emit qq(echo "\$IP -6 route del $gateway src $address dev $physical ${mtu} > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing );
+		    emit qq(echo "\$IP -6 route del $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 		}
 	    }
 
-	    emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm";
+	    emit( "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm" );
+	    emit( qq( echo "\$IP route del default via $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1"  >> \${VARDIR}/undo_${table}_routing) );
 	}
 
 	if ( ! $noautosrc ) {
@@ -869,7 +874,7 @@ sub add_a_provider( $$ ) {
 	pop_indent;
 
 	emit( qq(fi\n),
-	      qq(rm -f \${VARDIR}/${physical}_enabled) );
+	      qq(echo 1 > \${VARDIR}/${physical}_disabled) );
 
 
 	pop_indent;
@@ -1083,7 +1088,7 @@ CEOF
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
 	}
 
-	emit( qq(    echo 1 > \${VARDIR}/${physical}_enabled) ) if $persistent;
+	emit( qq(    rm -f \${VARDIR}/${physical}_disabled) );
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
 	pop_indent;
@@ -1091,7 +1096,7 @@ CEOF
 	unless ( $pseudo ) {
 	    emit( 'else' );
 	    emit( qq(    echo $weight > \${VARDIR}/${physical}_weight) );
-	    emit( qq(    echo 1 > \${VARDIR}/${physical}_enabled) ) if $persistent;
+	    emit( qq(    rm -f \${VARDIR}/${physical}_disabled) ) if $persistent;
 	    emit_started_message( '    ', '', $pseudo, $table, $number );
 	}
 
@@ -1185,7 +1190,7 @@ CEOF
 		   'if [ $COMMAND = disable ]; then',
 		   "    do_persistent_${what}_${table}",
 		   "else",
-		   "    rm -f \${VARDIR}/${physical}_enabled\n",
+		   "    echo 1 > \${VARDIR}/${physical}_disabled\n",
 		   "fi\n",
 		 );
 	}
@@ -1690,7 +1695,7 @@ EOF
 		emit ( "    if [ ! -f \${VARDIR}/undo_${provider}_routing ]; then",
 		       "        start_interface_$provider" );
 	    } elsif ( $providerref->{persistent} ) {
-		emit ( "    if [ ! -f \${VARDIR}/$providerref->{physical}_enabled ]; then",
+		emit ( "    if [ -f \${VARDIR}/$providerref->{physical}_disabled ]; then",
 		       "        start_provider_$provider" );
 	    } else {
 		emit ( "    if [ -z \"`\$IP -$family route ls table $providerref->{number}`\" ]; then",
@@ -1741,7 +1746,7 @@ EOF
 	    if ( $providerref->{pseudo} ) {
 		emit( "    if [ -f \${VARDIR}/undo_${provider}_routing ]; then" );
 	    } elsif ( $providerref->{persistent} ) {
-		emit( "    if [ -f \${VARDIR}/$providerref->{physical}_enabled ]; then" );
+		emit( "    if [ ! -f \${VARDIR}/$providerref->{physical}_disabled ]; then" );
 	    } else {
 		emit( "    if [ -n \"`\$IP -$family route ls table $providerref->{number}`\" ]; then" );
 	    }

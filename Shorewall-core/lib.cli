@@ -466,7 +466,8 @@ do_save() {
 	if $iptables_save | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
 	    cp -f ${VARDIR}/firewall $g_restorepath
 	    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
-	    chmod +x $g_restorepath
+	    chmod 700 $g_restorepath
+	    chmod 600 ${g_restorepath}-iptables
 	    echo "   Currently-running Configuration Saved to $g_restorepath"
 	    run_user_exit save
 	else
@@ -487,6 +488,7 @@ do_save() {
 		if ${arptables}-save > ${VARDIR}/restore-$$; then
 		    if grep -q '^-A' ${VARDIR}/restore-$$; then
 			mv -f ${VARDIR}/restore-$$ ${g_restorepath}-arptables
+			chmod 600 ${g_restorepath}-arptables
 		    else
 			rm -f ${VARDIR}/restore-$$
 		    fi
@@ -533,7 +535,7 @@ do_save() {
 			#
 			# Don't save an 'empty' file
 			#
-			grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets
+			grep -qE -- '^(-N|create )' ${VARDIR}/ipsets.tmp && mv -f ${VARDIR}/ipsets.tmp ${g_restorepath}-ipsets && chmod 600 ${g_restorepath}-ipsets
 		    fi
 		fi
 		;;

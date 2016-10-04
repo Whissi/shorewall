@@ -630,7 +630,8 @@
         role="bold">No</emphasis>||<emphasis
         role="bold">ipset</emphasis>[<emphasis
         role="bold">-only</emphasis>][,<emphasis
-        role="bold">src-dst</emphasis>][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</term>
+        role="bold">src-dst</emphasis>][,<emphasis
+        role="bold">disconnect</emphasis>][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.7. When set to <emphasis
@@ -652,6 +653,14 @@
           matches an entry in the ipsec are dropped. If
           <option>src-dst</option> is included, then packets whose destination
           address matches an entry in the ipset are also dropped.</para>
+
+          <para>The <option>disconnect</option> option was added in Shorewall
+          5.0.13 and requires that the conntrack utility be installed on the
+          firewall system. When an address is blacklisted using the
+          <command>blacklist</command> command, all connections originating
+          from that address are disconnected. if the <option>src-dst</option>
+          option was also specified, then all connections to that address are
+          also disconnected.</para>
 
           <para>When ipset-based dynamic blacklisting is enabled, the contents
           of the blacklist will be preserved over

@@ -336,35 +336,7 @@ get_config() {
     fi
 
     if [ -n "$DYNAMIC_BLACKLIST" ]; then
-	case $DYNAMIC_BLACKLIST in
-	    [Nn]o)
-		DYNAMIC_BLACKLIST='';
-		;;
-	    [Yy]es)
-	        ;;
-	    ipset|ipset::*|ipset-only|ipset-only::*|ipset,src-dst|ipset-only,src-dst::*)
-		g_blacklistipset=SW_DBL$g_family
-		;;
-	    ipset:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset,src-dst:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset,src-dst:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset-only:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset-only,src-dst:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only,src-dst:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    *)
-		fatal_error "Invalid value ($DYNAMIC_BLACKLIST) for DYNAMIC_BLACKLIST"
-		;;
-	esac
+	setup_dbl
     fi
 
     lib=$(find_file lib.cli-user)

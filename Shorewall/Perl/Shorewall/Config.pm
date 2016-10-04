@@ -6253,9 +6253,17 @@ sub get_configuration( $$$$ ) {
 
     if ( supplied( $val = $config{DYNAMIC_BLACKLIST} ) ) {
 	if ( $val =~ /^ipset/ ) {
+	    my %valid_options = ( 'src-dst' => 1, 'disconnect' => 1 );
+
 	    my ( $key, $set, $level, $tag, $rest ) = split( ':', $val , 5 );
 
-	    fatal_error "Invalid DYNAMIC_BLACKLIST setting ( $val )" if $key !~ /^ipset(?:-only)?(?:,src-dst)?$/ || defined $rest;
+	    ( $key, my @options ) = split_list( $key, 'option' );
+
+	    for ( @options ) {
+		fatal_error "Invalid ipset option ($_)" unless $valid_options{$_};
+	    }
+
+	    fatal_error "Invalid DYNAMIC_BLACKLIST setting ( $val )" if $key !~ /^ipset(?:-only)?$/ || defined $rest;
 
 	    if ( supplied( $set ) ) {
 		fatal_error "Invalid DYNAMIC_BLACKLIST ipset name" unless $set =~ /^[A-Za-z][\w-]*/;

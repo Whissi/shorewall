@@ -3555,10 +3555,34 @@ blacklist_command() {
 	    ;;
     esac
 
-    $IPSET -A $g_blacklistipset $@ && progress_message2 "$1 Blacklisted" || { error_message "ERROR: Address $1 not blacklisted"; return 1; }
+    if $IPSET -A $g_blacklistipset $@ -exist; then
+	local message
+
+	progress_message2 "$1 Blacklisted"
+
+	if [ -n "g_disconnect" ]; then
+	    message=$(conntrack -D -s $1 2>&1)
+	    if [ -n "$message" ]; then
+		message=$(echo $message | sed 's/^.*: //; s/ / src /')
+		progress_message2 $message
+	    fi
+
+	    if [ $g_disconnect = src-dst ]; then
+		message=$(conntrack -D -d $1 2>&1)
+		if [ -n "$message" ]; then
+		    message=$(echo $message | sed 's/^.*: //; s/ / dst /')
+		    progress_message2 $message
+		fi
+	    fi
+	fi
+    else
+	error_message "ERROR: Address $1 not blacklisted"
+	return 1
+    fi
 
     return 0
 }
+
 save_command() {
     local finished
     finished=0
@@ -3761,6 +3785,59 @@ verify_firewall_script() {
     fi
 }
 
+setup_dbl() {
+    local original
+
+    original=$DYNAMIC_BLACKLIST
+
+    case $DYNAMIC_BLACKLIST in
+	*:*,)
+	    fatal_error "Invalid value ($original) for DYNAMIC_BLACKLIST"
+	    ;;
+	ipset*,disconnect*)
+	    if qt mywhich conntrack; then
+		g_disconnect=src
+		DYNAMIC_BLACKLIST=$(echo $DYNAMIC_BLACKLIST | sed 's/,disconnect//')
+	    else
+		fatal_error "The 'disconnect' option requires that the conntrack utility be installed"
+	    fi
+	    ;;
+    esac
+
+    case $DYNAMIC_BLACKLIST in
+	ipset*,src-dst*)
+	    #
+	    # This utility doesn't need to know about 'src-dst'
+	    #
+	    DYNAMIC_BLACKLIST=$(echo $DYNAMIC_BLACKLIST | sed 's/,src-dst//')
+
+	    [ -n "$g_disconnect" ] && g_disconnect=src-dst
+	    ;;
+    esac
+
+    case $DYNAMIC_BLACKLIST in
+	[Nn]o)
+	    DYNAMIC_BLACKLIST='';
+	    ;;
+	[Yy]es)
+	    ;;
+	ipset|ipset::*|ipset-only|ipset-only::*)
+	    g_blacklistipset=SW_DBL$g_family
+	    ;;
+	ipset:[a-zA-Z]*)
+	    g_blacklistipset=${DYNAMIC_BLACKLIST#ipset:}
+	    g_blacklistipset=${g_blacklistipset%%:*}
+	    ;;
+	ipset-only:[a-zA-Z]*)
+	    g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only:}
+	    g_blacklistipset=${g_blacklistipset%%:*}
+	    ;;
+	*)
+	    fatal_error "Invalid value ($original) for DYNAMIC_BLACKLIST"
+	    ;;
+    esac
+}
+
 ################################################################################
 # The remaining functions are used by the Lite cli - they are overloaded by
 # the Standard CLI by loading lib.cli-std
@@ -3920,35 +3997,7 @@ get_config() {
      fi
 
     if [ -n "$DYNAMIC_BLACKLIST" ]; then
-	case $DYNAMIC_BLACKLIST in
-	    [Nn]o)
-		DYNAMIC_BLACKLIST='';
-		;;
-	    [Yy]es)
-	        ;;
-	    ipset|ipset::*|ipset-only|ipset-only::*|ipset,src-dst|ipset-only,src-dst::*)
-		g_blacklistipset=SW_DBL$g_family
-		;;
-	    ipset:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset,src-dst:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset,src-dst:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset-only:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    ipset-only,src-dst:[a-zA-Z]*)
-		g_blacklistipset=${DYNAMIC_BLACKLIST#ipset-only,src-dst:}
-		g_blacklistipset=${g_blacklistipset%%:*}
-		;;
-	    *)
-		fatal_error "Invalid value ($DYNAMIC_BLACKLIST) for DYNAMIC_BLACKLIST"
-		;;
-	esac
+	setup_dbl
     fi
 
     lib=$(find_file lib.cli-user)
@@ -4294,6 +4343,7 @@ shorewall_cli() {
     g_compiled=
     g_pager=
     g_blacklistipset=
+    g_disconnect=
 
     VERBOSE=
     VERBOSITY=1

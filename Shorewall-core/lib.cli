@@ -3560,7 +3560,7 @@ blacklist_command() {
 
 	progress_message2 "$1 Blacklisted"
 
-	if [ -n "g_disconnect" ]; then
+	if [ -n "$g_disconnect" ]; then
 	    message=$(conntrack -D -s $1 2>&1)
 	    if [ -n "$message" ]; then
 		message=$(echo $message | sed 's/^.*: //; s/ / src /')

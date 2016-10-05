@@ -3813,6 +3813,12 @@ setup_dbl() {
 
 	    [ -n "$g_disconnect" ] && g_disconnect=src-dst
 	    ;;
+	ipset*,timeout*)
+	    #
+	    # This utility doesn't need to know about 'timeout=nnn'
+	    #
+	    DYNAMIC_BLACKLIST=$(echo $DYNAMIC_BLACKLIST | sed -r 's/,timeout=[[:digit:]]+//')
+	    ;;
     esac
 
     case $DYNAMIC_BLACKLIST in

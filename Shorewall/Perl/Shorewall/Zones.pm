@@ -1193,7 +1193,7 @@ sub process_interface( $$ ) {
     my %options;
 
     $options{port} = 1 if $port;
-    $options{dbl}  = $config{DYNAMIC_BLACKLIST} =~ /^ipset(-only)?,src-dst/ ? '1:2' : $config{DYNAMIC_BLACKLIST} ? '1:0' : '0:0';
+    $options{dbl}  = $config{DYNAMIC_BLACKLIST} =~ /^ipset(-only)?.*,src-dst/ ? '1:2' : $config{DYNAMIC_BLACKLIST} ? '1:0' : '0:0';
 
     my $hostoptionsref = {};
 

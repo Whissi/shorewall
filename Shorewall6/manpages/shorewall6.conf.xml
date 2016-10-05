@@ -629,9 +629,7 @@
         role="bold">Yes</emphasis>|<emphasis
         role="bold">No</emphasis>||<emphasis
         role="bold">ipset</emphasis>[<emphasis
-        role="bold">-only</emphasis>][,<emphasis
-        role="bold">src-dst</emphasis>][,<emphasis
-        role="bold">disconnect</emphasis>][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</term>
+        role="bold">-only</emphasis>][<replaceable>,option</replaceable>[,...]][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</term>
 
         <listitem>
           <para>Added in Shorewall 4.4.7. When set to <emphasis
@@ -649,18 +647,59 @@
           is SW_DBL6 and the default log level is <option>none</option> (no
           logging). if <option>ipset-only</option> is given, then chain-based
           dynamic blacklisting is disabled just as if DYNAMIC_BLACKLISTING=No
-          had been specified. Normally, only packets whose source address
-          matches an entry in the ipsec are dropped. If
-          <option>src-dst</option> is included, then packets whose destination
-          address matches an entry in the ipset are also dropped.</para>
+          had been specified. </para>
 
-          <para>The <option>disconnect</option> option was added in Shorewall
-          5.0.13 and requires that the conntrack utility be installed on the
-          firewall system. When an address is blacklisted using the
-          <command>blacklist</command> command, all connections originating
-          from that address are disconnected. if the <option>src-dst</option>
-          option was also specified, then all connections to that address are
-          also disconnected.</para>
+          <para>Possible <replaceable>option</replaceable>s are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>src-dst</term>
+
+              <listitem>
+                <para>Normally, only packets whose source address matches an
+                entry in the ipset are dropped. If <option>src-dst</option> is
+                included, then packets whose destination address matches an
+                entry in the ipset are also dropped.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><option>disconnect</option></term>
+
+              <listitem>
+                <para>The <option>disconnect</option> option was added in
+                Shorewall 5.0.13 and requires that the conntrack utility be
+                installed on the firewall system. When an address is
+                blacklisted using the <command>blacklist</command> command,
+                all connections originating from that address are
+                disconnected. if the <option>src-dst</option> option was also
+                specified, then all connections to that address are also
+                disconnected.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><option>timeout</option>=<replaceable>seconds</replaceable></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.13. Normally, Shorewall creates
+                the dynamic blacklisting ipset with timeout 0 which means that
+                entries are permanent. If you want entries in the set that are
+                not accessed for a period of time to be deleted from the set,
+                you may specify that period using this option. Note that the
+                <command>blacklist</command> command can override the ipset's
+                timeout setting.</para>
+
+                <important>
+                  <para>Once the dynamic blacklisting ipset has been created,
+                  changing this option setting requires a complete restart of
+                  the firewall; <command>shorewall6 restart</command> if
+                  RESTART=restart, otherwise <command>shorewall6 stop
+                  &amp;&amp; shorewall6 start</command></para>
+                </important>
+              </listitem>
+            </varlistentry>
+          </variablelist>
 
           <para>When ipset-based dynamic blacklisting is enabled, the contents
           of the blacklist will be preserved over

@@ -754,6 +754,8 @@ sub initialize( $;$$) {
 		    RPFILTER_LOG_TAG        => '',
 		    INVALID_LOG_TAG         => '',
 		    UNTRACKED_LOG_TAG       => '',
+		    DBL_IPSET               => '',
+		    DBL_TIMEOUT             => 0,
 		    POSTROUTING             => 'POSTROUTING',
 		  );
     #
@@ -6253,14 +6255,20 @@ sub get_configuration( $$$$ ) {
 
     if ( supplied( $val = $config{DYNAMIC_BLACKLIST} ) ) {
 	if ( $val =~ /^ipset/ ) {
-	    my %valid_options = ( 'src-dst' => 1, 'disconnect' => 1 );
+	    my %simple_options = ( 'src-dst' => 1, 'disconnect' => 1 );
 
 	    my ( $key, $set, $level, $tag, $rest ) = split( ':', $val , 5 );
 
-	    ( $key, my @options ) = split_list( $key, 'option' );
+	    ( $key , my @options ) = split_list( $key, 'option' );
 
 	    for ( @options ) {
-		fatal_error "Invalid ipset option ($_)" unless $valid_options{$_};
+		unless ( $simple_options{$_} ) {
+		    if ( $_ =~ s/^timeout=(\d+)$// ) {
+			$globals{DBL_TIMEOUT} = $1;
+		    } else {
+			fatal_error "Invalid ipset option ($_)";
+		    }
+		}
 	    }
 
 	    fatal_error "Invalid DYNAMIC_BLACKLIST setting ( $val )" if $key !~ /^ipset(?:-only)?$/ || defined $rest;
@@ -6271,7 +6279,7 @@ sub get_configuration( $$$$ ) {
 		$set = 'SW_DBL' . $family;
 	    }
 
-	    add_ipset( $set );
+	    add_ipset( $globals{DBL_IPSET} = $set );
 	    
 	    $level = validate_level( $level );
 

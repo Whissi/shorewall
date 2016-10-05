@@ -8266,36 +8266,63 @@ EOF
 sub ensure_ipsets( @ ) {
     my $set;
 
-    if ( @_ > 1 ) {
+    if ( $globals{DBL_TIMEOUT} ne '' && $_[0] eq $globals{DBL_IPSET} ) {
+	shift;
+
+	emit( qq(    if ! qt \$IPSET list $globals{DBL_IPSET}; then));
+
 	push_indent;
-	emit( "for set in @_; do" );
-	$set = '$set';
-    } else {
-	$set = $_[0];
+
+	if ( $family == F_IPV4 ) {
+	    emit(  q(    #),
+		   q(    # Set the timeout for the dynamic blacklisting ipset),
+		   q(    #),
+		  qq(    \$IPSET -exist create $globals{DBL_IPSET}  hash:net family inet timeout $globals{DBL_TIMEOUT} counters) );
+	} else {
+	    emit(  q(    #),
+		   q(    # Set the timeout for the dynamic blacklisting ipset),
+		   q(    #),
+		  qq(    \$IPSET -exist create $globals{DBL_IPSET} hash:net family inet6 timeout $globals{DBL_TIMEOUT} counters) );
+	}
+
+	pop_indent;
+
+	emit( qq(    fi\n) );
+
     }
 
-    if ( $family == F_IPV4 ) {
-	if ( have_capability 'IPSET_V5' ) {
-	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-		   qq(        \$IPSET -N $set hash:net family inet timeout 0 counters) ,
-		   qq(    fi) );
+    if ( @_ ) {
+	if ( @_ > 1 ) {
+	    push_indent;
+	    emit( "for set in @_; do" );
+	    $set = '$set';
 	} else {
-	    emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an iphash set") ,
-		   qq(        \$IPSET -N $set iphash) ,
+	    $set = $_[0];
+	}
+
+	if ( $family == F_IPV4 ) {
+	    if ( have_capability 'IPSET_V5' ) {
+		emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		       qq(        \$IPSET create $set hash:net family inet timeout 0 counters) ,
+		       qq(    fi) );
+	    } else {
+		emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an iphash set") ,
+		       qq(        \$IPSET -N $set iphash) ,
+		       qq(    fi) );
+	    }
+	} else {
+	    emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
+		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		   qq(        \$IPSET create $set hash:net family inet6 timeout 0 counters) ,
 		   qq(    fi) );
 	}
-    } else {
-	emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-	       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-	       qq(        \$IPSET -N $set hash:net family inet6 timeout 0 counters) ,
-	       qq(    fi) );
-    }
 
-    if ( @_ > 1 ) {
-	emit 'done';
-	pop_indent;
+	if ( @_ > 1 ) {
+	    emit 'done';
+	    pop_indent;
+	}
     }
 }
 
@@ -8473,10 +8500,21 @@ sub create_load_ipsets() {
 	       'if [ "$COMMAND" = start ]; then' );         ##################### Start Command ##################
 
 	if ( $config{SAVE_IPSETS} || @{$globals{SAVED_IPSETS}} ) {
-	    emit( '    if [ -f ${VARDIR}/ipsets.save ]; then',
-		  '        zap_ipsets',
-		  '        $IPSET -R < ${VARDIR}/ipsets.save',
-		  '    fi' );
+	    emit( '    if [ -f ${VARDIR}/ipsets.save ]; then' );
+
+	    if ( my $set = $globals{DBL_IPSET} ) {
+		emit( '        #',
+		      '        # Update the dynamic blacklisting ipset timeout value',
+		      '        #',
+		      qq(        awk '/create $set/      { sub( /timeout [0-9]+/, \"timeout $globals{DBL_TIMEOUT}\" ) }; {print};/' \${VARDIR}/ipsets.save > \${VARDIR}/ipsets.temp),
+		      '        zap_ipsets',
+		      '        $IPSET restore < ${VARDIR}/ipsets.temp',
+		      '    fi' );
+	    } else {
+		emit( '        zap_ipsets',
+		      '        $IPSET -R < ${VARDIR}/ipsets.save',
+		      '    fi' );
+	    }
 	}
 
 	if ( @ipsets ) {

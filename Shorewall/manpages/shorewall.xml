@@ -451,9 +451,9 @@
 
       <arg><option>-i</option></arg>
 
-      <arg><replaceable>directory</replaceable></arg>
+      <arg><arg><option>-D</option></arg><replaceable>directory</replaceable></arg>
 
-      <arg choice="plain"><replaceable>system</replaceable></arg>
+      <arg choice="plain"><arg><replaceable>system</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -475,9 +475,9 @@
 
       <arg><option>-i</option></arg>
 
-      <arg><replaceable>directory</replaceable></arg>
+      <arg><arg><option>-D</option></arg><replaceable>directory</replaceable></arg>
 
-      <arg choice="plain"><replaceable>system</replaceable></arg>
+      <arg choice="plain"><arg><replaceable>system</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -499,9 +499,9 @@
 
       <arg><option>-i</option></arg>
 
-      <arg><replaceable>directory</replaceable></arg>
+      <arg><arg><option>-D</option></arg><replaceable>directory</replaceable></arg>
 
-      <arg choice="plain"><replaceable>system</replaceable></arg>
+      <arg choice="plain"><arg><replaceable>system</replaceable></arg></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -1614,8 +1614,8 @@
         <term><emphasis role="bold">remote-start</emphasis>
         [-<option>s</option>] [-<option>c</option>] [-<option>r</option>
         <replaceable>root-user-name</replaceable>] [-<option>T</option>]
-        [-<option>i</option>] [ <replaceable>directory</replaceable> ]
-        <replaceable>system</replaceable></term>
+        [-<option>i</option>] [ [ -D ] <replaceable>directory</replaceable> ]
+        [ <replaceable>system</replaceable> ]</term>
 
         <listitem>
           <para>This command was renamed from <command>load</command> in
@@ -1641,7 +1641,13 @@
           directory. If compilation succeeds, then firewall is copied to
           <replaceable>system</replaceable> using scp. If the copy succeeds,
           Shorewall Lite on <replaceable>system</replaceable> is started via
-          ssh.</para>
+          ssh. Beginning with Shorewall 5.0.13, if
+          <replaceable>system</replaceable> is omitted, then the FIREWALL
+          option setting in <ulink
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
+          that case, if you want to specify a
+          <replaceable>directory</replaceable>, then the <option>-D</option>
+          option must be given.</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">start</emphasis> command succeeds, then the
@@ -1676,9 +1682,9 @@
         <term><emphasis role="bold">remote-reload
         </emphasis>[-<option>s</option>] [-<option>c</option>]
         [-<option>r</option> <replaceable>root-user-name</replaceable>]
-        [-<option>T</option>] [-<option>i</option>] [
-        <replaceable>directory</replaceable> ]
-        <replaceable>system</replaceable></term>
+        [-<option>T</option>] [-<option>i</option>] [ [ -D ]
+        <replaceable>directory</replaceable> ] [
+        <replaceable>system</replaceable> ]</term>
 
         <listitem>
           <para>This command was added in Shorewall 5.0.0.</para>
@@ -1702,8 +1708,14 @@
           defaulted) directory is compiled to a file called firewall in that
           directory. If compilation succeeds, then firewall is copied to
           <emphasis>system</emphasis> using scp. If the copy succeeds,
-          Shorewall Lite on <emphasis>system</emphasis> is restarted via
-          ssh.</para>
+          Shorewall Lite on <emphasis>system</emphasis> is restarted via ssh.
+          Beginning with Shorewall 5.0.13, if
+          <replaceable>system</replaceable> is omitted, then the FIREWALL
+          option setting in <ulink
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
+          that case, if you want to specify a
+          <replaceable>directory</replaceable>, then the <option>-D</option>
+          option must be given.</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">restart</emphasis> command succeeds, then the
@@ -1738,9 +1750,9 @@
         <term><emphasis role="bold">remote-restart
         </emphasis>[-<option>s</option>] [-<option>c</option>]
         [-<option>r</option> <replaceable>root-user-name</replaceable>]
-        [-<option>T</option>] [-<option>i</option>] [
-        <replaceable>directory</replaceable> ]
-        <replaceable>system</replaceable></term>
+        [-<option>T</option>] [-<option>i</option>] [ [ -D ]
+        <replaceable>directory</replaceable> ] [
+        <replaceable>system</replaceable> ]</term>
 
         <listitem>
           <para>This command was renamed from <command>reload</command> in
@@ -1765,8 +1777,14 @@
           defaulted) directory is compiled to a file called firewall in that
           directory. If compilation succeeds, then firewall is copied to
           <emphasis>system</emphasis> using scp. If the copy succeeds,
-          Shorewall Lite on <emphasis>system</emphasis> is restarted via
-          ssh.</para>
+          Shorewall Lite on <emphasis>system</emphasis> is restarted via ssh.
+          Beginning with Shorewall 5.0.13, if
+          <replaceable>system</replaceable> is omitted, then the FIREWALL
+          option setting in <ulink
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
+          that case, if you want to specify a
+          <replaceable>directory</replaceable>, then the <option>-D</option>
+          option must be given.</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">restart</emphasis> command succeeds, then the

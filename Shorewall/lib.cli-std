@@ -1444,6 +1444,12 @@ remote_reload_command() # $* = original arguments less the command.
 			    option=
 			    shift
 			    ;;
+			D)
+			    [ $# -gt 1 ] || fatal_error "Missing directory name"
+			    g_shorewalldir=$2
+			    option=
+			    shift
+			    ;;
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
@@ -1467,7 +1473,7 @@ remote_reload_command() # $* = original arguments less the command.
 
     case $# in
 	0)
-	    missing_argument
+	    [ -n "$g_shorewalldir" ] || g_shorewalldir='.'
 	    ;;
 	1)
 	    g_shorewalldir="."
@@ -1502,6 +1508,11 @@ remote_reload_command() # $* = original arguments less the command.
 	get_config No
 
 	g_haveconfig=Yes
+
+	if [ -z "$system" ]; then
+	    system=$FIREWALL
+	    [ -n "$system" ] || fatal_error "No system name given and the FIREWALL option is not set"
+	fi
     else
 	fatal_error "$g_shorewalldir/$g_program.conf does not exist"
     fi

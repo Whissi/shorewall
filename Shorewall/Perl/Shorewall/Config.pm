@@ -900,6 +900,7 @@ sub initialize( $;$$) {
 	  MINIUPNPD => undef ,
 	  VERBOSE_MESSAGES => undef ,
 	  ZERO_MARKS => undef ,
+	  FIREWALL => undef ,
 	  #
 	  # Packet Disposition
 	  #

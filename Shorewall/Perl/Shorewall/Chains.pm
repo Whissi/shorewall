@@ -8506,7 +8506,7 @@ sub create_load_ipsets() {
 		emit( '        #',
 		      '        # Update the dynamic blacklisting ipset timeout value',
 		      '        #',
-		      qq(        awk '/create $set/      { sub( /timeout [0-9]+/, \"timeout $globals{DBL_TIMEOUT}\" ) }; {print};' \${VARDIR}/ipsets.save > \${VARDIR}/ipsets.temp),
+		      qq(        awk '/create $set/      { sub( /timeout [0-9]+/, "timeout $globals{DBL_TIMEOUT}" ) }; {print};' \${VARDIR}/ipsets.save > \${VARDIR}/ipsets.temp),
 		      '        zap_ipsets',
 		      '        $IPSET restore < ${VARDIR}/ipsets.temp',
 		      '    fi' );

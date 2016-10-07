@@ -766,7 +766,7 @@ fi</programlisting>
       provider interfaces as <emphasis role="bold">optional</emphasis> (<ulink
       url="manpages/shorewall-interfaces.html">shorewall-interfaces(5)</ulink>)
       then <link linkend="LinkMonitor">install and configure
-      LSM</link>.</para>
+      FOOLSM</link>.</para>
 
       <para><ulink url="Shorewall-init.html">Shorewall-init</ulink> provides
       for handling links that go hard down and are later brought back
@@ -926,7 +926,7 @@ eth1             0.0.0.0/0         130.252.99.27</programlisting>
     </section>
 
     <section id="Example2">
-      <title id="Example99"> Example using USE_DEFAULT_RT=Yes</title>
+      <title id="Example99">Example using USE_DEFAULT_RT=Yes</title>
 
       <para>This section shows the differences in configuring the above
       example with USE_DEFAULT_RT=Yes. The changes are confined to the
@@ -1937,8 +1937,8 @@ if [ $2 != down ]; then
     [ -f /var/lib/shorewall/eth0.info ] &amp;&amp; . /var/lib/shorewall/eth0.info
     
     if [ "$GATEWAYS" != "$ETH0_GATEWAY" -o "$IPADDR" != "$ETH0_ADDRESS" ]; then
-        logger -p daemon.info "eth0 IP configuration changed - restarting lsm and Shorewall"
-        killall lsm
+        logger -p daemon.info "eth0 IP configuration changed - restarting foolsm and Shorewall"
+        killall foolsm
         /sbin/shorewall restart
     fi
 fi
@@ -1953,9 +1953,9 @@ fi
             </listitem>
 
             <listitem>
-              <para>It assumes the use of <link linkend="lsm">LSM</link>; If
-              you aren't using lSM, you can change the log message and remove
-              the 'killall lsm'</para>
+              <para>It assumes the use of <link linkend="lsm">FOOLSM</link>;
+              If you aren't using foolsm, you can change the log message and
+              remove the 'killall foolsm'</para>
             </listitem>
 
             <listitem>
@@ -2090,9 +2090,9 @@ ComcastC 2      -    -          eth0      detect        loose,fallback,load=0.33
     <section id="LinkMonitor">
       <title>Gateway Monitoring and Failover</title>
 
-      <para>There is an option (LSM) available for monitoring the status of
-      provider links and taking action when a failure occurs. LSM assumes that
-      each provider has a unique nexthop gateway.</para>
+      <para>There is an option (FOOLSM) available for monitoring the status of
+      provider links and taking action when a failure occurs. FOOLSM assumes
+      that each provider has a unique nexthop gateway.</para>
 
       <para>You specify the <option>optional</option> option in
       <filename>/etc/shorewall/interfaces</filename>:</para>
@@ -2102,7 +2102,7 @@ net      eth0         detect          <emphasis role="bold">optional</emphasis>
 net      eth1         detect          <emphasis role="bold">optional</emphasis></programlisting>
 
       <section id="lsm">
-        <title>Link Status Monitor (LSM)</title>
+        <title>Link Status Monitor (FOOLSM)</title>
 
         <para><ulink url="http://lsm.foobar.fi/">Link Status Monitor</ulink>
         was written by Mika Ilmaranta &lt;ilmis at nullnet.fi&gt; and performs
@@ -2116,19 +2116,25 @@ net      eth1         detect          <emphasis role="bold">optional</emphasis><
           file</ulink>) before installing LSM.</para>
         </important>
 
-        <para>Like many Open Source products, LSM is poorly documented. It's
-        main configuration file is normally kept in
-        <filename>/etc/lsm/lsm.conf</filename>, but the file's name is passed
-        as an argument to the lsm program so you can name it anything you
-        want.</para>
+        <important>
+          <para>To avoid an achronym clash with <emphasis>Linux Security
+          Module</emphasis>, the Link Status Monitor is now called
+          <emphasis>foolsm</emphasis>.</para>
+        </important>
 
-        <para>The sample <filename>lsm.conf</filename> included with the
+        <para>Like many Open Source products, FOOLSM is poorly documented.
+        It's main configuration file is normally kept in
+        <filename>/etc/foolsm/foolsm.conf</filename>, but the file's name is
+        passed as an argument to the foolsm program so you can name it
+        anything you want.</para>
+
+        <para>The sample <filename>foolsm.conf</filename> included with the
         product shows some of the possibilities for configuration. One feature
         that is not mentioned in the sample is that an "include" directive is
         supported. This allows additional files to be sourced in from the main
         configuration file.</para>
 
-        <para>LSM monitors the status of the links defined in its
+        <para>FOOLSM monitors the status of the links defined in its
         configuration file and runs a user-provided script when the status of
         a link changes. The script name is specified in the
         <firstterm>eventscript</firstterm> option in the configuration file.
@@ -2175,33 +2181,33 @@ net      eth1         detect          <emphasis role="bold">optional</emphasis><
 
         <para>It is the responsibility of the script to perform any action
         needed in reaction to the connection state change. The default script
-        supplied with LSM composes an email and sends it to $5.</para>
+        supplied with FOOLSM composes an email and sends it to $5.</para>
 
-        <para>I personally use LSM here at shorewall.net (configuration is
+        <para>I personally use FOOLSM here at shorewall.net (configuration is
         described <link linkend="Complete">below</link>). I have set things up
         so that:</para>
 
         <itemizedlist>
           <listitem>
-            <para>Shorewall [re]starts lsm during processing of the
+            <para>Shorewall [re]starts foolsm during processing of the
             <command>start</command> and <command>restore</command> commands.
-            I don't have Shorewall restart lsm during Shorewall
+            I don't have Shorewall restart foolsm during Shorewall
             <command>restart</command> because I restart Shorewall much more
             often than the average user is likely to do.</para>
           </listitem>
 
           <listitem>
-            <para>Shorewall starts lsm because I have a dynamic IP address
+            <para>Shorewall starts foolsm because I have a dynamic IP address
             from one of my providers (Comcast); Shorewall detects the default
             gateway to that provider and creates a secondary configuration
-            file (<filename>/etc/lsm/shorewall.conf</filename>) that contains
-            the link configurations. That file is included by
-            <filename>/etc/lsm/lsm.conf</filename>.</para>
+            file (<filename>/etc/foolsm/shorewall.conf</filename>) that
+            contains the link configurations. That file is included by
+            <filename>/etc/foolsm/foolsm.conf</filename>.</para>
           </listitem>
 
           <listitem>
-            <para>The script run by LSM during state change
-            (<filename>/etc/lsm/script) </filename>writes a<filename>
+            <para>The script run by FOOLSM during state change
+            (<filename>/etc/foolsm/script) </filename>writes a<filename>
             ${VARDIR}/xxx.status</filename> file when the status of an
             interface changes. Those files are read by the
             <filename>isusable</filename> extension script (see below).</para>
@@ -2224,7 +2230,7 @@ COM_IF=eth1</programlisting>
 
         <programlisting>local status=0
 #
-# Read the status file (if any) created by /etc/lsm/script
+# Read the status file (if any) created by /etc/foolsm/script
 #
 [ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
 
@@ -2233,22 +2239,22 @@ return $status</programlisting>
         <para><filename>/etc/shorewall/lib.private</filename>:</para>
 
         <programlisting>###############################################################################
-# Create /etc/lsm/shorewall.conf
+# Create /etc/foolsm/shorewall.conf
 # Remove the current interface status files
-# Start lsm
+# Start foolsm
 ###############################################################################
-start_lsm() {
+start_foolsm() {
    #
-   # Kill any existing lsm process(es)
+   # Kill any existing foolsm process(es)
    #
-   killall lsm 2&gt; /dev/null
+   killall foolsm 2&gt; /dev/null
    #
-   # Create the Shorewall-specific part of the LSM configuration. This file is
-   # included by /etc/lsm/lsm.conf
+   # Create the Shorewall-specific part of the FOOLSM configuration. This file is
+   # included by /etc/foolsm/foolsm.conf
    #
    # Avvanta has a static gateway while Comcast's is dynamic
    #
-   cat &lt;&lt;EOF &gt; /etc/lsm/shorewall.conf
+   cat &lt;&lt;EOF &gt; /etc/foolsm/shorewall.conf
 connection {
     name=Avvanta
     checkip=206.124.146.254
@@ -2264,14 +2270,9 @@ connection {
 }
 EOF
    #
-   # Since LSM assumes that interfaces start in the 'up' state, remove any
-   # existing status files that might have an interface in the down state
+   # Run FOOLSM -- by default, it forks into the background
    #
-   rm -f /var/lib/shorewall/*.status
-   #
-   # Run LSM -- by default, it forks into the background
-   #
-   /usr/sbin/lsm -c /etc/lsm/lsm.conf &gt;&gt; /var/log/lsm
+   /usr/sbin/foolsm -c /etc/foolsm/foolsm.conf &gt;&gt; /var/log/foolsm
 }</programlisting>
 
         <para>eth0 has a dynamic IP address so I need to use the
@@ -2286,22 +2287,22 @@ EOF
         <para><filename>/etc/shorewall/started</filename>:</para>
 
         <programlisting>##################################################################################
-# [re]start lsm if this is a 'start' command or if lsm isn't running
+# [re]start foolsm if this is a 'start' command or if foolsm isn't running
 ##################################################################################
-if [ "$COMMAND" = start -o -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
-    start_lsm
+if [ "$COMMAND" = start -o -z "$(ps ax | grep 'foolsm ' | grep -v 'grep ' )" ]; then
+    start_foolsm
 fi</programlisting>
 
         <para><filename>/etc/shorewall/restored</filename>:</para>
 
         <programlisting>##################################################################################
-# Start lsm if it isn't running
+# Start foolsm if it isn't running
 ##################################################################################
-if [ -z "$(ps ax | grep 'lsm ' | grep -v 'grep ' )" ]; then
-   start_lsm
+if [ -z "$(ps ax | grep 'foolsm ' | grep -v 'grep ' )" ]; then
+   start_foolsm
 fi</programlisting>
 
-        <para><filename>/etc/lsm/lsm.conf</filename>:</para>
+        <para><filename>/etc/foolsm/foolsm.conf</filename>:</para>
 
         <programlisting>#
 # Defaults for the connection entries
@@ -2309,7 +2310,7 @@ fi</programlisting>
 defaults {
   name=defaults
   checkip=127.0.0.1
-  eventscript=/etc/lsm/script
+  eventscript=/etc/foolsm/script
   max_packet_loss=20
   max_successive_pkts_lost=7
   min_packet_loss=5
@@ -2322,10 +2323,11 @@ defaults {
   ttl=0
 }
 
-include /etc/lsm/shorewall.conf</programlisting>
+include /etc/foolsm/shorewall.conf</programlisting>
 
-        <para><filename>/etc/lsm/script</filename> (Shorewall 4.4.23 and later
-        - note that this script must be executable by root)<programlisting>#!/bin/sh
+        <para><filename>/etc/foolsm/script</filename> (Shorewall 4.4.23 and
+        later - note that this script must be executable by
+        root)<programlisting>#!/bin/sh
 #
 # (C) 2009 Mika Ilmaranta &lt;ilmis@nullnet.fi&gt;
 # (C) 2009 Tom Eastep &lt;teastep@shorewall.net&gt;
@@ -2382,7 +2384,7 @@ cons_wait    = ${CONS_WAIT} consecutive packets waiting for reply
 cons_miss    = ${CONS_MISS} consecutive packets that have timed out
 avg_rtt      = ${AVG_RTT} average rtt, notice that waiting and timed out packets have rtt = 0 when calculating this
 
-Your LSM Daemon
+Your FOOLSM Daemon
 
 EOM
 
@@ -2394,7 +2396,7 @@ else
    ${VARDIR}/firewall disable ${DEVICE}
 fi
 
-$TOOL show routing &gt;&gt; /var/log/lsm
+$TOOL show routing &gt;&gt; /var/log/foolsm
 
 exit 0
 
@@ -2457,7 +2459,7 @@ cons_wait    = ${CONS_WAIT} consecutive packets waiting for reply
 cons_miss    = ${CONS_MISS} consecutive packets that have timed out
 avg_rtt      = ${AVG_RTT} average rtt, notice that waiting and timed out packets have rtt = 0 when calculating this
 
-Your LSM Daemon
+Your FOOLSM Daemon
 
 EOM
 
@@ -2466,9 +2468,9 @@ EOM
 # [ ${STATE} = up ] &amp;&amp; state=0 || state=1
 # echo $state &gt; ${VARDIR}/${DEVICE}.status
 
-<emphasis role="bold">$TOOL restart -f &gt;&gt; /var/log/lsm 2&gt;&amp;1</emphasis>
+<emphasis role="bold">$TOOL restart -f &gt;&gt; /var/log/foolsm 2&gt;&amp;1</emphasis>
 
-$TOOL show routing &gt;&gt; /var/log/lsm
+$TOOL show routing &gt;&gt; /var/log/foolsm
 
 exit 0
 

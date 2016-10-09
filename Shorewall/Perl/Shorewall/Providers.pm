@@ -1030,7 +1030,7 @@ CEOF
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
 	}
 
-	emit( qq(    rm -f \${VARDIR}/${physical}_disabled) );
+	emit( qq(rm -f \${VARDIR}/${physical}_disabled) );
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
 	pop_indent;

@@ -3561,17 +3561,16 @@ blacklist_command() {
 	progress_message2 "$1 Blacklisted"
 
 	if [ -n "$g_disconnect" ]; then
-	    message=$(conntrack -D -s $1 2>&1)
-	    if [ -n "$message" ]; then
-		message=$(echo $message | sed 's/^.*: //; s/ / src /')
-		progress_message2 $message
+	    message="$(conntrack -D -s $1 2>&1)"
+	    if [ -n "$message" -a $VERBOSITY -gt 0 ]; then
+		echo "$message" | sed 's/^.*: //; s/ / dst /'
+		echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " src " ); }; { print; }'
 	    fi
 
 	    if [ $g_disconnect = src-dst ]; then
-		message=$(conntrack -D -d $1 2>&1)
-		if [ -n "$message" ]; then
-		    message=$(echo $message | sed 's/^.*: //; s/ / dst /')
-		    progress_message2 $message
+		message="$(conntrack -D -d $1 2>&1)"
+		if [ -n "$message" -a $VERBOSITY -gt 0 ]; then
+		    echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " dst " ); }; { print; }'
 		fi
 	    fi
 	fi

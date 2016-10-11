@@ -724,6 +724,23 @@
           <replaceable>address</replaceable> along with any
           <replaceable>option</replaceable>s are passed to the <command>ipset
           add</command> command.</para>
+
+          <para>If the <option>disconnect</option> option is specified in the
+          DYNAMIC_BLACKLISTING setting, then the effective VERBOSITY
+          determines the amount of information displayed:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If the effective verbosity is &gt; 0, then a message
+              giving the number of conntrack flows deleted by the command is
+              displayed.</para>
+            </listitem>
+
+            <listitem>
+              <para>If the effective verbosity is &gt; 1, then the conntrack
+              table entries deleted by the command are also displayed.</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </varlistentry>
 

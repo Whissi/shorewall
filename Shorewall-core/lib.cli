@@ -3563,14 +3563,21 @@ blacklist_command() {
 	if [ -n "$g_disconnect" ]; then
 	    message="$(conntrack -D -s $1 2>&1)"
 	    if [ -n "$message" -a $VERBOSITY -gt 0 ]; then
-		echo "$message" | sed 's/^.*: //; s/ / dst /'
-		echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " src " ); }; { print; }'
+		if [ $VERBOSITY -gt 1 ]; then
+		    echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " src " ); }; { print; }'
+		else
+		    echo "$message" | head -n1 | sed '/^.*: //; s/ / src /'
+		fi
 	    fi
 
 	    if [ $g_disconnect = src-dst ]; then
 		message="$(conntrack -D -d $1 2>&1)"
 		if [ -n "$message" -a $VERBOSITY -gt 0 ]; then
-		    echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " dst " ); }; { print; }'
+		    if [ $VERBOSITY -gt 1 ]; then
+			echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " dst " ); }; { print; }'
+		    else
+			echo "$message" | head -n1 | sed '/^.*: //; s/ / dst /'
+		    fi
 		fi
 	    fi
 	fi

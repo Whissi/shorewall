@@ -1119,6 +1119,8 @@ sub process_interface( $$ ) {
 
     my ($interface, $port, $extra) = split /:/ , $originalinterface, 3;
 
+    fatal_error "Invalid interface name ($interface)" if $interface =~ /[()\[\]]\*\?/;
+
     fatal_error "Invalid INTERFACE ($originalinterface)" if ! $interface || defined $extra;
 
     if ( supplied $port ) {
@@ -1316,7 +1318,7 @@ sub process_interface( $$ ) {
 		fatal_error "The '$option' option requires a value" unless defined $value;
 
 		if ( $option eq 'physical' ) {
-		    fatal_error "Invalid Physical interface name ($value)" unless $value && $value !~ /%/;
+		    fatal_error "Invalid physical interface name ($interface)" if $interface =~ /[()\[\]]\*\?%/;
 		    fatal_error "Virtual interfaces ($value) are not supported" if $value =~ /:\d+$/;
 
 		    fatal_error "Duplicate physical interface name ($value)" if ( $interfaces{$value} && ! $port );

@@ -239,9 +239,9 @@
         </listitem>
       </orderedlist>
 
-      <para>If your kernel has ULOG target support (and most vendor-supplied
-      kernels do), you may also specify a log level of ULOG (must be all
-      caps). When ULOG is used, Shorewall will direct Netfilter to log the
+      <para>If your kernel has NFLOG target support (and most vendor-supplied
+      kernels do), you may also specify a log level of NFLOG (must be all
+      caps). When NFLOG is used, Shorewall will direct Netfilter to log the
       related messages via the ULOG target which will send them to a process
       called <quote>ulogd</quote>. The ulogd program is included in most
       distributions and is also available from <ulink
@@ -250,7 +250,7 @@
       file.</para>
 
       <note>
-        <para>The ULOG logging mechanism is <emphasis
+        <para>The NFLOG logging mechanism is <emphasis
         role="underline">completely separate</emphasis> from syslog. Once you
         switch to ULOG, the settings in <filename>/etc/syslog.conf</filename>
         have absolutely no effect on your Shorewall logging (except for
@@ -259,11 +259,11 @@
 
       <para>You will need to change all instances of log levels (usually
       <quote>info</quote>) in your Shorewall configuration files to
-      <quote>ULOG</quote> - this includes entries in the policy, rules and
+      <quote>NFLOG</quote> - this includes entries in the policy, rules and
       shorewall.conf files. Here's what I had at one time:</para>
 
       <programlisting>gateway:/etc/shorewall# grep -v ^\# * | egrep '\$LOG|ULOG|LOGFILE'
-params:LOG=ULOG
+params:LOG=NFOG
 policy:loc              $FW             REJECT          $LOG
 policy:net              all             DROP            $LOG            10/sec:40
 policy:all              all             REJECT          $LOG
@@ -287,9 +287,8 @@ gateway:/etc/shorewall#                                               </programl
       <quote><command>logwatch</command></quote> and
       <quote><command>dump</command></quote> commands.</para>
 
-      <para>The NFLOG target, a successor to ULOG, is supported shorewall.
-      Both ULOG and NFLOG may be followed by a list of up to three numbers in
-      parentheses.</para>
+      <para>The NFLOG target is a successor to ULOG. Both ULOG and NFLOG may
+      be followed by a list of up to three numbers in parentheses.</para>
 
       <itemizedlist>
         <listitem>
@@ -342,6 +341,11 @@ stack=log:NFLOG,base1:BASE,ifi1:IFINDEX,ip2str1:IP2STR,print1:PRINTPKT,firewall:
 [firewall]
 file="/var/log/firewall"
 sync=1</programlisting>
+
+      <note>
+        <para>This sample config file assumes that NFLOG is being used in
+        logging rules and policies.</para>
+      </note>
     </section>
   </section>
 
@@ -470,7 +474,7 @@ sync=1</programlisting>
       <para><ulink
       url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> and <ulink
       url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink> have a
-      number of options whose values are log levels. Beginnint with Shorewall
+      number of options whose values are log levels. Beginning with Shorewall
       5.0.0, these specifcations may include a log tag as described <link
       linkend="LogTags">above</link>.</para>
     </section>

@@ -57,6 +57,7 @@ our @EXPORT = qw(
 		  perl_action_tcp_helper
 		  check_state
                   process_reject_action
+                  setup_masq
 	       );
 
 our @EXPORT_OK = qw( initialize process_rule );
@@ -5159,6 +5160,22 @@ sub process_mangle_rule( $ ) {
     for my $proto (split_list( $protos, 'Protocol' ) ) {
 	process_mangle_rule1( $chainref, $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
     }
+}
+
+################################################################################
+#   Code moved from the Nat module in Shorewall 5.0.14                         #
+################################################################################
+#
+# Process the masq file
+#
+sub setup_masq()
+{
+    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
+
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
+
+	process_one_masq while read_a_line( NORMAL_READ );
+    }	
 }
 
 1;

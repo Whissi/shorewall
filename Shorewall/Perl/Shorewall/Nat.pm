@@ -36,8 +36,8 @@ use Shorewall::Providers qw( provider_realm );
 use strict;
 
 our @ISA = qw(Exporter);
-our @EXPORT = qw( setup_masq setup_nat setup_netmap add_addresses );
-our %EXPORT_TAGS = ( rules => [ qw ( handle_nat_rule handle_nonat_rule ) ] );
+our @EXPORT = qw( setup_nat setup_netmap add_addresses );
+our %EXPORT_TAGS = ( rules => [ qw ( handle_nat_rule handle_nonat_rule process_one_masq @addresses_to_add %addresses_to_add ) ] );
 our @EXPORT_OK = ();
 
 Exporter::export_ok_tags('rules');
@@ -82,7 +82,7 @@ sub process_one_masq1( $$$$$$$$$$$ )
 	$inlinematches = get_inline_matches(0);
     } else {
 	$inlinematches = get_inline_matches(0);
-    }	
+    }
     #
     # Handle early matches
     #
@@ -399,19 +399,6 @@ sub process_one_masq( )
 
     for my $proto ( split_list $protos, 'Protocol' ) {
 	process_one_masq1( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
-    }
-}
-
-#
-# Process the masq file
-#
-sub setup_masq()
-{
-    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
-
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
-
-	process_one_masq while read_a_line( NORMAL_READ );
     }
 }
 

@@ -551,8 +551,8 @@
           <programlisting>/etc/shorewall/masq:
 
        #INTERFACE    SOURCE         ADDRESS 
-       INLINE(sit1)  0.0.0.0/0      2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
-       sit1          0.0.0.0/0      2001:470:a:227::2 
+       INLINE(sit1)  ::/0           2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
+       sit1          ::/0           2001:470:a:227::2 
 </programlisting>
 
           <para>If INLINE_MATCHES=Yes in <ulink
@@ -562,9 +562,8 @@
           <programlisting>/etc/shorewall/masq:
 
        #INTERFACE    SOURCE         ADDRESS 
-       sit1          0.0.0.0/0      2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
-       sit1          0.0.0.0/0      2001:470:a:227::2 
-</programlisting>
+       sit1          ::/0           2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
+       sit1          ::/0           2001:470:a:227::2</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -593,8 +593,8 @@
 
           <para>Your entry in the file will be:</para>
 
-          <programlisting>        #INTERFACE   SOURCE
-        eth0    192.168.0.0/24</programlisting>
+          <programlisting>        #ACTION    SOURCE              DEST
+        MASQUERADE 192.168.0.0/24      eth0</programlisting>
         </listitem>
       </varlistentry>
 
@@ -606,8 +606,9 @@
           192.168.1.0/24 which you also want to masquerade. You then add a
           second entry for eth0 to this file:</para>
 
-          <programlisting>        #INTERFACE   SOURCE
-        eth0         192.168.1.0/24</programlisting>
+          <programlisting>        #ACTION    SOURCE              DEST
+        MASQUERADE 192.168.0.0/24      eth0
+        MASQUERADE 192.168.1.0/24      eth0</programlisting>
         </listitem>
       </varlistentry>
 
@@ -615,31 +616,18 @@
         <term>Example 3:</term>
 
         <listitem>
-          <para>You have an IPSEC tunnel through ipsec0 and you want to
-          masquerade packets coming from 192.168.1.0/24 but only if these
-          packets are destined for hosts in 10.1.1.0/24:</para>
-
-          <programlisting>        #INTERFACE              SOURCE
-        ipsec0:10.1.1.0/24      196.168.1.0/24</programlisting>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>Example 4:</term>
-
-        <listitem>
           <para>You want all outgoing traffic from 192.168.1.0/24 through eth0
           to use source address 206.124.146.176 which is NOT the primary
           address of eth0. You want 206.124.146.176 to be added to eth0 with
           name eth0:0.</para>
 
-          <programlisting>        #INTERFACE              SOURCE          ADDRESS
-        eth0:0                  192.168.1.0/24  206.124.146.176</programlisting>
+          <programlisting>        #ACTION                 SOURCE          DEST
+        SNAT(206.124.146.176)   192.168.1.0/24  eth0:0</programlisting>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Example 5:</term>
+        <term>Example 4:</term>
 
         <listitem>
           <para>You want all outgoing SMTP traffic entering the firewall from
@@ -652,6 +640,10 @@
         eth0         172.20.1.0/29    206.124.146.177 tcp     smtp
         eth0         172.20.1.0/29    206.124.146.176</programlisting>
 
+          <programlisting>        #ACTION                 SOURCE          DEST        PROTO     PORT
+        SNAT(206.124.146.177)   172.20.1.0/29   eth0        tcp       smtp
+        SNAT(206.124.146.176)   172.20.1.0/29   eth0</programlisting>
+
           <warning>
             <para>The order of the above two rules is significant!</para>
           </warning>
@@ -659,20 +651,20 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 6:</term>
+        <term>Example 5:</term>
 
         <listitem>
           <para>Connections leaving on eth0 and destined to any host defined
           in the ipset <emphasis>myset</emphasis> should have the source IP
           address changed to 206.124.146.177.</para>
 
-          <programlisting>        #INTERFACE              SOURCE          ADDRESS
-        eth0:+myset[dst]        -               206.124.146.177</programlisting>
+          <programlisting>        #ACTION                 SOURCE          DEST
+        SNAT(206.124.146.177)   -               eth0+myset[dst]</programlisting>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Example 7:</term>
+        <term>Example 6:</term>
 
         <listitem>
           <para>SNAT outgoing connections on eth0 from 192.168.1.0/24 in
@@ -684,17 +676,17 @@
        #ACTION   SOURCE         DEST         PROTO   DPORT         SPORT    USER    TEST
        1-3:CF    192.168.1.0/24 eth0 ; state=NEW
 
-/etc/shorewall/masq:
+/etc/shorewall/snat:
 
-       #INTERFACE SOURCE         ADDRESS     ...
-       eth0       192.168.1.0/24 1.1.1.1 ; mark=1:C
-       eth0       192.168.1.0/24 1.1.1.3 ; mark=2:C
-       eth0       192.168.1.0/24 1.1.1.4 ; mark=3:C</programlisting>
+       #ACTION                 SOURCE          DEST
+       SNAT(1.1.1.1)           192.168.1.0/24  eth0  { mark=1:C }
+       SNAT(1.1.1.3)           192.168.1.0/24  eth0  { mark=2:C }
+       SNAT(1.1.1.9)           192.168.1.0/24  eth0  { mark=3:C }</programlisting>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term>Example 8:</term>
+        <term>Example 7:</term>
 
         <listitem>
           <para>Your eth1 has two public IP addresses: 70.90.191.121 and
@@ -702,23 +694,11 @@
           masquerade outgoing connections evenly between these two
           addresses.</para>
 
-          <programlisting>/etc/shorewall/masq:
+          <programlisting>/etc/shorewall/snat:
 
-       #INTERFACE    SOURCE         ADDRESS 
-       INLINE(eth1)  0.0.0.0/0      70.90.191.121 ;  -m statistic --mode random --probability 0.50
-       eth1          0.0.0.0/0      70.90.191.123 
-</programlisting>
-
-          <para>If INLINE_MATCHES=Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf(5)</ulink>, then
-          these rules may be specified as follows:</para>
-
-          <programlisting>/etc/shorewall/masq:
-
-       #INTERFACE    SOURCE         ADDRESS 
-       eth1          0.0.0.0/0      70.90.191.121 ;  -m statistic --mode random --probability 0.50
-       eth1          0.0.0.0/0      70.90.191.123 
-</programlisting>
+       #ACTION                 SOURCE           DEST
+       SNAT(70.90.191.121)     -                eth1 { probability=.50 }
+       SNAT(70.90.191.123)     -                eth1</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

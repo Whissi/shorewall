@@ -3,7 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <refentry>
   <refmeta>
-    <refentrytitle>shorewall-masq</refentrytitle>
+    <refentrytitle>shorewall-snat</refentrytitle>
 
     <manvolnum>5</manvolnum>
 
@@ -11,14 +11,14 @@
   </refmeta>
 
   <refnamediv>
-    <refname>masq</refname>
+    <refname>snat</refname>
 
-    <refpurpose>Shorewall Masquerade/SNAT definition file</refpurpose>
+    <refpurpose>Shorewall SNAT/Masquerade definition file</refpurpose>
   </refnamediv>
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/masq</command>
+      <command>/etc/shorewall/snat</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -26,9 +26,9 @@
     <title>Description</title>
 
     <para>This file is used to define dynamic NAT (Masquerading) and to define
-    Source NAT (SNAT). While still supported, its use is deprecated in favor
-    of <ulink url="shorewall-snat.html">shorewall-snat</ulink>(5) which was
-    introduced in Shorewall 5.0.14.</para>
+    Source NAT (SNAT). It superseded <ulink
+    url="shorewall-masq.html">shorewall-masq</ulink>(5) in Shorewall
+    5.0.14.</para>
 
     <warning>
       <para>The entries in this file are order-sensitive. The first entry that
@@ -49,15 +49,141 @@
 
     <variablelist>
       <varlistentry>
-        <term><emphasis role="bold">INTERFACE:DEST</emphasis> - {[<emphasis
-        role="bold">+</emphasis>]<emphasis>interfacelist</emphasis>[<emphasis
-        role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
-        role="bold">:</emphasis>[<emphasis>dest-address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]|?COMMENT}</term>
+        <term><emphasis role="bold">ACTION</emphasis></term>
 
         <listitem>
-          <para>Outgoing <emphasis>interfacelist</emphasis>. This may be a
-          comma-separated list of interface names. This is usually your
+          <para>Defines the type of rule to generate. Choices are:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold">MASQUERADE[+]</emphasis>[([<replaceable>lowport</replaceable>-<replaceable>highport</replaceable>][<option>random</option>])]</term>
+
+              <listitem>
+                <para>Causes matching outgoing packages to have their source
+                IP address set to the primary IP address of the interface
+                specified in the DEST column. if
+                <replaceable>lowport</replaceable>-<replaceable>highport</replaceable>
+                is given, that port range will be used to assign a source
+                port. If option <option>random</option> is used then port
+                mapping will be randomized. MASQUERADE should only be used
+                when the DEST interface has a dynamic IP address. Otherwise,
+                SNAT should be used and should specify the interface's static
+                address.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">SNAT[+]</emphasis>([<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
+              role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
+              role="bold">:random</emphasis>][:<option>persistent</option>]|<emphasis
+              role="bold">detect</emphasis>|</term>
+
+              <listitem>
+                <para>If you specify an address here, matching packets will
+                have their source address set to that address. If
+                ADD_SNAT_ALIASES is set to Yes or yes in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                then Shorewall will automatically add this address to the
+                INTERFACE named in the first column.</para>
+
+                <para>You may also specify a range of up to 256 IP addresses
+                if you want the SNAT address to be assigned from that range in
+                a round-robin fashion by connection. The range is specified by
+                <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
+                You may follow the port range with<emphasis role="bold">
+                :random</emphasis> in which case assignment of ports from the
+                list will be random. <emphasis role="bold">random</emphasis>
+                may also be specified by itself in this column in which case
+                random local port assignments are made for the outgoing
+                connections.</para>
+
+                <para>Example: 206.124.146.177-206.124.146.180</para>
+
+                <para>You may follow the port range (or <emphasis
+                role="bold">:random</emphasis>) with <emphasis
+                role="bold">:persistent</emphasis>. This is only useful when
+                an address range is specified and causes a client to be given
+                the same source/destination IP pair. This feature replaces the
+                SAME modifier which was removed from Shorewall in version
+                4.4.0.</para>
+
+                <para>You may also use the special value
+                <option>detect</option> which causes Shorewall to determine
+                the IP addresses configured on the interface named in the DEST
+                column and substitute them in this column.</para>
+
+                <para>Finally, you may also specify a comma-separated list of
+                ranges and/or addresses in this column.</para>
+
+                <para>DNS Names names are not allowed.</para>
+
+                <para>Normally, Netfilter will attempt to retain the source
+                port number. You may cause netfilter to remap the source port
+                by following an address or range (if any) by ":" and a port
+                range with the format
+                <emphasis>lowport</emphasis>-<emphasis>highport</emphasis>. If
+                this is done, you must specify "tcp", "udp", "dccp" or "stcp"
+                in the PROTO column.</para>
+
+                <para>Examples:</para>
+
+                <programlisting>        192.0.2.4:5000-6000
+        :4000-5000</programlisting>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>CONTINUE[+]</term>
+
+              <listitem>
+                <para>Causes matching packets to be exempted from any
+                following rules in the file.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>Normally Masq/SNAT rules are evaluated after those for
+          one-to-one NAT (defined in <ulink
+          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5)). If you
+          want the rule to be applied before one-to-one NAT rules, follow the
+          action name with "+": This feature should only be required if you
+          need to insert rules in this file that preempt entries in <ulink
+          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">SOURCE</emphasis> (Optional) -
+        [<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]]</term>
+
+        <listitem>
+          <para>Set of hosts that you wish to masquerade. You can specify this
+          as an <emphasis>address</emphasis> (net or host) or as an
+          <emphasis>interface</emphasis> (use of an
+          <emphasis>interface</emphasis> is deprecated). If you give the name
+          of an interface, the interface must be up before you start the
+          firewall and the Shorewall rules compiler will warn you of that
+          fact. (Shorewall will use your main routing table to determine the
+          appropriate addresses to masquerade).</para>
+
+          <para>The preferred way to specify the SOURCE is to supply one or
+          more host or network addresses separated by comma. You may use ipset
+          names preceded by a plus sign (+) to specify a set of hosts.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST</emphasis> - {[<emphasis
+        role="bold">+</emphasis>]<emphasis>interface</emphasis>[<emphasis
+        role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
+        role="bold">:</emphasis>[<emphasis>dest-address</emphasis>[<emphasis
+        role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]}</term>
+
+        <listitem>
+          <para>Outgoing <emphasis>interface</emphasis>. This is usually your
           internet interface. If ADD_SNAT_ALIASES=Yes in <ulink
           url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), you
           may add ":" and a <emphasis>digit</emphasis> to indicate that you
@@ -84,7 +210,7 @@
           <programlisting>        eth0(Avvanta)</programlisting>
 
           <para>In that case, you will want to specify the interface's address
-          for that provider in the ADDRESS column.</para>
+          for that provider as the SNAT parameter.</para>
 
           <para>The interface may be qualified by adding the character ":"
           followed by a comma-separated list of destination host or subnet
@@ -100,20 +226,6 @@
           <programlisting>        eth0(Avvanta):
         eth2::192.0.2.32/27</programlisting>
 
-          <para>Normally Masq/SNAT rules are evaluated after those for
-          one-to-one NAT (defined in <ulink
-          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5)). If you
-          want the rule to be applied before one-to-one NAT rules, prefix the
-          interface name with "+":</para>
-
-          <programlisting>        +eth0
-        +eth0:192.0.2.32/27
-        +eth0:2</programlisting>
-
-          <para>This feature should only be required if you need to insert
-          rules in this file that preempt entries in <ulink
-          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5).</para>
-
           <para>Comments may be attached to Netfilter rules generated from
           entries in this file through the use of ?COMMENT lines. These lines
           begin with ?COMMENT; the remainder of the line is treated as a
@@ -121,113 +233,6 @@
           line is found or until the end of the file is reached. To stop
           adding comments to rules, use a line containing only
           ?COMMENT.</para>
-
-          <para>Beginning with Shorewall 4.6.0, a new syntax is also accepted.
-          With the exception of the leading '+', the interfacelist and
-          qualifiers may appear within the parentheses of <emphasis
-          role="bold">INLINE</emphasis>(...).</para>
-
-          <para>Example:</para>
-
-          <programlisting>        +INLINE(eth0)</programlisting>
-
-          <para>When this is done, you may augment the rule generated by
-          Shorewall with iptables matches of your own. These matches appear
-          after a semicolon (';') at the end of the line.</para>
-
-          <para>See example 8 below.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis> (Formerly called SUBNET
-        - Optional) -
-        [<emphasis>interface</emphasis>|<emphasis>address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>address</emphasis>][<emphasis>exclusion</emphasis>]]</term>
-
-        <listitem>
-          <para>Set of hosts that you wish to masquerade. You can specify this
-          as an <emphasis>address</emphasis> (net or host) or as an
-          <emphasis>interface</emphasis> (use of an
-          <emphasis>interface</emphasis> is deprecated). If you give the name
-          of an interface, the interface must be up before you start the
-          firewall and the Shorewall rules compiler will warn you of that
-          fact. (Shorewall will use your main routing table to determine the
-          appropriate addresses to masquerade).</para>
-
-          <para>The preferred way to specify the SOURCE is to supply one or
-          more host or network addresses separated by comma. You may use ipset
-          names preceded by a plus sign (+) to specify a set of hosts.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term><emphasis role="bold">ADDRESS</emphasis> (Optional) - [<emphasis
-        role="bold">-</emphasis>|<emphasis
-        role="bold">NONAT</emphasis>|[<emphasis>address-or-address-range</emphasis>[,<emphasis>address-or-address-range</emphasis>]...][:<emphasis>lowport</emphasis><emphasis
-        role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
-        role="bold">:random</emphasis>][:persistent]|<emphasis
-        role="bold">detect</emphasis>|<emphasis
-        role="bold">random</emphasis>]</term>
-
-        <listitem>
-          <para>If you specify an address here, SNAT will be used and this
-          will be the source address. If ADD_SNAT_ALIASES is set to Yes or yes
-          in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) then
-          Shorewall will automatically add this address to the INTERFACE named
-          in the first column.</para>
-
-          <para>You may also specify a range of up to 256 IP addresses if you
-          want the SNAT address to be assigned from that range in a
-          round-robin fashion by connection. The range is specified by
-          <emphasis>first.ip.in.range</emphasis>-<emphasis>last.ip.in.range</emphasis>.
-          You may follow the port range with<emphasis role="bold">
-          :random</emphasis> in which case assignment of ports from the list
-          will be random. <emphasis role="bold">random</emphasis> may also be
-          specified by itself in this column in which case random local port
-          assignments are made for the outgoing connections.</para>
-
-          <para>Example: 206.124.146.177-206.124.146.180</para>
-
-          <para>You may follow the port range (or <emphasis
-          role="bold">:random</emphasis>) with <emphasis
-          role="bold">:persistent</emphasis>. This is only useful when an
-          address range is specified and causes a client to be given the same
-          source/destination IP pair. This feature replaces the SAME modifier
-          which was removed from Shorewall in version 4.4.0. Unlike <emphasis
-          role="bold">random</emphasis>, <emphasis
-          role="bold">persistent</emphasis> may not be used by itself.</para>
-
-          <para>You may also use the special value "detect" which causes
-          Shorewall to determine the IP addresses configured on the interface
-          named in the INTERFACES column and substitute them in this
-          column.</para>
-
-          <para>Finally, you may also specify a comma-separated list of ranges
-          and/or addresses in this column.</para>
-
-          <para>This column may not contain DNS Names.</para>
-
-          <para>Normally, Netfilter will attempt to retain the source port
-          number. You may cause netfilter to remap the source port by
-          following an address or range (if any) by ":" and a port range with
-          the format
-          <emphasis>lowport</emphasis>-<emphasis>highport</emphasis>. If this
-          is done, you must specify "tcp" or "udp" in the PROTO column.</para>
-
-          <para>Examples:</para>
-
-          <programlisting>        192.0.2.4:5000-6000
-        :4000-5000</programlisting>
-
-          <para>If you simply place <emphasis role="bold">NONAT</emphasis> in
-          this column, no rewriting of the source IP address or port number
-          will be performed. This is useful if you want particular traffic to
-          be exempt from the entries that follow in the file.</para>
-
-          <para>If you want to leave this column empty but you need to specify
-          the next column then place a hyphen ("-") here.</para>
         </listitem>
       </varlistentry>
 
@@ -722,7 +727,7 @@
   <refsect1>
     <title>FILES</title>
 
-    <para>/etc/shorewall/masq</para>
+    <para>/etc/shorewall/snat</para>
   </refsect1>
 
   <refsect1>

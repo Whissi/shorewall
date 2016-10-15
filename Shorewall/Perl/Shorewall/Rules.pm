@@ -38,6 +38,7 @@ use Shorewall::IPAddrs;
 use Shorewall::Nat qw(:rules);
 use Shorewall::Raw qw( handle_helper_rule );
 use Scalar::Util 'reftype';
+use Shorewall::Providers qw( provider_realm );
 
 use strict;
 
@@ -57,7 +58,7 @@ our @EXPORT = qw(
 		  perl_action_tcp_helper
 		  check_state
                   process_reject_action
-                  setup_masq
+                  setup_snat
 	       );
 
 our @EXPORT_OK = qw( initialize process_rule );
@@ -5162,20 +5163,332 @@ sub process_mangle_rule( $ ) {
     }
 }
 
-################################################################################
-#   Code moved from the Nat module in Shorewall 5.0.14                         #
-################################################################################
 #
-# Process the masq file
+# Process a record in the snat file
 #
-sub setup_masq()
+sub process_one_snat1( $$$$$$$$$$$ ) {
+    my ($action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+
+    my $pre_nat;
+    my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
+    my $destnets = '';
+    my $baserule = '';
+    my $inlinematches = get_inline_matches(0);
+    my $prerule       = '';
+    my $options       = '';
+    my $addresses;
+    my $target;
+
+    if ( $action =~ /^MASQUERADE(\+)?\((.+)\)$/ ) {
+	$target    = 'MASQUERADE';
+	$action    = $target;
+	$pre_nat   = $1;
+	$addresses = $2;
+	$options = 'random' if $addresses =~ s/:?random$//;
+    } elsif ( $action =~ /^SNAT(\+)?\((.+)\)$/ ) {
+	$pre_nat   = $1;
+	$addresses = $2;
+	$target    = 'SNAT';
+	$action    = $target;
+	$options .= ':persistent' if $addresses =~ s/:persistent//;
+	$options .= ':random'     if $addresses =~ s/:random//;
+	$options =~ s/^://;
+    } elsif ( $action =~ /^CONTINUE(\+)?$/ ) {
+	$add_snat_aliases = 0;
+	$target  = 'RETURN';
+	$pre_nat = $1;
+    } elsif ( $action eq 'MASQUERADE' ) {
+	$target = 'MASQUERADE';
+    } else {
+	fatal_error "Invalid ACTION ($action)";
+    }
+    #
+    # Next, parse the DEST column
+    #
+    if ( $family == F_IPV4 ) {
+	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {
+	    $add_snat_aliases = 0;
+	    $destnets = $2;
+	    $dest = $1;
+	} elsif ( $dest =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
+	    $destnets = $2;
+	    $dest = $1;
+	} elsif ( $dest =~ /^([^:]+):$/ ) {
+	    $add_snat_aliases = 0;
+	    $dest = $1;
+	} elsif ( $dest =~ /^([^:]+):([^:]*)$/ ) {
+	    my ( $one, $two ) = ( $1, $2 );
+	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
+		$dest = $one;
+		$destnets = $two;
+	    }
+	}
+    } elsif ( $dest =~ /^(.+?):(.+)$/ ) {
+	$dest          = $1;
+	$destnets      = $2;
+    }
+    #
+    # If there is no source or destination then allow all addresses
+    #
+    $source   = ALLIP if $source   eq '-';
+    $destnets = ALLIP if $destnets eq '-';
+    #
+    # Handle IPSEC options, if any
+    #
+    if ( $ipsec ne '-' ) {
+	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
+
+	if ( $ipsec =~ /^yes$/i ) {
+	    $baserule .= do_ipsec_options 'out', 'ipsec', '';
+	} elsif ( $ipsec =~ /^no$/i ) {
+	    $baserule .= do_ipsec_options 'out', 'none', '';
+	} else {
+	    $baserule .= do_ipsec_options 'out', 'ipsec', $ipsec;
+	}
+    } elsif ( have_ipsec ) {
+	$baserule .= '-m policy --pol none --dir out ';
+    }
+    #
+    # Handle Protocol, Ports and Condition
+    #
+    $baserule .= do_proto( $proto, $ports, '' );
+    #
+    # Handle Mark
+    #
+    $baserule .= do_test( $mark, $globals{TC_MASK} ) if $mark ne '-';
+    $baserule .= do_user( $user )                    if $user ne '-';
+    $baserule .= do_probability( $probability )      if $probability ne '-';
+
+    my $rule = '';
+
+    ( my $interface = $dest ) =~ s/:.*//;
+
+    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
+	$interface = $1;
+	my $provider  = $2;
+
+	fatal_error "Missing Provider ($dest)" unless supplied $provider;
+
+	$dest =~ s/[(]\w*[)]//;
+	my $realm = provider_realm( $provider );
+
+	fatal_error "$provider is not a shared-interface provider" unless $realm;
+
+	$rule .= "-m realm --realm $realm ";
+    }
+
+    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
+
+    if ( $interfaceref->{root} ) {
+	$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+    } else {
+	$rule .= match_dest_dev( $interface );
+	$interface = $interfaceref->{name};
+    }
+
+    my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
+
+    $baserule .= do_condition( $condition , $chainref->{name} );
+
+    my $detectaddress = 0;
+    my $exceptionrule = '';
+    my $conditional   = 0;
+
+    if ( $action eq 'SNAT' ) {
+	if ( $addresses eq 'detect' ) {
+	    my $variable = get_interface_address $interface;
+	    $target .= " --to-source $variable";
+
+	    if ( interface_is_optional $interface ) {
+		add_commands( $chainref,
+			      '',
+			      "if [ \"$variable\" != 0.0.0.0 ]; then" );
+		incr_cmd_level( $chainref );
+		$detectaddress = 1;
+	    }
+	} else {
+	    my $addrlist = '';
+	    my @addrs = split_list $addresses, 'address';
+
+	    fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+
+	    for my $addr ( @addrs ) {
+		if ( $addr =~ /^([&%])(.+)$/ ) {
+		    my ( $type, $interface ) = ( $1, $2 );
+
+		    my $ports = '';
+
+		    if ( $interface =~ s/:(.+)$// ) {
+			validate_portpair1( $proto, $1 );
+			$ports = ":$1";
+		    }
+		    #
+		    # Address Variable
+		    #
+		    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+			#
+			# User-defined address variable
+			#
+			$conditional = conditional_rule( $chainref, $addr );
+			$addrlist .= ' --to-source' . "\$${1}${ports} ";
+		    } else {
+			if ( $conditional = conditional_rule( $chainref, $addr ) ) {
+			    #
+			    # Optional Interface -- rule is conditional
+			    #
+			    $addr = get_interface_address $interface;
+			} else {
+			    #
+			    # Interface is not optional
+			    #
+			    $addr = record_runtime_address( $type, $interface );
+			}
+
+			if ( $ports ) {
+			    $addr =~ s/ $//;
+			    $addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
+			}
+
+			$addrlist .= ' --to-source' . $addr;
+		    }
+		} elsif ( $family == F_IPV4 ) {
+		    if ( $addr =~ /^.*\..*\..*\./ ) {
+			my ($ipaddr, $rest) = split ':', $addr;
+			if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
+			    validate_range( $1, $2 );
+			} else {
+			    validate_address $ipaddr, 0;
+			}
+			validate_portpair1( $proto, $rest ) if supplied $rest;
+			$addrlist .= " --to-source $addr";
+			$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
+		    } else {
+			my $ports = $addr;
+			$ports =~ s/^://;
+			validate_portpair1( $proto, $ports );
+			$addrlist .= " --to-ports $ports";
+			$exceptionrule = do_proto( $proto, '', '' );
+		    }
+		} else {
+		    if ( $addr =~ /^\[/ ) {
+			#
+			# Can have ports specified
+			#
+			my $ports;
+
+			if ( $addr =~ s/:([^]:]+)$// ) {
+			    $ports = $1;
+			}
+
+			fatal_error "Invalid IPv6 Address ($addr)" unless $addr =~ /^\[(.+)\]$/;
+
+			$addr = $1;
+
+			if ( $addr =~ /^(.+)-(.+)$/ ) {
+			    fatal_error "Correct address range syntax is '[<addr1>-<addr2>]'" if $addr =~ /]-\[/;
+			    validate_range( $1, $2 );
+			} else {
+			    validate_address $addr, 0;
+			}
+
+			if ( supplied $ports ) {
+			    validate_portpair1( $proto, $ports );
+			    $exceptionrule = do_proto( $proto, '', '' );
+			    $addr = "[$addr]:$ports";
+			}
+
+			$addrlist .= " --to-source $addr";
+		    } else {
+			if ( $addr =~ /^(.+)-(.+)$/ ) {
+			    validate_range( $1, $2 );
+			} else {
+			    validate_address $addr, 0;
+			}
+
+			$addrlist .= " --to-source $addr";
+		    }
+		}
+	    }
+
+	    $target .= $addrlist;
+	}
+    } elsif ( $action eq 'MASQUERADE' ) {
+	if ( supplied $addresses ) {
+	    validate_portpair1($proto, $addresses );
+	    $target .= " --to-ports $addresses";
+	}
+    }	    
+	
+    for my $option ( split_list2( $options , 'option' ) ) {
+	if ( $option eq 'random' ) {
+	    $target .= ' --random';
+	    require_capability( 'MASQUERADE_TGT', "$action rules", '') if $family == F_IPV6;
+	} elsif ( $option eq 'persistent' ) {
+	    fatal_error( "':persistent' is not allowed in a MASQUERADE rule" ) if $action eq 'MASQUERADE';
+	    require_capability 'PERSISTENT_SNAT', ':persistent', 's';
+	    $target .= ' --persistent';
+	} else {
+	    fatal_error "Invalid $action option ($option)";
+	}
+    }
+
+    #
+    # And Generate the Rule(s)
+    #
+    expand_rule( $chainref ,
+		 POSTROUTE_RESTRICT ,
+		 $prerule ,
+		 $baserule . $inlinematches . $rule ,
+		 $source ,
+		 $destnets ,
+		 $origdest ,
+		 $target ,
+		 '' ,
+		 '' ,
+		 $exceptionrule ,
+		 '' )
+	unless unreachable_warning( 0, $chainref );
+
+    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
+
+    progress_message "   Snat record \"$currentline\" $done"
+    
+}
+
+sub process_one_snat( )
 {
-    if ( my $fn = open_file( 'masq', 1, 1 ) ) {
+    my ($action, $source, $dest, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
+	split_line2( 'snat file',
+		     { action => 0, source => 1, dest => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
+		     {},    #Nopad
+		     undef, #Columns
+		     1 );   #Allow inline matches
+
+    fatal_error 'ACTION must be specified' if $action eq '-';
+    fatal_error 'DEST must be specified' if $dest eq '-';
+
+    for my $proto ( split_list $protos, 'Protocol' ) {
+	process_one_snat1( $action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
+    }
+}
+
+#
+# Process the masq or snat file
+#
+sub setup_snat( $ ) # Convert masq->snat if true
+{
+    my $fn;
+
+    convert_masq() if $_[0];
+
+    if ( $fn = open_file( 'masq', 1, 1 ) ) {
 
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
 
-	process_one_masq while read_a_line( NORMAL_READ );
-    }	
+	process_one_masq(0) while read_a_line( NORMAL_READ );
+    } elsif ( $fn = open_file( 'snat', 1, 1 ) ) {
+	process_one_snat while read_a_line( NORMAL_READ );
+    }
 }
 
 1;

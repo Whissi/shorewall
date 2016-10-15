@@ -847,7 +847,7 @@ sub compiler {
     #
     # Setup Masquerading/SNAT
     #
-    setup_masq;
+    setup_snat( $update );
     #
     # Setup Nat
     #

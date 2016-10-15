@@ -311,9 +311,10 @@
 
       <listitem>
         <para>The source IP address may be rewritten according to an entry in
-        the <filename>/etc/shorewall/masq</filename> file. If this is a new
-        connection request, then the rewriting occurs in a
-        <emphasis>nat</emphasis> table chain called <emphasis
+        the <filename>/etc/shorewall/masq</filename> or
+        <filename>/etc/shorewall/snat</filename> file (Shorewall 5.0.14 or
+        later). If this is a new connection request, then the rewriting occurs
+        in a <emphasis>nat</emphasis> table chain called <emphasis
         role="bold"><emphasis>interface</emphasis>_masq</emphasis> where
         <emphasis>interface</emphasis> is the interface on which the packet
         will be sent. For packets that are part of an already established

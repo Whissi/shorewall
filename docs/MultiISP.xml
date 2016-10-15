@@ -774,7 +774,7 @@ fi</programlisting>
     </section>
 
     <section id="masq">
-      <title>./etc/shorewall/masq and Multi-ISP</title>
+      <title>./etc/shorewall/masq (/etc/shorewall/snat) and Multi-ISP</title>
 
       <para>If you masquerade a local network, you will need to add masquerade
       rules for both external interfaces. Referring to the diagram above, if
@@ -786,12 +786,25 @@ fi</programlisting>
 eth0             0.0.0.0/0         206.124.146.176
 eth1             0.0.0.0/0         130.252.99.27</programlisting>
 
+      <para>When running Shorewall 5.0.14 or later, the equivalent
+      <filename>/etc/shorewall/snat</filename> is:</para>
+
+      <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+SNAT(206.124.146.176)  0.0.0.0/0       eth0
+SNAT(130252.99.27)     0.0.0.0/0       eth1</programlisting>
+
       <para>If you have a public subnet (for example 206.124.146.176/30)
       behind your firewall, then use exclusion:</para>
 
       <programlisting>#INTERFACE       SOURCE               ADDRESS
 eth0             !206.124.146.176/29  206.124.146.176
 eth1             0.0.0.0/0            130.252.99.27</programlisting>
+
+      <para>The equivalent <filename>/etc/shorewall/snat</filename> is:</para>
+
+      <programlisting>#ACTION                SOURCE              DEST                PROTO   PORT
+SNAT(206.124.146.176)  !206.124.146.176/29 eth0
+SNAT(130.252.99.27)    0.0.0.0/0           eth1</programlisting>
 
       <para>Note that exclusion is only used on the interface corresponding to
       internal subnetwork.</para>
@@ -801,10 +814,10 @@ eth1             0.0.0.0/0            130.252.99.27</programlisting>
       contains all of those addresses from being masqueraded.</para>
 
       <warning>
-        <para>Entries in <filename>/etc/shorewall/masq</filename> have no
-        effect on which ISP a particular connection will be sent through. That
-        is rather the purpose of entries in
-        <filename>/etc/shorewall/mangle</filename> and
+        <para>Entries in <filename>/etc/shorewall/masq</filename>
+        (<filename>/etc/shorewall/snat</filename>) have no effect on which ISP
+        a particular connection will be sent through. That is rather the
+        purpose of entries in <filename>/etc/shorewall/mangle</filename> and
         <filename>/etc/shorewall/rtrules</filename>.</para>
       </warning>
     </section>
@@ -830,7 +843,8 @@ Feb  9 17:23:45 gw.ilinx kernel: ll header: 00:a0:24:2a:1f:72:00:13:5f:07:97:05:
       206.124.146.176. Another gotcha is that the incoming packet has already
       had the destination IP address changed for DNAT or because the original
       outgoing connection was altered by an entry in
-      <filename>/etc/shorewall/masq</filename> (SNAT or Masquerade). So the
+      <filename>/etc/shorewall/masq</filename> or
+      <filename>/etc/shorewall/snat</filename> (SNAT or Masquerade). So the
       destination IP address (206.124.146.176) may not have been the
       destination IP address in the packet as it was initially
       received.</para>
@@ -960,6 +974,13 @@ net        net            DROP</programlisting>
       <programlisting>#INTERFACE       SOURCE            ADDRESS
 eth0             0.0.0.0/0         206.124.146.176
 eth1             0.0.0.0/0         130.252.99.27</programlisting>
+
+      <para>When running Shorewall 5.0.14 or later, the equivalent
+      <filename>/etc/shorewall/snat</filename> is:</para>
+
+      <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+SNAT(206.124.146.176)  0.0.0.0/0       eth0
+SNAT(130.252.99.27)    0.0.0.0/0       eth1</programlisting>
     </section>
 
     <section id="Applications">
@@ -1050,7 +1071,8 @@ DNAT           net                loc:192.168.1.3   tcp       25               <
 
         <listitem>
           <para>For each external interface, you need to add an entry to
-          <filename>/etc/shorewall/masq</filename>.</para>
+          <filename>/etc/shorewall/masq</filename>
+          (<filename>/etc/shorewall/snat</filename>).</para>
         </listitem>
       </orderedlist>
 
@@ -1066,6 +1088,14 @@ ISP3    3       3       main            eth3            16.105.78.254   track,ba
 eth0             0.0.0.0/0         206.124.146.176
 eth1             0.0.0.0/0         130.252.99.27
 eth3             0.0.0.0/0         16.105.78.4</programlisting></para>
+
+      <para>When running Shorewall 5.0.14 or later, the equivalent
+      <filename>/etc/shorewall/snat</filename> is:</para>
+
+      <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+SNAT(206.124.146.176)  0.0.0.0/0       eth0
+SNAT(130.252.99.27)    0.0.0.0/0       eth1
+SNAT(16.105.78.4)      0.0.0.0/0       eth2</programlisting>
     </section>
 
     <section id="rtrules">
@@ -2498,8 +2528,9 @@ exit 0
         </listitem>
 
         <listitem>
-          <para>Entries in <filename>/etc/shorewall/masq</filename> must be
-          qualified by the provider name (or number).</para>
+          <para>Entries in <filename>/etc/shorewall/masq</filename> and
+          <filename>/etc/shorewall/snat</filename> must be qualified by the
+          provider name (or number).</para>
         </listitem>
 
         <listitem>

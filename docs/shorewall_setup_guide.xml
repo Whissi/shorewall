@@ -1373,11 +1373,18 @@ Destination    Gateway     Genmask         Flags MSS Window irtt Iface
 
           <member>SNAT is configured in Shorewall using the <filename><ulink
           url="manpages/shorewall-masq.html">/etc/shorewall/masq</ulink></filename>
-          file.</member>
+          file (/etc/shorewall/snat when running Shorewall 5.0.14 or
+          later):</member>
         </simplelist>
 
-        <programlisting>#INTERFACE     SUBNET               ADDRESS
+        <programlisting>#INTERFACE     SOURCE               ADDRESS
 eth0           192.168.201.0/29     192.0.2.176</programlisting>
+
+        <para>When running Shorewall 5.0.14 or later, the equivalent
+        <filename>/etc/shorewall/snat</filename> is:</para>
+
+        <programlisting>#ACTION                SOURCE            DEST                PROTO   PORT
+SNAT(192.0.2.176)      192.168.201.0/24  eth0</programlisting>
 
         <para>This example used the normal technique of assigning the same
         public IP address for the firewall external interface and for SNAT. If
@@ -1592,8 +1599,14 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         connections. This is done with the following entry in
         <filename>/etc/shorewall/masq</filename>:</para>
 
-        <programlisting>#INTERFACE     SUBNET               ADDRESS
+        <programlisting>#INTERFACE     SOURCE               ADDRESS
 eth0           192.168.201.0/29     192.0.2.176</programlisting>
+
+        <para>When running Shorewall 5.0.14 or later, the equivalent
+        <filename>/etc/shorewall/snat</filename> is:</para>
+
+        <programlisting>#ACTION                SOURCE            DEST                PROTO   PORT
+SNAT(192.0.2.176)      192.168.201.0/24  eth0</programlisting>
 
         <para><inlinegraphic fileref="images/BD21298_.gif"/></para>
 
@@ -1815,6 +1828,12 @@ dmz      eth2</programlisting>
 
       <programlisting>#INTERFACE     SUBNET               ADDRESS
 eth0           192.168.201.0/29     192.0.2.176</programlisting>
+
+      <para>When running Shorewall 5.0.14 or later, the equivalent
+      <filename>/etc/shorewall/snat</filename> is:</para>
+
+      <programlisting>#ACTION                SOURCE            DEST                PROTO   PORT
+SNAT(192.02.176)       192.168.201.0/24  eth0</programlisting>
 
       <para><filename>/etc/shorewall/proxyarp</filename> - DMZ</para>
 

@@ -494,6 +494,12 @@ DNAT       net           loc:192.168.1.4    tcp      21          -         206.1
         <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE              SOURCE             ADDRESS         PROTO   PORT
 eth1:192.168.1.4        0.0.0.0/0          192.168.1.1     tcp     21</programlisting></para>
 
+        <para>When running Shorewall 5.0.14 or later, the eqivalent
+        <filename>/etc/shorewall/snat</filename> file is:</para>
+
+        <programlisting>#ACTION                 SOURCE              DEST              PROTO  PORT
+SNAT(192.168.1.1)       0.0.0.0/0           eth1:192.168.1.4  tcp    21</programlisting>
+
         <para>This rule has the undesirable side effect of making all FTP
         connections from the net appear to the FTP server as if they
         originated on the Shorewall system. But it will force the FTP server
@@ -530,6 +536,12 @@ net             eth0                    <emphasis role="bold">routeback</emphasi
 
         <para><filename>/etc/shorewall/masq</filename>;<programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
 eth0:66.249.93.111      0.0.0.0/0       206.124.146.176 tcp     993</programlisting></para>
+
+        <para>When running Shorewall 5.0.14 or later, the equivalent
+        /etc/shorewall/snat file is:</para>
+
+        <programlisting>#ACTION                 SOURCE          DEST                PROTO   PORT
+SNAT(206.124.146.176)   0.0.0.0/0       eth0:66.249.93.111  tcp     993</programlisting>
 
         <para>and in
         <filename>/etc/shorewall/shorewall.conf</filename>:</para>
@@ -718,6 +730,12 @@ loc             eth1                    <emphasis role="bold">routeback</emphasi
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
 <emphasis role="bold">eth1:192.168.1.5        192.168.1.0/24  192.168.1.254   tcp     www</emphasis></programlisting>
 
+          <para>When running Shorewall 5.0.14 or later, the corresponding
+          <filename>/etc/shorewall/snat</filename> file is:</para>
+
+          <programlisting>#ACTION                 SOURCE          DEST                PROTO   PORT
+<emphasis role="bold">SNAT(192.168.1.254)     192.168.1.0/24  eth1:192.168.1.5    tcp     www</emphasis></programlisting>
+
           <para>Note: The technique described here is known as
           <firstterm>hairpinning NAT</firstterm> and is described in section 6
           of <ulink url="http://www.faqs.org/rfcs/rfc4787.html">RFC
@@ -727,6 +745,11 @@ loc             eth1                    <emphasis role="bold">routeback</emphasi
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS         PROTO   PORT
 eth1:192.168.1.5        192.168.1.0/24  <emphasis role="bold">130.151.100.69</emphasis>  tcp     www</programlisting>
+
+          <para>Equivalent <filename>/etc/shorewall/snat</filename>:</para>
+
+          <programlisting>#ACTION                 SOURCE          DEST                PROTO   PORT
+SNAT(<emphasis role="bold">130.151.100.69</emphasis>)    192.168.1.0/24  eth1:192.168.1.5    tcp     www</programlisting>
         </listitem>
 
         <listitem>
@@ -851,6 +874,12 @@ dmz             eth2                    <emphasis role="bold">routeback</emphasi
 
           <programlisting>#INTERFACE              SOURCE
 eth2:192.168.1.2        192.168.2.0/24</programlisting>
+
+          <para>When running Shorewall 5.0.14 or later, the equivalent
+          <filename>/etc/shorewall/snat</filename> is:</para>
+
+          <programlisting>#ACTION        SOURCE          DEST                PROTO   PORT
+MASQUERADE     192.168.1.0/24  eth2:192.168.1.2    tcp     www</programlisting>
 
           <para>In <filename>/etc/shorewall/nat</filename>, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
@@ -3191,10 +3220,16 @@ loc             $FW             ACCEPT</programlisting>
 
           <programlisting>#INTERFACE              SOURCE          ADDRESS
 
-COMMENT DSL Modem
+?COMMENT DSL Modem
 
 EXT_IF:172.20.1.2       0.0.0.0/0       172.20.1.254
 </programlisting>
+
+          <para>When running Shorewall 5.0.14 or later, the equivalent
+          <filename>/etc/shorewall/snat</filename> is:</para>
+
+          <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+SNAT(172.20.1.254)     0.0.0.0/0       EXT_IF:192.168.1.2  tcp     www</programlisting>
 
           <para><filename>/etc/shorewall/proxyarp</filename>:</para>
 
@@ -3233,6 +3268,12 @@ COMMENT DSL Modem
 
 EXT_IF:192.168.1.1      0.0.0.0/0       192.168.1.254
 </programlisting>
+
+          <para>When running Shorewall 5.0.14 or later, the equivalent
+          <filename>/etc/shorewall/snat</filename> is:</para>
+
+          <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+SNAT(192.168.1.254)    0.0.0.0/0       EXT_IF:192.168.1.1  tcp     www</programlisting>
         </listitem>
       </itemizedlist>
     </section>

@@ -1652,6 +1652,12 @@ DNAT          net              dmz:192.168.4.5 tcp      80              -       
           <filename>/etc/shorewall/masq</filename>:<programlisting>#INTERFACE        SOURCE           ADDRESS
 eth0              192.168.1.0/24   206.124.146.179</programlisting></para>
 
+          <para>When running Shorewall 5.0.14 or later, the equivalent
+          <filename>/etc/shorewall/snat</filename> would be:</para>
+
+          <programlisting>#ACTION                SOURCE         DEST       ...
+SNAT(206.124.146.179)  192.168.1.0/24 eth0</programlisting>
+
           <para>HTTP response packets corresponding to requests that fall
           under that rule will have destination IP address 206.124.146.179 and
           <emphasis role="bold">source</emphasis> port 80.</para>

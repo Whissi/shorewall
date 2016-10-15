@@ -349,6 +349,12 @@ loc                 eth0:192.168.1.0/24                maclist</programlisting>
     <programlisting>#INTERFACE              SOURCE          ADDRESS
 eth0:!192.168.1.0/24    192.168.1.0/24</programlisting>
 
+    <para>When running Shorewall 5.0.14 or later, the equivalent
+    <filename>/etc/shorewall/snat</filename> is:</para>
+
+    <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+MASQUERADE             0.0.0.0/0       eth0:!192.168.1.0/24</programlisting>
+
     <para>Note that the <emphasis role="bold">maclist</emphasis> option is
     specified in <filename>/etc/shorewall/interfaces</filename>. This is to
     help protect your router from unauthorized access by your friends and

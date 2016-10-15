@@ -647,16 +647,18 @@ root@lists:~# </programlisting>
         </listitem>
       </itemizedlist> In Shorewall, both Masquerading and SNAT are configured
     with entries in the <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename>
-    file.</para>
+    class="directory">/etc/shorewall/</filename><filename>masq</filename> file
+    (<filename>/etc/shorewall/snat</filename> when running Shorewall 5.0.14 or
+    later).</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
     <para>If your external firewall interface is <filename
     class="devicefile">eth0</filename> then you do not need to modify the file
     provided with the sample. Otherwise, edit <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename> and
-    change it to match your configuration.</para>
+    class="directory">/etc/shorewall/</filename><filename>masq</filename> or
+    <filename>/etc/shorewall/snat</filename> and change it to match your
+    configuration.</para>
 
     <para>If, in spite of all advice to the contrary, you are using this guide
     and want to use one-to-one NAT or Proxy ARP for your DMZ, you will need to
@@ -670,8 +672,14 @@ root@lists:~# </programlisting>
     class="directory">/etc/shorewall/</filename><filename>masq</filename>
     entry if you like although your firewall will work fine if you leave that
     column empty. Entering your static IP in column 3 makes processing
-    outgoing packets a little more efficient.<graphic align="left"
-    fileref="images/openlogo-nd-25.png"/></para>
+    outgoing packets a little more efficient. When running Shorewall 5.0.14 or
+    later, the rule in /etc/shorewall/snat must be change from a MASQUERADE
+    rule to an SNAT rule.</para>
+
+    <programlisting>#ACTION                      SOURCE                DEST         PROTO      PORT
+<emphasis role="bold">SNAT(<replaceable>static-ip</replaceable>)</emphasis>              ...</programlisting>
+
+    <graphic align="left" fileref="images/openlogo-nd-25.png"/>
 
     <para><emphasis role="bold">If you are using the Debian package, please
     check your <filename>shorewall.conf</filename> file to ensure that the

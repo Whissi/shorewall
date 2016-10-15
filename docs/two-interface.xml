@@ -601,7 +601,8 @@ root@lists:~# </programlisting>
     <emphasis><acronym>SNAT</acronym></emphasis> are configured with entries
     in the <ulink url="manpages/shorewall-masq.html"><filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename></ulink>
-    file. You will normally use Masquerading if your external
+    file (<filename>/etc/shorewall/snat</filename> when running Shorewall
+    5.0.14 or later). You will normally use Masquerading if your external
     <acronym>IP</acronym> is dynamic and <acronym>SNAT</acronym> if the
     <acronym>IP</acronym> is static.</para>
 
@@ -611,8 +612,9 @@ root@lists:~# </programlisting>
     class="devicefile">eth0</filename>, you do not need to modify the file
     provided with <link linkend="Concepts">the sample</link>. Otherwise, edit
     <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename> and
-    change the first column to the name of your external interface.</para>
+    class="directory">/etc/shorewall/</filename><filename>masq</filename> or
+    <filename>/etc/shorewall/snat</filename> and change it to match your
+    configuration.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
@@ -622,14 +624,19 @@ root@lists:~# </programlisting>
     entry if you like although your firewall will work fine if you leave that
     column empty (Masquerade). Entering your static <acronym>IP</acronym> in
     column 3 (SNAT) makes the processing of outgoing packets a little more
-    efficient.</para>
+    efficient. When running Shorewall 5.0.14 or later, the rule in
+    /etc/shorewall/snat must be change from a MASQUERADE rule to an SNAT
+    rule.</para>
 
-    <graphic align="left" fileref="images/openlogo-nd-25.png"/>
+    <programlisting>#ACTION                      SOURCE                DEST         PROTO      PORT
+<emphasis role="bold">SNAT(<replaceable>static-ip</replaceable>)</emphasis>              ...</programlisting>
 
-    <para>I<emphasis role="bold">f you are using the Debian package, please
-    check your <filename>shorewall.conf</filename> file to ensure that the
-    following is set correctly; if it is not, change it
-    appropriately:</emphasis> <itemizedlist spacing="compact">
+    <para><graphic align="left"
+    fileref="images/openlogo-nd-25.png"/>I<emphasis role="bold">f you are
+    using the Debian package, please check your
+    <filename>shorewall.conf</filename> file to ensure that the following is
+    set correctly; if it is not, change it appropriately:</emphasis>
+    <itemizedlist spacing="compact">
         <listitem>
           <para><varname>IP_FORWARDING=On</varname></para>
         </listitem>
@@ -1253,8 +1260,9 @@ eth0			10.0.0.0/8,\
 			192.168.0.0/16
 </programlisting>
 
-        <para>then you do <emphasis role="bold">not</emphasis> need to change
-        the contents.</para>
+        <para>or of you are running Shorewall 5.0.14 or later, then you do
+        <emphasis role="bold">not</emphasis> need to change the
+        contents.</para>
 
         <para>Otherwise, if your Internet interface is <filename
         class="devicefile">eth0</filename> and your wireless interface is

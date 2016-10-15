@@ -145,5 +145,11 @@ loc            <emphasis role="bold">br0</emphasis>             <emphasis
 
     <programlisting>#INTERFACE     SOURCE          ADDRESS
 eth0           10.0.1.0/24     ...            # 10.0.1.0/24 is the local network on LAN A and LAN B</programlisting>
+
+    <para>When running Shorewall 5.0.14 or later, the equivalent
+    <filename>/etc/shorewall/snat</filename> is:</para>
+
+    <programlisting>#ACTION                SOURCE          DEST                PROTO   PORT
+MASQUERADE             10.0.1.0/24     eth0</programlisting>
   </section>
 </article>

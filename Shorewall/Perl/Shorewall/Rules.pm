@@ -2891,7 +2891,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		fatal_error "A timeout may only be supplied in an ADD rule" unless $basictarget eq 'ADD';
 		fatal_error "Invalid Timeout ($timeout)"                    unless $timeout && $timeout =~ /^\d+$/;
 
-		$action .= " --timeout $timeout";
+		$action .= " --timeout $timeout --exist";
 	    }
 	}
     }

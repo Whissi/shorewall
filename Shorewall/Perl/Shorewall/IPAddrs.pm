@@ -436,7 +436,7 @@ sub validate_portpair( $$ ) {
     #
     # Accept '-' as a port-range separator
     #
-    $pair =~ tr/-/:/;
+    $pair =~ tr/-/:/ if $pair =~ /^[-0-9]+$/;
 
     fatal_error "Invalid port range ($portpair)" if $pair =~ tr/:/:/ > 1;
 

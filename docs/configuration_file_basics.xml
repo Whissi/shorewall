@@ -2619,6 +2619,12 @@ DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000:4100<
     <para>Also, unless otherwise documented, a port range can be preceded by
     '!' to specify "All ports except those in this range" (e.g.,
     "!4000:4100").</para>
+
+    <para>Beginning with Shorewall 5.0.14, a hyphen ("-") may also be used to
+    separate the two port numbers.</para>
+
+    <programlisting>#ACTION    SOURCE     DESTINATION     PROTO     DPORT
+DNAT       net        loc:192.168.1.3 tcp       <emphasis role="bold">4000-4100</emphasis></programlisting>
   </section>
 
   <section id="Portlists">
@@ -2969,8 +2975,8 @@ redirect                      =&gt; 137</programlisting>
           then again for another hour from 23:00 onwards. If this is unwanted,
           e.g. if you would like 'match for two hours from Montay 23:00
           onwards' you need to also specify the <emphasis
-          role="bold">contiguous</emphasis> option in the example above.
-          </para>
+          role="bold">contiguous</emphasis> option in the example
+          above.</para>
         </listitem>
       </varlistentry>
     </variablelist>

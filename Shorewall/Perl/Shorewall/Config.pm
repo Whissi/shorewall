@@ -6262,15 +6262,19 @@ sub get_configuration( $$$$ ) {
 
 	    ( $key , my @options ) = split_list( $key, 'option' );
 
+	    my $options = '';
+
 	    for ( @options ) {
-		unless ( $simple_options{$_} ) {
-		    if ( $_ =~ s/^timeout=(\d+)$// ) {
-			$globals{DBL_TIMEOUT} = $1;
-		    } else {
-			fatal_error "Invalid ipset option ($_)";
-		    }
+		if ( $simple_options{$_} ) {
+		    $options = join( ',' , $options, $_ );
+		} elsif ( $_ =~ s/^timeout=(\d+)$// ) {
+		    $globals{DBL_TIMEOUT} = $1;
+		} else {
+		    fatal_error "Invalid ipset option ($_)";
 		}
 	    }
+
+	    $globals{DBL_OPTIONS} = $options;
 
 	    fatal_error "Invalid DYNAMIC_BLACKLIST setting ( $val )" if $key !~ /^ipset(?:-only)?$/ || defined $rest;
 

@@ -432,13 +432,18 @@ sub validate_port( $$ ) {
 sub validate_portpair( $$ ) {
     my ($proto, $portpair) = @_;
     my $what;
+    my $pair = $portpair;
+    #
+    # Accept '-' as a port-range separator
+    #
+    $pair =~ tr/-/:/;
 
-    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/:/:/ > 1;
+    fatal_error "Invalid port range ($portpair)" if $pair =~ tr/:/:/ > 1;
 
-    $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
-    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
+    $pair = "0$pair"       if substr( $pair,  0, 1 ) eq ':';
+    $pair = "${pair}65535" if substr( $pair, -1, 1 ) eq ':';
 
-    my @ports = split /:/, $portpair, 2;
+    my @ports = split /:/, $pair, 2;
 
     my $protonum = resolve_proto( $proto ) || 0;
 
@@ -497,7 +502,7 @@ sub validate_port_list( $$ ) {
     my ( $proto, $list ) = @_;
     my @list   = split_list( $list, 'port' );
 
-    if ( @list > 1 && $list =~ /:/ ) {
+    if ( @list > 1 && $list =~ /[:-]/ ) {
 	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
     }
 

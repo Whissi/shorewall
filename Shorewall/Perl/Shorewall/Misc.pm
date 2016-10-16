@@ -688,7 +688,8 @@ sub add_common_rules ( $ ) {
     my $dbl_ipset;
     my $dbl_level;
     my $dbl_tag;
-    my $dbl_target;
+    my $dbl_src_target;
+    my $dbl_dst_target;
 
     if ( $config{REJECT_ACTION} ) {
 	process_reject_action;
@@ -749,8 +750,42 @@ sub add_common_rules ( $ ) {
 	}
 
 	if ( $dbl_ipset ) {
-	    if ( $dbl_level ) {
-		my $chainref = set_optflags( new_standard_chain( $dbl_target = 'dbl_log' ) , DONT_OPTIMIZE | DONT_DELETE );
+	    if ( $val = $globals{DBL_TIMEOUT} ) {
+		$dbl_src_target = $globals{DBL_OPTIONS} =~ /src-dst/ ? 'dbl_src' : 'dbl_log';
+
+		my $chainref = set_optflags( new_standard_chain( $dbl_src_target ) , DONT_OPTIMIZE | DONT_DELETE );
+
+		log_rule_limit( $dbl_level,
+				$chainref,
+				'dbl_log',
+				'DROP',
+				$globals{LOGLIMIT},
+				$dbl_tag,
+				'add',
+				'',
+				$origin{DYNAMIC_BLACKLIST} ) if $dbl_level;
+		add_ijump_extended( $chainref, j => "SET --add-set $dbl_ipset src --exist --timeout $val", $origin{DYNAMIC_BLACKLIST} );
+		add_ijump_extended( $chainref, j => 'DROP', $origin{DYNAMIC_BLACKLIST} );
+
+		if ( $dbl_src_target eq 'dbl_src' ) {
+		    $chainref = set_optflags( new_standard_chain( $dbl_dst_target = 'dbl_dst' ) , DONT_OPTIMIZE | DONT_DELETE );
+
+		    log_rule_limit( $dbl_level,
+				    $chainref,
+				    'dbl_log',
+				    'DROP',
+				    $globals{LOGLIMIT},
+				    $dbl_tag,
+				    'add',
+				    '',
+				    $origin{DYNAMIC_BLACKLIST} ) if $dbl_level;
+		    add_ijump_extended( $chainref, j => "SET --add-set $dbl_ipset dst --exist --timeout $val", $origin{DYNAMIC_BLACKLIST} );
+		    add_ijump_extended( $chainref, j => 'DROP', $origin{DYNAMIC_BLACKLIST} );
+		} else {
+		    $dbl_dst_target = $dbl_src_target;
+		}		    
+	    } elsif ( $dbl_level ) {
+		my $chainref = set_optflags( new_standard_chain( $dbl_src_target = 'dbl_log' ) , DONT_OPTIMIZE | DONT_DELETE );
 
 		log_rule_limit( $dbl_level,
 				$chainref,
@@ -763,7 +798,7 @@ sub add_common_rules ( $ ) {
 				$origin{DYNAMIC_BLACKLIST} );
 		add_ijump_extended( $chainref, j => 'DROP', $origin{DYNAMIC_BLACKLIST} );
 	    } else {
-		$dbl_target = 'DROP'; 
+		$dbl_src_target = $dbl_dst_target = 'DROP'; 
 	    }
 	}
     }
@@ -877,17 +912,17 @@ sub add_common_rules ( $ ) {
 		    #
 		    # src
 		    #
-		    add_ijump_extended( $filter_table->{input_option_chain($interface)},   j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
-		    add_ijump_extended( $filter_table->{forward_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
+		    add_ijump_extended( $filter_table->{input_option_chain($interface)},   j => $dbl_src_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
+		    add_ijump_extended( $filter_table->{forward_option_chain($interface)}, j => $dbl_src_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset src" );
 		} elsif ( $in == 2 ) {
-		    add_ijump_extended( $filter_table->{forward_option_chain($interface)}, j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" );
+		    add_ijump_extended( $filter_table->{forward_option_chain($interface)}, j => $dbl_dst_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" );
 		}
 
 		if ( $out == 2 ) {
 		    #
 		    # dst
 		    #
-		    add_ijump_extended( $filter_table->{output_option_chain($interface)},  j => $dbl_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" );
+		    add_ijump_extended( $filter_table->{output_option_chain($interface)},  j => $dbl_dst_target, $origin{DYNAMIC_BLACKLIST}, @state, set => "--match-set $dbl_ipset dst" );
 		}
 	    }
 	    

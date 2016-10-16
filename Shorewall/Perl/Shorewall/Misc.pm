@@ -134,12 +134,12 @@ sub setup_ecn()
 	    for my $interface ( @interfaces ) {
 		my $chainref = ensure_chain 'mangle', ecn_chain( $interface );
 
-		add_ijump_extended $mangle_table->{POSTROUTING} , j => $chainref, $interfaces{$interface}, p => 'tcp', imatch_dest_dev( $interface ) if have_capability 'MANGLE_FORWARD';
-		add_ijump_extended $mangle_table->{OUTPUT},       j => $chainref, $interfaces{$interface}, p => 'tcp', imatch_dest_dev( $interface );
+		add_ijump $mangle_table->{POSTROUTING} , j => $chainref, $interfaces{$interface}, p => 'tcp', imatch_dest_dev( $interface ) if have_capability 'MANGLE_FORWARD';
+		add_ijump $mangle_table->{OUTPUT},       j => $chainref, $interfaces{$interface}, p => 'tcp', imatch_dest_dev( $interface );
 	    }
 
 	    for my $host ( @hosts ) {
-		add_ijump_extended( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', $host->[1], targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[2] ) );
+		add_ijump( $mangle_table->{ecn_chain $host->[0]}, j => 'ECN', $host->[1], targetopts => '--ecn-tcp-remove', p => 'tcp',  imatch_dest_net( $host->[2] ) );
 	    }
 	}
     }

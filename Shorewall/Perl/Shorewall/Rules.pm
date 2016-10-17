@@ -3965,7 +3965,7 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 	    process_mangle_rule1( $chainref,
 				  $moriginalmark,
 				  $msource,
-				  $dest,
+				  $mdest,
 				  $proto,
 				  merge_macro_column( $mports,          $ports ),
 				  merge_macro_column( $msports,         $sports ),

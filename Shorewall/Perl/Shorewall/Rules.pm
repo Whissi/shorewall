@@ -5347,7 +5347,6 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     my $params;
     my $actiontype;
     my $interfaces;
-    my $interface;
     my $normalized_action;
 
     if ( $action =~ /^MASQUERADE(\+)?\((.+)\)$/ ) {
@@ -5403,6 +5402,8 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
 		$interfaces = $one;
 		$destnets = $two;
+	    } else {
+		$interfaces = $dest;
 	    }
 	} else {
 	    $interfaces = $dest;
@@ -5440,10 +5441,13 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     $baserule .= do_user( $user )                    if $user ne '-';
     $baserule .= do_probability( $probability )      if $probability ne '-';
 
-    for $interface ( split_list( $interfaces, 'interface' ) ) {
+    for my $fullinterface ( split_list( $interfaces, 'interface' ) ) {
  
 	my $rule = '';
 	my $saveaddresses = $addresses;
+	my $interface = $fullinterface;
+
+	$interface =~ s/:.*//;   #interface name may include 'alias'
 
 	unless ( $inaction ) {
 	    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
@@ -5514,7 +5518,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			    # User-defined address variable
 			    #
 			    $conditional = conditional_rule( $chainref, $addr );
-			    $addrlist .= ' --to-source' . "\$${1}${ports} ";
+			    $addrlist .= ' --to-source ' . "\$${1}${ports} ";
 			} else {
 			    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
 				#
@@ -5533,7 +5537,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 				$addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
 			    }
 
-			    $addrlist .= ' --to-source' . $addr;
+			    $addrlist .= ' --to-source ' . $addr;
 			}
 		    } elsif ( $family == F_IPV4 ) {
 			if ( $addr =~ /^.*\..*\..*\./ ) {
@@ -5684,6 +5688,27 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		unless unreachable_warning( 0, $chainref );
 
 	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
+
+	    if ( $add_snat_aliases ) {
+		my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
+		fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
+		for my $address ( split_list $addresses, 'address' ) {
+		    my ( $addrs, $port ) = split /:/, $address;
+		    next unless $addrs;
+		    next if $addrs eq 'detect';
+		    for my $addr ( ip_range_explicit $addrs ) {
+			unless ( $addresses_to_add{$addr} ) {
+			    $addresses_to_add{$addr} = 1;
+			    if ( defined $alias ) {
+				push @addresses_to_add, $addr, "$interface:$alias";
+				$alias++;
+			    } else {
+				push @addresses_to_add, $addr, $interface;
+			    }
+			}
+		    }
+		}
+	    }
 	}
 
 	$addresses = $saveaddresses;

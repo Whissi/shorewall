@@ -152,9 +152,12 @@ sub process_one_masq1( $$$$$$$$$$$$ )
     $baserule .= do_user( $user )                    if $user ne '-';
     $baserule .= do_probability( $probability )      if $probability ne '-';
 
+    my $target;
+
     for my $fullinterface (split_list $interfacelist, 'interface' ) {
 	my $rule = '';
-	my $target = 'MASQUERADE ';
+
+	$target = 'MASQUERADE ';
 	#
 	# Isolate and verify the interface part
 	#
@@ -352,24 +355,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 	#
 	# And Generate the Rule(s)
 	#
-	if ( $snat ) {
-	    $target =~ s/ .*//;
-	    $target = 'CONTINUE' if $target eq 'RETURN';
-	    $target .= '+' if $pre_nat;
-	    $target .= '(' . $addresses . ')' if $addresses ne '-';
-
-	    my $line = "$target\t$networks\t$savelist\t$proto\t$ports\t$ipsec\t$mark\t$user\t$condition\t$origdest\t$probability";
-	    #
-	    # Supress superfluous trailing dashes
-	    #
-	    $line =~ s/(?:\t-)+$//;
-
-	    my $raw_matches = fetch_inline_matches;
-
-	    $line .= join( '', ' ;;', $raw_matches ) if $raw_matches ne ' ';
-
-	    print $snat "$line\n";
-	} else {
+	unless ( $snat ) {
 	    expand_rule( $chainref ,
 			 POSTROUTE_RESTRICT ,
 			 $prerule ,
@@ -385,28 +371,47 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 		unless unreachable_warning( 0, $chainref );
 
 	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
-	}
 
-	if ( $add_snat_aliases ) {
-	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
-	    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
-	    for my $address ( split_list $addresses, 'address' ) {
-		my ( $addrs, $port ) = split /:/, $address;
-		next unless $addrs;
-		next if $addrs eq 'detect';
-		for my $addr ( ip_range_explicit $addrs ) {
-		    unless ( $addresses_to_add{$addr} ) {
-			$addresses_to_add{$addr} = 1;
-			if ( defined $alias ) {
-			    push @addresses_to_add, $addr, "$interface:$alias";
-			    $alias++;
-			} else {
-			    push @addresses_to_add, $addr, $interface;
+	    if ( $add_snat_aliases ) {
+		my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
+		fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
+		for my $address ( split_list $addresses, 'address' ) {
+		    my ( $addrs, $port ) = split /:/, $address;
+		    next unless $addrs;
+		    next if $addrs eq 'detect';
+		    for my $addr ( ip_range_explicit $addrs ) {
+			unless ( $addresses_to_add{$addr} ) {
+			    $addresses_to_add{$addr} = 1;
+			    if ( defined $alias ) {
+				push @addresses_to_add, $addr, "$interface:$alias";
+				$alias++;
+			    } else {
+				push @addresses_to_add, $addr, $interface;
+			    }
 			}
 		    }
 		}
 	    }
 	}
+    }
+
+    if ( $snat ) {
+	$target =~ s/ .*//;
+	$target = 'CONTINUE' if $target eq 'RETURN';
+	$target .= '+' if $pre_nat;
+	$target .= '(' . $addresses . ')' if $addresses ne '-';
+
+	my $line = "$target\t$networks\t$savelist\t$proto\t$ports\t$ipsec\t$mark\t$user\t$condition\t$origdest\t$probability";
+	#
+	# Supress superfluous trailing dashes
+	#
+	$line =~ s/(?:\t-)+$//;
+
+	my $raw_matches = fetch_inline_matches;
+
+	$line .= join( '', ' ;;', $raw_matches ) if $raw_matches ne ' ';
+
+	print $snat "$line\n";
     }
 
     progress_message "   Masq record \"$currentline\" $done";

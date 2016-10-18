@@ -4039,7 +4039,7 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 	}
 
 	$msource = $source if $msource eq '-';
-	$mdest   = $dest   if $msource eq '-';
+	$mdest   = $dest   if $mdest   eq '-';
 	$mprotos = $protos if $mprotos eq '-';
 
 	for my $proto (split_list( $mprotos, 'Protocol' ) ) {

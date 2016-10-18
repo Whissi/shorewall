@@ -1620,7 +1620,7 @@ sub merge_inline_source_dest( $$ ) {
     my ( $body, $invocation ) = @_;
 
     if ( $invocation ) {
-	if ( $body ) {
+	if ( supplied $body && $body ne '-' ) {
 	    return $body if $invocation eq '-';
 
 	    if ( $family == F_IPV4 ) {

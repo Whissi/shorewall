@@ -1303,18 +1303,19 @@ sub finish_section ( $ ) {
 #
 sub normalize_action( $$$ ) {
     my ( $action, $level, $param ) = @_;
-    my $caller = '';     #We assume that the function doesn't use @CALLER
+    my $caller = '';     #We assume that the action doesn't use @CALLER
 
     ( $level, my $tag ) = split ':', $level;
 
     if ( $actions{$action}{options} & LOGJUMP_OPT ) {
 	$level = 'none';
-	$tag   = '';
     } else {
 	$level = 'none' unless supplied $level;
-	$tag   = ''     unless defined $tag;
     }
-
+    #
+    # Note: SNAT actions store the current interface's name in the tag
+    #
+    $tag   = ''     unless defined $tag;
     $param = ''     unless defined $param;
     $param = ''     if $param eq '-';
 
@@ -1612,6 +1613,41 @@ sub merge_macro_source_dest( $$ ) {
     $body || '';
 }
 
+#
+# This one is used by snat inline
+#
+sub merge_inline_source_dest( $$ ) {
+    my ( $body, $invocation ) = @_;
+
+    if ( $invocation ) {
+	if ( $body ) {
+	    return $body if $invocation eq '-';
+
+	    if ( $family == F_IPV4 ) {
+		fatal_error 'Interface names cannot appear in the DEST column within an action body' if $body =~ /:/;
+
+		if ( $invocation =~ /:/ ) {
+		    $invocation =~ s/:.*//;
+		    return join( ':', $invocation, $body );
+		}
+	    } else {
+		fatal_error 'Interface names cannot appear in the DEST column within an action body' if $body =~ /:\[|:\+|/;
+
+		if ( $invocation =~ /:\[|:\+/ ) {
+		    $invocation =~ s/:.*//;
+		    return join( ':', $invocation, $body );
+		}
+	    }
+	    
+	    return "$invocation:$body";
+	}
+
+	return $invocation;
+    }
+
+    $body || '';
+}
+
 sub merge_macro_column( $$ ) {
     my ( $body, $invocation ) = @_;
 
@@ -1838,6 +1874,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ );
+sub process_snat1( $$$$$$$$$$$$ );
 sub perl_action_helper( $$;$$ );
 
 #
@@ -1886,7 +1923,63 @@ sub process_action(\$\$$) {
     my $save_comment = push_comment;
 
     while ( read_a_line( NORMAL_READ ) ) {
-	if ( $type & MANGLE_TABLE ) {
+	unless ( $type & ( MANGLE_TABLE | NAT_TABLE | RAW_TABLE ) ) {
+	    my ($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper );
+
+	    if ( $file_format == 1 ) {
+		fatal_error( "FORMAT-1 actions are no longer supported" );
+	    } else {
+		($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
+		    = split_line2( 'action file',
+				   \%rulecolumns,
+				   $action_commands,
+				   undef,
+				   1 );
+	    }
+
+	    fatal_error 'TARGET must be specified' if $target eq '-';
+
+	    if ( $target eq 'DEFAULTS' ) {
+		default_action_params( $action, split_list $source, 'defaults' );
+
+		if ( my $state = $actionref->{state} ) {
+		    my ( $action ) = get_action_params( 1 );
+
+		    if ( my $check = check_state( $state ) ) {
+			perl_action_helper( $action, $check == 1 ? state_match( $state ) : '' , $state );
+		    }
+		}
+
+		next;
+	    }
+
+	    for my $proto ( split_list( $protos, 'Protocol' ) ) {
+		for my $user ( split_list( $users, 'User/Group' ) ) {
+		    process_rule( $chainref,
+				  '',
+				  '',
+				  $nolog ? $target : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $target ),
+				  '',
+				  $source,
+				  $dest,
+				  $proto,
+				  $ports,
+				  $sports,
+				  $origdest,
+				  $rate,
+				  $user,
+				  $mark,
+				  $connlimit,
+				  $time,
+				  $headers,
+				  $condition,
+				  $helper,
+				  0 );
+
+		    set_inline_matches( $matches );
+		}
+	    }
+	} elsif ( $type & MANGLE_TABLE ) {
 	    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
 
 	    if ( $family == F_IPV4 ) {
@@ -1970,60 +2063,45 @@ sub process_action(\$\$$) {
 		set_inline_matches( $matches );
 	    }
 	} else {
-	    my ($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper );
+	    my ( $action, $source, $dest, $protos, $port, $ipsec, $mark, $user, $condition, $origdest, $probability) =
+		split_line2( 'snat file',
+			     { action =>0,
+			       source => 1,
+			       dest => 2,
+			       proto => 3,
+			       port => 4,
+			       ipsec => 5,
+			       mark => 6,
+			       user => 7,
+			       switch => 8,
+			       origdest => 9,
+			       probability => 10,
+			     },
+			     {},
+			     11,
+			     1 );
 
-	    if ( $file_format == 1 ) {
-		fatal_error( "FORMAT-1 actions are no longer supported" );
-	    } else {
-		($target, $source, $dest, $protos, $ports, $sports, $origdest, $rate, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
-		    = split_line2( 'action file',
-				   \%rulecolumns,
-				   $action_commands,
-				   undef,
-				   1 );
-	    }
+	    fatal_error 'ACTION must be specified' if $action eq '-';
 
-	    fatal_error 'TARGET must be specified' if $target eq '-';
-
-	    if ( $target eq 'DEFAULTS' ) {
-		default_action_params( $action, split_list $source, 'defaults' );
-
-		if ( my $state = $actionref->{state} ) {
-		    my ( $action ) = get_action_params( 1 );
-
-		    if ( my $check = check_state( $state ) ) {
-			perl_action_helper( $action, $check == 1 ? state_match( $state ) : '' , $state );
-		    }
-		}
-
+	    if ( $action eq 'DEFAULTS' ) {
+		default_action_params( $chainref, split_list( $source, 'defaults' ) );
 		next;
 	    }
 
-	    for my $proto ( split_list( $protos, 'Protocol' ) ) {
-		for my $user ( split_list( $users, 'User/Group' ) ) {
-		    process_rule( $chainref,
-				  '',
-				  '',
-				  $nolog ? $target : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $target ),
-				  '',
-				  $source,
-				  $dest,
-				  $proto,
-				  $ports,
-				  $sports,
-				  $origdest,
-				  $rate,
-				  $user,
-				  $mark,
-				  $connlimit,
-				  $time,
-				  $headers,
-				  $condition,
-				  $helper,
-				  0 );
-
-		    set_inline_matches( $matches );
-		}
+	    for my $proto (split_list( $protos, 'Protocol' ) ) {
+		process_snat1( $chainref,
+				   $action,
+				   $source,
+				   $dest,
+				   $proto,
+				   $port,
+				   $ipsec,
+				   $mark,
+				   $user,
+				   $condition,
+				   $origdest,
+				   $probability,
+		    );
 	    }
 	}
     }
@@ -2177,9 +2255,10 @@ sub process_actions() {
 
 		make_terminating( $action ) if $opts & TERMINATING_OPT
 	    } else {
-		fatal_error "Only the 'mangle' and 'filter' table may be specified for non-builtin actions" if $opts & ( RAW_OPT | NAT_OPT );
+		fatal_error "The 'raw' table may not be specified for non-builtin actions" if $opts & RAW_OPT;
 
 		$type |= MANGLE_TABLE if $opts & MANGLE_OPT;
+		$type |= NAT_TABLE    if $opts & NAT_OPT;
 
 		my $actionfile = find_file( "action.$action" );
 
@@ -5163,12 +5242,99 @@ sub process_mangle_rule( $ ) {
     }
 }
 
+sub process_snat_inline( $$$$$$$$$$$$$ ) {
+    my ($inline, $chainref, $params, $source, $dest, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+
+    my $oldparms   = push_action_params( $inline,
+					 $chainref,
+					 $params,
+					  'none',
+					 '' ,
+					 $chainref->{name} );
+
+    my $inlinefile = $actions{$inline}{file};
+    my $matches    = fetch_inline_matches;
+
+    progress_message "..Expanding inline action $inlinefile...";
+
+    push_open $inlinefile, 2, 1, undef , 2;
+
+    my $save_comment = push_comment;
+
+    while ( read_a_line( NORMAL_READ ) ) {
+	my ( $maction, $msource, $mdest, $mprotos, $mports, $mipsec, $mmark, $muser, $mcondition, $morigdest, $mprobability) =
+	    split_line2( 'snat file',
+			 { action =>0,
+			   source => 1,
+			   dest => 2,
+			   proto => 3,
+			   port => 4,
+			   ipsec => 5,
+			   mark => 6,
+			   user => 7,
+			   switch => 8,
+			   origdest => 9,
+			   probability => 10,
+			 },
+			 {},
+			 11,
+			 1 );
+
+	fatal_error 'ACTION must be specified' if $maction eq '-';
+
+	if ( $maction eq 'DEFAULTS' ) {
+	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
+	    next;
+	}
+
+	$msource = $source if $msource eq '-';
+
+	if ( $mdest eq '-' ) {
+	    $mdest = $dest;
+	} else {
+	    $mdest = merge_inline_source_dest( $mdest, $dest );
+	}
+
+	$mprotos = $protos if $mprotos eq '-';
+
+	for my $proto (split_list( $mprotos, 'Protocol' ) ) {
+	    process_snat1( $chainref,
+			   $maction,
+			   $msource,
+			   $mdest,
+			   $proto,
+			   merge_macro_column( $mports,          $ports ),
+			   merge_macro_column( $mipsec,          $ipsec ),
+			   merge_macro_column( $mmark,           $mark ),
+			   merge_macro_column( $muser,           $user ),
+			   merge_macro_column( $mcondition,      $condition ),
+			   merge_macro_column( $morigdest ,      $origdest ),
+			   merge_macro_column( $mprobability,    $probability ),
+		);
+	}
+
+	progress_message "   Rule \"$currentline\" $done";
+
+	set_inline_matches( $matches );
+    }
+
+    pop_comment( $save_comment );
+
+    pop_open;
+
+    progress_message "..End inline action $inlinefile";
+
+    pop_action_params( $oldparms );
+}
+
 #
 # Process a record in the snat file
 #
-sub process_one_snat1( $$$$$$$$$$$ ) {
-    my ($action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+sub process_snat1( $$$$$$$$$$$$ ) {
+    my ( $chainref, $action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
 
+    my $inchain;
+    my $inaction;
     my $pre_nat;
     my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
     my $destnets = '';
@@ -5178,60 +5344,75 @@ sub process_one_snat1( $$$$$$$$$$$ ) {
     my $options       = '';
     my $addresses;
     my $target;
+    my $params;
+    my $actiontype;
+    my $interfaces;
+    my $interface;
+    my $normalized_action;
 
     if ( $action =~ /^MASQUERADE(\+)?\((.+)\)$/ ) {
-	$target    = 'MASQUERADE';
-	$action    = $target;
-	$pre_nat   = $1;
-	$addresses = $2;
-	$options = 'random' if $addresses =~ s/:?random$//;
+	$target     = 'MASQUERADE';
+	$actiontype = $builtin_target{$action = $target};
+	$pre_nat    = $1;
+	$addresses  = $2;
+	$options    = 'random' if $addresses =~ s/:?random$//;
     } elsif ( $action =~ /^SNAT(\+)?\((.+)\)$/ ) {
-	$pre_nat   = $1;
-	$addresses = $2;
-	$target    = 'SNAT';
-	$action    = $target;
-	$options .= ':persistent' if $addresses =~ s/:persistent//;
-	$options .= ':random'     if $addresses =~ s/:random//;
-	$options =~ s/^://;
+	$pre_nat    = $1;
+	$addresses  = $2;
+	$target     = 'SNAT';
+	$actiontype = $builtin_target{$action = $target};
+	$options   .= ':persistent' if $addresses =~ s/:persistent//;
+	$options   .= ':random'     if $addresses =~ s/:random//;
+	$options   =~ s/^://;
     } elsif ( $action =~ /^CONTINUE(\+)?$/ ) {
 	$add_snat_aliases = 0;
-	$target  = 'RETURN';
-	$pre_nat = $1;
+	$actiontype = $builtin_target{$target = 'RETURN'};
+	$pre_nat    = $1;
     } elsif ( $action eq 'MASQUERADE' ) {
-	$target = 'MASQUERADE';
+	$actiontype = $builtin_target{$target = 'MASQUERADE'};
     } else {
-	fatal_error "Invalid ACTION ($action)";
+	( $target , $params ) = get_target_param1( $action );
+
+	$actiontype = $targets{$target};
+
+	fatal_error "Invalid ACTION ($action)" unless $actiontype & ( ACTION | INLINE );
+    }
+
+    if ( $inchain = defined $chainref ) {
+	( $inaction, undef, $interfaces, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 5 if $chainref->{action};
     }
     #
     # Next, parse the DEST column
     #
-    if ( $family == F_IPV4 ) {
+    if ( $inaction ) {
+	fatal_error q('*' is not allowed within an action body) if $pre_nat;
+	$destnets = $dest;
+    } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {
 	    $add_snat_aliases = 0;
 	    $destnets = $2;
-	    $dest = $1;
+	    $interfaces = $1;
 	} elsif ( $dest =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
 	    $destnets = $2;
-	    $dest = $1;
+	    $interfaces = $1;
 	} elsif ( $dest =~ /^([^:]+):$/ ) {
 	    $add_snat_aliases = 0;
-	    $dest = $1;
+	    $interfaces = $1;
 	} elsif ( $dest =~ /^([^:]+):([^:]*)$/ ) {
 	    my ( $one, $two ) = ( $1, $2 );
 	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
-		$dest = $one;
+		$interfaces = $one;
 		$destnets = $two;
 	    }
+	} else {
+	    $interfaces = $dest;
 	}
     } elsif ( $dest =~ /^(.+?):(.+)$/ ) {
-	$dest          = $1;
+	$interfaces    = $1;
 	$destnets      = $2;
+    } else {
+	$interfaces    = $dest;
     }
-    #
-    # If there is no source or destination then allow all addresses
-    #
-    $source   = ALLIP if $source   eq '-';
-    $destnets = ALLIP if $destnets eq '-';
     #
     # Handle IPSEC options, if any
     #
@@ -5259,203 +5440,260 @@ sub process_one_snat1( $$$$$$$$$$$ ) {
     $baserule .= do_user( $user )                    if $user ne '-';
     $baserule .= do_probability( $probability )      if $probability ne '-';
 
-    my $rule = '';
+    for $interface ( split_list( $interfaces, 'interface' ) ) {
+ 
+	my $rule = '';
+	my $saveaddresses = $addresses;
 
-    ( my $interface = $dest ) =~ s/:.*//;
+	unless ( $inaction ) {
+	    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
+		$interface    = $1;
+		my $provider  = $2;
 
-    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
-	$interface = $1;
-	my $provider  = $2;
+		fatal_error "Missing Provider ($dest)" unless supplied $provider;
 
-	fatal_error "Missing Provider ($dest)" unless supplied $provider;
+		$dest =~ s/[(]\w*[)]//;
+		my $realm = provider_realm( $provider );
 
-	$dest =~ s/[(]\w*[)]//;
-	my $realm = provider_realm( $provider );
+		fatal_error "$provider is not a shared-interface provider" unless $realm;
 
-	fatal_error "$provider is not a shared-interface provider" unless $realm;
-
-	$rule .= "-m realm --realm $realm ";
-    }
-
-    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
-
-    if ( $interfaceref->{root} ) {
-	$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
-    } else {
-	$rule .= match_dest_dev( $interface );
-	$interface = $interfaceref->{name};
-    }
-
-    my $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
-
-    $baserule .= do_condition( $condition , $chainref->{name} );
-
-    my $detectaddress = 0;
-    my $exceptionrule = '';
-    my $conditional   = 0;
-
-    if ( $action eq 'SNAT' ) {
-	if ( $addresses eq 'detect' ) {
-	    my $variable = get_interface_address $interface;
-	    $target .= " --to-source $variable";
-
-	    if ( interface_is_optional $interface ) {
-		add_commands( $chainref,
-			      '',
-			      "if [ \"$variable\" != 0.0.0.0 ]; then" );
-		incr_cmd_level( $chainref );
-		$detectaddress = 1;
+		$rule .= "-m realm --realm $realm ";
 	    }
-	} else {
-	    my $addrlist = '';
-	    my @addrs = split_list $addresses, 'address';
 
-	    fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
 
-	    for my $addr ( @addrs ) {
-		if ( $addr =~ /^([&%])(.+)$/ ) {
-		    my ( $type, $interface ) = ( $1, $2 );
+	    if ( $interfaceref->{root} ) {
+		$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+	    } else {
+		$rule .= match_dest_dev( $interface );
+		$interface = $interfaceref->{name};
+	    }
 
-		    my $ports = '';
+	    $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
+	}
 
-		    if ( $interface =~ s/:(.+)$// ) {
-			validate_portpair1( $proto, $1 );
-			$ports = ":$1";
-		    }
-		    #
-		    # Address Variable
-		    #
-		    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+	$baserule .= do_condition( $condition , $chainref->{name} );
+
+	my $detectaddress = 0;
+	my $exceptionrule = '';
+	my $conditional   = 0;
+
+	if ( $action eq 'SNAT' ) {
+	    if ( $addresses eq 'detect' ) {
+		my $variable = get_interface_address $interface;
+		$target .= " --to-source $variable";
+
+		if ( interface_is_optional $interface ) {
+		    add_commands( $chainref,
+				  '',
+				  "if [ \"$variable\" != 0.0.0.0 ]; then" );
+		    incr_cmd_level( $chainref );
+		    $detectaddress = 1;
+		}
+	    } else {
+		my $addrlist = '';
+		my @addrs = split_list $addresses, 'address';
+
+		fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+
+		for my $addr ( @addrs ) {
+		    if ( $addr =~ /^([&%])(.+)$/ ) {
+			my ( $type, $interface ) = ( $1, $2 );
+
+			my $ports = '';
+
+			if ( $interface =~ s/:(.+)$// ) {
+			    validate_portpair1( $proto, $1 );
+			    $ports = ":$1";
+			}
 			#
-			# User-defined address variable
+			# Address Variable
 			#
-			$conditional = conditional_rule( $chainref, $addr );
-			$addrlist .= ' --to-source' . "\$${1}${ports} ";
-		    } else {
-			if ( $conditional = conditional_rule( $chainref, $addr ) ) {
+			if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
 			    #
-			    # Optional Interface -- rule is conditional
+			    # User-defined address variable
 			    #
-			    $addr = get_interface_address $interface;
+			    $conditional = conditional_rule( $chainref, $addr );
+			    $addrlist .= ' --to-source' . "\$${1}${ports} ";
 			} else {
-			    #
-			    # Interface is not optional
-			    #
-			    $addr = record_runtime_address( $type, $interface );
-			}
+			    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
+				#
+				# Optional Interface -- rule is conditional
+				#
+				$addr = get_interface_address $interface;
+			    } else {
+				#
+				# Interface is not optional
+				#
+				$addr = record_runtime_address( $type, $interface );
+			    }
 
-			if ( $ports ) {
-			    $addr =~ s/ $//;
-			    $addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
-			}
+			    if ( $ports ) {
+				$addr =~ s/ $//;
+				$addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
+			    }
 
-			$addrlist .= ' --to-source' . $addr;
-		    }
-		} elsif ( $family == F_IPV4 ) {
-		    if ( $addr =~ /^.*\..*\..*\./ ) {
-			my ($ipaddr, $rest) = split ':', $addr;
-			if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
-			    validate_range( $1, $2 );
+			    $addrlist .= ' --to-source' . $addr;
+			}
+		    } elsif ( $family == F_IPV4 ) {
+			if ( $addr =~ /^.*\..*\..*\./ ) {
+			    my ($ipaddr, $rest) = split ':', $addr;
+			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
+				validate_range( $1, $2 );
+			    } else {
+				validate_address $ipaddr, 0;
+			    }
+			    validate_portpair1( $proto, $rest ) if supplied $rest;
+			    $addrlist .= " --to-source $addr";
+			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {
-			    validate_address $ipaddr, 0;
-			}
-			validate_portpair1( $proto, $rest ) if supplied $rest;
-			$addrlist .= " --to-source $addr";
-			$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
-		    } else {
-			my $ports = $addr;
-			$ports =~ s/^://;
-			validate_portpair1( $proto, $ports );
-			$addrlist .= " --to-ports $ports";
-			$exceptionrule = do_proto( $proto, '', '' );
-		    }
-		} else {
-		    if ( $addr =~ /^\[/ ) {
-			#
-			# Can have ports specified
-			#
-			my $ports;
-
-			if ( $addr =~ s/:([^]:]+)$// ) {
-			    $ports = $1;
-			}
-
-			fatal_error "Invalid IPv6 Address ($addr)" unless $addr =~ /^\[(.+)\]$/;
-
-			$addr = $1;
-
-			if ( $addr =~ /^(.+)-(.+)$/ ) {
-			    fatal_error "Correct address range syntax is '[<addr1>-<addr2>]'" if $addr =~ /]-\[/;
-			    validate_range( $1, $2 );
-			} else {
-			    validate_address $addr, 0;
-			}
-
-			if ( supplied $ports ) {
+			    my $ports = $addr;
+			    $ports =~ s/^://;
 			    validate_portpair1( $proto, $ports );
+			    $addrlist .= " --to-ports $ports";
 			    $exceptionrule = do_proto( $proto, '', '' );
-			    $addr = "[$addr]:$ports";
 			}
-
-			$addrlist .= " --to-source $addr";
 		    } else {
-			if ( $addr =~ /^(.+)-(.+)$/ ) {
-			    validate_range( $1, $2 );
-			} else {
-			    validate_address $addr, 0;
-			}
+			if ( $addr =~ /^\[/ ) {
+			    #
+			    # Can have ports specified
+			    #
+			    my $ports;
 
-			$addrlist .= " --to-source $addr";
+			    if ( $addr =~ s/:([^]:]+)$// ) {
+				$ports = $1;
+			    }
+
+			    fatal_error "Invalid IPv6 Address ($addr)" unless $addr =~ /^\[(.+)\]$/;
+
+			    $addr = $1;
+
+			    if ( $addr =~ /^(.+)-(.+)$/ ) {
+				fatal_error "Correct address range syntax is '[<addr1>-<addr2>]'" if $addr =~ /]-\[/;
+				validate_range( $1, $2 );
+			    } else {
+				validate_address $addr, 0;
+			    }
+
+			    if ( supplied $ports ) {
+				validate_portpair1( $proto, $ports );
+				$exceptionrule = do_proto( $proto, '', '' );
+				$addr = "[$addr]:$ports";
+			    }
+
+			    $addrlist .= " --to-source $addr";
+			} else {
+			    if ( $addr =~ /^(.+)-(.+)$/ ) {
+				validate_range( $1, $2 );
+			    } else {
+				validate_address $addr, 0;
+			    }
+
+			    $addrlist .= " --to-source $addr";
+			}
+		    }
+		}
+
+		$target .= $addrlist;
+	    }
+	} elsif ( $action eq 'MASQUERADE' ) {
+	    if ( supplied $addresses ) {
+		validate_portpair1($proto, $addresses );
+		$target .= " --to-ports $addresses";
+	    }
+	}
+	#
+	# And Generate the Rule(s)
+	#
+	if ( $actiontype & INLINE ) {
+	    fatal_error( qq(Action $target may not be used in the snat file) ) unless $actiontype & NAT_TABLE;
+
+	    process_snat_inline( $target,
+				 $chainref,
+				 $params,
+				 $source,
+				 supplied $destnets && $destnets ne '-' ? $inaction ? $destnets : join( ':', $interface, $destnets ) : $inaction ? '-' : $interface,
+				 $proto,
+				 $ports,
+				 $ipsec,
+				 $mark,
+				 $user,
+				 $condition,
+				 $origdest,
+				 $probability );
+	} else {
+	    if ( $actiontype & ACTION ) {
+		fatal_error( qq(Action $target may not be used in the snat file) ) unless $actiontype & NAT_TABLE;
+		#
+		# Create the action:level:tag:param tuple. Since we don't allow logging out of nat POSTROUTING, we store
+		# the interface name in the log tag
+		#
+		my $normalized_target = normalize_action( $target, "none:$interface", $params );
+		fatal_error( "Action $target invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$target};
+
+		my $ref = use_action( 'nat', $normalized_target );
+
+		if ( $ref ) {
+		    #
+		    # First reference to this tuple - process_action may modify both $normalized_target and $ref!!!
+		    #
+		    process_action( $normalized_target, $ref, $chainref->{name} );
+		    #
+		    # Capture the name of the action chain
+		    #
+		} else {
+		    #
+		    # We've seen this tuple before
+		    #
+		    $ref = $usedactions{$normalized_target};
+		}
+
+		$target = $ref->{name};
+	    } else {
+		for my $option ( split_list2( $options , 'option' ) ) {
+		    if ( $option eq 'random' ) {
+			$target .= ' --random';
+			require_capability( 'MASQUERADE_TGT', "$action rules", '') if $family == F_IPV6;
+		    } elsif ( $option eq 'persistent' ) {
+			fatal_error( "':persistent' is not allowed in a MASQUERADE rule" ) if $action eq 'MASQUERADE';
+			require_capability 'PERSISTENT_SNAT', ':persistent', 's';
+			$target .= ' --persistent';
+		    } else {
+			fatal_error "Invalid $action option ($option)";
 		    }
 		}
 	    }
+	    #
+	    # If there is no source or destination then allow all addresses
+	    #
+	    $source   = ALLIP if $source eq '-';
+	    $destnets = ALLIP unless supplied $destnets && $destnets ne '-';
 
-	    $target .= $addrlist;
+	    expand_rule( $chainref ,
+			 POSTROUTE_RESTRICT ,
+			 $prerule ,
+			 $baserule . $inlinematches . $rule ,
+			 $source ,
+			 $destnets ,
+			 $origdest ,
+			 $target ,
+			 '' ,
+			 '' ,
+			 $exceptionrule ,
+			 '' )
+		unless unreachable_warning( 0, $chainref );
+
+	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 	}
-    } elsif ( $action eq 'MASQUERADE' ) {
-	if ( supplied $addresses ) {
-	    validate_portpair1($proto, $addresses );
-	    $target .= " --to-ports $addresses";
-	}
-    }	    
-	
-    for my $option ( split_list2( $options , 'option' ) ) {
-	if ( $option eq 'random' ) {
-	    $target .= ' --random';
-	    require_capability( 'MASQUERADE_TGT', "$action rules", '') if $family == F_IPV6;
-	} elsif ( $option eq 'persistent' ) {
-	    fatal_error( "':persistent' is not allowed in a MASQUERADE rule" ) if $action eq 'MASQUERADE';
-	    require_capability 'PERSISTENT_SNAT', ':persistent', 's';
-	    $target .= ' --persistent';
-	} else {
-	    fatal_error "Invalid $action option ($option)";
-	}
+
+	$addresses = $saveaddresses;
     }
 
-    #
-    # And Generate the Rule(s)
-    #
-    expand_rule( $chainref ,
-		 POSTROUTE_RESTRICT ,
-		 $prerule ,
-		 $baserule . $inlinematches . $rule ,
-		 $source ,
-		 $destnets ,
-		 $origdest ,
-		 $target ,
-		 '' ,
-		 '' ,
-		 $exceptionrule ,
-		 '' )
-	unless unreachable_warning( 0, $chainref );
-
-    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
-
     progress_message "   Snat record \"$currentline\" $done"
-    
+
 }
 
-sub process_one_snat( )
+sub process_snat( )
 {
     my ($action, $source, $dest, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
 	split_line2( 'snat file',
@@ -5468,7 +5706,7 @@ sub process_one_snat( )
     fatal_error 'DEST must be specified' if $dest eq '-';
 
     for my $proto ( split_list $protos, 'Protocol' ) {
-	process_one_snat1( $action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
+	process_snat1( undef, $action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
     }
 }
 
@@ -5487,7 +5725,7 @@ sub setup_snat( $ ) # Convert masq->snat if true
 
 	process_one_masq(0) while read_a_line( NORMAL_READ );
     } elsif ( $fn = open_file( 'snat', 1, 1 ) ) {
-	process_one_snat while read_a_line( NORMAL_READ );
+	process_snat while read_a_line( NORMAL_READ );
     }
 }
 

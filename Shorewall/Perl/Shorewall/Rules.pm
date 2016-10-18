@@ -2258,7 +2258,11 @@ sub process_actions() {
 		fatal_error "The 'raw' table may not be specified for non-builtin actions" if $opts & RAW_OPT;
 
 		$type |= MANGLE_TABLE if $opts & MANGLE_OPT;
-		$type |= NAT_TABLE    if $opts & NAT_OPT;
+		
+		if ( $opts & NAT_OPT ) {
+		    fatal_error q(The 'mangle' and 'nat' options are mutually exclusive) if $opts & MANGLE_OPT;
+		    $type |= NAT_TABLE;
+		}
 
 		my $actionfile = find_file( "action.$action" );
 

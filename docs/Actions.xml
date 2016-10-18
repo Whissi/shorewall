@@ -417,8 +417,8 @@ REDIRECT       net     -       tcp     80      -       1.2.3.4</programlisting>
 
       <para>To create a mangle action, follow the steps in the preceding
       section, but use the
-      <filename>/usr/share/shorewall/action.mangletemplate</filename> file.
-      </para>
+      <filename>/usr/share/shorewall/action.mangletemplate</filename>
+      file.</para>
     </section>
   </section>
 
@@ -1010,5 +1010,108 @@ add_rule $chainref, '-j ACCEPT';
 
 1; </programlisting>
     </section>
+  </section>
+
+  <section>
+    <title>Mangle Actions</title>
+
+    <para>Beginning with Shorewall 5.0.7, actions are supported in <ulink
+    url="manpages/shorewall-mangle.html">shorewall-mangle(5)</ulink>. Like
+    actions used out of <ulink
+    url="manpages/shorewall-rules.html">shorewall-rules(5)</ulink>, they must
+    be declared in <ulink
+    url="manpages/shorewall-actions.html">shorewall-actions(5)</ulink>. These
+    <firstterm>mangle actions</firstterm> must have the
+    <option>mangle</option> option specified on <ulink
+    url="manpages/shorewall-actions.html">shorewall-actions(5)</ulink>. Like
+    the actions described in the preceding sections, mangle actions are
+    defined in a files with names of the form
+    action.<replaceable>action</replaceable>. Rules in those files have the
+    same format as those in <ulink
+    url="manpages/shorewall-mangle.html">shorewall-mangle(5)</ulink> with the
+    restriction that chain designators (:P, :F, etc.) are not permitted in the
+    ACTION column. Both regular and inline actions are supported.</para>
+
+    <para>Inline Example</para>
+
+    <para><filename>/etc/shorewall/actions</filename>:</para>
+
+    <programlisting>#ACTION     OPTIONS
+Divert	     inline,mangle      # TProxy Rules
+</programlisting>
+
+    <para><filename>/etc/shorewall/action.Divert</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+DIVERT          COMB_IF         -               tcp     -       80
+DIVERT          COMC_IF         -               tcp     -       80
+DIVERT          DMZ_IF          172.20.1.0/24   tcp     -       80
+</programlisting>
+
+    <para><filename>/etc/shorewall/mangle</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+Divert</programlisting>
+
+    <para>More efficient way to do this:</para>
+
+    <para><filename>/etc/shorewall/actions</filename>:</para>
+
+    <programlisting>#ACTION     OPTIONS
+Divert	     inline             # TProxy Rules
+</programlisting>
+
+    <para><filename>/etc/shorewall/action.Divert</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+DIVERT          COMB_IF         -               
+DIVERT          COMC_IF         -               
+DIVERT          DMZ_IF          172.20.1.0/24
+</programlisting>
+
+    <para><filename>/etc/shorewall/mangle</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT
+Divert          -               -               tcp     -       80</programlisting>
+  </section>
+
+  <section>
+    <title>SNAT Actions</title>
+
+    <para>Beginning with Shorewall 5.0.13, actions are supported in <ulink
+    url="manpages/shorewall-snat.html">shorewall-snat(5</ulink>); that file
+    supercedes <ulink
+    url="manpages/shorewall-masq.html">shorewall-masq(5)</ulink> which is
+    still supported. The shorewall update command will convert a
+    <filename>masq</filename> file into the equivalent
+    <filename>snat</filename> file. Like actions used out of <ulink
+    url="manpages/shorewall-rules.html">shorewall-rules(5)</ulink>,
+    <firstterm>SNAT actions</firstterm> must be declared in <ulink
+    url="manpages/shorewall-actions.html">shorewall-actions(5)</ulink>. These
+    <firstterm>mangle actions</firstterm> must have the <option>nat</option>
+    option specified on <ulink
+    url="manpages/shorewall-actions.html">shorewall-actions(5)</ulink>. Like
+    the actions described in the preceding sections, SNAT actions are defined
+    in a files with names of the form
+    action.<replaceable>action</replaceable>. Rules in those files have the
+    same format as those in <ulink
+    url="manpages/shorewall-snat.html">shorewall-snat(5)</ulink> with two
+    restrictions:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The plus sign ("+") is not allowed in the ACTION column, so all
+        rules in the action will either be pre-nat or post-nat depending on
+        whether '+' was present in the action's invocation.</para>
+      </listitem>
+
+      <listitem>
+        <para>Interface names are not allowed in the DEST column, so all rules
+        in the action will apply to the interface specified in the action's
+        invocation.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Both regular and inline actions are supported.</para>
   </section>
 </article>

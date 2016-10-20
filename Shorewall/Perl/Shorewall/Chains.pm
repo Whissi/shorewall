@@ -8265,6 +8265,7 @@ EOF
 
 sub ensure_ipsets( @ ) {
     my $set;
+    my $counters = have_capability( 'IPSET_MATCH_COUNTERS' ) ? ' counters' : '';
 
     if ( $globals{DBL_TIMEOUT} ne '' && $_[0] eq $globals{DBL_IPSET} ) {
 	shift;
@@ -8277,12 +8278,12 @@ sub ensure_ipsets( @ ) {
 	    emit(  q(    #),
 		   q(    # Set the timeout for the dynamic blacklisting ipset),
 		   q(    #),
-		  qq(    \$IPSET -exist create $globals{DBL_IPSET}  hash:net family inet timeout $globals{DBL_TIMEOUT} counters) );
+		  qq(    \$IPSET -exist create $globals{DBL_IPSET}  hash:net family inet timeout $globals{DBL_TIMEOUT}${counters}) );
 	} else {
 	    emit(  q(    #),
 		   q(    # Set the timeout for the dynamic blacklisting ipset),
 		   q(    #),
-		  qq(    \$IPSET -exist create $globals{DBL_IPSET} hash:net family inet6 timeout $globals{DBL_TIMEOUT} counters) );
+		  qq(    \$IPSET -exist create $globals{DBL_IPSET} hash:net family inet6 timeout $globals{DBL_TIMEOUT}${counters}) );
 	}
 
 	pop_indent;
@@ -8304,7 +8305,7 @@ sub ensure_ipsets( @ ) {
 	    if ( have_capability 'IPSET_V5' ) {
 		emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
 		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-		       qq(        \$IPSET create $set hash:net family inet timeout 0 counters) ,
+		       qq(        \$IPSET create $set hash:net family inet timeout 0${counters}) ,
 		       qq(    fi) );
 	    } else {
 		emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
@@ -8315,7 +8316,7 @@ sub ensure_ipsets( @ ) {
 	} else {
 	    emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
 		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
-		   qq(        \$IPSET create $set hash:net family inet6 timeout 0 counters) ,
+		   qq(        \$IPSET create $set hash:net family inet6 timeout 0${counters}) ,
 		   qq(    fi) );
 	}
 

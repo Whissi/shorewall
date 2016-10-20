@@ -4544,11 +4544,11 @@ sub IPSet_Match() {
 }
 
 sub IPSet_Match_Nomatch() {
-    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_NOMATCH};
+    have_capability( 'IPSET_MATCH' ) && $capabilities{IPSET_MATCH_NOMATCH};
 }
 
 sub IPSet_Match_Counters() {
-    have_capability 'IPSET_MATCH' && $capabilities{IPSET_MATCH_COUNTERS};
+    have_capability( 'IPSET_MATCH' ) && $capabilities{IPSET_MATCH_COUNTERS};
 }
 
 sub IPSET_V5() {

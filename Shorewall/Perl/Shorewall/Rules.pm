@@ -5376,7 +5376,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     } else {
 	( $target , $params ) = get_target_param1( $action );
 
-	$pre_nat = ( $target =~ s/\+$//; )
+	$pre_nat = ( $target =~ s/\+$// );
 
 	$actiontype = $targets{$target};
 

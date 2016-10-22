@@ -1654,6 +1654,14 @@ SSH(ACCEPT)    net:$MYIP      $FW
   <section id="AddressVariables">
     <title>Address Variables</title>
 
+    <caution>
+      <para>If you use address variables that refer to an optional interface,
+      the <command>enable</command> command will not change the rules that use
+      the variable. Therefore, to be completely safe, if you use such address
+      variables then you must follow an <command>enable</command> command with
+      a <command>reload</command> command.</para>
+    </caution>
+
     <para>Given that shell variables are expanded at compile time, there is no
     way to cause such variables to be expanded at run time. Prior to Shorewall
     4.4.17, this made it difficult (to impossible) to include dynamic IP

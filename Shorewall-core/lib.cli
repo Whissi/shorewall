@@ -3566,7 +3566,7 @@ blacklist_command() {
 		if [ $VERBOSITY -gt 1 ]; then
 		    echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " src " ); }; { print; }'
 		else
-		    echo "$message" | head -n1 | sed '/^.*: //; s/ / src /'
+		    echo "$message" | head -n1 | sed 's/^.*: //; s/ / src /'
 		fi
 	    fi
 
@@ -3576,7 +3576,7 @@ blacklist_command() {
 		    if [ $VERBOSITY -gt 1 ]; then
 			echo "$message" | awk '/have been deleted/ { sub( /^.*: /, "" ); sub( / /,  " dst " ); }; { print; }'
 		    else
-			echo "$message" | head -n1 | sed '/^.*: //; s/ / dst /'
+			echo "$message" | head -n1 | sed 's/^.*: //; s/ / dst /'
 		    fi
 		fi
 	    fi

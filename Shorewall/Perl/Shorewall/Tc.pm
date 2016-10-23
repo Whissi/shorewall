@@ -2276,13 +2276,13 @@ sub setup_tc( $ ) {
     $convert = $_[0];
 
     if ( $config{MANGLE_ENABLED} ) {
-	ensure_mangle_chain 'tcpre';
-	ensure_mangle_chain 'tcout';
+	ensure_mangle_chain( 'tcpre', PREROUTING, PREROUTE_RESTRICT );
+	ensure_mangle_chain( 'tcout', OUTPUT    , OUTPUT_RESTRICT );
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    ensure_mangle_chain 'tcfor';
-	    ensure_mangle_chain 'tcpost';
-	    ensure_mangle_chain 'tcin';
+	    ensure_mangle_chain( 'tcfor',  FORWARD );
+	    ensure_mangle_chain( 'tcpost', POSTROUTING, POSTROUTE_RESTRICT );
+	    ensure_mangle_chain( 'tcin',   INPUT      , INPUT_RESTRICT );
 	}
 
 	my @mark_part;

@@ -2747,11 +2747,13 @@ sub accounting_chainrefs() {
     grep $_->{accounting} , values %$filter_table;
 }
 
-sub ensure_mangle_chain($) {
-    my $chain = $_[0];
+sub ensure_mangle_chain($;$$) {
+    my ( $chain, $number, $restriction ) = @_;
 
     my $chainref = ensure_chain 'mangle', $chain;
-    $chainref->{referenced} = 1;
+    $chainref->{referenced}  = 1;
+    $chainref->{chainnumber} = $number if $number;
+    $chainref->{restriction} = $restriction if $restriction;
     $chainref;
 }
 

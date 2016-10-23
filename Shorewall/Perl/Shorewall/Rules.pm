@@ -4098,11 +4098,13 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 
 	    my $chainref = ensure_chain( 'mangle', $chain = $chainnames{$chain} );
 
+	    $restriction |= $chainref->{restriction};
+
 	    for ( my $packet = 0; $packet < $marks; $packet++, $markval += $increment ) {
 		my $match = "-m statistic --mode nth --every $marks --packet $packet ";
 
 		expand_rule( $chainref,
-			     $restrictions{$chain} | $restriction,
+			     $restriction,
 			     $prerule ,
 			     $match .
 			     do_user( $user ) .
@@ -4845,8 +4847,10 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    $chainref = ensure_chain( 'mangle', $chainnames{$chain} );
 	}
 
+	$restriction |= $chainref->{restriction} if defined $chainref->{restriction};
+
 	if ( ( my $result = expand_rule( $chainref ,
-					 ( $restrictions{$chain} || 0 ) | $restriction,
+					 $restriction,
 					 $prerule,
 					 do_proto( $proto, $ports, $sports) . $matches .
 					 do_user( $user ) .

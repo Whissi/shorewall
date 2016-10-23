@@ -1308,6 +1308,8 @@ sub handle_ematch( $$ ) {
 
     $setname =~ s/\+//;
 
+    add_ipset($setname);
+
     return "ipset\\($setname $options\\)";
 }
 

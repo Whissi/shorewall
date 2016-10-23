@@ -1518,7 +1518,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	$rule .= ' and' if $have_rule;
 
 	if ( $source =~ /^\+/ ) {
-	    $rule = join( '', "\\\n   ", handle_ematch( $source, 'src' ) );
+	    $rule .= join( '', "\\\n   ", handle_ematch( $source, 'src' ) );
 	} else {
 	    my @parts = decompose_net_u32( $source );
 

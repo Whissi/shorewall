@@ -7273,6 +7273,7 @@ sub isolate_dest_interface( $$$$ ) {
     my ( $diface, $dnets );
 
     if ( ( $restriction & PREROUTE_RESTRICT ) && $dest =~ /^detect:(.*)$/ ) {
+	my $niladdr = NILIP;
 	#
 	# DETECT_DNAT_IPADDRS=Yes and we're generating the nat rule
 	#
@@ -7289,14 +7290,14 @@ sub isolate_dest_interface( $$$$ ) {
 
 	    push_command( $chainref , "for address in $list; do" , 'done' );
 
-	    push_command( $chainref , 'if [ $address != 0.0.0.0 ]; then' , 'fi' ) if $optional;
+	    push_command( $chainref , "if [ \$address != $niladdr ]; then" , 'fi' ) if $optional;
 
 	    $rule .= '-d $address ';
 	} else {
 	    my $interface = $interfaces[0];
 	    my $variable  = get_interface_address( $interface );
 
-	    push_command( $chainref , "if [ $variable != 0.0.0.0 ]; then" , 'fi') if interface_is_optional( $interface );
+	    push_command( $chainref , "if [ $variable != $niladdr ]; then" , 'fi') if interface_is_optional( $interface );
 
 	    $rule .= "-d $variable ";
 	}

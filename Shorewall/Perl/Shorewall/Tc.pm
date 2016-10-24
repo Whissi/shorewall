@@ -2282,7 +2282,7 @@ sub setup_tc( $ ) {
 	ensure_mangle_chain( 'tcout', OUTPUT    , OUTPUT_RESTRICT );
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    ensure_mangle_chain( 'tcfor',  FORWARD );
+	    ensure_mangle_chain( 'tcfor',  FORWARD    , NO_RESTRICT );
 	    ensure_mangle_chain( 'tcpost', POSTROUTING, POSTROUTE_RESTRICT );
 	    ensure_mangle_chain( 'tcin',   INPUT      , INPUT_RESTRICT );
 	}

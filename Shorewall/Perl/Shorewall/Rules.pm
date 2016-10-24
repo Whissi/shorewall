@@ -4847,7 +4847,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 	    $chainref = ensure_chain( 'mangle', $chainnames{$chain} );
 	}
 
-	$restriction |= $chainref->{restriction} if defined $chainref->{restriction};
+	$restriction |= $chainref->{restriction};
 
 	if ( ( my $result = expand_rule( $chainref ,
 					 $restriction,

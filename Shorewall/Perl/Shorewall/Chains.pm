@@ -8307,18 +8307,18 @@ sub ensure_ipsets( @ ) {
 	if ( $family == F_IPV4 ) {
 	    if ( have_capability 'IPSET_V5' ) {
 		emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
-		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as a hash:net set") ,
 		       qq(        \$IPSET create $set hash:net family inet timeout 0${counters}) ,
 		       qq(    fi) );
 	    } else {
 		emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an iphash set") ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as a iphash set") ,
 		       qq(        \$IPSET -N $set iphash) ,
 		       qq(    fi) );
 	    }
 	} else {
 	    emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
-		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		   qq(        error_message "WARNING: ipset $set does not exist; creating it as a hash:net set") ,
 		   qq(        \$IPSET create $set hash:net family inet6 timeout 0${counters}) ,
 		   qq(    fi) );
 	}

@@ -1558,12 +1558,10 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 		    $offset += 4;
 		    $rule .= ' and' if @parts;
 		}
-
-		$have_rule = 1;
 	    }
-
-	    $have_rule = 1;
 	}
+
+	$have_rule = 1;
     }
 
     if ( $have_rule ) {

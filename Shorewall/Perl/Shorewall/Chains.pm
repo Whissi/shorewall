@@ -8312,7 +8312,7 @@ sub ensure_ipsets( @ ) {
 		       qq(    fi) );
 	    } else {
 		emit ( qq(    if ! qt \$IPSET -L $set -n; then) ,
-		       qq(        error_message "WARNING: ipset $set does not exist; creating it as a iphash set") ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an iphash set") ,
 		       qq(        \$IPSET -N $set iphash) ,
 		       qq(    fi) );
 	    }

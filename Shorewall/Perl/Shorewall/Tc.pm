@@ -827,7 +827,7 @@ sub validate_tc_class( ) {
 		fatal_error "Invalid 'occurs' ($val)"                               unless defined $occurs && $occurs > 1 && $occurs <= 256;
 		fatal_error "Invalid 'occurs' ($val)"                               if $occurs > $globals{TC_MAX};
 		fatal_error q(Duplicate 'occurs')                                   if $tcref->{occurs} > 1;
-		fatal_error q(The 'occurs' option is not valid with 'default')      if $devref->{default} == $classnumber;
+               fatal_error q(The 'occurs' option is not valid with 'default')      if defined($devref->{default}) && $devref->{default} == $classnumber;
 		fatal_error q(The 'occurs' option is not valid with 'tos')          if @{$tcref->{tos}};
 		warning_message "MARK ($mark) is ignored on an occurring class"     if $mark ne '-';
 
@@ -1308,6 +1308,8 @@ sub handle_ematch( $$ ) {
 
     $setname =~ s/\+//;
 
+    add_ipset($setname);
+
     return "ipset\\($setname $options\\)";
 }
 
@@ -1518,7 +1520,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 	$rule .= ' and' if $have_rule;
 
 	if ( $source =~ /^\+/ ) {
-	    $rule = join( '', "\\\n   ", handle_ematch( $source, 'src' ) );
+	    $rule .= join( '', "\\\n   ", handle_ematch( $source, 'src' ) );
 	} else {
 	    my @parts = decompose_net_u32( $source );
 
@@ -1557,9 +1559,9 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 		    $rule .= ' and' if @parts;
 		}
 	    }
-
-	    $have_rule = 1;
 	}
+
+	$have_rule = 1;
     }
 
     if ( $have_rule ) {
@@ -2276,13 +2278,13 @@ sub setup_tc( $ ) {
     $convert = $_[0];
 
     if ( $config{MANGLE_ENABLED} ) {
-	ensure_mangle_chain 'tcpre';
-	ensure_mangle_chain 'tcout';
+	ensure_mangle_chain( 'tcpre', PREROUTING, PREROUTE_RESTRICT );
+	ensure_mangle_chain( 'tcout', OUTPUT    , OUTPUT_RESTRICT );
 
 	if ( have_capability( 'MANGLE_FORWARD' ) ) {
-	    ensure_mangle_chain 'tcfor';
-	    ensure_mangle_chain 'tcpost';
-	    ensure_mangle_chain 'tcin';
+	    ensure_mangle_chain( 'tcfor',  FORWARD    , NO_RESTRICT );
+	    ensure_mangle_chain( 'tcpost', POSTROUTING, POSTROUTE_RESTRICT );
+	    ensure_mangle_chain( 'tcin',   INPUT      , INPUT_RESTRICT );
 	}
 
 	my @mark_part;

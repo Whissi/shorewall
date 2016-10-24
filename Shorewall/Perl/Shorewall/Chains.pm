@@ -2747,11 +2747,13 @@ sub accounting_chainrefs() {
     grep $_->{accounting} , values %$filter_table;
 }
 
-sub ensure_mangle_chain($) {
-    my $chain = $_[0];
+sub ensure_mangle_chain($;$$) {
+    my ( $chain, $number, $restriction ) = @_;
 
     my $chainref = ensure_chain 'mangle', $chain;
-    $chainref->{referenced} = 1;
+    $chainref->{referenced}  = 1;
+    $chainref->{chainnumber} = $number if $number;
+    $chainref->{restriction} = $restriction if $restriction;
     $chainref;
 }
 
@@ -8305,7 +8307,7 @@ sub ensure_ipsets( @ ) {
 	if ( $family == F_IPV4 ) {
 	    if ( have_capability 'IPSET_V5' ) {
 		emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
-		       qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		       qq(        error_message "WARNING: ipset $set does not exist; creating it as a hash:net set") ,
 		       qq(        \$IPSET create $set hash:net family inet timeout 0${counters}) ,
 		       qq(    fi) );
 	    } else {
@@ -8316,7 +8318,7 @@ sub ensure_ipsets( @ ) {
 	    }
 	} else {
 	    emit ( qq(    if ! qt \$IPSET list $set -n; then) ,
-		   qq(        error_message "WARNING: ipset $set does not exist; creating it as an hash:net set") ,
+		   qq(        error_message "WARNING: ipset $set does not exist; creating it as a hash:net set") ,
 		   qq(        \$IPSET create $set hash:net family inet6 timeout 0${counters}) ,
 		   qq(    fi) );
 	}

@@ -1078,7 +1078,7 @@ Divert          -               -               tcp     -       80</programlisti
   <section>
     <title>SNAT Actions</title>
 
-    <para>Beginning with Shorewall 5.0.13, actions are supported in <ulink
+    <para>Beginning with Shorewall 5.0.14, actions are supported in <ulink
     url="manpages/shorewall-snat.html">shorewall-snat(5</ulink>); that file
     supercedes <ulink
     url="manpages/shorewall-masq.html">shorewall-masq(5)</ulink> which is
@@ -1113,5 +1113,43 @@ Divert          -               -               tcp     -       80</programlisti
     </orderedlist>
 
     <para>Both regular and inline actions are supported.</para>
+
+    <para>Example:</para>
+
+    <para><filename>/etc/shorewall/actions</filename>:</para>
+
+    <programlisting>#ACTION     OPTIONS
+custEPTs    nat,inline</programlisting>
+
+    <para><filename>/etc/shorewall/action.custEPTs</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT
+SNAT($GW_IP)    { proto=udp port=1146 }
+SNAT($GW_IP)    { proto=tcp port=1156,7221,21000 }
+</programlisting>
+
+    <para><filename>/etc/shorewall/snat</filename>:</para>
+
+    <programlisting>ACTION          SOURCE          DEST            PROTO   PORT
+custEPTs  { source=$EPT_LIST dest=$IF_NET:$EPT_SERVERS }</programlisting>
+
+    <para>More effeciently:</para>
+
+    <para><filename>/etc/shorewall/actions</filename>:</para>
+
+    <programlisting>#ACTION     OPTIONS
+custEPTs    nat</programlisting>
+
+    <para><filename>/etc/shorewall/action.custEPTs</filename>:</para>
+
+    <programlisting>#ACTION         SOURCE          DEST            PROTO   PORT
+SNAT($GW_IP)    { proto=udp port=1146 }
+SNAT($GW_IP)    { proto=tcp port=1156,7221,21000 }
+</programlisting>
+
+    <para><filename>/etc/shorewall/snat</filename>:</para>
+
+    <programlisting>ACTION          SOURCE          DEST            PROTO   PORT
+custEPT  { source=$EPT_LIST dest=$IF_NET:$EPT_SERVERS }</programlisting>
   </section>
 </article>

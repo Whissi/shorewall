@@ -282,8 +282,13 @@ sub generate_script_2() {
 	  'detect_configuration()',
 	  '{' );
 
-    my $global_variables    = have_global_variables;
     my $optional_interfaces = find_interfaces_by_option( 'optional' );
+    #
+    # Force address detection for all optional interfaces
+    #
+    get_interface_address( $_ ) for @$optional_interfaces;
+
+    my $global_variables    = have_global_variables;
 
     push_indent;
 

@@ -225,7 +225,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 		} elsif ( $addresses eq 'NONAT' ) {
 		    fatal_error "'persistent' may not be specified with 'NONAT'" if $persistent;
 		    fatal_error "'random' may not be specified with 'NONAT'"     if $randomize;
-		    $target = 'RETURN';
+		    $target = $snat ? 'CONTINUE' : 'RETURN';
 		    $add_snat_aliases = 0;
 		} elsif ( $addresses ) {
 		    my $addrlist = '';
@@ -397,9 +397,8 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 
     if ( $snat ) {
 	$target =~ s/ .*//;
-	$target = 'CONTINUE' if $target eq 'RETURN';
 	$target .= '+' if $pre_nat;
-	$target .= '(' . $addresses . ')' if $addresses ne '-';
+	$target .= '(' . $addresses . ')' if $addresses ne '-' && $addresses ne 'NONAT';
 
 	my $line = "$target\t$networks\t$savelist\t$proto\t$ports\t$ipsec\t$mark\t$user\t$condition\t$origdest\t$probability";
 	#

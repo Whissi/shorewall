@@ -5357,11 +5357,11 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     my $interfaces;
     my $normalized_action;
 
-    if ( $action =~ /^MASQUERADE(\+)?\((.+)\)$/ ) {
+    if ( $action =~ /^MASQUERADE(\+)?(?:\((.+)\))?$/ ) {
 	$target     = 'MASQUERADE';
 	$actiontype = $builtin_target{$action = $target};
 	$pre_nat    = $1;
-	$addresses  = $2;
+	$addresses  = ( $2 || '' );
 	$options    = 'random' if $addresses =~ s/:?random$//;
     } elsif ( $action =~ /^SNAT(\+)?\((.+)\)$/ ) {
 	$pre_nat    = $1;
@@ -5382,7 +5382,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	$pre_nat = ( $target =~ s/\+$// );
 
-	$actiontype = $targets{$target};
+	$actiontype = ( $targets{$target} || 0 );
 
 	fatal_error "Invalid ACTION ($action)" unless $actiontype & ( ACTION | INLINE );
     }

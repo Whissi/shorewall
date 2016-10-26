@@ -2740,6 +2740,9 @@ EOF
     pop_indent;
 
     emit '
+    rm -f ${VARDIR}/*.address
+    rm -f ${VARDIR}/*.gateway
+
     run_stopped_exit';
 
     my @ipsets = all_ipsets;

@@ -282,13 +282,8 @@ sub generate_script_2() {
 	  'detect_configuration()',
 	  '{' );
 
-    my $optional_interfaces = find_interfaces_by_option( 'optional' );
-    #
-    # Force address detection for all optional interfaces
-    #
-    get_interface_address( $_ ) for @$optional_interfaces;
-
     my $global_variables    = have_global_variables;
+    my $optional_interfaces = find_interfaces_by_option( 'optional' );
 
     push_indent;
 
@@ -809,33 +804,8 @@ sub compiler {
     # Validate the TC files so that the providers will know what interfaces have TC
     #
     my $tcinterfaces = process_tc;
-    #
-    # Generate a function to bring up each provider
-    #
+
     process_providers( $tcinterfaces );
-    #
-    # [Re-]establish Routing
-    #
-    if ( $scriptfilename || $debug ) {
-	emit(  "\n#",
-	       '# Setup routing and traffic shaping',
-	       '#',
-	       'setup_routing_and_traffic_shaping() {'
-	    );
-
-	push_indent;
-    }
-
-    setup_providers;
-    #
-    # TCRules and Traffic Shaping
-    #
-    setup_tc( $update );
-
-    if ( $scriptfilename || $debug ) {
-	pop_indent;
-	emit "}\n"; # End of setup_routing_and_traffic_shaping()
-    }
 
     $have_arptables = process_arprules if $family == F_IPV4;
 
@@ -846,11 +816,7 @@ sub compiler {
     #
     process_tos;
     #
-    # ECN
-    #
-    setup_ecn if $family == F_IPV4 && have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-    #
-    # Setup Masquerading/SNAT
+    # Setup Masquerade/SNAT
     #
     setup_snat( $update );
     #
@@ -893,6 +859,37 @@ sub compiler {
     # Accounting.
     #
     setup_accounting if $config{ACCOUNTING};
+
+    enable_script;
+    #
+    # Generate a function to bring up each provider
+    #
+    if ( $scriptfilename || $debug ) {
+	emit(  "\n#",
+	       '# Setup routing and traffic shaping',
+	       '#',
+	       'setup_routing_and_traffic_shaping() {'
+	    );
+
+	push_indent;
+    }
+
+    setup_providers;
+    #
+    # TCRules and Traffic Shaping
+    #
+    setup_tc( $update );
+
+    if ( $scriptfilename || $debug ) {
+	pop_indent;
+	emit "}\n"; # End of setup_routing_and_traffic_shaping()
+    }
+    #
+    # ECN
+    #
+    setup_ecn if $family == F_IPV4 && have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
+
+    disable_script;
 
     if ( $scriptfilename ) {
 	#

@@ -95,7 +95,6 @@ our @EXPORT = ( qw( NOTHING
                     get_interface_origin
 		    interface_has_option
 		    set_interface_option
-		    set_interface_provider
 		    interface_zone
 		    interface_zones
 		    verify_required_interfaces
@@ -195,7 +194,6 @@ our %reservedName = ( all => 1,
 #                                     number      => <ordinal position in the interfaces file>
 #                                     physical    => <physical interface name>
 #                                     base        => <shell variable base representing this interface>
-#                                     provider    => <Provider Name, if interface is associated with a provider>
 #                                     wildcard    => undef|1 # Wildcard Name
 #                                     zones       => { zone1 => 1, ... }
 #                                     origin      => <where defined>

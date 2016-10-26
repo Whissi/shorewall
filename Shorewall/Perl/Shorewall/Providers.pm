@@ -472,12 +472,14 @@ sub process_a_provider( $ ) {
 
     if ( ( $gw = lc $gateway ) eq 'detect' ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
-	$gateway = get_interface_gateway $interface;
+	$gateway = get_interface_gateway( $interface, undef, 1 );
 	$gatewaycase = 'detect';
+	set_interface_option( $interface, 'gateway', 'detect' );
     } elsif ( $gw eq 'none' ) {
 	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gatewaycase = 'none';
 	$gateway = '';
+	set_interface_option( $interface, 'gateway', 'none' );
     } elsif ( $gateway && $gateway ne '-' ) {
 	( $gateway, $mac ) = split_host_list( $gateway, 0 );
 	validate_address $gateway, 0;
@@ -491,11 +493,14 @@ sub process_a_provider( $ ) {
 	}
 
 	$gatewaycase = 'specified';
+	set_interface_option( $interface, 'gateway', $gateway );
     } else {
 	$gatewaycase = 'omitted';
 	fatal_error "Configuring multiple providers through one interface requires a gateway" if $shared;
 	$gateway = '';
+	set_interface_option( $interface, 'gateway', $pseudo ? 'detect' : 'omitted' );
     }
+
 
     my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what, $hostroute, $persistent );
 
@@ -725,9 +730,9 @@ sub emit_started_message( $$$$$ ) {
     my ( $spaces, $level, $pseudo, $name, $number ) = @_;
 
     if ( $pseudo ) {
-	emit qq(${spaces}progress_message${level} "   Optional interface $name Started");
+	emit qq(${spaces}progress_message${level} "Optional interface $name Started");
     } else {
-	emit qq(${spaces}progress_message${level} "   Provider $name ($number) Started");
+	emit qq(${spaces}progress_message${level} "Provider $name ($number) Started");
     }
 }
 
@@ -1033,6 +1038,16 @@ CEOF
 	emit( qq(rm -f \${VARDIR}/${physical}_disabled) );
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
+	if ( used_address_variable( $interface ) || get_interface_option( $interface, 'used_gateway_variable' ) ) {
+	    emit( '',
+		  'if [ -n "$g_forcereload" ]; then',
+		  "    progress_message2 \"The IP address or gateway of $physical has changed -- forcing reload of the ruleset\"",
+		  '    COMMAND=reload',
+		  '    detect_configuration',
+		  '    define_firewall',
+		  'fi' );
+	}
+
 	pop_indent;
 
 	unless ( $pseudo ) {
@@ -1043,6 +1058,17 @@ CEOF
 	}
 
 	emit "fi\n";
+
+	if ( used_address_variable( $interface ) ) {
+	    my $variable = interface_address( $interface );
+
+	    emit( "echo \$$variable > \${VARDIR}/${physical}.address" );
+	}
+
+	if ( get_interface_option( $interface, 'used_gateway_variable' ) ) {
+	    my $variable = interface_gateway( $interface );
+	    emit( qq(echo "\$$variable" > \${VARDIR}/${physical}.gateway\n) );
+	}
     } else {
 	emit( qq(progress_message "Provider $table ($number) Started") );
     }
@@ -1066,6 +1092,17 @@ CEOF
 	    emit ( "error_message \"WARNING: Optional Interface $physical is not usable -- $table not Started\"" );
 	} else {
 	    emit ( "error_message \"WARNING: Interface $physical is not usable -- Provider $table ($number) not Started\"" );
+	}
+
+
+	if ( used_address_variable( $interface ) ) {
+	    my $variable = interface_address( $interface );
+	    emit( "\necho \$$variable > \${VARDIR}/${physical}.address" );
+	}
+
+	if ( get_interface_option( $interface, 'used_gateway_variable' ) ) {
+	    my $variable = interface_gateway( $interface );
+	    emit( qq(\necho "\$$variable" > \${VARDIR}/${physical}.gateway) );
 	}
     } else {
 	if ( $shared ) {
@@ -2139,6 +2176,7 @@ sub handle_optional_interfaces( $ ) {
 		}
 
 		push_indent;
+
 		if ( $providerref->{gatewaycase} eq 'detect' ) {
 		    emit qq(if interface_is_usable $physical && [ -n "$providerref->{gateway}" ]; then);
 		} else {
@@ -2151,6 +2189,28 @@ sub handle_optional_interfaces( $ ) {
 		emit( "    SW_${wildbase}_IS_USABLE=Yes" ) if $interfaceref->{wildcard};
 		emit( 'fi' );
 
+		if ( used_address_variable( $interface ) ) {
+		    my $variable = interface_address( $interface );
+
+		    emit( '',
+			  "if [ -f \${VARDIR}/${physical}.address ]; then",
+			  "    if [ \$(cat \${VARDIR}/${physical}.address) != \$$variable ]; then",
+			  '        g_forcereload=Yes',
+			  '    fi',
+			  'fi' );
+		}
+
+		if ( get_interface_option( $interface, 'used_gateway_variable' ) ) {
+		    my $variable = interface_gateway( $interface );
+
+		    emit( '',
+			  "if [ -f \${VARDIR}/${physical}.gateway ]; then",
+			  "    if [ \$(cat \${VARDIR}/${physical}.gateway) != \"\$$variable\" ]; then",
+			  '        g_forcereload=Yes',
+			  '    fi',
+			  'fi' );
+		}
+
 		pop_indent;
 
 		emit( "fi\n" );
@@ -2161,6 +2221,7 @@ sub handle_optional_interfaces( $ ) {
 		my $base        = uc var_base( $physical );
 		my $case        = $physical;
 		my $wild        = $case =~ s/\+$/*/;
+		my $variable    = interface_address( $interface );
 
 		if ( $wildcards ) {
 		    emit( "$case)" );
@@ -2180,6 +2241,15 @@ sub handle_optional_interfaces( $ ) {
 		emit ( '    HAVE_INTERFACE=Yes' ) if $require;
 		emit ( "    SW_${base}_IS_USABLE=Yes" ,
 		       'fi' );
+
+		if ( used_address_variable( $interface ) ) {
+		    emit( '',
+			  "if [ -f \${VARDIR}/${physical}.address ]; then",
+			  "    if [ \$(cat \${VARDIR}/${physical}.address) != \$$variable ]; then",
+			  '        g_forcereload=Yes',
+			  '    fi',
+			  'fi' );
+		}
 
 		if ( $wildcards ) {
 		    pop_indent, emit( 'fi' ) if $wild;

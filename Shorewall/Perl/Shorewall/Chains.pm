@@ -266,10 +266,13 @@ our %EXPORT_TAGS = (
 				       set_chain_variables
 				       mark_firewall_not_started
 				       mark_firewall6_not_started
+				       interface_address
 				       get_interface_address
+				       used_address_variable
 				       get_interface_addresses
 				       get_interface_bcasts
 				       get_interface_acasts
+				       interface_gateway
 				       get_interface_gateway
 				       get_interface_mac
 				       have_global_variables
@@ -5777,7 +5780,7 @@ sub have_ipset_rules() {
 
 sub get_interface_address( $ );
 
-sub get_interface_gateway ( $;$ );
+sub get_interface_gateway ( $;$$ );
 
 sub record_runtime_address( $$;$ ) {
     my ( $addrtype, $interface, $protect ) = @_;
@@ -5821,12 +5824,18 @@ sub conditional_rule( $$ ) {
 		if ( $type eq '&' ) {
 		    $variable = get_interface_address( $interface );
 		    add_commands( $chainref , "if [ $variable != " . NILIP . ' ]; then' );
+		    incr_cmd_level $chainref;
 		} else {
 		    $variable = get_interface_gateway( $interface );
-		    add_commands( $chainref , qq(if [ -n "$variable" ]; then) );
+
+		    if ( $variable =~ /^\$/ ) {
+			add_commands( $chainref , qq(if [ -n "$variable" ]; then) );
+			incr_cmd_level $chainref;
+		    } else {
+			return 0;
+		    }
 		}
 
-		incr_cmd_level $chainref;
 		return 1;
 	    }
 	} elsif ( $type eq '%' && $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
@@ -6801,6 +6810,10 @@ sub get_interface_address ( $ ) {
     "\$$variable";
 }
 
+sub used_address_variable( $ ) {
+    defined $interfaceaddr{$_[0]}
+}
+
 #
 # Returns the name of the shell variable holding the broadcast addresses of the passed interface
 #
@@ -6858,13 +6871,20 @@ sub interface_gateway( $ ) {
 #
 # Record that the ruleset requires the gateway address on the passed interface
 #
-sub get_interface_gateway ( $;$ ) {
-    my ( $logical, $protect ) = @_;
+sub get_interface_gateway ( $;$$ ) {
+    my ( $logical, $protect, $provider ) = @_;
 
     my $interface = get_physical $logical;
     my $variable = interface_gateway( $interface );
+    my $gateway  = get_interface_option( $interface, 'gateway' );
 
     $global_variables |= ALL_COMMANDS;
+
+    if ( $gateway ) {
+	fatal_error q(A gateway variable cannot be used for a provider interface with GATEWAY set to 'none' in the providers file)   if $gateway eq 'none';
+	fatal_error q(A gateway variable cannot be used for a provider interface with an empty GATEWAY column in the providers file) if $gateway eq 'omitted';
+	return $gateway if $gateway ne 'detect';
+    }
 
     if ( interface_is_optional $logical ) {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface));
@@ -6872,6 +6892,8 @@ sub get_interface_gateway ( $;$ ) {
 	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface)
 [ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface");
     }
+
+    set_interface_option($interface, 'used_gateway_variable', 1) unless $provider;
 
     $protect ? "\${$variable:-" . NILIP . '}' : "\$$variable";
 }

@@ -1655,11 +1655,17 @@ SSH(ACCEPT)    net:$MYIP      $FW
     <title>Address Variables</title>
 
     <caution>
-      <para>If you use address variables that refer to an optional interface,
-      the <command>enable</command> command will not change/insert the rules
-      that use the variable. Therefore, to be completely safe, if you use such
-      address variables then you must follow an <command>enable</command>
-      command with a <command>reload</command> command.</para>
+      <para>Prior to Shorewall 5.0.14, if you use address variables that refer
+      to an optional interface, the <command>enable</command> command will not
+      change/insert the rules that use the variable. Therefore, to be
+      completely safe, if you use such address variables then you must follow
+      a successful <command>enable</command> command with a
+      <command>reload</command> command.</para>
+
+      <para>Beginning with Shorewall 5.0.14, if a Shorewall-defined address
+      variable's value has changed since the Netfilter ruleset was
+      instantiated, then a successful <command>enable</command> command will
+      automatically reload the ruleset.</para>
     </caution>
 
     <para>Given that shell variables are expanded at compile time, there is no
@@ -1891,9 +1897,8 @@ SSH(ACCEPT)    net:$MYIP      $FW
       </varlistentry>
     </variablelist>
 
-    <para>If there is no gateway out of the named interface, the nil IP
-    address is used (0.0.0.0 in IPv4 and :: in IPv6). That way, the generated
-    rule will match no packets (or all packets if used with exclusion).</para>
+    <para>If there is no gateway out of the named interface, rules containing
+    the intefaces's run-time gateway variable are omitted.</para>
   </section>
 
   <section id="ActionVariables">

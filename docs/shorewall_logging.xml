@@ -13,14 +13,20 @@
 
         <surname>Eastep</surname>
       </author>
+
+      <author>
+        <surname>Bill Shirley</surname>
+      </author>
     </authorgroup>
 
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001 - 2015</year>
+      <year>2001 - 2016</year>
 
       <holder>Thomas M. Eastep</holder>
+
+      <holder>Bill Shirley</holder>
     </copyright>
 
     <legalnotice>
@@ -463,9 +469,32 @@ sync=1</programlisting>
       <para>By setting the LOGTAGONLY option to Yes in <ulink
       url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> or <ulink
       url="manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>, the
-      disposition ('DROP' in the above example) will be omitted. See the
-      shorewall[6].conf man page for further information about how
-      LOGTAGONLY=Yes can be used.</para>
+      disposition ('DROP' in the above example) will be omitted. Consider the
+      following rule:</para>
+
+      <programlisting>#ACTION                                    SOURCE          DEST           PROTO
+REJECT(icmp-proto-unreachable):notice:IPv6 loc             net            41      # who's using IPv6 tunneling</programlisting>
+
+      <para>This rule generates the following warning at compile time:</para>
+
+      <simplelist>
+        <member>WARNING: Log Prefix shortened to "Shorewall:IPv6:REJECT(icmp-p
+        " /etc/shorewall/rules (line 212)</member>
+      </simplelist>
+
+      <para>and produces the rather ugly prefix "Shorewall:IPv6:REJECT(icmp-p
+      ".</para>
+
+      <para>Now consider this similar rule:</para>
+
+      <programlisting>#ACTION                                              SOURCE          DEST           PROTO
+REJECT(icmp-proto-unreachable):notice:IPv6,tunneling loc             net            41      # who's using IPv6 tunneling</programlisting>
+
+      <para>With LOGTAGONLY=Yes, no warning is generated and the prefix
+      becomes "Shorewall:IPv6:tunneling:"</para>
+
+      <para>See the shorewall[6].conf man page for further information about
+      how LOGTAGONLY=Yes can be used.</para>
     </section>
 
     <section>
@@ -478,5 +507,73 @@ sync=1</programlisting>
       5.0.0, these specifcations may include a log tag as described <link
       linkend="LogTags">above</link>.</para>
     </section>
+  </section>
+
+  <section>
+    <title>Some Additional Thoughts on Logging (by Bill Shirley)</title>
+
+    <para>As a side note to the LOGTAGONLY example above, i recommend blocking
+    all tunneling because it bypasses the firewall rules:</para>
+
+    <programlisting>#ACTION                                              SOURCE          DEST           PROTO      DPORT
+?COMMENT tunneling
+REJECT(icmp-proto-unreachable):notice:IPv6,tunneling loc             net            41                   # who's using IPv6 tunneling
+REJECT(icmp-port-unreachable)                        loc             net            tcp,udp    teredo
+REJECT(icmp-port-unreachable)                        loc             net            tcp,udp    isakmp,ipsec-nat-t</programlisting>
+
+    <para>Here is an example of logging traffic only once:</para>
+
+    <para><filename>/etc/shorewall/init:</filename></para>
+
+    <programlisting>ipset -exist create IPv4 hash:ip timeout 86400
+ipset -exist create IPv4-port hash:ip,port timeout 14400</programlisting>
+
+    <para><filename>/etc/shorewall/rules</filename> (at the top):</para>
+
+    <programlisting>#ACTION             SOURCE                         DEST           PROTO
+?SECTION NEW
+# ------------------
+?COMMENT drop previously flagged
+DROP                net:+IPv4[src]                 fw
+DROP                net:+IPv4-port[src,dst]        fw</programlisting>
+
+    <para>After all the rules have been checked, at the bottom of
+    <filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting># =============================================================================
+# =============================== H@ck0rz =====================================
+# =============================================================================
+?COMMENT dont whack myself
+REJECT:notice           inet:$ME_NET           fw
+
+?COMMENT not public
+ADD(+IPv4-port:src,dst) net                     fw      tcp,udp  domain
+ADD(+IPv4-port:src,dst) net                     fw      tcp      ldap,ldaps
+ADD(+IPv4-port:src,dst) net                     fw      tcp,udp  ipp
+
+?COMMENT H@ck0rz
+ADD(+IPv4:src)          net                     fw      tcp      ssh
+ADD(+IPv4:src)          net                     fw      tcp      ftp,ftps,sftp,telnet,telnets,exec,login,shell,sunrpc
+ADD(+IPv4:src)          net                     fw      tcp,udp  ms-sql-s,ms-sql-m
+
+?COMMENT drop if added
+DROP:info:BAN,IPv4      net:+IPv4[src]          fw
+DROP:info:BAN,IPv4-port net:+IPv4-port[src,dst] fw</programlisting>
+
+    <para>One final note: I wanted less firewall messages in /var/log/messages
+    so I added to rsyslog.conf:</para>
+
+    <programlisting>#### RULES #### &lt;-- find this
+if $msg contains 'Shorewall' then {
+  action(type="omfile" file="/var/log/shorewall.log")
+#  if ($syslogfacility == 0 and $syslogseverity &gt;= 4) then stop    # warning
+#  if ($syslogfacility == 0 and $syslogseverity &gt;= 5) then stop    # notice
+  if ($syslogfacility == 0 and $syslogseverity &gt;= 6) then stop  # info
+}</programlisting>
+
+    <para> I log at 'notice' log level if I want the message in
+    <filename>/var/log/messages</filename> and everything goes to
+    <filename>/var/log/shorewall.log</filename>. Don't forget to add
+    /var/log/shorewall.log to logrotate. </para>
   </section>
 </article>

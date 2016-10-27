@@ -5394,7 +5394,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     # Next, parse the DEST column
     #
     if ( $inaction ) {
-	fatal_error q('*' is not allowed within an action body) if $pre_nat;
+	fatal_error q('+' is not allowed within an action body) if $pre_nat;
 	$destnets = $dest;
     } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {

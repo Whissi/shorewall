@@ -1087,10 +1087,12 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
           <para>Beginning with Shorewall 5.0.0, it is no longer necessary to
           set INLINE_MATCHES=Yes in order to be able to specify your own
-          iptables text in a rule. You may simply preface that text with a
-          pair of semicolons (";;"). If alternate input is also specified in
-          the rule, it should appear before the semicolons and may be
-          separated from normal column input by a single semicolon.</para>
+          iptables text in a rule and INLINE_MATCHES=Yes is deprecated.
+          Beginning with 5.0.0, you may simply preface your text with a pair
+          of semicolons (";;"). If alternate input is also specified in the
+          rule, it should appear before the semicolons and may be separated
+          from normal column input by a single semicolon or enclosed in curly
+          braces ("{....}").</para>
         </listitem>
       </varlistentry>
 

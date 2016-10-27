@@ -76,7 +76,6 @@ sub process_one_masq1( $$$$$$$$$$$$ )
     #
     $pre_nat = 1 if $interfacelist =~ s/^\+//;
 
-    $savelist = $interfacelist;
     #
     # Check for INLINE
     #
@@ -86,6 +85,8 @@ sub process_one_masq1( $$$$$$$$$$$$ )
     } else {
 	$inlinematches = get_inline_matches(0);
     }
+
+    $savelist = $interfacelist;
     #
     # Handle early matches
     #

@@ -5755,11 +5755,10 @@ sub setup_snat( $ ) # Convert masq->snat if true
     convert_masq() if $_[0];
 
     if ( $fn = open_file( 'masq', 1, 1 ) ) {
-
 	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
-
 	process_one_masq(0) while read_a_line( NORMAL_READ );
     } elsif ( $fn = open_file( 'snat', 1, 1 ) ) {
+	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty snat file" , 's'; } );
 	process_snat while read_a_line( NORMAL_READ );
     }
 }

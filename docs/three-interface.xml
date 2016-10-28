@@ -195,6 +195,17 @@
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/rules
 /usr/share/doc/packages/shorewall/Samples/three-interfaces/zones
 ~#</programlisting>
+
+        <para>When running Shorewall 5.0.14 or later:</para>
+
+        <programlisting>~# rpm -ql shorewall | fgrep three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/policy
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/rules
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/snat
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/zones
+~#</programlisting>
       </listitem>
 
       <listitem>
@@ -667,14 +678,18 @@ root@lists:~# </programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF"/></para>
 
-    <para>If your external IP is static, you can enter it in the third column
-    in the <filename
+    <para>If your external <acronym>IP</acronym> is static then, if you are
+    running Shorewall 5.0.13 or earlier, you can enter our static IP in the
+    third column in the <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename>
     entry if you like although your firewall will work fine if you leave that
-    column empty. Entering your static IP in column 3 makes processing
-    outgoing packets a little more efficient. When running Shorewall 5.0.14 or
-    later, the rule in /etc/shorewall/snat must be change from a MASQUERADE
-    rule to an SNAT rule.</para>
+    column empty (Masquerade). Entering your static <acronym>IP</acronym> in
+    column 3 (SNAT) makes the processing of outgoing packets a little more
+    efficient.</para>
+
+    <para>When running Shorewall 5.0.14 or later, the rule in
+    /etc/shorewall/snat must be change from a MASQUERADE rule to an SNAT
+    rule.</para>
 
     <programlisting>#ACTION                      SOURCE                DEST         PROTO      PORT
 <emphasis role="bold">SNAT(<replaceable>static-ip</replaceable>)</emphasis>              ...</programlisting>

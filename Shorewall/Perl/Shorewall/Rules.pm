@@ -5389,12 +5389,12 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
     if ( $inchain = defined $chainref ) {
 	( $inaction, undef, $interfaces, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 5 if $chainref->{action};
+	fatal_error q('+' is not allowed within an action body) if $pre_nat;
     }
     #
     # Next, parse the DEST column
     #
     if ( $inaction ) {
-	fatal_error q('+' is not allowed within an action body) if $pre_nat;
 	$destnets = $dest;
     } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {

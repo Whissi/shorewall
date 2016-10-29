@@ -799,7 +799,7 @@ sub add_a_provider( $$ ) {
 	}
 
 	if ( $gateway ) {
-	    $address = get_interface_address $interface unless $address;
+	    $address = get_interface_address( $interface, 1 ) unless $address;
 
 	    emit( qq([ -z "$address" ] && return\n) );
 
@@ -925,7 +925,7 @@ CEOF
     }
 
     if ( $gateway ) {
-	$address = get_interface_address $interface unless $address;
+	$address = get_interface_address( $interface, 1 ) unless $address;
 
 	if ( $hostroute ) {
 	    emit qq(run_ip route replace $gateway src $address dev $physical ${mtu});
@@ -1038,7 +1038,7 @@ CEOF
 	emit( qq(rm -f \${VARDIR}/${physical}_disabled) );
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
-	if ( used_address_variable( $interface ) || get_interface_option( $interface, 'used_gateway_variable' ) ) {
+	if ( get_interface_option( $interface, 'used_address_variable' ) || get_interface_option( $interface, 'used_gateway_variable' ) ) {
 	    emit( '',
 		  'if [ -n "$g_forcereload" ]; then',
 		  "    progress_message2 \"The IP address or gateway of $physical has changed -- forcing reload of the ruleset\"",
@@ -1059,7 +1059,7 @@ CEOF
 
 	emit "fi\n";
 
-	if ( used_address_variable( $interface ) ) {
+	if ( get_interface_option( $interface, 'used_address_variable' ) ) {
 	    my $variable = interface_address( $interface );
 
 	    emit( "echo \$$variable > \${VARDIR}/${physical}.address" );
@@ -1095,7 +1095,7 @@ CEOF
 	}
 
 
-	if ( used_address_variable( $interface ) ) {
+	if ( get_interface_option( $interface, 'used_address_variable' ) ) {
 	    my $variable = interface_address( $interface );
 	    emit( "\necho \$$variable > \${VARDIR}/${physical}.address" );
 	}
@@ -1242,7 +1242,7 @@ sub add_an_rtrule1( $$$$$ ) {
     if ( $source eq '-' ) {
 	$source = 'from ' . ALLIP;
     } elsif ( $source =~ s/^&// ) {
-	$source = 'from ' . record_runtime_address '&', $source;
+	$source = 'from ' . record_runtime_address( '&', $source, undef, 1 );
     } elsif ( $family == F_IPV4 ) {
 	if ( $source =~ /:/ ) {
 	    ( my $interface, $source , my $remainder ) = split( /:/, $source, 3 );
@@ -2189,7 +2189,7 @@ sub handle_optional_interfaces( $ ) {
 		emit( "    SW_${wildbase}_IS_USABLE=Yes" ) if $interfaceref->{wildcard};
 		emit( 'fi' );
 
-		if ( used_address_variable( $interface ) ) {
+		if ( get_interface_option( $interface, 'used_address_variable' ) ) {
 		    my $variable = interface_address( $interface );
 
 		    emit( '',
@@ -2242,7 +2242,7 @@ sub handle_optional_interfaces( $ ) {
 		emit ( "    SW_${base}_IS_USABLE=Yes" ,
 		       'fi' );
 
-		if ( used_address_variable( $interface ) ) {
+		if ( get_interface_option( $interface, 'used_address_variable' ) ) {
 		    emit( '',
 			  "if [ -f \${VARDIR}/${physical}.address ]; then",
 			  "    if [ \$(cat \${VARDIR}/${physical}.address) != \$$variable ]; then",

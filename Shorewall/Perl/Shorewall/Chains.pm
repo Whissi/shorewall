@@ -268,7 +268,6 @@ our %EXPORT_TAGS = (
 				       mark_firewall6_not_started
 				       interface_address
 				       get_interface_address
-				       used_address_variable
 				       get_interface_addresses
 				       get_interface_bcasts
 				       get_interface_acasts
@@ -5778,12 +5777,12 @@ sub have_ipset_rules() {
     $ipset_rules;
 }
 
-sub get_interface_address( $ );
+sub get_interface_address( $;$ );
 
 sub get_interface_gateway ( $;$$ );
 
-sub record_runtime_address( $$;$ ) {
-    my ( $addrtype, $interface, $protect ) = @_;
+sub record_runtime_address( $$;$$ ) {
+    my ( $addrtype, $interface, $protect, $provider ) = @_;
 
     if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
 	fatal_error "Mixed required/optional usage of address variable $1" if ( $address_variables{$1} || $addrtype ) ne $addrtype;
@@ -5797,9 +5796,9 @@ sub record_runtime_address( $$;$ ) {
     my $addr;
 
     if ( $addrtype eq '&' ) {
-	$addr = get_interface_address( $interface );
+	$addr = get_interface_address( $interface, $provider );
     } else {
-	$addr = get_interface_gateway( $interface, $protect );
+	$addr = get_interface_gateway( $interface, $protect, $provider );
     }
 
     $addr . ' ';
@@ -6796,8 +6795,8 @@ sub interface_address( $ ) {
 #
 # Record that the ruleset requires the first IP address on the passed interface
 #
-sub get_interface_address ( $ ) {
-    my ( $logical ) = $_[0];
+sub get_interface_address ( $;$ ) {
+    my ( $logical, $provider ) = @_;
 
     my $interface = get_physical( $logical );
     my $variable = interface_address( $interface );
@@ -6807,11 +6806,9 @@ sub get_interface_address ( $ ) {
 
     $interfaceaddr{$interface} = "$variable=\$($function $interface)\n";
 
-    "\$$variable";
-}
+    set_interface_option( $logical, 'used_address_variable', 1 ) unless $provider;
 
-sub used_address_variable( $ ) {
-    defined $interfaceaddr{$_[0]}
+    "\$$variable";
 }
 
 #

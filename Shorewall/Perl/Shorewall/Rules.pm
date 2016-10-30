@@ -5455,6 +5455,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
  
 	my $rule = '';
 	my $saveaddresses = $addresses;
+	my $savetarget    = $target;
 	my $interface = $fullinterface;
 
 	$interface =~ s/:.*//;   #interface name may include 'alias'
@@ -5722,6 +5723,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	}
 
 	$addresses = $saveaddresses;
+	$target    = $savetarget;
     }
 
     progress_message "   Snat record \"$currentline\" $done"

@@ -232,7 +232,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 		    my $addrlist = '';
 		    my @addrs = split_list $addresses, 'address';
 
-		    fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+		    fatal_error "Only one ADDRESS may be specified" if @addrs > 1;
 
 		    for my $addr ( @addrs ) {
 			if ( $addr =~ /^([&%])(.+)$/ ) {

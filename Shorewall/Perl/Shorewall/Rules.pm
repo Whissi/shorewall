@@ -5456,6 +5456,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	my $rule = '';
 	my $saveaddresses = $addresses;
 	my $savetarget    = $target;
+	my $savebaserule  = $baserule;
 	my $interface = $fullinterface;
 
 	$interface =~ s/:.*//;   #interface name may include 'alias'
@@ -5509,7 +5510,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		my $addrlist = '';
 		my @addrs = split_list $addresses, 'address';
 
-		fatal_error "Only one IPv6 ADDRESS may be specified" if $family == F_IPV6 && @addrs > 1;
+		fatal_error "Only one ADDRESS may be specified" if @addrs > 1;
 
 		for my $addr ( @addrs ) {
 		    if ( $addr =~ /^([&%])(.+)$/ ) {
@@ -5724,6 +5725,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	$addresses = $saveaddresses;
 	$target    = $savetarget;
+	$baserule  = $savebaserule;
     }
 
     progress_message "   Snat record \"$currentline\" $done"

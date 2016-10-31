@@ -703,7 +703,7 @@ run_install $OWNERSHIP -m 0644 snat           ${DESTDIR}${SHAREDIR}/$PRODUCT/con
 run_install $OWNERSHIP -m 0644 snat.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 
 if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/snat ]; then
-    run_install $OWNERSHIP -m 0600 masq${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/masq
+    run_install $OWNERSHIP -m 0600 snat${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/snat
     echo "SNAT file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/snat"
 fi
 

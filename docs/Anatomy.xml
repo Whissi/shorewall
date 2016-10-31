@@ -106,8 +106,17 @@
     url="Install.htm#idp8774904608">configure scripts included with Shorewall
     Core</ulink>.</para>
 
+    <important>
+      <para>Since Shorewall 4.5.2, each of these directories is now
+      relocatable using the <ulink url="Install.htm#idp8774904608">configure
+      scripts included with Shorewall Core</ulink>. These scripts set shell
+      variables in the shorewallrc file which is normally installed in
+      /usr/share/shorewall/. The name of the variable is included in
+      parentheses in the section headings below.</para>
+    </important>
+
     <section id="sbin">
-      <title>/sbin</title>
+      <title>/sbin ($SBINDIR)</title>
 
       <para>The <filename>/sbin/shorewall</filename> shell program is used to
       interact with Shorewall. See <ulink
@@ -115,7 +124,7 @@
     </section>
 
     <section id="share-shorewall">
-      <title>/usr/share/shorewall</title>
+      <title>/usr/share/shorewall (${SHAREDIR}/shorewall)</title>
 
       <para>The bulk of Shorewall is installed here.</para>
 
@@ -220,22 +229,28 @@
     </section>
 
     <section id="shorewall">
-      <title>/etc/shorewall</title>
+      <title>/etc/shorewall (${CONFDIR}/shorewall)</title>
 
       <para>This is where the modifiable IPv4 configuration files are
       installed.</para>
     </section>
 
     <section id="init">
-      <title>/etc/init.d or /etc/rc.d (depends on distribution)</title>
+      <title>/etc/init.d or /etc/rc.d (depends on distribution)
+      ($INITDIR)</title>
 
       <para>An init script is installed here. Depending on the distribution,
       it is named <filename>shorewall</filename> or
-      <filename>rc.firewall</filename>.</para>
+      <filename>rc.firewall</filename>. Only installed on systems where
+      systemd is not installed.</para>
+
+      <para>When systemd is installed, the Shorewall .service files are
+      installed in the directory specified by the SERVICEDIR variable in
+      <filename>/usr/share/shorewall/shorewallrc</filename>.</para>
     </section>
 
     <section id="var">
-      <title>/var/lib/shorewall</title>
+      <title>/var/lib/shorewall (${VARLIB}/shorewall)</title>
 
       <para>Shorewall doesn't install any files in this directory but rather
       uses the directory for storing state information. This directory may be
@@ -332,7 +347,7 @@
     <para>Shorewall6 installs its files in a number of directories:</para>
 
     <section id="sbin6">
-      <title>/sbin</title>
+      <title>/sbin ($SBINDIR)</title>
 
       <para>The <filename>/sbin/shorewall6</filename> shell program is used to
       interact with Shorewall6. See <ulink
@@ -340,7 +355,7 @@
     </section>
 
     <section id="share-shorewall6">
-      <title>/usr/share/shorewall6</title>
+      <title>/usr/share/shorewall6 (${SHAREDIR}/shorewall6)</title>
 
       <para>The bulk of Shorewall6 is installed here.</para>
 
@@ -417,14 +432,28 @@
     </section>
 
     <section id="etc-shorewall6">
-      <title>/etc/shorewall6</title>
+      <title>/etc/shorewall6 (${CONFDIR}/</title>
 
       <para>This is where the modifiable IPv6 configuration files are
       installed.</para>
     </section>
 
+    <section id="init">
+      <title>/etc/init.d or /etc/rc.d (depends on distribution)
+      ($INITDIR)</title>
+
+      <para>An init script is installed here. Depending on the distribution,
+      it is named <filename>shorewall6</filename> or
+      <filename>rc.firewall</filename>. Only installed on systems where
+      systemd is not installed.</para>
+
+      <para>When systemd is installed, the Shorewall .service files are
+      installed in the directory specified by the SERVICEDIR variable in
+      <filename>/usr/share/shorewall/shorewallrc</filename>.</para>
+    </section>
+
     <section id="var-shorewall6">
-      <title>/var/lib/shorewall6</title>
+      <title>/var/lib/shorewall6 (${VARLIB}/shorewall6)</title>
 
       <para>Shorewall6 doesn't install any files in this directory but rather
       uses the directory for storing state information. This directory may be
@@ -514,7 +543,7 @@
     in the sub-sections that follow.</para>
 
     <section id="sbin-lite">
-      <title>/sbin</title>
+      <title>/sbin ($SBINDIR_</title>
 
       <para>The <filename>/sbin/shorewall-lite</filename> shell program is
       used to interact with Shorewall lite. See <ulink
@@ -522,22 +551,28 @@
     </section>
 
     <section id="init-lite">
-      <title>/etc/init.d or /etc/rc.d (depends on distribution)</title>
+      <title>/etc/init.d or /etc/rc.d (depends on distribution)
+      ($INITDIR)</title>
 
       <para>An init script is installed here. Depending on the distribution,
       it is named <filename>shorewall-lite</filename> or
-      <filename>rc.firewall</filename>.</para>
+      <filename>rc.firewall</filename>. Only installed on systems where
+      systemd is not installed.</para>
+
+      <para>When systemd is installed, the Shorewall .service files are
+      installed in the directory specified by the SERVICEDIR variable in
+      <filename>/usr/share/shorewall/shorewallrc</filename>.</para>
     </section>
 
     <section id="shorewall-lite">
-      <title>/etc/shorewall-lite</title>
+      <title>/etc/shorewall-lite (${CONFDIR}/shorewall-lite)</title>
 
       <para>This is where the modifiable configuration files are
       installed.</para>
     </section>
 
     <section id="share-lite">
-      <title>/usr/share/shorewall-lite</title>
+      <title>/usr/share/shorewall-lite (${SHAREDIR}/shorewall-lite)</title>
 
       <para>The bulk of Shorewall-lite is installed here.</para>
 
@@ -586,7 +621,7 @@
     </section>
 
     <section id="var-lite">
-      <title>/var/lib/shorewall-lite</title>
+      <title>/var/lib/shorewall-lite (${VARLIB}/shorewall-lite)</title>
 
       <para>Shorewall-lite doesn't install any files in this directory but
       rather uses the directory for storing state information. This directory
@@ -719,15 +754,29 @@
       <filename>rc.firewall</filename>.</para>
     </section>
 
+    <section id="init">
+      <title>/etc/init.d or /etc/rc.d (depends on distribution)
+      ($INITDIR)</title>
+
+      <para>An init script is installed here. Depending on the distribution,
+      it is named <filename>shorewall</filename>6-lite or
+      <filename>rc.firewall</filename>. Only installed on systems where
+      systemd is not installed.</para>
+
+      <para>When systemd is installed, the Shorewall .service files are
+      installed in the directory specified by the SERVICEDIR variable in
+      <filename>/usr/share/shorewall/shorewallrc</filename>.</para>
+    </section>
+
     <section id="etc-shorewall6-lite">
-      <title>/etc/shorewall6-lite</title>
+      <title>/etc/shorewall6-lite (${CONFDIR}/shorewall6-lite)</title>
 
       <para>This is where the modifiable configuration files are
       installed.</para>
     </section>
 
     <section id="share-lite6">
-      <title>/usr/share/shorewall6-lite</title>
+      <title>/usr/share/shorewall6-lite (${SHAREDIR}/shorewall6-lite)</title>
 
       <para>The bulk of Shorewall-lite is installed here.</para>
 
@@ -776,7 +825,7 @@
     </section>
 
     <section id="var-lite6">
-      <title>/var/lib/shorewall6-lite</title>
+      <title>/var/lib/shorewall6-lite (${VARLIB}/shorewall6-lite)</title>
 
       <para>Shorewall6-lite doesn't install any files in this directory but
       rather uses the directory for storing state information. This directory

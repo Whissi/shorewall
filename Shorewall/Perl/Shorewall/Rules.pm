@@ -5553,7 +5553,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			}
 		    } elsif ( $family == F_IPV4 ) {
 			if ( $addr =~ /^.*\..*\..*\./ ) {
-			    my ($ipaddr, $rest) = split ':', $addr;
+			    my ($ipaddr, $rest) = split ':', $addr, 2;
 			    if ( $ipaddr =~ /^(.+)-(.+)$/ ) {
 				validate_range( $1, $2 );
 			    } else {

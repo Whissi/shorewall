@@ -287,7 +287,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 				    validate_address $ipaddr, 0;
 				}
 				validate_portpair1( $proto, $rest ) if supplied $rest;
-				$addrlist .= "--to-source $addr ";
+				$addrlist .= "--to-source $ipaddr ";
 				$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			    } else {
 				my $ports = $addr;

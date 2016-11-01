@@ -5566,7 +5566,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			    my $ports = $addr;
 			    $ports =~ s/^://;
 			    validate_portpair1( $proto, $ports );
-			    $addrlist .= " --to-ports $ports";
+			    $addrlist .= " --to-source :$ports";
 			    $exceptionrule = do_proto( $proto, '', '' );
 			}
 		    } else {

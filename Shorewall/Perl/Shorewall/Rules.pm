@@ -5510,7 +5510,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		my $addrlist = '';
 		my @addrs = split_list $addresses, 'address';
 
-		fatal_error "Only one ADDRESS may be specified" if @addrs > 1;
+		fatal_error "Only one SNAT address may be specified" if @addrs > 1;
 
 		for my $addr ( @addrs ) {
 		    if ( $addr =~ /^([&%])(.+)$/ ) {

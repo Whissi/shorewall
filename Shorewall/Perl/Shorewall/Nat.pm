@@ -286,8 +286,14 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 				} else {
 				    validate_address $ipaddr, 0;
 				}
-				validate_portpair1( $proto, $rest ) if supplied $rest;
-				$addrlist .= "--to-source $ipaddr ";
+
+				if ( supplied $rest ) {
+				    validate_portpair1( $proto, $rest );
+				    $addrlist .= "--to-source $addr ";
+				} else {
+				    $addrlist .= "--to-source $ipaddr";
+				}
+
 				$exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			    } else {
 				my $ports = $addr;
@@ -399,7 +405,11 @@ sub process_one_masq1( $$$$$$$$$$$$ )
     if ( $snat ) {
 	$target =~ s/ .*//;
 	$target .= '+' if $pre_nat;
-	$target .= '(' . $addresses . ')' if $addresses ne '-' && $addresses ne 'NONAT';
+
+	if ( $addresses ne '-' && $addresses ne 'NONAT' ) {
+	    $addresses =~ s/^://;
+	    $target .= '(' . $addresses . ')';
+	}
 
 	my $line = "$target\t$networks\t$savelist\t$proto\t$ports\t$ipsec\t$mark\t$user\t$condition\t$origdest\t$probability";
 	#

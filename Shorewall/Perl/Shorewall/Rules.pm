@@ -5559,8 +5559,14 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			    } else {
 				validate_address $ipaddr, 0;
 			    }
-			    validate_portpair1( $proto, $rest ) if supplied $rest;
-			    $addrlist .= " --to-source $ipaddr";
+
+			    if ( supplied $rest ) {
+				validate_portpair1( $proto, $rest );
+				$addrlist .= " --to-source $addr";
+			    } else {
+				$addrlist .= " --to-source $ipaddr";
+			    }
+
 			    $exceptionrule = do_proto( $proto, '', '' ) if $addr =~ /:/;
 			} else {
 			    my $ports = $addr;

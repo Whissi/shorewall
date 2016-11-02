@@ -5573,6 +5573,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			} else {
 			    my $ports = $addr;
 			    $ports =~ s/^://;
+			    fatal_error "Missing Address or Port[-range] ($addr)" unless supplied $ports && $ports ne '-';
 			    validate_portpair1( $proto, $ports );
 			    $addrlist .= " --to-source :$ports";
 			    $exceptionrule = do_proto( $proto, '', '' );

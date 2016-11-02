@@ -5624,6 +5624,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	    if ( supplied $addresses ) {
 		validate_portpair1($proto, $addresses );
 		$target .= " --to-ports $addresses";
+		$exceptionrule = do_proto( $proto, '', '' );
 	    }
 	}
 	#

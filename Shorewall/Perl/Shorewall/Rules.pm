@@ -5363,6 +5363,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	$pre_nat    = $1;
 	$addresses  = ( $2 || '' );
 	$options    = 'random' if $addresses =~ s/:?random$//;
+	$add_snat_aliases = '';
     } elsif ( $action =~ /^SNAT(\+)?\((.+)\)$/ ) {
 	$pre_nat    = $1;
 	$addresses  = $2;
@@ -5377,6 +5378,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	$pre_nat    = $1;
     } elsif ( $action eq 'MASQUERADE' ) {
 	$actiontype = $builtin_target{$target = 'MASQUERADE'};
+	$add_snat_aliases = '';
     } else {
 	( $target , $params ) = get_target_param1( $action );
 

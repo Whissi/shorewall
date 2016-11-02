@@ -289,7 +289,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 
 				if ( supplied $rest ) {
 				    validate_portpair1( $proto, $rest );
-				    $addrlist .= "--to-source :$rest ";
+				    $addrlist .= "--to-source $addr ";
 				} else {
 				    $addrlist .= "--to-source $ipaddr";
 				}

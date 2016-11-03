@@ -5713,7 +5713,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 
-	    if ( $add_snat_aliases ) {
+	    if ( $add_snat_aliases && $addresses ) {
 		my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
 		fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
 		for my $address ( split_list $addresses, 'address' ) {

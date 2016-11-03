@@ -5509,6 +5509,8 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		    $detectaddress = 1;
 		}
 	    } else {
+		fatal_error "SNAT rules must spacify a new source address and/or new source ports" unless supplied $addresses;
+
 		my $addrlist = '';
 		my @addrs = split_list $addresses, 'address';
 

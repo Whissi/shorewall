@@ -472,7 +472,7 @@ sub validate_portpair1( $$ ) {
 
     fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/-/-/ > 1;
 
-    $portpair = "0$portpair"       if substr( $portpair,  0, 1 ) eq ':';
+    $portpair = "1$portpair"       if substr( $portpair,  0, 1 ) eq ':';
     $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
 
     my @ports = split /-/, $portpair, 2;
@@ -483,9 +483,10 @@ sub validate_portpair1( $$ ) {
 
     if ( @ports == 2 ) {
 	$what = 'port range';
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] && $ports[0] < $ports[1];
     } else {
 	$what = 'port';
+	fatal_error 'Invalid port number (0)' unless $portpair;
     }
 
     fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless

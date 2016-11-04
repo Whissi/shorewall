@@ -949,7 +949,7 @@ show_events() {
 	for file in /proc/net/xt_recent/*; do
 	    base=$(basename $file)
 
-	    if [ $base != %CURRENTTIME ]; then
+	    if [ "$base" != %CURRENTTIME -a "$base" != "*" ]; then
 		echo $base
 		show_event $base
 		echo

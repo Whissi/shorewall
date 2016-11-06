@@ -133,6 +133,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       split_line
 				       split_line1
 				       split_line2
+				       split_rawline2
 				       first_entry
 				       open_file
 				       close_file
@@ -2441,6 +2442,25 @@ sub split_line2( $$;$$$ ) {
     }
 
     @line;
+}
+
+#
+# Same as above, only it splits the raw current line
+#
+sub split_rawline2( $$;$$$ ) {
+    my $savecurrentline = $currentline;
+
+    $currentline = $rawcurrentline;
+    #
+    # Delete trailing comment
+    #
+    $currentline =~ s/\s*#.*//;
+
+    my @result = &split_line2( @_ );
+
+    $currentline = $savecurrentline;
+
+    @result;
 }
 
 sub split_line1( $$;$$ ) {

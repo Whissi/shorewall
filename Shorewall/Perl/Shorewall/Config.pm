@@ -564,6 +564,7 @@ our $usedcaller;
 our $inline_matches;
 
 our $currentline;            # Current config file line image
+our $rawcurrentline;         # Current config file line with no variable expansion
 our $currentfile;            # File handle reference
 our $currentfilename;        # File NAME
 our $currentlinenumber;      # Line number
@@ -3736,6 +3737,7 @@ sub read_a_line($) {
 
 	    if ( $omitting ) {
 		print "OMIT=> $_\n" if $debug;
+		$directive_callback->( 'OMITTED', $_ ) if ( $directive_callback );
 		next;
 	    }
 
@@ -3790,6 +3792,10 @@ sub read_a_line($) {
 	    #
 	    handle_first_entry if $first_entry;
 	    #
+	    # Save Raw Image
+	    #
+	    $rawcurrentline = $currentline;
+	    #
 	    # Expand Shell Variables using %params and %actparams
 	    #
 	    expand_variables( $currentline ) if $options & EXPAND_VARIABLES;
@@ -3818,7 +3824,7 @@ sub read_a_line($) {
 		fatal_error "Invalid SECTION name ($sectionname)" unless $sectionname =~ /^[-_\da-zA-Z]+$/;
 		fatal_error "This file does not allow ?SECTION" unless $section_function;
 		$section_function->($sectionname);
-		$directive_callback->( 'SECTION', $currentline ) if $directive_callback;
+		$directive_callback->( 'SECTION', $rawcurrentline ) if $directive_callback;
 		next LINE;
 	    } else {
 		fatal_error "Non-ASCII gunk in file" if ( $options && CHECK_GUNK ) && $currentline =~ /[^\s[:print:]]/;

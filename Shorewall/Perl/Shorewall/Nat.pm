@@ -60,12 +60,12 @@ sub initialize($) {
 #
 # Process a single rule from the the masq file
 #
-sub process_one_masq1( $$$$$$$$$$$$ )
+sub process_one_masq1( $$$$$$$$$$$ )
 {
-    my ( $snat, $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+    my ( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
 
     my $pre_nat;
-    my $add_snat_aliases = ! $snat && $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
+    my $add_snat_aliases = $family == F_IPV4 && $config{ADD_SNAT_ALIASES};
     my $destnets = '';
     my $baserule = '';
     my $inlinematches = '';
@@ -226,7 +226,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 		} elsif ( $addresses eq 'NONAT' ) {
 		    fatal_error "'persistent' may not be specified with 'NONAT'" if $persistent;
 		    fatal_error "'random' may not be specified with 'NONAT'"     if $randomize;
-		    $target = $snat ? 'CONTINUE' : 'RETURN';
+		    $target = 'RETURN';
 		    $add_snat_aliases = 0;
 		} elsif ( $addresses ) {
 		    my $addrlist = '';
@@ -249,33 +249,31 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 			    #
 			    $target = 'SNAT ';
 
-			    unless ( $snat ) {
-				if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+			    if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
+				#
+				# User-defined address variable
+				#
+				$conditional = conditional_rule( $chainref, $addr );
+				$addrlist .= '--to-source ' . "\$${1}${ports} ";
+			    } else {
+				if ( $conditional = conditional_rule( $chainref, $addr ) ) {
 				    #
-				    # User-defined address variable
+				    # Optional Interface -- rule is conditional
 				    #
-				    $conditional = conditional_rule( $chainref, $addr );
-				    $addrlist .= '--to-source ' . "\$${1}${ports} ";
+				    $addr = get_interface_address $interface;
 				} else {
-				    if ( $conditional = conditional_rule( $chainref, $addr ) ) {
-					#
-					# Optional Interface -- rule is conditional
-					#
-					$addr = get_interface_address $interface;
-				    } else {
-					#
-					# Interface is not optional
-					#
-					$addr = record_runtime_address( $type, $interface );
-				    }
-
-				    if ( $ports ) {
-					$addr =~ s/ $//;
-					$addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
-				    }
-
-				    $addrlist .= '--to-source ' . $addr;
+				    #
+				    # Interface is not optional
+				    #
+				    $addr = record_runtime_address( $type, $interface );
 				}
+
+				if ( $ports ) {
+				    $addr =~ s/ $//;
+				    $addr = $family == F_IPV4 ? "${addr}${ports} " : "[$addr]$ports ";
+				}
+
+				$addrlist .= '--to-source ' . $addr;
 			    }
 			} elsif ( $family == F_IPV4 ) {
 			    if ( $addr =~ /^.*\..*\..*\./ ) {
@@ -362,39 +360,37 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 	#
 	# And Generate the Rule(s)
 	#
-	unless ( $snat ) {
-	    expand_rule( $chainref ,
-			 POSTROUTE_RESTRICT ,
-			 $prerule ,
-			 $baserule . $inlinematches . $rule ,
-			 $networks ,
-			 $destnets ,
-			 $origdest ,
-			 $target ,
-			 '' ,
-			 '' ,
-			 $exceptionrule ,
-			 '' )
-		unless unreachable_warning( 0, $chainref );
+	expand_rule( $chainref ,
+		     POSTROUTE_RESTRICT ,
+		     $prerule ,
+		     $baserule . $inlinematches . $rule ,
+		     $networks ,
+		     $destnets ,
+		     $origdest ,
+		     $target ,
+		     '' ,
+		     '' ,
+		     $exceptionrule ,
+		     '' )
+	    unless unreachable_warning( 0, $chainref );
 
-	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
+	conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 
-	    if ( $add_snat_aliases ) {
-		my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
-		fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
-		for my $address ( split_list $addresses, 'address' ) {
-		    my ( $addrs, $port ) = split /:/, $address;
-		    next unless $addrs;
-		    next if $addrs eq 'detect';
-		    for my $addr ( ip_range_explicit $addrs ) {
-			unless ( $addresses_to_add{$addr} ) {
-			    $addresses_to_add{$addr} = 1;
-			    if ( defined $alias ) {
-				push @addresses_to_add, $addr, "$interface:$alias";
-				$alias++;
-			    } else {
-				push @addresses_to_add, $addr, $interface;
-			    }
+	if ( $add_snat_aliases ) {
+	    my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
+	    fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
+	    for my $address ( split_list $addresses, 'address' ) {
+		my ( $addrs, $port ) = split /:/, $address;
+		next unless $addrs;
+		next if $addrs eq 'detect';
+		for my $addr ( ip_range_explicit $addrs ) {
+		    unless ( $addresses_to_add{$addr} ) {
+			$addresses_to_add{$addr} = 1;
+			if ( defined $alias ) {
+			    push @addresses_to_add, $addr, "$interface:$alias";
+			    $alias++;
+			} else {
+			    push @addresses_to_add, $addr, $interface;
 			}
 		    }
 		}
@@ -402,8 +398,87 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 	}
     }
 
+    progress_message "   Masq record \"$currentline\" $done";
+
+}
+
+sub convert_one_masq1( $$$$$$$$$$$$ )
+{
+    my ( $snat, $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+
+    my $pre_nat;
+    my $destnets = '';
+    my $savelist;
+    #
+    # Leading '+'
+    #
+    $pre_nat = ( $interfacelist =~ s/^\+// );
+    #
+    # Check for INLINE
+    #
+    if ( $interfacelist =~ /^INLINE\((.+)\)$/ ) {
+	$interfacelist = $1;
+    }
+
+    $savelist = $interfacelist;
+    #
+    # Parse the remaining part of the INTERFACE column
+    #
+    if ( $family == F_IPV4 ) {
+	if ( $interfacelist =~ /^([^:]+)::([^:]*)$/ ) {
+	    $destnets = $2;
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+:[^:]+):([^:]+)$/ ) {
+	    $destnets = $2;
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+):$/ ) {
+	    $interfacelist = $1;
+	} elsif ( $interfacelist =~ /^([^:]+):([^:]*)$/ ) {
+	    my ( $one, $two ) = ( $1, $2 );
+	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
+		$interfacelist = $one;
+		$destnets = $two;
+	    }
+	}
+    } elsif ( $interfacelist =~ /^(.+?):(.+)$/ ) {
+	$interfacelist = $1;
+	$destnets      = $2;
+    }
+    #
+    # If there is no source or destination then allow all addresses
+    #
+    $networks = ALLIP if $networks eq '-';
+    $destnets = ALLIP if $destnets eq '-';
+
+    my $target;
+    #
+    # Parse the ADDRESSES column
+    #
+    if ( $addresses ne '-' ) {
+	my $saveaddresses = $addresses;
+	if ( $addresses ne 'random' ) {
+	    $addresses =~ s/:persistent$//;
+	    $addresses =~ s/:random$//;
+
+	    if ( $addresses eq 'detect' ) {
+		$target = 'SNAT';
+	    } elsif ( $addresses eq 'NONAT' ) {
+		$target = 'CONTINUE';
+	    } elsif ( $addresses ) {
+		if ( $addresses =~ /^:/ ) {
+		    $target = 'MASQUERADE';
+		} else {
+		    $target = 'SNAT';
+		}
+	    }
+	}
+
+	$addresses = $saveaddresses;
+    } else {
+	$target = 'MASQUERADE';
+    }
+
     if ( $snat ) {
-	$target =~ s/ .*//;
 	$target .= '+' if $pre_nat;
 
 	if ( $addresses ne '-' && $addresses ne 'NONAT' ) {
@@ -424,7 +499,7 @@ sub process_one_masq1( $$$$$$$$$$$$ )
 	print $snat "$line\n";
     }
 
-    progress_message "   Masq record \"$currentline\" $done";
+    progress_message "   Masq record \"$rawcurrentline\" Converted";
 
 }
 
@@ -432,17 +507,37 @@ sub process_one_masq( $ )
 {
     my ( $snat ) = @_;
 
-    my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
-	split_line2( 'masq file',
-		     { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
-		     {},    #Nopad
-		     undef, #Columns
-		     1 );   #Allow inline matches
+    if ( $snat ) {
+	unless ( $rawcurrentline =~ /^\s*(?:#.*)?$/ ) {
+	    #
+	    # Line was not blank or all comment
+	    #
+	    my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
+		split_rawline2( 'masq file',
+				{ interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
+				{},    #Nopad
+				undef, #Columns
+				1 );   #Allow inline matches
 
-    fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
+	    if ( $interfacelist ne '-' ) { 
+		for my $proto ( split_list $protos, 'Protocol' ) {
+		    convert_one_masq1( $snat, $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
+		}
+	    }
+	}
+    } else {
+	my ($interfacelist, $networks, $addresses, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) =
+	    split_line2( 'masq file',
+			 { interface => 0, source => 1, address => 2, proto => 3, port => 4, ipsec => 5, mark => 6, user => 7, switch => 8, origdest => 9, probability => 10 },
+			 {},    #Nopad
+			 undef, #Columns
+			 1 );   #Allow inline matches
 
-    for my $proto ( split_list $protos, 'Protocol' ) {
-	process_one_masq1( $snat, $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
+	fatal_error 'INTERFACE must be specified' if $interfacelist eq '-';
+
+	for my $proto ( split_list $protos, 'Protocol' ) {
+	    process_one_masq1( $interfacelist, $networks, $addresses, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability );
+	}
     }
 }
 
@@ -497,7 +592,19 @@ sub convert_masq() {
 
 	my $have_masq_rules;
 
-	directive_callback( sub () { print $snat "$_[1]\n"; 0; } );
+	directive_callback( 
+	    sub ()
+	    { 
+		if ( $_[0] eq 'OMITTED' ) {
+		    #
+		    # Convert the raw rule
+		    #
+		    process_one_masq( $snat) if $snat;
+		} else {
+		    print $snat "$_[1]\n"; 0;
+		}
+	    }
+	    );
 
 	first_entry(
 	    sub {
@@ -510,7 +617,18 @@ sub convert_masq() {
 	    }
 	    );
 
-	process_one_masq($snat), $have_masq_rules++ while read_a_line( NORMAL_READ );
+	while ( read_a_line( NORMAL_READ ) ) {
+	    #
+	    # Process the file normally
+	    #
+	    process_one_masq(0);
+	    #
+	    # Now Convert it
+	    #
+	    process_one_masq($snat);
+
+	    $have_masq_rules++;
+	}
 
 	if ( $have_masq_rules ) {
 	    progress_message2 "Converted $fn to $fn1";

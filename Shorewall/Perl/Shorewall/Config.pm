@@ -175,6 +175,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $doing
 				       $done
 				       $currentline
+				       $rawcurrentline
 				       $currentfilename
 				       $debug
 				       $file_format

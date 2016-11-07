@@ -312,7 +312,7 @@ sub convert_blacklist() {
 		transfer_permissions( $fn, $fn1 );
 		print $blrules <<'EOF';
 #
-# Shorewall version 5.0 - Blacklist Rules File
+# Shorewall - Blacklist Rules File
 #
 # For information about entries in this file, type "man shorewall-blrules"
 #
@@ -406,7 +406,7 @@ sub convert_routestopped() {
 	    transfer_permissions( $fn, $fn1 );
 	    print $stoppedrules <<'EOF';
 #
-# Shorewall version 5 - Stopped Rules File
+# Shorewall - Stopped Rules File
 #
 # For information about entries in this file, type "man shorewall-stoppedrules"
 #

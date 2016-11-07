@@ -592,9 +592,9 @@ sub convert_masq() {
 
 	my $have_masq_rules;
 
-	directive_callback( 
+	directive_callback(
 	    sub ()
-	    { 
+	    {
 		if ( $_[0] eq 'OMITTED' ) {
 		    #
 		    # Convert the raw rule

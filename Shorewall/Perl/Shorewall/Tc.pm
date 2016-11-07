@@ -2150,6 +2150,50 @@ sub process_secmark_rule() {
     }
 }
 
+sub convert_one_tos( $ ) {
+    my ( $mangle ) = @_;
+
+    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) =
+	split_rawline2( 'tos file entry',
+			{ source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 },
+			undef,
+			7 );
+
+    my $chain_designator = 'P';
+
+    decode_tos($tos, 1);
+
+    my ( $srczone , $source , $remainder );
+
+    if ( $family == F_IPV4 ) {
+	( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
+	fatal_error 'Invalid SOURCE' if defined $remainder;
+    } elsif ( $src =~ /^(.+?):<(.*)>\s*$/ || $src =~ /^(.+?):\[(.*)\]\s*$/ ) {
+	$srczone = $1;
+	$source  = $2;
+    } else {
+	$srczone = $src;
+    }
+
+    if ( $srczone eq firewall_zone ) {
+	$chain_designator = 'O';
+	$src         = $source || '-';
+    } else {
+	$src =~ s/^all:?//;
+    }
+
+    $dst =~ s/^all:?//;
+
+    $src    = '-' unless supplied $src;
+    $dst    = '-' unless supplied $dst;
+    $proto  = '-' unless supplied $proto;
+    $ports  = '-' unless supplied $ports;
+    $sports = '-' unless supplied $sports;
+    $mark   = '-' unless supplied $mark;
+
+    print $mangle "TOS($tos):$chain_designator\t$src\t$dst\t$proto\t$ports\t$sports\t-\t$mark\n"
+}
+
 
 sub convert_tos($$) {
     my ( $mangle, $fn1 ) = @_;
@@ -2167,6 +2211,25 @@ sub convert_tos($$) {
     }
 
     if ( my $fn = open_file 'tos' ) {
+	directive_callback(
+	    sub ()
+	    {
+		if ( $_[0] eq 'OMITTED' ) {
+		    #
+		    # Convert the raw rule
+		    #
+		    if ( $rawcurrentline =~ /^\s*(?:#.*)?$/ ) {
+			print $mangle "$_[1]\n";
+		    } else {
+			convert_one_tos( $mangle );
+			$have_tos = 1;
+		    }
+		} else {
+		    print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT';
+		}
+	    }
+	    );
+
 	first_entry(
 		    sub {
 			my $date = compiletime;
@@ -2180,46 +2243,8 @@ sub convert_tos($$) {
 
 	while ( read_a_line( NORMAL_READ ) ) {
 
+	    convert_one_tos( $mangle );
 	    $have_tos = 1;
-
-	    my ($src, $dst, $proto, $ports, $sports , $tos, $mark ) =
-		split_line( 'tos file entry',
-			    { source => 0, dest => 1, proto => 2, dport => 3, sport => 4, tos => 5, mark => 6 } );
-
-	    my $chain_designator = 'P';
-
-	    decode_tos($tos, 1);
-
-	    my ( $srczone , $source , $remainder );
-
-	    if ( $family == F_IPV4 ) {
-		( $srczone , $source , $remainder ) = split( /:/, $src, 3 );
-		fatal_error 'Invalid SOURCE' if defined $remainder;
-	    } elsif ( $src =~ /^(.+?):<(.*)>\s*$/ || $src =~ /^(.+?):\[(.*)\]\s*$/ ) {
-		$srczone = $1;
-		$source  = $2;
-	    } else {
-		$srczone = $src;
-	    }
-
-	    if ( $srczone eq firewall_zone ) {
-		$chain_designator = 'O';
-		$src         = $source || '-';
-	    } else {
-		$src =~ s/^all:?//;
-	    }
-
-	    $dst =~ s/^all:?//;
-
-	    $src    = '-' unless supplied $src;
-	    $dst    = '-' unless supplied $dst;
-	    $proto  = '-' unless supplied $proto;
-	    $ports  = '-' unless supplied $ports;
-	    $sports = '-' unless supplied $sports;
-	    $mark   = '-' unless supplied $mark;
-
-	    print $mangle "TOS($tos):$chain_designator\t$src\t$dst\t$proto\t$ports\t$sports\t-\t$mark\n"
-
 	}
 
 	if ( $have_tos ) {

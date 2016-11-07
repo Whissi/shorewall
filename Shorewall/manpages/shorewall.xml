@@ -2602,14 +2602,36 @@
               </listitem>
 
               <listitem>
-                <para>INCLUDEd files will be expanded inline in the output
-                file.</para>
+                <para>With the exception of the
+                <filename>notrack</filename>-&gt;<filename>conntrack</filename>
+                conversion, INCLUDEd files will be expanded inline in the
+                output file.</para>
               </listitem>
 
               <listitem>
                 <para>Columns in the output file will be separated by a single
                 tab character; there is no attempt made to otherwise align the
                 columns.</para>
+              </listitem>
+
+              <listitem>
+                <para>Prior to Shorewall 5.0.15, shell variables will be
+                expanded in the output file.</para>
+              </listitem>
+
+              <listitem>
+                <para>Prior to Shorewall 5.0.15, lines omitted by compiler
+                directives (?if ...., etc.) will not appear in the output
+                file.</para>
+
+                <important>
+                  <para>Because the translation of the 'blacklist' and
+                  'routestopped' files is not 1:1, omitted lines and compiler
+                  directives are not transferred to the converted files. If
+                  either are present, the compiler issues a warning: </para>
+
+                  <programlisting> WARNING: "Omitted rules and compiler directives were not translated</programlisting>
+                </important>
               </listitem>
             </orderedlist>
           </important>

@@ -2337,7 +2337,24 @@ sub setup_tc( $ ) {
 		#
 		( $mangle, $fn1 ) = open_mangle_for_output( $fn );
 
-		directive_callback( sub () { print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT'; 0; } );
+		directive_callback(
+		    sub ()
+		    {
+			if ( $_[0] eq 'OMITTED' ) {
+			    #
+			    # Convert the raw rule
+			    #
+			    if ( $rawcurrentline =~ /^\s*(?:#.*)?$/ ) {
+				print $mangle "$_[1]\n";
+			    } else {
+				process_tc_rule;
+				$have_tcrules++;
+			    }
+			} else {
+			    print $mangle "$_[1]\n" unless $_[0] eq 'FORMAT';
+			}
+		    }
+		    );
 
 		first_entry(
 			    sub {

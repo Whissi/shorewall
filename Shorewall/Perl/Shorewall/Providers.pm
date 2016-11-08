@@ -220,7 +220,14 @@ sub copy_table( $$$ ) {
 	       '            esac',
 	     );
     } else {
-	emit ( "            run_ip route add table $number \$net \$route $realm" );
+	emit ( '            case $net in',
+	       '                fe80:*)',
+	       '                    ;;',
+	       '                *)',
+	       "                    run_ip route add table $number \$net \$route $realm",
+	       '                    ;;',
+	       '            esac',
+	     );
     }
 
     emit ( '            ;;',
@@ -291,7 +298,14 @@ sub copy_and_edit_table( $$$$$ ) {
 		'                    esac',
 	     );
     } else {
-	emit (  "                    run_ip route add table $id \$net \$route $realm" );
+	emit (  '                    case $net in',
+		'                        fe80:*)',
+		'                            ;;',
+		'                        *)',
+		"                            run_ip route add table $id \$net \$route $realm",
+		'                            ;;',
+		'                    esac',
+	     );
     }
 
     emit (  '                    ;;',

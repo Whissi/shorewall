@@ -311,6 +311,8 @@ sub convert_blacklist() {
 	    }
 	}
 
+	directive_callback(0);
+
 	if ( @rules ) {
 	    my $fn1 = find_writable_file( 'blrules' );
 	    my $blrules;
@@ -520,6 +522,8 @@ EOF
 
 	    push @allhosts, @hosts;
 	}
+
+	directive_callback(0);
 
 	for my $host ( @allhosts ) {
 	    my ( $interface, $h, $seq ) = split /\|/, $host;

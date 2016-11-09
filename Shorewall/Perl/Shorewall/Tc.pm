@@ -2247,6 +2247,8 @@ sub convert_tos($$) {
 	    $have_tos = 1;
 	}
 
+	directive_callback(0);
+
 	if ( $have_tos ) {
 	    progress_message2 "Converted $fn to $fn1";
 	    if ( rename $fn, "$fn.bak" ) {

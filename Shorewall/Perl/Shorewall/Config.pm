@@ -3048,9 +3048,9 @@ sub process_compiler_directive( $$$$ ) {
 
     if ( $directive_callback ) {
         $directive_callback->( $keyword, $line ) 
-    } else {
-        $omitting;
     }
+
+    $omitting;
 }
 
 #

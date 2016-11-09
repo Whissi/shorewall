@@ -969,11 +969,6 @@ CEOF
 	$metrics = 1;
     }
 
-    emit( qq(\n) ,
-	  qq(if ! \$IP -6 rule ls | egrep -q "32767:[[:space:]]+from all lookup (default|253)"; then) ,
-	  qq(    qt \$IP -6 rule add from all table $providers{default}->{id} prio 32767\n) ,
-	  qq(fi) ) if $family == F_IPV6;
-
     unless ( $tproxy ) {
 	emit '';
 

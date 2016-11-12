@@ -1515,11 +1515,12 @@ sub finish_providers() {
 	    emit  ( "    run_ip -4 route replace default scope global table $table \$DEFAULT_ROUTE" );
 	} else {
 	    emit  ( "    if echo \$DEFAULT_ROUTE | grep -q 'nexthop.+nexthop'; then",
-		    "        run_ip -6 route delete default scope global table $table \$DEFAULT_ROUTE",
+		    "        qt \$IP -6 route delete default scope global table $table \$DEFAULT_ROUTE",
 		    "        run_ip -6 route add default scope global table $table \$DEFAULT_ROUTE",
 		    '    else',
 		    "        run_ip -6 route replace default scope global table $table \$DEFAULT_ROUTE",
-		    '    fi' );
+		    '    fi',
+		    '' );
 	}
 
 	if ( $config{USE_DEFAULT_RT} ) {

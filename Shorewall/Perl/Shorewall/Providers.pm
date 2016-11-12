@@ -1505,7 +1505,17 @@ sub finish_providers() {
 
     if ( $balancing ) {
 	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
-	emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
+
+	if ( $family == F_IPV4 ) {
+	    emit  ( "    run_ip -4 route replace default scope global table $table \$DEFAULT_ROUTE" );
+	} else {
+	    emit  ( "    if echo \$DEFAULT_ROUTE | grep -q 'nexthop.+nexthop'; then",
+		    "        run_ip -6 route delete default scope global table $table \$DEFAULT_ROUTE",
+		    "        run_ip -6 route add default scope global table $table \$DEFAULT_ROUTE",
+		    '    else',
+		    "        run_ip -6 route replace default scope global table $table \$DEFAULT_ROUTE",
+		    '    fi' );
+	}
 
 	if ( $config{USE_DEFAULT_RT} ) {
 	    emit  ( "    while qt \$IP -$family route del default table $main; do",
@@ -1558,7 +1568,13 @@ sub finish_providers() {
 
     if ( $fallback ) {
 	emit  ( 'if [ -n "$FALLBACK_ROUTE" ]; then' );
-	emit( "    run_ip route replace default scope global table $default \$FALLBACK_ROUTE" );
+
+	if ( $family == F_IPV4 ) {
+	    emit( "    run_ip route replace default scope global table $default \$FALLBACK_ROUTE" );
+	} ele {
+	    emit( "    run_ip route delete default scope global table $default \$FALLBACK_ROUTE" );
+	    emit( "    run_ip route add default scope global table $default \$FALLBACK_ROUTE" );
+	}
 
 	emit( "    progress_message \"Fallback route '\$(echo \$FALLBACK_ROUTE | sed 's/\$\\s*//')' Added\"",
 	      'else',

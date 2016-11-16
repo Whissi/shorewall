@@ -1,6 +1,6 @@
 #! /usr/bin/perl -w
 #
-#     The Shoreline Firewall Packet Filtering Firewall Compiler - V4.4
+#     The Shoreline Firewall Packet Filtering Firewall Compiler
 #
 #     (c) 2007,2008,2009,2010,2011,2014 - Tom Eastep (teastep@shorewall.net)
 #

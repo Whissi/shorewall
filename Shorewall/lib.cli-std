@@ -318,21 +318,23 @@ get_config() {
 
     [ -n "$PAGER" ] || PAGER=$DEFAULT_PAGER
 
-    if [ -n "$PAGER" -a -t 1 ]; then
-	case $PAGER in
-	    /*)
-		g_pager="$PAGER"
-		[ -f "$g_pager" ] || fatal_error "PAGER $PAGER does not exist"
-		;;
-	    *)
-		g_pager=$(mywhich $PAGER 2> /dev/null)
-		[ -n "$g_pager" ] || fatal_error "PAGER $PAGER not found"
-		;;
-	esac
+    if [ -z "$g_nopager" ]; then
+	if [ -n "$PAGER" -a -t 1 ]; then
+	    case $PAGER in
+		/*)
+		    g_pager="$PAGER"
+		    [ -f "$g_pager" ] || fatal_error "PAGER $PAGER does not exist"
+		    ;;
+		*)
+		    g_pager=$(mywhich $PAGER 2> /dev/null)
+		    [ -n "$g_pager" ] || fatal_error "PAGER $PAGER not found"
+		    ;;
+	    esac
 
-	[ -x "$g_pager" ] || fatal_error "PAGER $g_pager is not executable"
+	    [ -x "$g_pager" ] || fatal_error "PAGER $g_pager is not executable"
 
-	g_pager="| $g_pager"
+	    g_pager="| $g_pager"
+	fi
     fi
 
     if [ -n "$DYNAMIC_BLACKLIST" ]; then

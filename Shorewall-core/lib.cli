@@ -1161,6 +1161,7 @@ show_macros() {
     done
 }
 
+    echo "Shorewall $SHOREWALL_VERSION Macro $1 at $g_hostname - $(date)"
 #
 # Show Command Executor
 #
@@ -1441,8 +1442,7 @@ show_command() {
 			    [ $# -ne 2 ] && too_many_arguments $2
 			    for directory in $(split $CONFIG_PATH); do
 				if [ -f ${directory}/macro.$2 ]; then
-				    echo "Shorewall $SHOREWALL_VERSION Macro $2 at $g_hostname - $(date)"
-				    cat ${directory}/macro.$2
+				    eval show_a_macro $2 $g_pager
 				    return
 				fi
 			    done

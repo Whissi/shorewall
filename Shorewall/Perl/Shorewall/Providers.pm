@@ -1512,7 +1512,7 @@ sub finish_providers() {
 	emit  ( 'if [ -n "$DEFAULT_ROUTE" ]; then' );
 
 	if ( $family == F_IPV4 ) {
-	    emit  ( "    run_ip -4 route replace default scope global table $table \$DEFAULT_ROUTE" );
+	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
 	} else {
 	    emit  ( "    if echo \$DEFAULT_ROUTE | grep -q 'nexthop.+nexthop'; then",
 		    "        qt \$IP -6 route delete default scope global table $table \$DEFAULT_ROUTE",

@@ -898,8 +898,8 @@
     include <command>shorewall</command> commands in
     <filename>/etc/shorewall/started</filename>.</para>
 
-    <para>Beginning with Shorewall 5.0.15, the <command>shorewall</command>
-    command may also be used to control Shorewall6, Shorewall-lite and
+    <para>Beginning with Shorewall 5.1.0, the <command>shorewall</command>
+    command is also be used to control Shorewall6, Shorewall-lite and
     Shorewall6-lite.</para>
 
     <orderedlist>
@@ -923,9 +923,10 @@
     </orderedlist>
 
     <para>When the Shorewall6 package is installed, the <option>6</option>
-    option is used to cause shorewall commands to operate on the Shorewall6
-    configuration. In other words, "<command>shorewall -6 ...</command>" is
-    equivalent to "<command>shorewall6 ...</command>".</para>
+    option is used to cause <command>shorewall</command> commands to operate
+    on the Shorewall6 configuration. In other words, "<command>shorewall -6
+    ...</command>" is equivalent to the 5.0 command "<command>shorewall6
+    ...</command>".</para>
 
     <para>Similarly, when Shorewall is not installed but both Shorewall-lite
     and Shorewall6-lite are installed, the <option>6</option> option causes
@@ -936,10 +937,10 @@
     and the corresponding -lite product(s) are installed, the
     <option>l</option> option causes <command>shorewall</command> commands to
     operate on the -lite configuration rather than the standard configuration.
-    In other words "<command>shorewall -l ...</command>" is equivalent to
-    "<command>shorewall-lite -l ...</command>" and "<command>shorewall -6l
-    ...</command>" is equivalent to "<command>shorewall6-lite
-    ...</command>".</para>
+    In other words "<command>shorewall -l ...</command>" is equivalent to the
+    5.0 "<command>shorewall-lite -l ...</command>" command and
+    "<command>shorewall -6l ...</command>" is equivalent to
+    "<command>shorewall6-lite ...</command>".</para>
 
     <para>The remaining <emphasis>options</emphasis> control the amount of
     output that the command produces. They consist of a sequence of the
@@ -978,7 +979,9 @@
           <para>The <emphasis>interface</emphasis> argument names an interface
           defined in the <ulink
           url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
-          file. A <emphasis>host-list</emphasis> is comma-separated list whose
+          (<ulink
+          url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5))file.
+          A <emphasis>host-list</emphasis> is comma-separated list whose
           elements are host or network addresses.<caution>
               <para>The <command>add</command> command is not very robust. If
               there are errors in the <replaceable>host-list</replaceable>,
@@ -991,12 +994,12 @@
 
           <para>Beginning with Shorewall 4.5.9, the <emphasis
           role="bold">dynamic_shared</emphasis> zone option (<ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5))
-          allows a single ipset to handle entries for multiple interfaces.
-          When that option is specified for a zone, the <command>add</command>
-          command has the alternative syntax in which the
-          <replaceable>zone</replaceable> name precedes the
-          <replaceable>host-list</replaceable>.</para>
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5),<ulink
+          url="???">shorewall6-zones</ulink>(5)) allows a single ipset to
+          handle entries for multiple interfaces. When that option is
+          specified for a zone, the <command>add</command> command has the
+          alternative syntax in which the <replaceable>zone</replaceable> name
+          precedes the <replaceable>host-list</replaceable>.</para>
         </listitem>
       </varlistentry>
 
@@ -1076,6 +1079,8 @@
         [<replaceable>directory</replaceable>]</term>
 
         <listitem>
+          <para>Not available with Shorewall[6]-lite.</para>
+
           <para>Compiles the configuration in the specified
           <emphasis>directory</emphasis> and discards the compiled output
           script. If no <emphasis>directory</emphasis> is given, then
@@ -1107,7 +1112,9 @@
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -1147,6 +1154,11 @@
           <para>When the second form of the command is used, the parameters
           must match those given in the earlier <command>open</command>
           command.</para>
+
+          <para>This command requires that the firewall be in the started
+          state and that DYNAMIC_BLACKLIST=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1157,6 +1169,8 @@
         </replaceable>] [<replaceable> pathname</replaceable> ]</term>
 
         <listitem>
+          <para>Not available with shorewall[6]-lite.</para>
+
           <para>Compiles the current configuration into the executable file
           <emphasis>pathname</emphasis>. If a
           <replaceable>directory</replaceable> is supplied, Shorewall will
@@ -1206,7 +1220,9 @@
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -1223,12 +1239,16 @@
           <para>The <emphasis>interface</emphasis> argument names an interface
           defined in the <ulink
           url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
           file. A <emphasis>host-list</emphasis> is comma-separated list whose
           elements are a host or network address.</para>
 
           <para>Beginning with Shorewall 4.5.9, the <emphasis
           role="bold">dynamic_shared</emphasis> zone option (<ulink
-          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5))
+          url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5),
+          <ulink
+          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>(5))
           allows a single ipset to handle entries for multiple interfaces.
           When that option is specified for a zone, the
           <command>delete</command> command has the alternative syntax in
@@ -1254,7 +1274,9 @@
           may be either the logical or physical name of the interface. The
           command removes any routes added from <ulink
           url="/manpages/shorewall-routes.html">shorewall-routes</ulink>(5)
-          and any traffic shaping configuration for the interface.</para>
+          (<ulink
+          url="/manpages/shorewall6-routes.html">shorewall6-routes</ulink>(5))and
+          any traffic shaping configuration for the interface.</para>
         </listitem>
       </varlistentry>
 
@@ -1264,7 +1286,10 @@
 
         <listitem>
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
-          to be silently dropped.</para>
+          to be silently dropped. This command requires that the firewall be
+          in the started state and that DYNAMIC_BLACKLIST=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1310,6 +1335,8 @@
           command sets <filename>/proc</filename> entries for the interface,
           adds any route specified in <ulink
           url="/manpages/shorewall-routes.html">shorewall-routes</ulink>(5)
+          (<ulink
+          url="/manpages/shorewall6-routes.html">shorewall6-routes</ulink>(5))
           and installs the interface's traffic shaping configuration, if
           any.</para>
         </listitem>
@@ -1322,6 +1349,8 @@
         ]</term>
 
         <listitem>
+          <para>Not available with Shorewall[6]-lite.</para>
+
           <para>If <emphasis>directory1</emphasis> is omitted, the current
           working directory is assumed.</para>
 
@@ -1350,7 +1379,9 @@
           <para>Deletes /var/lib/shorewall/<emphasis>filename</emphasis> and
           /var/lib/shorewall/save. If no <emphasis>filename</emphasis> is
           given then the file specified by RESTOREFILE in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) is
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)) is
           assumed.</para>
         </listitem>
       </varlistentry>
@@ -1370,7 +1401,8 @@
         <listitem>
           <para>Generates several reports from Shorewall log messages in the
           current log file. If the <option>-t</option> option is included, the
-          reports are restricted to log messages generated today.</para>
+          reports are restricted to log messages generated today. Not
+          available with Shorewall6[-lite].</para>
         </listitem>
       </varlistentry>
 
@@ -1380,8 +1412,8 @@
 
         <listitem>
           <para>Ipcalc displays the network address, broadcast address,
-          network in CIDR notation and netmask corresponding to the
-          input[s].</para>
+          network in CIDR notation and netmask corresponding to the input[s].
+          Not available with Shorewall6[-lite].</para>
         </listitem>
       </varlistentry>
 
@@ -1391,7 +1423,8 @@
 
         <listitem>
           <para>Iprange decomposes the specified range of IP addresses into
-          the equivalent list of network/host addresses.</para>
+          the equivalent list of network/host addresses. Not available with
+          Shorewall6[-lite].</para>
         </listitem>
       </varlistentry>
 
@@ -1431,8 +1464,13 @@
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
           to be logged then discarded. Logging occurs at the log level
           specified by the BLACKLIST_LOGLEVEL setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>
-          (5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+          This command requires that the firewall be in the started state and
+          that DYNAMIC_BLACKLIST=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1443,6 +1481,8 @@
         <listitem>
           <para>Monitors the log file specified by the LOGFILE option in
           <ulink url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5))
           and produces an audible alarm when new Shorewall messages are
           logged. The <emphasis role="bold">-m</emphasis> option causes the
           MAC address of each packet source to be displayed if that
@@ -1463,8 +1503,13 @@
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
           to be logged then rejected. Logging occurs at the log level
           specified by the BLACKLIST_LOGLEVEL setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>
-          (5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5),
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+          This command requires that the firewall be in the started state and
+          that DYNAMIC_BLACKLIST=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1551,6 +1596,8 @@
         <replaceable>chain</replaceable>... ]</term>
 
         <listitem>
+          <para>Not available with Shorewall[6]-lite.</para>
+
           <para>All steps performed by <command>restart</command> are
           performed by <command>refresh</command> with the exception that
           <command>refresh</command> only recreates the chains specified in
@@ -1605,7 +1652,10 @@
 
         <listitem>
           <para>Causes traffic from the listed <emphasis>address</emphasis>es
-          to be silently rejected.</para>
+          to be silently rejected. This command requires that the firewall be
+          in the started state and that DYNAMIC_BLACKLIST=Yes in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1635,38 +1685,47 @@
           be installed to use this option.</para>
 
           <para>The <option>-d</option> option causes the compiler to run
-          under the Perl debugger.</para>
+          under the Perl debugger (Shorewall and Shorewall6 only).</para>
 
           <para>The <option>-f</option> option suppresses the compilation step
           and simply reused the compiled script which last started/restarted
           Shorewall, provided that /etc/shorewall and its contents have not
-          been modified since the last start/restart.</para>
+          been modified since the last start/restart (Shorewall and Shorewall6
+          only).</para>
 
           <para>The <option>-c</option> option was added in Shorewall 4.4.20
           and performs the compilation step unconditionally, overriding the
           AUTOMAKE setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). When
-          both <option>-f</option> and <option>-c</option> are present, the
-          result is determined by the option that appears last.</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (Shorewall and Shorewall6 only). When both <option>-f</option> and
+          <option>-c</option> are present, the result is determined by the
+          option that appears last.</para>
 
           <para>The <option>-T</option> option was added in Shorewall 4.5.3
           and causes a Perl stack trace to be included with each
-          compiler-generated error and warning message.</para>
+          compiler-generated error and warning message (Shorewall and
+          Shorewall6 only).</para>
 
           <para>The <option>-i</option> option was added in Shorewall 4.6.0
           and causes a warning message to be issued if the current line
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+          This option is available in Shorewall and Shorewall6 only.</para>
 
           <para>The <option>-C</option> option was added in Shorewall 4.6.5
           and is only meaningful when AUTOMAKE=Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). If an
-          existing firewall script is used and if that script was the one that
-          generated the current running configuration, then the running
-          netfilter configuration will be reloaded as is so as to preserve the
-          iptables packet and byte counters.</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+          If an existing firewall script is used and if that script was the
+          one that generated the current running configuration, then the
+          running netfilter configuration will be reloaded as is so as to
+          preserve the iptables packet and byte counters. This option is
+          available in Shorewall and Shorewall6 only.</para>
         </listitem>
       </varlistentry>
 
@@ -1679,7 +1738,8 @@
 
         <listitem>
           <para>This command was renamed from <command>load</command> in
-          Shorewall 5.0.0.</para>
+          Shorewall 5.0.0 and is only available in Shorewall and
+          Shoreawall6.</para>
 
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
@@ -1704,8 +1764,9 @@
           ssh. Beginning with Shorewall 5.0.13, if
           <replaceable>system</replaceable> is omitted, then the FIREWALL
           option setting in <ulink
-          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
-          that case, if you want to specify a
+          url="shorewall.conf.html">shorewall.conf</ulink>(5) (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>) is
+          assumed. In that case, if you want to specify a
           <replaceable>directory</replaceable>, then the <option>-D</option>
           option must be given.</para>
 
@@ -1747,7 +1808,8 @@
         <replaceable>system</replaceable> ]</term>
 
         <listitem>
-          <para>This command was added in Shorewall 5.0.0.</para>
+          <para>This command was added in Shorewall 5.0.0 and is only
+          available in Shorewall and Shorewall6.</para>
 
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
@@ -1772,8 +1834,9 @@
           Beginning with Shorewall 5.0.13, if
           <replaceable>system</replaceable> is omitted, then the FIREWALL
           option setting in <ulink
-          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
-          that case, if you want to specify a
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)) is
+          assumed. In that case, if you want to specify a
           <replaceable>directory</replaceable>, then the <option>-D</option>
           option must be given.</para>
 
@@ -1802,7 +1865,9 @@
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
         </listitem>
       </varlistentry>
 
@@ -1816,7 +1881,8 @@
 
         <listitem>
           <para>This command was renamed from <command>reload</command> in
-          Shorewall 5.0.0.</para>
+          Shorewall 5.0.0 and is available in Shorewall and Shorewall6
+          only.</para>
 
           <para>If <emphasis>directory</emphasis> is omitted, the current
           working directory is assumed. Allows a non-root user to compile a
@@ -1841,8 +1907,9 @@
           Beginning with Shorewall 5.0.13, if
           <replaceable>system</replaceable> is omitted, then the FIREWALL
           option setting in <ulink
-          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> is assumed. In
-          that case, if you want to specify a
+          url="shorewall6.conf.html">shorewall6.conf(5)</ulink> (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)) is
+          assumed. In that case, if you want to specify a
           <replaceable>directory</replaceable>, then the <option>-D</option>
           option must be given.</para>
 
@@ -1871,7 +1938,9 @@
           contains alternative input specifications following a semicolon
           (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
           set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -1904,7 +1973,8 @@
           <para>Beginning with Shorewall 5.0.0, this command performs a true
           restart. The firewall is completely stopped as if a
           <command>stop</command> command had been issued then it is started
-          again.</para>
+          again. The command is available on Shorewall and Shorewall6
+          only.</para>
 
           <para>If a <emphasis>directory</emphasis> is included in the
           command, Shorewall will look in that <emphasis>directory</emphasis>
@@ -1966,7 +2036,9 @@
           role="bold">shorewall save</emphasis>; if no
           <emphasis>filename</emphasis> is given then Shorewall will be
           restored from the file specified by the RESTOREFILE option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
 
           <caution>
             <para>If your iptables ruleset depends on variables that are
@@ -2027,8 +2099,8 @@
 
         <listitem>
           <para>Added in Shorewall 5.0.0, this command performs the same
-          function as did <command>safe_restart</command> in earlier
-          releases.</para>
+          function as did <command>safe_restart</command> in earlier releases.
+          The command is available in Shorewall and Shorewall6 only.</para>
 
           <para>Only allowed if Shorewall is running. The current
           configuration is saved in /var/lib/shorewall/safe-reload (see the
@@ -2058,16 +2130,17 @@
         <replaceable>directory</replaceable> ]</term>
 
         <listitem>
-          <para>Only allowed if Shorewall is running. The current
-          configuration is saved in /var/lib/shorewall/safe-restart (see the
-          save command below) then a <emphasis role="bold">shorewall
-          restart</emphasis> is done. You will then be prompted asking if you
-          want to accept the new configuration or not. If you answer "n" or if
-          you fail to answer within 60 seconds (such as when your new
-          configuration has disabled communication with your terminal), the
-          configuration is restored from the saved configuration. If a
-          directory is given, then Shorewall will look in that directory first
-          when opening configuration files.</para>
+          <para>Only allowed if Shorewall[6] is running and is not available
+          in Shorewall-lite and Shorewall6-lite. The current configuration is
+          saved in /var/lib/shorewall/safe-restart (see the save command
+          below) then a <emphasis role="bold">shorewall restart</emphasis> is
+          done. You will then be prompted asking if you want to accept the new
+          configuration or not. If you answer "n" or if you fail to answer
+          within 60 seconds (such as when your new configuration has disabled
+          communication with your terminal), the configuration is restored
+          from the saved configuration. If a directory is given, then
+          Shorewall will look in that directory first when opening
+          configuration files.</para>
 
           <para>Beginning with Shorewall 4.5.0, you may specify a different
           <replaceable>timeout</replaceable> value using the
@@ -2101,6 +2174,9 @@
           <option>s</option>, <option>m</option> or <option>h</option> suffix
           (e.g., 5m) to specify seconds, minutes or hours respectively. If the
           suffix is omitted, seconds is assumed.</para>
+
+          <para>This command is available in Shorewall and Shorewall6
+          only.</para>
         </listitem>
       </varlistentry>
 
@@ -2116,7 +2192,9 @@
           role="bold">shorewall -f start</emphasis> commands. If
           <emphasis>filename</emphasis> is not given then the state is saved
           in the file specified by the RESTOREFILE option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
 
           <para>The <option>-C</option> option, added in Shorewall 4.6.5,
           causes the iptables packet and byte counters to be saved along with
@@ -2131,7 +2209,9 @@
           <para>Added in shorewall 4.6.8. Performs the same action as the
           <command>stop</command> command with respect to saving ipsets (see
           the SAVE_IPSETS option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5)).
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5)
+          (<ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
           This command may be used to proactively save your ipset contents in
           the event that a system failure occurs prior to issuing a
           <command>stop</command> command.</para>
@@ -2287,7 +2367,8 @@
                 <para>Added in Shorewall 4.4.17. Displays the per-IP
                 accounting counters (<ulink
                 url="/manpages/shorewall-accounting.html">shorewall-accounting</ulink>
-                (5)).</para>
+                (5), <ulink
+                url="/manpages6/shorewall6-accounting.html">shorewall6-accounting</ulink>(5)).</para>
               </listitem>
             </varlistentry>
 
@@ -2298,7 +2379,9 @@
               <listitem>
                 <para>Displays the last 20 Shorewall messages from the log
                 file specified by the LOGFILE option in <ulink
-                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                (<ulink
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
                 The <emphasis role="bold">-m</emphasis> option causes the MAC
                 address of each packet source to be displayed if that
                 information is available.</para>
@@ -2310,7 +2393,7 @@
 
               <listitem>
                 <para>Displays information about each macro defined on the
-                firewall system.</para>
+                firewall system (Shorewall and Shorewall6 only)</para>
               </listitem>
             </varlistentry>
 
@@ -2322,7 +2405,8 @@
                 <para>Added in Shorewall 4.4.6. Displays the file that
                 implements the specified <replaceable>macro</replaceable>
                 (usually
-                <filename>/usr/share/shorewall/macro</filename>.<replaceable>macro</replaceable>).</para>
+                <filename>/usr/share/shorewall/macro</filename>.<replaceable>macro</replaceable>).
+                Available only in Shorewall and Shorewall6.</para>
               </listitem>
             </varlistentry>
 
@@ -2440,59 +2524,114 @@
         <replaceable>directory</replaceable> ]</term>
 
         <listitem>
-          <para>Start shorewall. Existing connections through shorewall
-          managed interfaces are untouched. New connections will be allowed
-          only if they are allowed by the firewall rules or policies. If a
-          <replaceable>directory</replaceable> is included in the command,
-          Shorewall will look in that <emphasis>directory</emphasis> first for
-          configuration files. If <emphasis role="bold">-f</emphasis> is
-          specified, the saved configuration specified by the RESTOREFILE
-          option in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5) will
-          be restored if that saved configuration exists and has been modified
-          more recently than the files in /etc/shorewall. When <emphasis
-          role="bold">-f</emphasis> is given, a
-          <replaceable>directory</replaceable> may not be specified.</para>
+          <para><variablelist>
+              <varlistentry>
+                <term>Shorewall and Shorewall6</term>
 
-          <para>Update: In Shorewall 4.4.20, a new LEGACY_FASTSTART option was
-          added to <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). When
-          LEGACY_FASTSTART=No, the modification times of files in
-          /etc/shorewall are compared with that of /var/lib/shorewall/firewall
-          (the compiled script that last started/restarted the
-          firewall).</para>
+                <listitem>
+                  <para>Start shorewall[6]. Existing connections through
+                  shorewall managed interfaces are untouched. New connections
+                  will be allowed only if they are allowed by the firewall
+                  rules or policies. If a <replaceable>directory</replaceable>
+                  is included in the command, Shorewall will look in that
+                  <emphasis>directory</emphasis> first for configuration
+                  files. If <emphasis role="bold">-f</emphasis> is specified,
+                  the saved configuration specified by the RESTOREFILE option
+                  in <ulink
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                  (<ulink
+                  url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5))
+                  will be restored if that saved configuration exists and has
+                  been modified more recently than the files in
+                  /etc/shorewall. When <emphasis role="bold">-f</emphasis> is
+                  given, a <replaceable>directory</replaceable> may not be
+                  specified.</para>
 
-          <para>The <option>-n</option> option causes Shorewall to avoid
-          updating the routing table(s).</para>
+                  <para>Update: In Shorewall 4.4.20, a new LEGACY_FASTSTART
+                  option was added to <ulink
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                  (<ulink
+                  url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+                  When LEGACY_FASTSTART=No, the modification times of files in
+                  /etc/shorewall are compared with that of
+                  /var/lib/shorewall/firewall (the compiled script that last
+                  started/restarted the firewall).</para>
 
-          <para>The <option>-p</option> option causes the connection tracking
-          table to be flushed; the <command>conntrack</command> utility must
-          be installed to use this option.</para>
+                  <para>The <option>-n</option> option causes Shorewall to
+                  avoid updating the routing table(s).</para>
 
-          <para>The <option>-c</option> option was added in Shorewall 4.4.20
-          and performs the compilation step unconditionally, overriding the
-          AUTOMAKE setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). When
-          both <option>-f</option> and <option>-c</option>are present, the
-          result is determined by the option that appears last.</para>
+                  <para>The <option>-p</option> option causes the connection
+                  tracking table to be flushed; the
+                  <command>conntrack</command> utility must be installed to
+                  use this option.</para>
 
-          <para>The <option>-T</option> option was added in Shorewall 4.5.3
-          and causes a Perl stack trace to be included with each
-          compiler-generated error and warning message.</para>
+                  <para>The <option>-c</option> option was added in Shorewall
+                  4.4.20 and performs the compilation step unconditionally,
+                  overriding the AUTOMAKE setting in <ulink
+                  url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                  (<ulink
+                  url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+                  When both <option>-f</option> and <option>-c</option>are
+                  present, the result is determined by the option that appears
+                  last.</para>
 
-          <para>The -i option was added in Shorewall 4.6.0 and causes a
-          warning message to be issued if the current line contains
-          alternative input specifications following a semicolon (";"). Such
-          lines will be handled incorrectly if INLINE_MATCHES is set to Yes in
-          <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
+                  <para>The <option>-T</option> option was added in Shorewall
+                  4.5.3 and causes a Perl stack trace to be included with each
+                  compiler-generated error and warning message.</para>
 
-          <para>The <option>-C</option> option was added in Shorewall 4.6.5
-          and is only meaningful when the <option>-f</option> option is also
-          specified. If the previously-saved configuration is restored, and if
-          the <option>-C</option> option was also specified in the <emphasis
-          role="bold">save</emphasis> command, then the packet and byte
-          counters will be restored.</para>
+                  <para>The -i option was added in Shorewall 4.6.0 and causes
+                  a warning message to be issued if the current line contains
+                  alternative input specifications following a semicolon
+                  (";"). Such lines will be handled incorrectly if
+                  INLINE_MATCHES is set to Yes in <ulink
+                  url="/manpages/shorewall.conf.html">shorewall.conf(5)</ulink>
+                  (<ulink
+                  url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).</para>
+
+                  <para>The <option>-C</option> option was added in Shorewall
+                  4.6.5 and is only meaningful when the <option>-f</option>
+                  option is also specified. If the previously-saved
+                  configuration is restored, and if the <option>-C</option>
+                  option was also specified in the <emphasis
+                  role="bold">save</emphasis> command, then the packet and
+                  byte counters will be restored.</para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>Shorewall-lite and Shorewall6-lite</term>
+
+                <listitem>
+                  <para>Start Shorewall[6] Lite. Existing connections through
+                  shorewall[6]-lite managed interfaces are untouched. New
+                  connections will be allowed only if they are allowed by the
+                  firewall rules or policies.</para>
+
+                  <para>The <option>-p</option> option causes the connection
+                  tracking table to be flushed; the
+                  <command>conntrack</command> utility must be installed to
+                  use this option.</para>
+
+                  <para>The <option>-n</option> option prevents the firewall
+                  script from modifying the current routing
+                  configuration.</para>
+
+                  <para>The <option>-f</option> option was added in Shorewall
+                  4.6.5. If the RESTOREFILE named in <ulink
+                  url="shorewall.conf.html">shorewall.conf</ulink>(5) exists,
+                  is executable and is not older than the current filewall
+                  script, then that saved configuration is restored.</para>
+
+                  <para>The <option>-C</option> option was added in Shorewall
+                  4.6.5 and is only meaningful when the <option>-f</option>
+                  option is also specified. If the previously-saved
+                  configuration is restored, and if the <option>-C</option>
+                  option was also specified in the <emphasis
+                  role="bold">save</emphasis> command, then the packet and
+                  byte counters will be restored.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist></para>
         </listitem>
       </varlistentry>
 
@@ -2539,18 +2678,21 @@
         <replaceable>timeout</replaceable> ]</term>
 
         <listitem>
-          <para>If Shorewall is started then the firewall state is saved to a
-          temporary saved configuration
-          (<filename>/var/lib/shorewall/.try</filename>). Next, if Shorewall
-          is currently started then a <emphasis role="bold">restart</emphasis>
-          command is issued using the specified configuration
-          <replaceable>directory</replaceable>; otherwise, a <emphasis
-          role="bold">start</emphasis> command is performed using the
-          specified configuration <replaceable>directory</replaceable>. if an
-          error occurs during the compilation phase of the <emphasis
+          <para>This command is available in Shorewall and Shorewall6
+          only.</para>
+
+          <para>If Shorewall[6] is started then the firewall state is saved to
+          a temporary saved configuration
+          (<filename>/var/lib/shorewall/.try</filename>). Next, if
+          Shorewall[6] is currently started then a <emphasis
+          role="bold">restart</emphasis> command is issued using the specified
+          configuration <replaceable>directory</replaceable>; otherwise, a
+          <emphasis role="bold">start</emphasis> command is performed using
+          the specified configuration <replaceable>directory</replaceable>. if
+          an error occurs during the compilation phase of the <emphasis
           role="bold">restart</emphasis> or <emphasis
           role="bold">start</emphasis>, the command terminates without
-          changing the Shorewall state. If an error occurs during the
+          changing the Shorewall[6] state. If an error occurs during the
           <emphasis role="bold">restart</emphasis> phase, then a <emphasis
           role="bold">shorewall restore</emphasis> is performed using the
           saved configuration. If an error occurs during the <emphasis
@@ -2577,6 +2719,9 @@
         <replaceable>directory</replaceable> ]</term>
 
         <listitem>
+          <para>This command is available only in Shorewall and
+          Shorewall6.</para>
+
           <para>Added in Shorewall 4.4.21 and causes the compiler to update
           <filename>/etc/shorewall/shorewall.conf then validate the
           configuration</filename>. The update will add options not present in

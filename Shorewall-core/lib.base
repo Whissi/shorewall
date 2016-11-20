@@ -26,7 +26,16 @@
 
 SHOREWALL_LIBVERSION=40509
 
-setup_environment() {
+#
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 2
+}
+
+setup_product_environment() {
     g_basedir=${SHAREDIR}/shorewall
 
     g_sharedir="$SHAREDIR"/$PRODUCT
@@ -60,10 +69,11 @@ setup_environment() {
 	    g_lite=Yes
 	    ;;
 	*)
-	    echo "   ERROR: Unknown PRODUCT ($PRODUCT)" >&2
-	    exit 1
+	    fatal_error "Unknown PRODUCT ($PRODUCT)"
 	    ;;
     esac
+
+    [ -f ${SHAREDIR}/${PRODUCT}/version ] || fatal_error "$g_product does not appear to be installed on this system"
 
     if [ -z "${VARLIB}" ]; then
 	VARLIB=${VARDIR}
@@ -74,7 +84,6 @@ setup_environment() {
 }
 
 if [ -z "$PRODUCT" ]; then
-    PRODUCT=shorewall
     #
     # This is modified by the installer when ${SHAREDIR} != /usr/share
     #
@@ -82,17 +91,18 @@ if [ -z "$PRODUCT" ]; then
 
     g_basedir=${SHAREDIR}/shorewall
 
-    setup_environment
-fi
+    if [ -f ${g_basedir}/version ]; then
+	PRODUCT=shorewall
+    elif [ -f ${SHAREDIR}/shorewall-lite/version ]; then
+	PRODUCT=shorewall-lite
+    elif [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
+	PRODUCT=shorewall6-lite
+    else
+	fatal_error "No Shorewall firewall product is installed"
+    fi
 
-#
-# Fatal Error
-#
-fatal_error() # $@ = Message
-{
-    echo "   ERROR: $@" >&2
-    exit 2
-}
+    setup_product_environment
+fi
 
 #
 # Not configured Error

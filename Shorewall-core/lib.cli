@@ -4474,6 +4474,14 @@ shorewall_cli() {
 			    fi
 			    option=${option#4}
 			    ;;
+			l*)
+			    if [ "$PRODUCT" = shorewall ]; then
+				PRODUCT=shorewall-lite
+			    elif [ "$PRODUCT" = shorewall6 ]; then
+				PRODUCT=shorewall6-lite
+			    fi
+			    option=${option#l}
+			    ;;
 			-)
 			    finished=1
 			    option=

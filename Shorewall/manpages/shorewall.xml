@@ -898,11 +898,54 @@
     include <command>shorewall</command> commands in
     <filename>/etc/shorewall/started</filename>.</para>
 
-    <para>The <emphasis>options</emphasis> control the amount of output that
-    the command produces. They consist of a sequence of the letters <emphasis
-    role="bold">v</emphasis> and <emphasis role="bold">q</emphasis>. If the
-    options are omitted, the amount of output is determined by the setting of
-    the VERBOSITY parameter in <ulink
+    <para>Beginning with Shorewall 5.0.15, the <command>shorewall</command>
+    command may also be used to control Shorewall6, Shorewall-lite and
+    Shorewall6-lite.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>When the Shorewall package is installed, then
+        <command>shorewall</command> command defaults to that product.</para>
+      </listitem>
+
+      <listitem>
+        <para>When the Shorewall package is not installed but Shorewall-lite
+        is installed, the <command>shorewall</command> command defaults to
+        Shorewall-lite.</para>
+      </listitem>
+
+      <listitem>
+        <para>When neither the Shorewall nor Shorewall-lite package is
+        installed but Shorewall6-lite is installed, the
+        <command>shorewall</command> command defaults to
+        Shorewall6-lite.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>When the Shorewall6 package is installed, the <option>6</option>
+    option is used to cause shorewall commands to operate on the Shorewall6
+    configuration. In other words, "<command>shorewall -6 ...</command>" is
+    equivalent to "<command>shorewall6 ...</command>".</para>
+
+    <para>Similarly, when Shorewall is not installed but both Shorewall-lite
+    and Shorewall6-lite are installed, the <option>6</option> option causes
+    <command>shorewall</command> commands to operate on the Shorewall6-lite
+    configuration.</para>
+
+    <para>Finally, when both the standard product (Shorewall or Shorewall6)
+    and the corresponding -lite product(s) are installed, the
+    <option>l</option> option causes <command>shorewall</command> commands to
+    operate on the -lite configuration rather than the standard configuration.
+    In other words "<command>shorewall -l ...</command>" is equivalent to
+    "<command>shorewall-lite -l ...</command>" and "<command>shorewall -6l
+    ...</command>" is equivalent to "<command>shorewall6-lite
+    ...</command>".</para>
+
+    <para>The remaining <emphasis>options</emphasis> control the amount of
+    output that the command produces. They consist of a sequence of the
+    letters <emphasis role="bold">v</emphasis> and <emphasis
+    role="bold">q</emphasis>. If the options are omitted, the amount of output
+    is determined by the setting of the VERBOSITY parameter in <ulink
     url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). Each
     <emphasis role="bold">v</emphasis> adds one to the effective verbosity and
     each <emphasis role="bold">q</emphasis> subtracts one from the effective
@@ -2628,7 +2671,7 @@
                   <para>Because the translation of the 'blacklist' and
                   'routestopped' files is not 1:1, omitted lines and compiler
                   directives are not transferred to the converted files. If
-                  either are present, the compiler issues a warning: </para>
+                  either are present, the compiler issues a warning:</para>
 
                   <programlisting> WARNING: "Omitted rules and compiler directives were not translated</programlisting>
                 </important>

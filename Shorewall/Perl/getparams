@@ -38,12 +38,11 @@ fi
 #
 . /usr/share/shorewall/shorewallrc
 
-g_program=$PRODUCT
-g_sharedir="$SHAREDIR/shorewall"
-g_confdir="$CONFDIR/$PRODUCT"
-g_readrc=1
+g_basedir=${SHAREDIR}/shorewall
 
-. $g_sharedir/lib.cli
+. $g_basedir/lib.cli
+
+setup_environment
 
 CONFIG_PATH="$2"
 

@@ -45,19 +45,20 @@
 #    require Shorewall to be installed.
 
 
-g_program=shorewall-lite
+PRODUCT=shorewall-lite
 
 #
 # This is modified by the installer when ${SHAREDIR} != /usr/share
 #
 . /usr/share/shorewall/shorewallrc
 
-g_sharedir="$SHAREDIR"/shorewall-lite
-g_confdir="$CONFDIR"/shorewall-lite
-g_readrc=1
+g_basedir=${SHAREDIR}/shorewall
 
 . ${SHAREDIR}/shorewall/lib.cli
-. /usr/share/shorewall-lite/configpath
+
+setup_environment
+
+. ${SHAREDIR}/shorewall-lite/configpath
 
 [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 

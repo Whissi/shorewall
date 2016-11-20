@@ -27,13 +27,12 @@
 
 SHOREWALL_CAPVERSION=50004
 
-if [ -z "$g_readrc" ]; then
+if [ -z "$g_basedir" ]; then
     #
     # This is modified by the installer when ${SHAREDIR} <> /usr/share
     #
     . /usr/share/shorewall/shorewallrc
 
-    g_readrc=1
     g_basedir=${SHAREDIR}/shorewall
 fi
 
@@ -4459,7 +4458,22 @@ shorewall_cli() {
 			    g_nopager=Yes
 			    option=${option#p}
 			    ;;
-
+			6*)
+			    if [ "$PRODUCT" = shorewall ]; then
+				PRODUCT=shorewall6
+			    elif [ "$PRODUCT" = shorewall-lite ]; then
+				PRODUCT=shorewall6-lite
+			    fi
+			    option=${option#6}
+			    ;;
+			4*)
+			    if [ "$PRODUCT" = shorewall6 ]; then
+				PRODUCT=shorewall
+			    elif [ "$PRODUCT" = shorewall6-lite ]; then
+				PRODUCT=shorewall-lite
+			    fi
+			    option=${option#4}
+			    ;;
 			-)
 			    finished=1
 			    option=

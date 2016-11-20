@@ -44,18 +44,19 @@
 #    used during firewall compilation, then the generated firewall program will likewise not
 #    require Shorewall to be installed.
 
-g_program=shorewall6-lite
+PRODUCT=shorewall6-lite
 
 #
 # This is modified by the installer when ${SHAREDIR} != /usr/share
 #
 . /usr/share/shorewall/shorewallrc
 
-g_sharedir="$SHAREDIR"/shorewall6-lite
-g_confdir="$CONFDIR"/shorewall6-lite
-g_readrc=1
+g_basedir=${SHAREDIR}/shorewall
 
 . ${SHAREDIR}/shorewall/lib.cli
+
+setup_environment
+
 . ${SHAREDIR}/shorewall-lite/configpath
 
 [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin

@@ -27,20 +27,17 @@
 
 SHOREWALL_CAPVERSION=50004
 
-[ -n "${g_program:=shorewall}" ]
-
 if [ -z "$g_readrc" ]; then
     #
     # This is modified by the installer when ${SHAREDIR} <> /usr/share
     #
     . /usr/share/shorewall/shorewallrc
 
-    g_sharedir="$SHAREDIR"/$g_program
-    g_confdir="$CONFDIR"/$g_program
     g_readrc=1
+    g_basedir=${SHAREDIR}/shorewall
 fi
 
-. ${SHAREDIR}/shorewall/lib.base
+. ${g_basedir}/lib.base
 
 #
 # Issue an error message and die
@@ -4370,8 +4367,6 @@ shorewall_cli() {
     VERBOSE=
     VERBOSITY=1
 
-    [ -n "$g_lite" ] || . ${g_basedir}/lib.cli-std
-
     finished=0
 
     while [ $finished -eq 0 ]; do
@@ -4485,6 +4480,10 @@ shorewall_cli() {
     if [ $# -eq 0 ]; then
 	usage 1
     fi
+
+    setup_environment
+
+    [ -n "$g_lite" ] || . ${SHAREDIR}/shorewall/lib.cli-std
 
     PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
     MUTEX_TIMEOUT=

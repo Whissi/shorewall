@@ -32,11 +32,9 @@ PRODUCT=shorewall-lite
 #
 . /usr/share/shorewall/shorewallrc
 
-g_program=$PRODUCT
-g_sharedir="$SHAREDIR"/shorewall-lite
-g_confdir="$CONFDIR"/shorewall-lite
 g_readrc=1
+g_basedir=${SHAREDIR}/shorewall
 
-. ${SHAREDIR}/shorewall/lib.cli
+. ${g_basedir}/lib.cli
 
 shorewall_cli $@

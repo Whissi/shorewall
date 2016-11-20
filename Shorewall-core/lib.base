@@ -26,53 +26,62 @@
 
 SHOREWALL_LIBVERSION=40509
 
-[ -n "${g_program:=shorewall}" ]
+setup_environment() {
+    g_basedir=${SHAREDIR}/shorewall
 
-if [ -z "$g_readrc" ]; then
+    g_sharedir="$SHAREDIR"/$PRODUCT
+    g_confdir="$CONFDIR"/$PRODUCT
+
+    g_program=$PRODUCT
+
+    case $g_program in
+	shorewall)
+	    g_product="Shorewall"
+	    g_family=4
+	    g_tool=iptables
+	    g_lite=
+	    ;;
+	shorewall6)
+	    g_product="Shorewall6"
+	    g_family=6
+	    g_tool=ip6tables
+	    g_lite=
+	    ;;
+	shorewall-lite)
+	    g_product="Shorewall Lite"
+	    g_family=4
+	    g_tool=iptables
+	    g_lite=Yes
+	    ;;
+	shorewall6-lite)
+	    g_product="Shorewall6 Lite"
+	    g_family=6
+	    g_tool=ip6tables
+	    g_lite=Yes
+	    ;;
+	*)
+	    echo "   ERROR: Unknown PRODUCT ($PRODUCT)" >&2
+	    exit 1
+	    ;;
+    esac
+
+    if [ -z "${VARLIB}" ]; then
+	VARLIB=${VARDIR}
+	VARDIR=${VARLIB}/$g_program
+    elif [ -z "${VARDIR}" ]; then
+	VARDIR="${VARLIB}/${PRODUCT}"
+    fi
+}
+
+if [ -z "$PRODUCT" ]; then
+    PRODUCT=shorewall
     #
     # This is modified by the installer when ${SHAREDIR} != /usr/share
     #
     . /usr/share/shorewall/shorewallrc
-
-    g_sharedir="$SHAREDIR"/$g_program
-    g_confdir="$CONFDIR"/$g_program
     g_readrc=1
-fi
 
-g_basedir=${SHAREDIR}/shorewall
-
-case $g_program in
-    shorewall)
-	g_product="Shorewall"
-	g_family=4
-	g_tool=iptables
-	g_lite=
-	;;
-    shorewall6)
-	g_product="Shorewall6"
-	g_family=6
-	g_tool=ip6tables
-	g_lite=
-	;;
-    shorewall-lite)
-	g_product="Shorewall Lite"
-	g_family=4
-	g_tool=iptables
-	g_lite=Yes
-	;;
-    shorewall6-lite)
-	g_product="Shorewall6 Lite"
-	g_family=6
-	g_tool=ip6tables
-	g_lite=Yes
-	;;
-esac
-
-if [ -z "${VARLIB}" ]; then
-    VARLIB=${VARDIR}
-    VARDIR=${VARLIB}/$g_program
-elif [ -z "${VARDIR}" ]; then
-    VARDIR="${VARLIB}/${PRODUCT}"
+    setup_environment
 fi
 
 #

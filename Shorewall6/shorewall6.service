@@ -14,9 +14,9 @@ Type=oneshot
 RemainAfterExit=yes
 EnvironmentFile=-/etc/sysconfig/shorewall6
 StandardOutput=syslog
-ExecStart=/sbin/shorewall6 $OPTIONS start $STARTOPTIONS
-ExecStop=/sbin/shorewall6 $OPTIONS stop
-ExecReload=/sbin/shorewall6 $OPTIONS reload $RELOADOPTIONS
+ExecStart=/sbin/shorewall -6 $OPTIONS start $STARTOPTIONS
+ExecStop=/sbin/shorewall -6 $OPTIONS stop
+ExecReload=/sbin/shorewall -6 $OPTIONS reload $RELOADOPTIONS
 
 [Install]
 WantedBy=basic.target

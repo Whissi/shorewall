@@ -48,10 +48,10 @@ get_config() {
     fi
 
     if [ "$(id -u)" -eq 0 ]; then
-	config=$(find_file $g_program.conf)
+	config=$(find_file ${PRODUCT}.conf)
     else
-	[ -n "$g_shorewalldir" ] || fatal_error "Ordinary users may not $COMMAND the $CONFDIR/$g_program configuration"
-	config="$g_shorewalldir/$g_program.conf"
+	[ -n "$g_shorewalldir" ] || fatal_error "Ordinary users may not $COMMAND the $CONFDIR/$PRODUCT configuration"
+	config="$g_shorewalldir/$PRODUCT.conf"
     fi
 
     if [ -f $config ]; then
@@ -155,7 +155,7 @@ get_config() {
 	if [ "$2" = Yes ]; then
 	    case $STARTUP_ENABLED in
 		No|no|NO)
-		    not_configured_error "$g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${g_program}.conf"
+		    not_configured_error "$g_product startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${g_confdir}/${PRODUCT}.conf"
 		    ;;
 		Yes|yes|YES)
 		    ;;
@@ -397,8 +397,8 @@ compiler() {
     pc=${LIBEXECDIR}/shorewall/compiler.pl
 
     if [ $(id -u) -ne 0 ]; then
-	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = $CONFDIR/$g_program ]; then
-	    startup_error "Ordinary users may not $COMMAND the $CONFDIR/$g_program configuration"
+	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = $CONFDIR/$PRODUCT ]; then
+	    startup_error "Ordinary users may not $COMMAND the $CONFDIR/$PRODUCT configuration"
 	fi
     fi
     #
@@ -1419,6 +1419,7 @@ remote_reload_command() # $* = original arguments less the command.
     sharedir=${SHAREDIR}
     local litedir
     local exitstatus
+    local program
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1495,12 +1496,17 @@ remote_reload_command() # $* = original arguments less the command.
 	sbindir="$SBINDIR"
 	confdir="$CONFDIR"
 	libexec="$LIBEXECDIR"
+	litedir="${VARDIR}-lite"
 	. $sharedir/shorewall/shorewallrc
     else
-	error_message "   WARNING: $g_shorewalldir/shorewallrc does not exist; using settings from $SHAREDIR/shorewall" >&2
+	error_message "   WARNING: $g_shorewalldir/shorewallrc does not exist; using settings from $g_basedir/shorewalrc" >&2
+	sbindir="$SBINDIR"
+	confdir="$CONFDIR"
+	libexec="$LIBEXECDIR"
+	litedir="${VARDIR}-lite"
     fi
 
-    if [ -f $g_shorewalldir/${g_program}.conf ]; then
+    if [ -f $g_shorewalldir/${PRODUCT}.conf ]; then
 	if [ -f $g_shorewalldir/params ]; then
 	    . $g_shorewalldir/params
 	fi
@@ -1516,7 +1522,7 @@ remote_reload_command() # $* = original arguments less the command.
 	    [ -n "$system" ] || fatal_error "No system name given and the FIREWALL option is not set"
 	fi
     else
-	fatal_error "$g_shorewalldir/$g_program.conf does not exist"
+	fatal_error "$g_shorewalldir/$PRODUCT.conf does not exist"
     fi
 
     if [ -z "$getcaps" ]; then
@@ -1540,12 +1546,22 @@ remote_reload_command() # $* = original arguments less the command.
     file=$(resolve_file $g_shorewalldir/firewall)
 
     g_export=Yes
+    #
+    # Determine the remote CLI program
+    #
+    temp=$(rsh_command /bin/ls $sbindir/${PRODUCT}-lite 2> /dev/null)
 
-    temp=$(rsh_command ${g_program}-lite show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
-
+    if [ -n "$temp" ]; then
+	program=$sbindir/${PRODUCT}-lite
+    else
+	program="$sbindir/shorewall $g_options"
+    fi
+    #
+    # Handle nonstandard remote VARDIR
+    #
+    temp=$(rsh_command $program show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
+ 
     [ -n "$temp" ] && litedir="$temp"
-
-    [ -n "$litedir" ] || litedir=${VARLIB}/${g_program}-lite
 
     g_file="$g_shorewalldir/firewall"
 
@@ -1557,30 +1573,29 @@ remote_reload_command() # $* = original arguments less the command.
 	    save=$(find_file save);
 
 	    if [ -f $save ]; then
-		progress_message3 "Copying $save to ${system}:${confdir}/${g_program}-lite/"
-		rcp_command $save ${confdir}/shorewall-lite/
+		progress_message3 "Copying $save to ${system}:${confdir}/${PRODUCT}-lite/"
+		rcp_command $save ${confdir}/$PRODUCT/
 		exitstatus=$?
 	    fi
 
 	    if [ $exitstatus -eq 0 ]; then
-
 		progress_message3 "Copy complete"
 
 		if [ $COMMAND = remote-reload ]; then
-		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp reload"; then
+		    if rsh_command "$program $g_debugging $verbose $timestamp reload"; then
 			progress_message3 "System $system reloaded"
 		    else
 			exitstatus=$?
 			savit=
 		    fi
 		elif [ $COMMAND = remote-restart ]; then
-		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp restart"; then
+		    if rsh_command "$program $g_debugging $verbose $timestamp restart"; then
 			progress_message3 "System $system restarted"
 		    else
 			exitstatus=$?
 			saveit=
 		    fi
-		elif rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp start"; then
+		elif rsh_command "$program $g_debugging $verbose $timestamp start"; then
 		    progress_message3 "System $system started"
 		else
 		    exitstatus=$?
@@ -1588,7 +1603,7 @@ remote_reload_command() # $* = original arguments less the command.
 		fi
 
 		if [ -n "$saveit" ]; then
-		    if rsh_command "${sbindir}/${g_program}-lite $g_debugging $verbose $timestamp save"; then
+		    if rsh_command "$program $g_debugging $verbose $timestamp save"; then
 			progress_message3 "Configuration on system $system saved"
 		    else
 			exitstatus=$?
@@ -1653,7 +1668,7 @@ export_command() # $* = original arguments less the command.
 	    target=$2
 	    ;;
 	*)
-	    fatal_error "Invalid command syntax (\"man $g_program\" for help)"
+	    fatal_error "Invalid command syntax (\"man shorewall\" for help)"
 	    ;;
     esac
 

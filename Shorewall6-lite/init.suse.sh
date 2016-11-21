@@ -73,13 +73,13 @@ command="$1"
 
 case "$command" in
     start)
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS start $STARTOPTIONS
+	exec ${SBINDIR}/shorewall -6l $OPTIONS start $STARTOPTIONS
 	;;
     restart|reload)
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS restart $RESTARTOPTIONS
+	exec ${SBINDIR}/shorewall -6l $OPTIONS restart $RESTARTOPTIONS
 	;;
     status|stop)
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall -6l $OPTIONS $command $@
 	;;
     *)
 	usage

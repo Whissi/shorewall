@@ -114,7 +114,7 @@ require()
 #
 cd "$(dirname $0)"
 
-if [ -f shorewall-lite ]; then
+if [ -f shorewall-lite.service ]; then
     PRODUCT=shorewall-lite
     Product="Shorewall Lite"
 else
@@ -331,7 +331,6 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
 
-    make_directory ${DESTDIR}${SBINDIR} 755
     make_directory ${DESTDIR}${INITDIR} 755
 
 else
@@ -362,9 +361,9 @@ else
 fi
 
 #
-# Check for ${SBINDIR}/$PRODUCT
+# Check for ${SHAREDIR}/$PRODUCT/version
 #
-if [ -f ${DESTDIR}${SBINDIR}/$PRODUCT ]; then
+if [ -f ${DESTDIR}${SHAREDIR}/$PRODUCT/version ]; then
     first_install=""
 else
     first_install="Yes"
@@ -372,10 +371,7 @@ fi
 
 delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
-install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0544
 [ -n "${INITFILE}" ] && make_directory ${DESTDIR}${INITDIR} 755
-
-echo "$Product control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
 #
 # Create ${CONFDIR}/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
@@ -498,18 +494,12 @@ done
 if [ -d manpages -a -n "$MANDIR" ]; then
     cd manpages
 
-    mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
+    mkdir -p ${DESTDIR}${MANDIR}/man5/
 
     for f in *.5; do
 	gzip -c $f > $f.gz
 	install_file $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz 644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
-    done
-
-    for f in *.8; do
-	gzip -c $f > $f.gz
-	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
-	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
     done
 
     cd ..
@@ -539,6 +529,7 @@ fi
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.common
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.cli
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/wait4ifup
+delete_file ${DESTDIR}${SBINDIR}/$PRODUCT
 
 #
 # Note -- not all packages will have the SYSCONFFILE so we need to check for its existance here
@@ -555,7 +546,6 @@ fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
     eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/$PRODUCT
 fi
 
 if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then

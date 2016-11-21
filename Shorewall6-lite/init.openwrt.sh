@@ -79,17 +79,17 @@ boot() {
 }
 
 restart() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $RESTARTOPTIONS
+	exec ${SBINDIR}/shorewall -6l $OPTIONS $command $RESTARTOPTIONS
 }
 
 reload() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $RELOADOPTION
+	exec ${SBINDIR}/shorewall -6l $OPTIONS $command $RELOADOPTION
 }
 
 stop() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $STOPOPTIONS
+	exec ${SBINDIR}/shorewall -6l $OPTIONS $command $STOPOPTIONS
 }
 
 status() {
-	exec ${SBINDIR}/shorewall6-lite $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall -6l $OPTIONS $command $@
 }

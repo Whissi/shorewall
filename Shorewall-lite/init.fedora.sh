@@ -25,7 +25,7 @@
 #
 . /usr/share/shorewall/shorewallrc
 
-prog="shorewall-lite"
+prog="shorewall -l"
 shorewall="${SBINDIR}/$prog"
 logger="logger -i -t $prog"
 lockfile="/var/lock/subsys/$prog"

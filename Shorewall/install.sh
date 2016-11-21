@@ -103,7 +103,7 @@ require()
 
 cd "$(dirname $0)"
 
-if [ -f shorewall ]; then
+if [ -f shorewall.service ]; then
     PRODUCT=shorewall
     Product=Shorewall
 else
@@ -381,9 +381,9 @@ fi
 echo "Installing $Product Version $VERSION"
 
 #
-# Check for /sbin/$PRODUCT
+# Check for /usr/share/$PRODUCT/version
 #
-if [ -f ${DESTDIR}${SBINDIR}/$PRODUCT ]; then
+if [ -f ${DESTDIR}${SHAREDIR}/$PRODUCT/version ]; then
     first_install=""
 else
     first_install="Yes"
@@ -393,10 +393,6 @@ if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/$PRODUCT/coreve
     echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
     exit 1
 fi
-
-install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0755
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/${PRODUCT}
-echo "$PRODUCT control program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
 
 #
 # Install the Firewall Script
@@ -468,6 +464,7 @@ if [ -z "$first_install" ]; then
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
 	delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
+	delete_file ${DESTDIR}/${SBINDIR}/shorewall6
     fi
 
     delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
@@ -1179,7 +1176,7 @@ if [ -n "$MANDIR" ]; then
 
 cd manpages
 
-[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/ ${DESTDIR}${MANDIR}/man8/
+[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/
 
 for f in *.5; do
     gzip -9c $f > $f.gz
@@ -1187,11 +1184,15 @@ for f in *.5; do
     echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
 done
 
-for f in *.8; do
-    gzip -9c $f > $f.gz
-    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
-    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
-done
+if [ $PRODUCT = shorewall ]; then
+    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/
+
+    for f in *.8; do
+	gzip -9c $f > $f.gz
+	run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+    done
+fi
 
 cd ..
 

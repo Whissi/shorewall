@@ -20,21 +20,21 @@ fi
 
 start() {
 	echo "Starting IPv6 shorewall rules..."
-	exec /sbin/shorewall6 $OPTIONS start $STARTOPTIONS
+	exec /sbin/shorewall -6 $OPTIONS start $STARTOPTIONS
 }
 
 stop() {
 	echo "Stopping IPv6 shorewall rules..."
-	exec /sbin/shorewall6 stop
+	exec /sbin/shorewall -6 stop
 }
 
 restart() {
 	echo "Restarting IPv6 shorewall rules..."
-	exec /sbin/shorewall6 restart $RESTARTOPTIONS
+	exec /sbin/shorewall -6 restart $RESTARTOPTIONS
 }
 
 status() {
-	exec /sbin/shorewall6 status
+	exec /sbin/shorewall -6 status
 }
 
 case "$1" in

@@ -365,6 +365,12 @@ fi
 # Note: ${VARDIR} is created at run-time since it has always been
 #       a relocatable directory on a per-product basis
 #
+# Install the CLI
+#
+install_file shorewall ${DESTDIR}${SBINDIR}/shorewall 0755
+[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/shorewall
+echo "Shorewall CLI program installed in ${DESTDIR}${SBINDIR}/$PRODUCT"
+#
 # Install wait4ifup
 #
 install_file wait4ifup ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup 0755

@@ -69,7 +69,7 @@ SHOREWALL_INIT_SCRIPT=1
 command="$action"
 
 start() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $STARTOPTIONS
+	exec ${SBINDIR}/shorewall -l $OPTIONS $command $STARTOPTIONS
 }
 
 boot() {
@@ -78,17 +78,17 @@ boot() {
 }
 
 restart() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $RESTARTOPTIONS
+	exec ${SBINDIR}/shorewall -l $OPTIONS $command $RESTARTOPTIONS
 }
 
 reload() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $RELOADOPTION
+	exec ${SBINDIR}/shorewall -l $OPTIONS $command $RELOADOPTION
 }
 
 stop() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $STOPOPTIONS
+	exec ${SBINDIR}/shorewall -l $OPTIONS $command $STOPOPTIONS
 }
 
 status() {
-	exec ${SBINDIR}/shorewall-lite $OPTIONS $command $@
+	exec ${SBINDIR}/shorewall -l $OPTIONS $command $@
 }

@@ -35,26 +35,26 @@ fatal_error() # $@ = Message
     exit 2
 }
 
-setup_product_environment() {
+setup_product_environment() { # $1 -- if non-empty, source shorewallrc 
     g_basedir=${SHAREDIR}/shorewall
 
     g_sharedir="$SHAREDIR"/$PRODUCT
     g_confdir="$CONFDIR"/$PRODUCT
 
-    g_program=$PRODUCT
-
-    case $g_program in
+    case $PRODUCT in
 	shorewall)
 	    g_product="Shorewall"
 	    g_family=4
 	    g_tool=iptables
 	    g_lite=
+	    g_options=-l
 	    ;;
 	shorewall6)
 	    g_product="Shorewall6"
 	    g_family=6
 	    g_tool=ip6tables
 	    g_lite=
+	    g_options=-6l
 	    ;;
 	shorewall-lite)
 	    g_product="Shorewall Lite"
@@ -74,10 +74,14 @@ setup_product_environment() {
     esac
 
     [ -f ${SHAREDIR}/${PRODUCT}/version ] || fatal_error "$g_product does not appear to be installed on this system"
+    #
+    # We need to do this again, now that we have the correct product
+    #
+    [ -n "$1" ] && . ${g_basedir}/shorewallrc
 
     if [ -z "${VARLIB}" ]; then
 	VARLIB=${VARDIR}
-	VARDIR=${VARLIB}/$g_program
+	VARDIR=${VARLIB}/${PRODUCT}
     elif [ -z "${VARDIR}" ]; then
 	VARDIR="${VARLIB}/${PRODUCT}"
     fi

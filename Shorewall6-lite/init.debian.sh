@@ -13,7 +13,7 @@
 
 . /lib/lsb/init-functions
 
-SRWL=/sbin/shorewall6-lite
+SRWL='/sbin/shorewall6-lite -6'
 SRWL_OPTS="-tvv"
 test -n ${INITLOG:=/var/log/shorewall6-lite-init.log}
 

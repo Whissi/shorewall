@@ -36,7 +36,7 @@ if [ -z "$g_basedir" ]; then
     g_basedir=${SHAREDIR}/shorewall
 fi
 
-. ${g_basedir}/lib.base
+. ${g_basedir}/lib.core
 
 #
 # Issue an error message and die
@@ -4317,7 +4317,7 @@ usage() # $1 = exit status
 #
 # This is the main entry point into the CLI. It directly handles all commands supported
 # by both the full and lite versions. Note, however, that functions such as start_command()
-# appear in both this library and it lib.cli-std. The ones in cli-std overload the ones
+# appear in both this library and in lib.cli-std. The ones in cli-std overload the ones
 # here if that lib is loaded below.
 #
 shorewall_cli() {
@@ -4366,6 +4366,8 @@ shorewall_cli() {
 
     VERBOSE=
     VERBOSITY=1
+
+    set_default_product
 
     finished=0
 

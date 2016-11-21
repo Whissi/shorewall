@@ -386,6 +386,12 @@ for f in lib.* ; do
     echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
 done
 
+if [ $SHAREDIR != /usr/share ]; then
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.core
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.cli
+fi
+
 #
 # Symbolically link 'functions' to lib.base
 #

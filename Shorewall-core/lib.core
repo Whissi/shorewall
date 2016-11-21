@@ -1,0 +1,445 @@
+#
+# Shorewall 5.0 -- /usr/share/shorewall/lib.core
+#
+#     (c) 1999-2015 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#       This program is part of Shorewall.
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by the
+#       Free Software Foundation, either version 2 of the license or, at your
+#       option, any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, see <http://www.gnu.org/licenses/>.
+#
+# This library contains the code common to all Shorewall components except the
+# generated scripts.
+#
+
+SHOREWALL_LIBVERSION=50100
+
+#
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 2
+}
+
+setup_product_environment() { # $1 -- if non-empty, source shorewallrc 
+    g_basedir=${SHAREDIR}/shorewall
+
+    g_sharedir="$SHAREDIR"/$PRODUCT
+    g_confdir="$CONFDIR"/$PRODUCT
+
+    case $PRODUCT in
+	shorewall)
+	    g_product="Shorewall"
+	    g_family=4
+	    g_tool=iptables
+	    g_lite=
+	    g_options=-l
+	    ;;
+	shorewall6)
+	    g_product="Shorewall6"
+	    g_family=6
+	    g_tool=ip6tables
+	    g_lite=
+	    g_options=-6l
+	    ;;
+	shorewall-lite)
+	    g_product="Shorewall Lite"
+	    g_family=4
+	    g_tool=iptables
+	    g_lite=Yes
+	    ;;
+	shorewall6-lite)
+	    g_product="Shorewall6 Lite"
+	    g_family=6
+	    g_tool=ip6tables
+	    g_lite=Yes
+	    ;;
+	*)
+	    fatal_error "Unknown PRODUCT ($PRODUCT)"
+	    ;;
+    esac
+
+    [ -f ${SHAREDIR}/${PRODUCT}/version ] || fatal_error "$g_product does not appear to be installed on this system"
+    #
+    # We need to do this again, now that we have the correct product
+    #
+    [ -n "$1" ] && . ${g_basedir}/shorewallrc
+
+    if [ -z "${VARLIB}" ]; then
+	VARLIB=${VARDIR}
+	VARDIR=${VARLIB}/${PRODUCT}
+    elif [ -z "${VARDIR}" ]; then
+	VARDIR="${VARLIB}/${PRODUCT}"
+    fi
+}
+
+set_default_product() {
+    if [ -f ${g_basedir}/version ]; then
+	PRODUCT=shorewall
+    elif [ -f ${SHAREDIR}/shorewall-lite/version ]; then
+	PRODUCT=shorewall-lite
+    elif [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
+	PRODUCT=shorewall6-lite
+    else
+	fatal_error "No Shorewall firewall product is installed"
+    fi
+}   
+
+# Not configured Error
+#
+not_configured_error() # $@ = Message
+{
+    echo "   ERROR: $@" >&2
+    exit 6
+}
+
+#
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 1 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message2() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -gt 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message3() # $* = Message
+{
+    local timestamp
+    timestamp=
+
+    if [ $VERBOSITY -ge 0 ]; then
+	[ -n "$g_timestamp" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+#
+# Undo the effect of 'separate_list()'
+#
+combine_list()
+{
+    local f
+    local o
+    o=
+
+    for f in $* ; do
+        o="${o:+$o,}$f"
+    done
+
+    echo $o
+}
+
+#
+# Validate an IP address
+#
+valid_address() {
+    local x
+    local y
+    local ifs
+    ifs=$IFS
+
+    IFS=.
+
+    for x in $1; do
+	case $x in
+	    [0-9]|[0-9][0-9]|[1-2][0-9][0-9])
+		[ $x -lt 256 ] || { IFS=$ifs; return 2; }
+                ;;
+	    *)
+	        IFS=$ifs
+		return 2
+		;;
+	esac
+    done
+
+    IFS=$ifs
+
+    return 0
+}
+
+#
+# Miserable Hack to work around broken BusyBox ash in OpenWRT
+#
+addr_comp() {
+    test $(bc <<EOF
+$1 > $2
+EOF
+) -eq 1
+
+}
+
+#
+# Enumerate the members of an IP range -- When using a shell supporting only
+# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
+#
+# Comes in two flavors:
+#
+# ip_range() - produces a mimimal list of network/host addresses that spans
+#              the range.
+#
+# ip_range_explicit() - explicitly enumerates the range.
+#
+ip_range() {
+    local first
+    local last
+    local l
+    local x
+    local y
+    local z
+    local vlsm
+
+    case $1 in
+	!*)
+	    #
+	    # Let iptables complain if it's a range
+	    #
+	    echo $1
+	    return
+	    ;;
+	[0-9]*.*.*.*-*.*.*.*)
+            ;;
+	*)
+	    echo $1
+	    return
+	    ;;
+    esac
+
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
+
+    if addr_comp $first $last; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    l=$(( $last + 1 ))
+
+    while addr_comp $l $first; do
+	vlsm=
+	x=31
+	y=2
+	z=1
+
+	while [ $(( $first % $y )) -eq 0 ] && ! addr_comp $(( $first + $y )) $l; do
+	    vlsm=/$x
+	    x=$(( $x - 1 ))
+	    z=$y
+	    y=$(( $y * 2 ))
+	done
+
+	echo $(encodeaddr $first)$vlsm
+	first=$(($first + $z))
+    done
+}
+
+ip_range_explicit() {
+    local first
+    local last
+
+    case $1 in
+    [0-9]*.*.*.*-*.*.*.*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
+
+    if addr_comp $first $last; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    while ! addr_comp $first $last; do
+	echo $(encodeaddr $first)
+	first=$(($first + 1))
+    done
+}
+
+[ -z "$LEFTSHIFT" ] && . ${g_basedir}/lib.common
+
+#
+# Netmask to VLSM
+#
+ip_vlsm() {
+    local mask
+    mask=$(decodeaddr $1)
+    local vlsm
+    vlsm=0
+    local x
+    x=$(( 128 << 24 )) # 0x80000000
+
+    while [ $(( $x & $mask )) -ne 0 ]; do
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
+	vlsm=$(($vlsm + 1))
+    done
+
+    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
+	echo "Invalid net mask: $1" >&2
+    else
+	echo $vlsm
+    fi
+}
+
+#
+# Set default config path
+#
+ensure_config_path() {
+    local F
+    F=${g_sharedir}/configpath
+    if [ -z "$CONFIG_PATH" ]; then
+	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
+	. $F
+    fi
+
+    if [ -n "$g_shorewalldir" ]; then
+	[ "${CONFIG_PATH%%:*}" = "$g_shorewalldir" ] || CONFIG_PATH=$g_shorewalldir:$CONFIG_PATH
+    fi
+}
+
+#
+# Get fully-qualified name of file
+#
+resolve_file() # $1 = file name
+{
+    local pwd
+    pwd=$PWD
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	.)
+	    echo $pwd
+	    ;;
+	./*)
+	    echo ${pwd}${1#.}
+	    ;;
+	..)
+	    cd ..
+	    echo $PWD
+	    cd $pwd
+	    ;;
+	../*)
+	    cd ..
+	    resolve_file ${1#../}
+	    cd $pwd
+	    ;;
+	*)
+	    echo $pwd/$1
+	    ;;
+    esac
+}
+
+#
+# Determine how to do "echo -e"
+#
+
+find_echo() {
+    local result
+
+    result=$(echo "a\tb")
+    [ ${#result} -eq 3 ] && { echo echo; return; }
+
+    result=$(echo -e "a\tb")
+    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
+
+    result=$(which echo)
+    [ -n "$result" ] && { echo "$result -e"; return; }
+
+    echo echo
+}
+
+# Determine which version of mktemp is present (if any) and set MKTEMP accortingly:
+#
+#     None - No mktemp
+#     BSD  - BSD mktemp (Mandrake)
+#     STD  - mktemp.org mktemp
+#
+find_mktemp() {
+    local mktemp
+    mktemp=`mywhich mktemp 2> /dev/null`
+
+    if [ -n "$mktemp" ]; then
+	if qt mktemp -V ; then
+	    MKTEMP=STD
+	else
+	    MKTEMP=BSD
+	fi
+    else
+	MKTEMP=None
+    fi
+}
+
+#
+# create a temporary file. If a directory name is passed, the file will be created in
+# that directory. Otherwise, it will be created in a temporary directory.
+#
+mktempfile() {
+
+    [ -z "$MKTEMP" ] && find_mktemp
+
+    if [ $# -gt 0 ]; then
+	case "$MKTEMP" in
+	    BSD)
+		mktemp $1/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -p $1 shorewall.XXXXXX
+		;;
+	    None)
+		> $1/shorewall-$$ && echo $1/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    else
+	case "$MKTEMP" in
+	    BSD)
+		mktemp ${TMPDIR:-/tmp}/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -t shorewall.XXXXXX
+		;;
+	    None)
+		rm -f ${TMPDIR:-/tmp}/shorewall-$$
+		> ${TMPDIR:-}/shorewall-$$ && echo ${TMPDIR:-/tmp}/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    fi
+}

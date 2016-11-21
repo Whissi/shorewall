@@ -1009,12 +1009,11 @@
 
         <listitem>
           <para>Re-enables receipt of packets from hosts previously
-          blacklisted by a <emphasis role="bold">drop</emphasis>, <emphasis
+          blacklisted by a <emphasis role="bold">blacklist</emphasis>,
+          <emphasis role="bold">drop</emphasis>, <emphasis
           role="bold">logdrop</emphasis>, <emphasis
           role="bold">reject</emphasis>, or <emphasis
-          role="bold">logreject</emphasis> command. Beginning with Shorewall
-          5.0.10, this command can also re-enable addresses blacklisted using
-          the <command>blacklist</command> command.</para>
+          role="bold">logreject</emphasis> command.</para>
         </listitem>
       </varlistentry>
 
@@ -1441,7 +1440,7 @@
           and raw table PREROUTING chains.</para>
 
           <para>The log message destination is determined by the
-          currently-selected IPv4 <ulink
+          currently-selected IPv4 or IPv6 <ulink
           url="/shorewall_logging.html#Backends">logging
           backend</ulink>.</para>
         </listitem>
@@ -1670,62 +1669,90 @@
           pre-5.0.0 <command>reload</command> command is now called
           <command>remote-restart</command> (see below).</para>
 
-          <para>Reload is similar to <emphasis role="bold">shorewall
-          start</emphasis> except that it assumes that the firewall is already
-          started. Existing connections are maintained. If a
-          <emphasis>directory</emphasis> is included in the command, Shorewall
-          will look in that <emphasis>directory</emphasis> first for
-          configuration files.</para>
+          <variablelist>
+            <varlistentry>
+              <term>Shorewall and Shorewall6</term>
 
-          <para>The <option>-n</option> option causes Shorewall to avoid
-          updating the routing table(s).</para>
+              <listitem>
+                <para>Reload is similar to <emphasis role="bold">shorewall
+                start</emphasis> except that it assumes that the firewall is
+                already started. Existing connections are maintained. If a
+                <emphasis>directory</emphasis> is included in the command,
+                Shorewall will look in that <emphasis>directory</emphasis>
+                first for configuration files.</para>
 
-          <para>The <option>-p</option> option causes the connection tracking
-          table to be flushed; the <command>conntrack</command> utility must
-          be installed to use this option.</para>
+                <para>The <option>-n</option> option causes Shorewall to avoid
+                updating the routing table(s).</para>
 
-          <para>The <option>-d</option> option causes the compiler to run
-          under the Perl debugger (Shorewall and Shorewall6 only).</para>
+                <para>The <option>-p</option> option causes the connection
+                tracking table to be flushed; the <command>conntrack</command>
+                utility must be installed to use this option.</para>
 
-          <para>The <option>-f</option> option suppresses the compilation step
-          and simply reused the compiled script which last started/restarted
-          Shorewall, provided that /etc/shorewall and its contents have not
-          been modified since the last start/restart (Shorewall and Shorewall6
-          only).</para>
+                <para>The <option>-d</option> option causes the compiler to
+                run under the Perl debugger.</para>
 
-          <para>The <option>-c</option> option was added in Shorewall 4.4.20
-          and performs the compilation step unconditionally, overriding the
-          AUTOMAKE setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
-          (Shorewall and Shorewall6 only). When both <option>-f</option> and
-          <option>-c</option> are present, the result is determined by the
-          option that appears last.</para>
+                <para>The <option>-f</option> option suppresses the
+                compilation step and simply reused the compiled script which
+                last started/restarted Shorewall, provided that /etc/shorewall
+                and its contents have not been modified since the last
+                start/restart.</para>
 
-          <para>The <option>-T</option> option was added in Shorewall 4.5.3
-          and causes a Perl stack trace to be included with each
-          compiler-generated error and warning message (Shorewall and
-          Shorewall6 only).</para>
+                <para>The <option>-c</option> option was added in Shorewall
+                4.4.20 and performs the compilation step unconditionally,
+                overriding the AUTOMAKE setting in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                (Shorewall and Shorewall6 only). When both <option>-f</option>
+                and <option>-c</option> are present, the result is determined
+                by the option that appears last.</para>
 
-          <para>The <option>-i</option> option was added in Shorewall 4.6.0
-          and causes a warning message to be issued if the current line
-          contains alternative input specifications following a semicolon
-          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
-          set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
-          (<ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
-          This option is available in Shorewall and Shorewall6 only.</para>
+                <para>The <option>-T</option> option was added in Shorewall
+                4.5.3 and causes a Perl stack trace to be included with each
+                compiler-generated error and warning message.</para>
 
-          <para>The <option>-C</option> option was added in Shorewall 4.6.5
-          and is only meaningful when AUTOMAKE=Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
-          (<ulink
-          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
-          If an existing firewall script is used and if that script was the
-          one that generated the current running configuration, then the
-          running netfilter configuration will be reloaded as is so as to
-          preserve the iptables packet and byte counters. This option is
-          available in Shorewall and Shorewall6 only.</para>
+                <para>The <option>-i</option> option was added in Shorewall
+                4.6.0 and causes a warning message to be issued if the current
+                line contains alternative input specifications following a
+                semicolon (";"). Such lines will be handled incorrectly if
+                INLINE_MATCHES is set to Yes in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                (<ulink
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5))..</para>
+
+                <para>The <option>-C</option> option was added in Shorewall
+                4.6.5 and is only meaningful when AUTOMAKE=Yes in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5)
+                (<ulink
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5)).
+                If an existing firewall script is used and if that script was
+                the one that generated the current running configuration, then
+                the running netfilter configuration will be reloaded as is so
+                as to preserve the iptables packet and byte counters.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>Shorewall-lite and Shorewall6-lite</term>
+
+              <listitem>
+                <para>Reload is similar to <emphasis role="bold">shorewall
+                start</emphasis> except that it assumes that the firewall is
+                already started. Existing connections are maintained.</para>
+
+                <para>The <option>-n</option> option causes Shorewall to avoid
+                updating the routing table(s).</para>
+
+                <para>The <option>-p</option> option causes the connection
+                tracking table to be flushed; the <command>conntrack</command>
+                utility must be installed to use this option.</para>
+
+                <para>The <option>-C</option> option was added in Shorewall
+                4.6.5 If the existing firewall script is the one that
+                generated the current running configuration, then the running
+                netfilter configuration will be reloaded as is so as to
+                preserve the iptables packet and byte counters.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </listitem>
       </varlistentry>
 
@@ -1973,53 +2000,82 @@
           <para>Beginning with Shorewall 5.0.0, this command performs a true
           restart. The firewall is completely stopped as if a
           <command>stop</command> command had been issued then it is started
-          again. The command is available on Shorewall and Shorewall6
-          only.</para>
+          again.</para>
 
-          <para>If a <emphasis>directory</emphasis> is included in the
-          command, Shorewall will look in that <emphasis>directory</emphasis>
-          first for configuration files.</para>
+          <variablelist>
+            <varlistentry>
+              <term>Shorewall and Shorewall6</term>
 
-          <para>The <option>-n</option> option causes Shorewall to avoid
-          updating the routing table(s).</para>
+              <listitem>
+                <para>If a <emphasis>directory</emphasis> is included in the
+                command, Shorewall will look in that
+                <emphasis>directory</emphasis> first for configuration
+                files.</para>
 
-          <para>The <option>-p</option> option causes the connection tracking
-          table to be flushed; the <command>conntrack</command> utility must
-          be installed to use this option.</para>
+                <para>The <option>-n</option> option causes Shorewall to avoid
+                updating the routing table(s).</para>
 
-          <para>The <option>-d</option> option causes the compiler to run
-          under the Perl debugger.</para>
+                <para>The <option>-p</option> option causes the connection
+                tracking table to be flushed; the <command>conntrack</command>
+                utility must be installed to use this option.</para>
 
-          <para>The <option>-f</option> option suppresses the compilation step
-          and simply reused the compiled script which last started/restarted
-          Shorewall, provided that /etc/shorewall and its contents have not
-          been modified since the last start/restart.</para>
+                <para>The <option>-d</option> option causes the compiler to
+                run under the Perl debugger.</para>
 
-          <para>The <option>-c</option> option was added in Shorewall 4.4.20
-          and performs the compilation step unconditionally, overriding the
-          AUTOMAKE setting in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). When
-          both <option>-f</option> and <option>-c</option> are present, the
-          result is determined by the option that appears last.</para>
+                <para>The <option>-f</option> option suppresses the
+                compilation step and simply reused the compiled script which
+                last started/restarted Shorewall, provided that /etc/shorewall
+                and its contents have not been modified since the last
+                start/restart.</para>
 
-          <para>The <option>-T</option> option was added in Shorewall 4.5.3
-          and causes a Perl stack trace to be included with each
-          compiler-generated error and warning message.</para>
+                <para>The <option>-c</option> option was added in Shorewall
+                4.4.20 and performs the compilation step unconditionally,
+                overriding the AUTOMAKE setting in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).
+                When both <option>-f</option> and <option>-c</option> are
+                present, the result is determined by the option that appears
+                last.</para>
 
-          <para>The <option>-i</option> option was added in Shorewall 4.6.0
-          and causes a warning message to be issued if the current line
-          contains alternative input specifications following a semicolon
-          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
-          set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+                <para>The <option>-T</option> option was added in Shorewall
+                4.5.3 and causes a Perl stack trace to be included with each
+                compiler-generated error and warning message.</para>
 
-          <para>The <option>-C</option> option was added in Shorewall 4.6.5
-          and is only meaningful when AUTOMAKE=Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). If an
-          existing firewall script is used and if that script was the one that
-          generated the current running configuration, then the running
-          netfilter configuration will be reloaded as is so as to preserve the
-          iptables packet and byte counters.</para>
+                <para>The <option>-i</option> option was added in Shorewall
+                4.6.0 and causes a warning message to be issued if the current
+                line contains alternative input specifications following a
+                semicolon (";"). Such lines will be handled incorrectly if
+                INLINE_MATCHES is set to Yes in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+
+                <para>The <option>-C</option> option was added in Shorewall
+                4.6.5 and is only meaningful when AUTOMAKE=Yes in <ulink
+                url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).
+                If an existing firewall script is used and if that script was
+                the one that generated the current running configuration, then
+                the running netfilter configuration will be reloaded as is so
+                as to preserve the iptables packet and byte counters.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>Shorewall-lite and Shorewall6-lite</term>
+
+              <listitem>
+                <para>The <option>-n</option> option causes Shorewall to avoid
+                updating the routing table(s).</para>
+
+                <para>The <option>-p</option> option causes the connection
+                tracking table to be flushed; the <command>conntrack</command>
+                utility must be installed to use this option.</para>
+
+                <para>The <option>-C</option> option was added in Shorewall
+                4.6.5 If the existing firewall script is the one that
+                generated the current running configuration, then the running
+                netfilter configuration will be reloaded as is so as to
+                preserve the iptables packet and byte counters.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </listitem>
       </varlistentry>
 

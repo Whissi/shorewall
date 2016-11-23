@@ -2161,34 +2161,17 @@ LOG:info:,bar                        net                    fw</programlisting>
 
           <para>The default values for these are as follows:</para>
 
-          <simplelist>
-            <member>RSH_COMMAND: ssh ${root}@${system} ${command}</member>
-
-            <member>RCP_COMMAND: scp ${files}
-            ${root}@${system}:${destination}</member>
-          </simplelist>
+          <programlisting>RSH_COMMAND: ssh ${root}@${system} ${command}
+RCP_COMMAND: scp ${files} ${root}@${system}:${destination}</programlisting>
 
           <para>Shell variables that will be set when the commands are invoked
           are as follows:</para>
 
-          <simplelist>
-            <member><replaceable>root</replaceable> - root user. Normally
-            <option>root</option> but may be overridden using the '-r'
-            option.</member>
-
-            <member><replaceable>system</replaceable> - The name/IP address of
-            the remote firewall system.</member>
-
-            <member><replaceable>command</replaceable> - For RSH_COMMAND, the
-            command to be executed on the firewall system.</member>
-
-            <member><replaceable>files</replaceable> - For RCP_COMMAND, a
-            space-separated list of files to be copied to the remote firewall
-            system.</member>
-
-            <member><replaceable>destination</replaceable> - The directory on
-            the remote system that the files are to be copied into.</member>
-          </simplelist>
+          <programlisting><replaceable>root</replaceable>        - root user. Normally <option>root</option> but may be overridden using the '-r' option.
+<replaceable>system</replaceable>      - The name/IP address of the remote firewall system.
+<replaceable>command</replaceable>     - For RSH_COMMAND, the command to be executed on the firewall system.
+<replaceable>files</replaceable>       - For RCP_COMMAND, a space-separated list of files to be copied to the remote firewall system.
+<replaceable>destination</replaceable> - The directory on the remote system that the files are to be copied into.</programlisting>
         </listitem>
       </varlistentry>
 

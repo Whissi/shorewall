@@ -5262,6 +5262,8 @@ sub update_config_file( $ ) {
     update_default( 'EXPORTMODULES',  'No' );
     update_default( 'RESTART',        'reload' );
     update_default( 'PAGER',          $shorewallrc1{DEFAULT_PAGER} );
+    update_default( 'LOGFORMAT',      'Shorewall:%s:%s:' );
+    update_default( 'LOGLIMIT',       '' );
 
     my $fn;
 

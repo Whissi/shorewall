@@ -907,8 +907,8 @@
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
         role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
-        role="bold">:</emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>^countrycode-list</replaceable>}</term>
+        role="bold">:</emphasis>[(]{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
+        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>^countrycode-list</replaceable>}[)][,...]</term>
 
         <listitem>
           <para>Source hosts to which the rule applies. May be a
@@ -1093,6 +1093,26 @@
               </listitem>
             </varlistentry>
           </variablelist>
+
+          <para>Beginning with Shorewall 5.1.0, multiple
+          <replaceable>zone</replaceable>:[<replaceable>interface</replaceable>:](<replaceable>address-list</replaceable>)
+          tupples can be listed, separated by commas. Where the
+          <replaceable>address-list</replaceable> consists of more than a
+          single address, the list must be enclosed in parentheses.</para>
+
+          <para>Example:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>dmz:(192.168.2.2,192.168.2.3),net:(206.124.146.22,155.186.235.0/24!155.186.235.16/28)</term>
+
+              <listitem>
+                <para>Hosts 192.168.2.2 and 192.168.2.3 in the dmz zone, host
+                206.124.146.22 in the dmz zone and network 155.186.235.0/24 in
+                the net zone excluding 155.186.235.16/28.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </listitem>
       </varlistentry>
 
@@ -1103,7 +1123,7 @@
         role="bold">any</emphasis>}[<emphasis
         role="bold">+</emphasis>][<emphasis
         role="bold">-</emphasis>]}<emphasis
-        role="bold">[:{</emphasis><emphasis>interface</emphasis>|<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]|<emphasis>exclusion</emphasis>|<emphasis
+        role="bold">[:{</emphasis><emphasis>interface</emphasis>|[(]<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>][)]|[(]<emphasis>exclusion</emphasis>[)]|<emphasis
         role="bold">+</emphasis><emphasis>ipset</emphasis>|<emphasis>^countrycode-list</emphasis>}][<option>:</option><replaceable>port</replaceable>[:<emphasis
         role="bold">random</emphasis>]]</term>
 
@@ -1270,6 +1290,13 @@
           the port number on the firewall that the request should be
           redirected to. That is equivalent to specifying
           <option>$FW</option>::<replaceable>port</replaceable>.</para>
+
+          <para>Beginning with Shorewall 5.1.0, multiple
+          <replaceable>zone</replaceable>:[<replaceable>interface</replaceable>:](<replaceable>address-list</replaceable>)
+          tupples can be listed, separated by commas. Where the
+          <replaceable>address-list</replaceable> consists of more than a
+          single address, the list must be enclosed in parentheses. See the
+          example in the SOURCE section above.</para>
         </listitem>
       </varlistentry>
 

@@ -2748,6 +2748,11 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     fatal_error "Unknown ACTION ($action)" unless $actiontype;
 
     $usergenerated = $actiontype & IPTABLES;
+    #
+    # For now, we'll just strip the parens from the SOURCE and DEST. In a later release, we might be able to do something more with them
+    #
+    $source =~ s/[()]//g;
+    $dest   =~ s/[()]//g;
 
     if ( $actiontype == MACRO ) {
 	#
@@ -3777,22 +3782,8 @@ sub build_zone_list( $$$\$\$ ) {
 #
 # Process a Record in the rules file
 #
-sub process_raw_rule ( ) {
-    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
-	= split_line2( 'rules file',
-		       \%rulecolumns,
-		       $rule_commands,
-		       undef, #Columns
-		       1 );   #Allow inline matches
-
-
-    fatal_error 'ACTION must be specified' if $target eq '-';
-    #
-    # Section Names are optional so once we get to an actual rule, we need to be sure that
-    # we close off any missing sections.
-    #
-    next_section if $section != $next_section;
-
+sub process_raw_rule1( $$$$$$$$$$$$$$$ ) {
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper ) = @_;
     if ( $source =~ /^none(:.*)?$/i || $dest =~ /^none(:.*)?$/i ) {
 	progress_message "Rule \"$currentline\" ignored.";
 	return 1;
@@ -3857,6 +3848,44 @@ sub process_raw_rule ( ) {
 
     progress_message qq(   Rule "$thisline" $done);
 }
+
+sub process_raw_rule ( ) {
+    my ( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper )
+	= split_line2( 'rules file',
+		       \%rulecolumns,
+		       $rule_commands,
+		       undef, #Columns
+		       1 );   #Allow inline matches
+
+
+    fatal_error 'ACTION must be specified' if $target eq '-';
+    #
+    # Section Names are optional so once we get to an actual rule, we need to be sure that
+    # we close off any missing sections.
+    #
+    next_section if $section != $next_section;
+
+    my ( @source, @dest );
+
+    if ( $source =~ /:\(.+\)/ ) {
+	@source = split_list3( $source, 'SOURCE' );
+    } else {
+	@source = ( $source );
+    }
+
+    if ( $dest =~ /:\(.+\)/ ) {
+	@dest = split_list3( $dest, 'DEST' );
+    } else {
+	@dest = ( $dest );
+    }
+
+    for $source ( @source ) {
+	for $dest ( @dest ) {
+	    process_raw_rule1( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper );
+	}
+    }
+}
+
 
 sub intrazone_allowed( $$ ) {
     my ( $zone, $zoneref ) = @_;

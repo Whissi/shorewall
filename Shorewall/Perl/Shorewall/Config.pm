@@ -130,6 +130,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       split_list
 				       split_list1
 				       split_list2
+				       split_list3
 				       split_line
 				       split_line1
 				       split_line2

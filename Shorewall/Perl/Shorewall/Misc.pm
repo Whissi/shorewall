@@ -1028,7 +1028,7 @@ sub add_common_rules ( $ ) {
 	    );
     }
 	    
-    run_user_exit1 'initdone';
+    run_user_exit 'initdone';
 
     if ( $upgrade ) {
 	convert_blacklist;
@@ -1453,8 +1453,6 @@ sub setup_mac_lists( $ ) {
 		    }
 		}
 	    }
-
-	    run_user_exit2( 'maclog', $chainref );
 
 	    log_irule_limit $level, $chainref , $chain , $disposition, [], $tag, 'add', '' if $level ne '';
 	    add_ijump $chainref, j => $target;

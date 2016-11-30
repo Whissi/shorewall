@@ -701,7 +701,7 @@ sub compiler {
     #
     # Allow user to load Perl modules
     #
-    run_user_exit1 'compile';
+    run_user_exit 'compile';
     #
     # Create a temp file to hold the script
     #

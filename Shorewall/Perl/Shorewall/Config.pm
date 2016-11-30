@@ -155,8 +155,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       propagateconfig
 				       append_file
 				       run_user_exit
-				       run_user_exit1
-				       run_user_exit2
 				       generate_aux_config
 				       format_warning
 				       no_comment
@@ -644,6 +642,7 @@ our %eliminated = ( LOGRATE          => 1,
 		    WIDE_TC_MARKS    => 1,
 		    HIGH_ROUTE_MARKS => 1,
 		    BLACKLISTNEWONLY => 1,
+		    CHAIN_SCRIPTS    => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -891,7 +890,6 @@ sub initialize( $;$$) {
 	  WARNOLDCAPVERSION => undef,
 	  DEFER_DNS_RESOLUTION => undef,
 	  USE_RT_NAMES => undef,
-	  CHAIN_SCRIPTS => undef,
 	  TRACK_RULES => undef,
 	  REJECT_ACTION => undef,
 	  INLINE_MATCHES => undef,
@@ -6213,7 +6211,6 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
-    default_yes_no 'CHAIN_SCRIPTS'              , 'Yes';
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
 	if ( lc( $val ) eq 'file' ) {
@@ -6730,32 +6727,7 @@ sub append_file( $;$$ ) {
     $result;
 }
 
-#
-# Run a Perl extension script
-#
 sub run_user_exit( $ ) {
-    my $chainref = $_[0];
-    my $file = find_file $chainref->{name};
-
-    if ( $config{CHAIN_SCRIPTS} && -f $file ) {
-	progress_message2 "Running $file...";
-
-	my $command = qq(package Shorewall::User;\nno strict;\n# line 1 "$file"\n) . `cat $file`;
-
-	unless (my $return = eval $command ) {
-	    fatal_error "Couldn't parse $file: $@" if $@;
-
-	    unless ( defined $return ) {
-		fatal_error "Couldn't do $file: $!" if $!;
-		fatal_error "Couldn't do $file";
-	    }
-
-	    fatal_error "$file returned a false value";
-	}
-    }
-}
-
-sub run_user_exit1( $ ) {
     my $file = find_file $_[0];
 
     if ( -f $file ) {
@@ -6784,37 +6756,6 @@ sub run_user_exit1( $ ) {
 	} else {
 	    pop_open;
 	}
-    }
-}
-
-sub run_user_exit2( $$ ) {
-    my ($file, $chainref) = ( find_file $_[0], $_[1] );
-
-    if ( $config{CHAIN_SCRIPTS} && -f $file ) {
-	progress_message2 "Running $file...";
-	#
-	# File may be empty -- in which case eval would fail
-	#
-	push_open $file;
-
-	if ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
-	    close_file;
-	    pop_open;
-
-	    unless (my $return = eval `cat $file` ) {
-		fatal_error "Couldn't parse $file: $@" if $@;
-
-		unless ( defined $return ) {
-		    fatal_error "Couldn't do $file: $!" if $!;
-		    fatal_error "Couldn't do $file";
-		}
-
-		fatal_error "$file returned a false value";
-	    }
-	}
-
-	pop_open;
-
     }
 }
 

@@ -1027,7 +1027,6 @@ sub complete_policy_chains() {
 	    }
 
 	    if ( $name =~ /^all[-2]|[-2]all$/ ) {
-		run_user_exit $chainref;
 		add_policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
 	    }
 	}
@@ -1038,7 +1037,6 @@ sub complete_policy_chains() {
 	    my $chainref = $filter_table->{rules_chain( ${zone}, ${zone1} )};
 
 	    if ( $chainref->{referenced} ) {
-		run_user_exit $chainref;
 		complete_policy_chain $chainref, $zone, $zone1;
 	    }
 	}
@@ -1056,8 +1054,6 @@ sub complete_policy_chains() {
 #
 sub complete_standard_chain ( $$$$ ) {
     my ( $stdchainref, $zone, $zone2, $default ) = @_;
-
-    run_user_exit $stdchainref;
 
     my $ruleschainref = $filter_table->{rules_chain( ${zone}, ${zone2} ) } || $filter_table->{rules_chain( 'all', 'all' ) };
     my ( $policy, $loglevel, $defaultaction ) = ( $default , 6, $config{$default . '_DEFAULT'} );
@@ -1419,27 +1415,6 @@ sub createlogactionchain( $$$$$$ ) {
 
     $chainref->{action} = $normalized;
 
-    if ( $config{CHAIN_SCRIPTS} ) {
-	unless ( $targets{$action} & BUILTIN ) {
-
-	    set_optflags( $chainref, DONT_OPTIMIZE );
-
-	    my $file = find_file $chain;
-
-	    if ( -f $file ) {
-		progress_message "Running $file...";
-
-		my @params = split /,/, $param;
-
-		unless ( my $return = eval `cat $file` ) {
-		    fatal_error "Couldn't parse $file: $@" if $@;
-		    fatal_error "Couldn't do $file: $!"    unless defined $return;
-		    fatal_error "Couldn't run $file";
-		}
-	    }
-	}
-    }
-
     $chainref;
 }
 
@@ -1454,27 +1429,6 @@ sub createsimpleactionchain( $$ ) {
     $usedactions{$normalized} = $chainref;
 
     $chainref->{action} = $normalized;
-
-    if ( $config{CHAIN_SCRIPTS} ) {
-	unless ( $targets{$action} & BUILTIN ) {
-
-	    set_optflags( $chainref, DONT_OPTIMIZE );
-
-	    my $file = find_file $action;
-
-	    if ( -f $file ) {
-		progress_message "Running $file...";
-
-		my ( $level, $tag ) = ( '', '' );
-
-		unless ( my $return = eval `cat $file` ) {
-		    fatal_error "Couldn't parse $file: $@" if $@;
-		    fatal_error "Couldn't do $file: $!"    unless defined $return;
-		    fatal_error "Couldn't run $file";
-		}
-	    }
-	}
-    }
 
     $chainref;
 }

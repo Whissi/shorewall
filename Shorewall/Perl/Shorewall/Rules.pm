@@ -1873,7 +1873,7 @@ my %builtinops = ( 'dropBcast'      => \&dropBcast,
 
 
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ );
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ );
 sub process_snat1( $$$$$$$$$$$$ );
 sub perl_action_helper( $$;$$ );
 
@@ -1980,10 +1980,10 @@ sub process_action(\$\$$) {
 		}
 	    }
 	} elsif ( $type & MANGLE_TABLE ) {
-	    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+	    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time, $conditional );
 
 	    if ( $family == F_IPV4 ) {
-		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
+		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time, $conditional ) =
 		    split_line2( 'mangle file',
 				 { mark => 0,
 				   action => 0,
@@ -2002,13 +2002,14 @@ sub process_action(\$\$$) {
 				   scp => 13,
 				   state => 14,
 				   time => 15,
+				   switch => 16,
 				 },
 				 {},
-				 16,
+				 17,
 				 1 );
 		$headers = '-';
 	    } else {
-		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time ) =
+		( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time, $conditional ) =
 		    split_line2( 'action file',
 				 { mark => 0,
 				   action => 0,
@@ -2028,9 +2029,10 @@ sub process_action(\$\$$) {
 				   dscp => 14,
 				   state => 15,
 				   time => 16,
+				   switch => 17,
 				 },
 				 {},
-				 17,
+				 18,
 				 1 );
 	    }
 
@@ -2059,7 +2061,8 @@ sub process_action(\$\$$) {
 				      $probability ,
 				      $dscp ,
 				      $state,
-				      $time );
+				      $time,
+				      $conditional );
 		set_inline_matches( $matches );
 	    }
 	} else {
@@ -3991,8 +3994,8 @@ sub process_rules() {
     $section = $next_section = DEFAULTACTION_SECTION;
 }
 
-sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
-    my ($inline, $chainref, $params, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time ) = @_;
+sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$$ ) {
+    my ($inline, $chainref, $params, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time, $conditional ) = @_;
 
     my $oldparms   = push_action_params( $inline,
 					 $chainref,
@@ -4011,9 +4014,9 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
     my $save_comment = push_comment;
 
     while ( read_a_line( NORMAL_READ ) ) {
-	my ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability , $mdscp , $mstate, $mtime );
+	my ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability , $mdscp , $mstate, $mtime, $mconditional );
 	if ( $family == F_IPV4 ) {
-	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mprobability, $mdscp, $mstate, $mtime ) =
+	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mprobability, $mdscp, $mstate, $mtime, $mconditional ) =
 		split_line2( 'mangle file',
 			     { mark => 0,
 			       action => 0,
@@ -4032,13 +4035,14 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 			       scp => 13,
 			       state => 14,
 			       time => 15,
+			       switch => 16,
 			     },
 			     {},
-			     16,
+			     17,
 			     1 );
 	    $headers = $mheaders = '-';
 	} else {
-	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability, $mdscp, $mstate, $mtime ) =
+	    ( $moriginalmark, $msource, $mdest, $mprotos, $mports, $msports, $muser, $mtestval, $mlength, $mtos , $mconnbytes, $mhelper, $mheaders, $mprobability, $mdscp, $mstate, $mtime, $mconditional ) =
 		split_line2( 'mangle file',
 			     { mark => 0,
 			       action => 0,
@@ -4058,9 +4062,10 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 			       dscp => 14,
 			       state => 15,
 			       time => 16,
+			       switch => 17,
 			     },
 			     {},
-			     17,
+			     18,
 			     1 );
 	}
 
@@ -4093,7 +4098,9 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 				  merge_macro_column( $mprobability ,   $probability ),
 				  merge_macro_column( $mdscp ,          $dscp ),
 				  merge_macro_column( $mstate,          $state ),
-				  merge_macro_column( $mtime,           $time ) );
+				  merge_macro_column( $mtime,           $time ),
+				  merge_macro_column( $mconditional,    $conditional ),
+		);
 	}
 
 	progress_message "   Rule \"$currentline\" $done";
@@ -4120,8 +4127,8 @@ sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$ ) {
 # appended to that chain. The chain with be the action's chain unless the action
 # is inlined, in which case it will be the chain which invoked the action.
 #
-sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
-    my ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time) = @_;
+sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
+    my ( $chainref, $action, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time, $condition) = @_;
 
     my %designators = (
 	P => PREROUTING,
@@ -4231,6 +4238,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 			     do_headers( $headers ) .
 			     do_probability( $probability ) .
 			     do_dscp( $dscp ) .
+			     do_condition( $condition, $chainref->{name} ) .
 			     state_match( $state ) .
 			     $raw_matches ,
 			     $source ,
@@ -4826,7 +4834,8 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$ ) {
 				   $probability ,
 				   $dscp ,
 				   $state,
-				   $time );
+				   $time,
+				   $condition );
 	    $done = 1;
 	}
     };
@@ -5221,9 +5230,9 @@ sub process_tc_rule( ) {
 
 sub process_mangle_rule( $ ) {
     my ( $chainref ) = @_;
-    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+    my ( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time, $conditional );
     if ( $family == F_IPV4 ) {
-	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time ) =
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $probability, $dscp, $state, $time, $conditional ) =
 	    split_line2( 'mangle file',
 			 { mark => 0,
 			   action => 0,
@@ -5242,13 +5251,14 @@ sub process_mangle_rule( $ ) {
 			   scp => 13,
 			   state => 14,
 			   time => 15,
+			   switch => 16,
 			 },
 			 {},
-			 16,
+			 17,
 	                 1 );
 	$headers = '-';
     } else {
-	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time ) =
+	( $originalmark, $source, $dest, $protos, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability, $dscp, $state, $time, $conditional ) =
 	    split_line2( 'mangle file',
 			 { mark => 0,
 			   action => 0,
@@ -5268,14 +5278,15 @@ sub process_mangle_rule( $ ) {
 			   dscp => 14,
 			   state => 15,
 			   time => 16,
+			   switch => 17,
 			 },
 			 {},
-			 17,
+			 18,
 	                 1 );
     }
 
     for my $proto (split_list( $protos, 'Protocol' ) ) {
-	process_mangle_rule1( $chainref, $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time );
+	process_mangle_rule1( $chainref, $originalmark, $source, $dest, $proto, $ports, $sports, $user, $testval, $length, $tos , $connbytes, $helper, $headers, $probability , $dscp , $state, $time, $conditional );
     }
 }
 

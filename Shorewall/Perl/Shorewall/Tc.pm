@@ -42,7 +42,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( process_tc setup_tc );
-our @EXPORT_OK = qw( process_tc_rule initialize );
+our @EXPORT_OK = qw( initialize );
 our $VERSION = 'MODULEVERSION';
 
 our %flow_keys = ( 'src'            => 1,
@@ -2277,9 +2277,10 @@ sub open_mangle_for_output( $ ) {
 	#
 	transfer_permissions( $fn, $fn1 );
 
-	print $mangle <<'EOF';
+	if ( $family == F_IPV4 ) {
+	    print $mangle <<'EOF';
 #
-# Shorewall version 4 - Mangle File
+# Shorewall -- /etc/shorewall/mangle
 #
 # For information about entries in this file, type "man shorewall-mangle"
 #
@@ -2289,13 +2290,31 @@ sub open_mangle_for_output( $ ) {
 #
 # See http://shorewall.net/PacketMarking.html for a detailed description of
 # the Netfilter/Shorewall packet marking mechanism.
-####################################################################################################################################################
-#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER  PROBABILITY     DSCP
-#                                                       PORT(S) PORT(S)
+##############################################################################################################################################################
+#ACTION         SOURCE          DEST            PROTO   DEST    SOURCE  USER    TEST    LENGTH  TOS     CONNBYTES       HELPER  PROBABILITY     DSCP    SWITCH
 EOF
-    }
+	} else {
+	    print $mangle <<'EOF';
+#
+# Shorewall6 -- /etc/shorewall6/mangle
+#
+# For information about entries in this file, type "man shorewall6-mangle"
+#
+# See http://shorewall.net/traffic_shaping.htm for additional information.
+# For usage in selecting among multiple ISPs, see
+# http://shorewall.net/MultiISP.html
+#
+# See http://shorewall.net/PacketMarking.html for a detailed description of
+# the Netfilter/Shorewall packet marking mechanism.
+#
+######################################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DPORT	SPORT	USER	TEST	LENGTH	TOS	CONNBYTES	HELPER	HEADERS	PROBABILITY	DSCP	SWITCH
+EOF
 
-    return ( $mangle, $fn1 );
+	}
+
+	return ( $mangle, $fn1 );
+    }
 }
 
 #

@@ -1577,7 +1577,7 @@ sub finish_providers() {
 
 	if ( $family == F_IPV4 ) {
 	    emit( "    run_ip route replace default scope global table $default \$FALLBACK_ROUTE" );
-	} ele {
+	} else {
 	    emit( "    run_ip route delete default scope global table $default \$FALLBACK_ROUTE" );
 	    emit( "    run_ip route add default scope global table $default \$FALLBACK_ROUTE" );
 	}

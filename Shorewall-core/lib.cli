@@ -1809,6 +1809,7 @@ dump_command() {
 restore_command() {
     local finished
     finished=0
+    local result
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1873,8 +1874,11 @@ restore_command() {
 	progress_message3 "Restoring $g_product..."
 
 	run_it $g_restorepath restore && progress_message3 "$g_product restored from ${VARDIR}/$RESTOREFILE"
+	result=$?
 
 	[ -n "$g_nolock" ] || mutex_off
+
+	exit $result
     else
 	echo "File $g_restorepath: file not found"
 	[ -n "$g_nolock" ] || mutex_off

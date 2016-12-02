@@ -1218,6 +1218,7 @@ sub merge_rules( $$$ ) {
 	if ( exists $fromref->{$option} ) {
 	    push( @{$toref->{matches}}, $option ) unless exists $toref->{$option};
 	    $toref->{$option} = $fromref->{$option};
+	    $toref->{simple} = 0;
 	}
     }
 

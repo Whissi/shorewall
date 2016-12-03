@@ -3583,7 +3583,7 @@ sub optimize_level4( $$ ) {
     if ( my $chains  = @chains ) {
 	$passes++;
 
-	progress_message "\n Table $table pass $passes, $chains short chains, level 4b...";
+	progress_message "\n Table $table pass $passes, $chains short chains, level 4c...";
 
 	for my $chainref ( @chains ) {
 	    my $name = $chainref->{name};

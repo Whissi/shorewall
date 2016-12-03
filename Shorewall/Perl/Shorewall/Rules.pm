@@ -1312,8 +1312,18 @@ sub normalize_action( $$$ ) {
     # Note: SNAT actions store the current interface's name in the tag
     #
     $tag   = ''     unless defined $tag;
-    $param = ''     unless defined $param;
-    $param = ''     if $param eq '-';
+
+    if ( defined( $param ) ) {
+	#
+	# Normalize the parameters by removing trailing omitted
+	# parameters
+	#
+	1 while $param =~ s/,-$//;
+
+	$param = '' if $param eq '-';
+    } else {
+	$param = '';
+    }
 
     join( ':', $action, $level, $tag, $caller, $param );
 }

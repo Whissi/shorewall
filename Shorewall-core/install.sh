@@ -393,6 +393,25 @@ if [ $SHAREDIR != /usr/share ]; then
 fi
 
 #
+# Install the Man Pages
+#
+if [ -n "$MANDIR" ]; then
+    cd manpages
+
+    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man8/
+
+    for f in *.8; do
+	gzip -9c $f > $f.gz
+	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+    done
+
+    cd ..
+
+    echo "Man Pages Installed"
+fi
+
+#
 # Symbolically link 'functions' to lib.base
 #
 ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions

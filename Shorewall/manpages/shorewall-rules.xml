@@ -629,7 +629,7 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">NFQUEUE</emphasis>[([<replaceable>queuenumber</replaceable>1[:<replaceable>queuenumber2</replaceable>][,bypass]]|bypass)]</term>
+              role="bold">NFQUEUE</emphasis>[([<replaceable>queuenumber</replaceable>1[:<replaceable>queuenumber2</replaceable>[c]][,bypass]]|bypass)]</term>
 
               <listitem>
                 <para>Queues the packet to a user-space application using the
@@ -648,12 +648,19 @@
                 systems: start multiple instances of the userspace program on
                 queues x, x+1, .. x+n and use "x:x+n". Packets belonging to
                 the same connection are put into the same nfqueue.</para>
+
+                <para>Beginning with Shorewall 5.1.0, queuenumber2 may be
+                followed by the letter 'c' to indicate that the CPU ID will be
+                used as an index to map packets to the queues. The idea is
+                that you can improve performance if there's a queue per CPU.
+                Requires the NFQUEUE CPU Fanout capability in your kernel and
+                iptables.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
               <term><emphasis role="bold"><emphasis
-              role="bold">NFQUEUE!</emphasis>[([<replaceable>queuenumber1</replaceable>[,<replaceable>queuenumber2</replaceable>][,bypass]]|bypass)]</emphasis></term>
+              role="bold">NFQUEUE!</emphasis>[([<replaceable>queuenumber1</replaceable>[:<replaceable>queuenumber2</replaceable>[c]][,bypass]]|bypass)]</emphasis></term>
 
               <listitem>
                 <para>like NFQUEUE but exempts the rule from being suppressed

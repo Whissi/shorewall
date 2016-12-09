@@ -412,6 +412,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 IFACE_MATCH     => 'Iface Match',
                  TCPMSS_TARGET   => 'TCPMSS Target',
                  WAIT_OPTION     => 'iptables --wait option',
+                 CPU_FANOUT      => 'NFQUEUE CPU Fanout',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -748,7 +749,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "5.0.9-Beta2",
-		    CAPVERSION              => 50004 ,
+		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -1035,6 +1036,7 @@ sub initialize( $;$$) {
 	       IFACE_MATCH => undef,
 	       TCPMSS_TARGET => undef,
 	       WAIT_OPTION => undef,
+	       CPU_FANOUT => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4845,6 +4847,10 @@ sub Tcpmss_Target() {
     qt1( "$iptables $iptablesw -A $sillyname -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu" );
 }
 
+sub Cpu_Fanout() {
+    have_capability( 'NFQUEUE_TARGET' ) && qt1( "$iptables -A $sillyname -j NFQUEUE --queue-balance 0:3 --queue-cpu-fanout" );
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AMANDA_HELPER => \&Amanda_Helper,
@@ -4861,6 +4867,7 @@ our %detect_capability =
       CONNMARK => \&Connmark,
       CONNMARK_MATCH => \&Connmark_Match,
       CONNTRACK_MATCH => \&Conntrack_Match,
+      CPU_FANOUT => \&Cpu_Fanout,
       CT_TARGET => \&Ct_Target,
       DSCP_MATCH => \&Dscp_Match,
       DSCP_TARGET => \&Dscp_Target,
@@ -5088,6 +5095,7 @@ sub determine_capabilities() {
 	$capabilities{TARPIT_TARGET}   = detect_capability( 'TARPIT_TARGET' );
 	$capabilities{IFACE_MATCH}     = detect_capability( 'IFACE_MATCH' );
 	$capabilities{TCPMSS_TARGET}   = detect_capability( 'TCPMSS_TARGET' );
+	$capabilities{CPU_FANOUT}      = detect_capability( 'CPU_FANOUT' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

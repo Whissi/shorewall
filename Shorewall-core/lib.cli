@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=50004
+SHOREWALL_CAPVERSION=50100
 
 if [ -z "$g_basedir" ]; then
     #
@@ -2799,6 +2799,7 @@ determine_capabilities() {
     IFACE_MATCH=
     TCPMSS_TARGET=
     WAIT_OPTION=
+    CPU_FANOUT=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -3096,7 +3097,12 @@ determine_capabilities() {
 	qt $g_tool -A $chain -m hashlimit --hashlimit 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && OLD_HL_MATCH=Yes
 	HASHLIMIT_MATCH=$OLD_HL_MATCH
     fi
-    qt $g_tool -A $chain -j NFQUEUE --queue-num 4 && NFQUEUE_TARGET=Yes
+
+    if qt $g_tool -A $chain -j NFQUEUE --queue-num 4; then
+	NFQUEUE_TARGET=Yes
+	qt $g_tool -A $chain -j NFQUEUE --queue-balance 0:3 --queue-cpu-fanout && CPU_FANOUT=Yes
+    fi
+
     qt $g_tool -A $chain -m realm --realm 4 && REALM_MATCH=Yes
 
     #
@@ -3294,6 +3300,7 @@ report_capabilities_unsorted() {
     report_capability "Basic Filter (BASIC_FILTER)" $BASIC_FILTER
     report_capability "Basic Ematch (BASIC_EMATCH)" $BASIC_EMATCH
     report_capability "CT Target (CT_TARGET)" $CT_TARGET
+    report_capability "NFQUEUE CPU Fanout (CPU_FANOUT)" $CPU_FANOUT
 
     echo "   Kernel Version (KERNELVERSION): $KERNELVERSION"
     echo "   Capabilities Version (CAPVERSION): $CAPVERSION"
@@ -3399,6 +3406,7 @@ report_capabilities_unsorted1() {
     report_capability1 IFACE_MATCH
     report_capability1 TCPMSS_TARGET
     report_capability1 WAIT_OPTION
+    report_capability1 CPU_FANOUT
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

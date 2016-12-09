@@ -574,7 +574,7 @@ sub process_default_action( $$$$ ) {
 #
 sub handle_nfqueue( $$ ) {
     my ($params, $allow_bypass ) = @_;
-    my ( $action, $bypass );
+    my ( $action, $bypass, $fanout );
     my ( $queue1, $queue2, $queuenum1, $queuenum2 );
 
     require_capability( 'NFQUEUE_TARGET', 'NFQUEUE Rules and Policies', '' );
@@ -600,6 +600,7 @@ sub handle_nfqueue( $$ ) {
 	    fatal_error "Invalid NFQUEUE queue number ($queue1)" unless defined( $queuenum1) && $queuenum1 >= 0 && $queuenum1 <= 65535;
 
 	    if ( supplied $queue2 ) {
+		$fanout    = ' --queue-cpu-fanout' if $queue2 =~ s/c$//;
 		$queuenum2 = numeric_value( $queue2 );
 
 		fatal_error "Invalid NFQUEUE queue number ($queue2)" unless defined( $queuenum2) && $queuenum2 >= 0 && $queuenum2 <= 65535 && $queuenum1 < $queuenum2;
@@ -621,7 +622,8 @@ sub handle_nfqueue( $$ ) {
     }
 
     if ( supplied $queue2 ) {
-	return "NFQUEUE --queue-balance ${queuenum1}:${queuenum2}${bypass}";
+	require_capability 'CPU_FANOUT', '"c"', 's' if $fanout;
+	return "NFQUEUE --queue-balance ${queuenum1}:${queuenum2}${fanout}${bypass}";
     } else {
 	return "NFQUEUE --queue-num ${queuenum1}${bypass}";
     }

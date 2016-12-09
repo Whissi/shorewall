@@ -7602,7 +7602,7 @@ sub handle_exclusion( $$$$$$$$$$$$$$$$$$$$$ ) {
 #
 # Returns the destination interface specified in the rule, if any.
 #
-sub expand_rule( $$$$$$$$$$$$;$ )
+sub expand_rule1( $$$$$$$$$$$$;$ )
 {
     my ($chainref ,    # Chain
 	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
@@ -7618,8 +7618,6 @@ sub expand_rule( $$$$$$$$$$$$;$ )
 	$usergenerated,# Rule came from the IP[6]TABLES target
 	$logname,      # Name of chain to name in log messages
        ) = @_;
-
-    return if $chainref->{complete};
 
     my ( $iiface, $diface, $inets, $dnets, $iexcl, $dexcl, $onets , $oexcl, $trivialiexcl, $trivialdexcl ) = 
        ( '',      '',      '',     '',     '',     '',     '',      '',     '',            '' );
@@ -7853,6 +7851,78 @@ sub expand_rule( $$$$$$$$$$$$;$ )
     pop_commands( $chainref ) if @ends;
 
     $diface;
+}
+
+sub expand_rule( $$$$$$$$$$$$;$$$ )
+{
+    my ($chainref ,    # Chain
+	$restriction,  # Determines what to do with interface names in the SOURCE or DEST
+	$prerule,      # Matches that go at the front of the rule
+	$rule,         # Caller's matches that don't depend on the SOURCE, DEST and ORIGINAL DEST
+	$source,       # SOURCE
+	$dest,         # DEST
+	$origdest,     # ORIGINAL DEST
+	$target,       # Target ('-j' part of the rule - may be empty)
+	$loglevel ,    # Log level (and tag)
+	$disposition,  # Primtive part of the target (RETURN, ACCEPT, ...)
+	$exceptionrule,# Caller's matches used in exclusion case
+	$usergenerated,# Rule came from the IP[6]TABLES target
+	$logname,      # Name of chain to name in log messages
+	$device,       # TC Device Name
+	$classid,      # TC Class Id
+       ) = @_;
+
+    return if $chainref->{complete};
+
+    my ( @source, @dest );
+
+    $source = '' unless defined $source;
+    $dest   = '' unless defined $dest;
+
+    if ( $source =~ /\(.+\)/ ) {
+	@source = split_list3( $source, 'SOURCE' );
+    } else {
+	@source = ( $source );
+    }
+
+    if ( $dest =~ /\(.+\)/ ) {
+	@dest = split_list3( $dest, 'DEST' );
+    } else {
+	@dest = ( $dest );
+    }
+
+    for $source ( @source ) {
+	if ( $source =~ /^(.+?):\((.+)\)$/ ) {
+	    $source = join( ':', $1, $2 );
+	} elsif ( $source =~ /^\((.+)\)$/ ) {
+	    $source = $1;
+	}
+
+	for $dest ( @dest ) {
+	    if ( $dest =~ /^(.+?):\((.+)\)$/ ) {
+		$dest = join( ':', $1, $2 );
+	    } elsif ( $dest =~ /^\((.+)\)$/ ) {
+		$dest = $1;
+	    }
+
+	    if ( ( my $result = expand_rule1( $chainref ,
+					      $restriction ,
+					      $prerule ,
+					      $rule ,
+					      $source ,
+					      $dest ,
+					      $origdest ,
+					      $target ,
+					      $loglevel ,
+					      $disposition ,
+					      $exceptionrule ,
+					      $usergenerated ,
+					      $logname ,
+		   ) ) && $device ) {
+		fatal_error "Class Id $classid is not associated with device $result" if $device ne $result &&( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' );
+	    }
+	}
+    }
 }
 
 #

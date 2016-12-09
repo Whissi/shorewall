@@ -2718,8 +2718,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # For now, we'll just strip the parens from the SOURCE and DEST. In a later release, we might be able to do something more with them
     #
-    $source =~ s/[()]//g;
-    $dest   =~ s/[()]//g;
 
     if ( $actiontype == MACRO ) {
 	#
@@ -3847,7 +3845,11 @@ sub process_raw_rule ( ) {
     }
 
     for $source ( @source ) {
+	$source = join(':', $1, $2 ) if $source =~ /^(.+?):\((.+)\)$/;
+
 	for $dest ( @dest ) {
+	    $dest = join( ':', $1, $2 ) if $dest =~  /^(.+?):\((.+)\)$/;
+
 	    process_raw_rule1( $target, $source, $dest, $protos, $ports, $sports, $origdest, $ratelimit, $users, $mark, $connlimit, $time, $headers, $condition, $helper );
 	}
     }
@@ -4936,37 +4938,35 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 
 	$restriction |= $chainref->{restriction};
 
-	if ( ( my $result = expand_rule( $chainref ,
-					 $restriction,
-					 $prerule,
-					 do_proto( $proto, $ports, $sports) . $matches .
-					 do_user( $user ) .
-					 do_test( $testval, $globals{TC_MASK} ) .
-					 do_length( $length ) .
-					 do_tos( $tos ) .
-					 do_connbytes( $connbytes ) .
-					 do_helper( $helper ) .
-					 do_headers( $headers ) .
-					 do_probability( $probability ) .
-					 do_dscp( $dscp ) .
-					 state_match( $state ) .
-					 do_time( $time ) .
-					 ( $ttl ? "-t $ttl " : '' ) .
-					 $raw_matches ,
-					 $source ,
-					 $dest ,
-					 '' ,
-					 $target,
-					 '' ,
-					 $target ,
-					 $exceptionrule ,
-					 $usergenerated ) )
-	     && $device ) {
-	    #
-	    # expand_rule() returns destination device if any
-	    #
-	    fatal_error "Class Id $params is not associated with device $result" if $device ne $result &&( $config{TC_ENABLED} eq 'Internal' || $config{TC_ENABLED} eq 'Shared' );
-	}
+	expand_rule( $chainref ,
+		     $restriction,
+		     $prerule,
+		     do_proto( $proto, $ports, $sports) . $matches .
+		     do_user( $user ) .
+		     do_test( $testval, $globals{TC_MASK} ) .
+		     do_length( $length ) .
+		     do_tos( $tos ) .
+		     do_connbytes( $connbytes ) .
+		     do_helper( $helper ) .
+		     do_headers( $headers ) .
+		     do_probability( $probability ) .
+		     do_dscp( $dscp ) .
+		     state_match( $state ) .
+		     do_time( $time ) .
+		     ( $ttl ? "-t $ttl " : '' ) .
+		     $raw_matches ,
+		     $source ,
+		     $dest ,
+		     '' ,
+		     $target,
+		     '' ,
+		     $target ,
+		     $exceptionrule ,
+		     $usergenerated ,
+		     '' , # Log Name
+		     $device ,
+		     $params
+	    );
     }
 
     progress_message "  Mangle Rule \"$currentline\" $done";

@@ -822,8 +822,8 @@
 
           <para>If the <emphasis role="bold">ACTION</emphasis> names an
           <emphasis>action</emphasis> declared in <ulink
-          url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5)
-          or in /usr/share/shorewall/actions.std then:</para>
+          url="shorewall6-actions.html">shorewall6-actions</ulink>(5) or in
+          /usr/share/shorewall/actions.std then:</para>
 
           <itemizedlist>
             <listitem>
@@ -861,100 +861,187 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">SOURCE</emphasis> -
-        {<emphasis>zone</emphasis>|<emphasis>zone-list</emphasis>[+]|<emphasis
-        role="bold">{all|any}</emphasis>[<emphasis
-        role="bold">+</emphasis>][<emphasis
-        role="bold">-</emphasis>]}<emphasis
-        role="bold">[:</emphasis><emphasis>interface</emphasis>][(][<emphasis
-        role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|<replaceable>^countrycode-list</replaceable>}[)][,...]</term>
+        <term><emphasis role="bold">SOURCE -
+        <replaceable>source-spec</replaceable>[,...]</emphasis></term>
 
         <listitem>
-          <para>Source hosts to which the rule applies. May be a zone declared
-          in /etc/shorewall6/zones, <emphasis role="bold">$FW</emphasis> to
-          indicate the firewall itself, <emphasis role="bold">all</emphasis>,
-          <emphasis role="bold">all+</emphasis>, <emphasis
-          role="bold">all-</emphasis>, <emphasis role="bold">all+-</emphasis>
-          or <emphasis role="bold">none</emphasis>.</para>
+          <para>Source hosts to which the rule applies.</para>
 
-          <para>Beginning with Shorewall 4.4.13, you may use a
-          <replaceable>zone-list </replaceable>which consists of a
-          comma-separated list of zones declared in <ulink
-          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink> (5).
-          This <replaceable>zone-list</replaceable> may be optionally followed
-          by "+" to indicate that the rule is to apply to intra-zone traffic
-          as well as inter-zone traffic.</para>
+          <para><replaceable>source-spec</replaceable> is one of the
+          following:</para>
 
-          <para>When <emphasis role="bold">none</emphasis> is used either in
-          the <emphasis role="bold">SOURCE</emphasis> or <emphasis
-          role="bold">DEST</emphasis> column, the rule is ignored.</para>
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold"><replaceable>zone</replaceable>[,...[+]]</emphasis></term>
 
-          <para><emphasis role="bold">all</emphasis> means "All Zones",
-          including the firewall itself. <emphasis role="bold">all-</emphasis>
-          means "All Zones, except the firewall itself". When <emphasis
-          role="bold">all</emphasis>[<emphasis role="bold">-</emphasis>] is
-          used either in the <emphasis role="bold">SOURCE</emphasis> or
-          <emphasis role="bold">DEST</emphasis> column intra-zone traffic is
-          not affected. When <emphasis role="bold">all+</emphasis>[<emphasis
-          role="bold">-</emphasis>] is "used, intra-zone traffic is affected.
-          Beginning with Shorewall 4.4.13, exclusion is supported -- see see
-          <ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5).</para>
+              <listitem>
+                <para>The name of a zone defined in <ulink
+                url="shorewall6-zones.html">shorewall6-zones</ulink>(5). When
+                only the zone name is specified, the packet source may be any
+                host in that zone.</para>
 
-          <para><emphasis role="bold">any</emphasis> is equivalent to
-          <emphasis role="bold">all</emphasis> when there are no nested zones.
-          When there are nested zones, <emphasis role="bold">any</emphasis>
-          only refers to top-level zones (those with no parent zones). Note
-          that <emphasis role="bold">any</emphasis> excludes all vserver
-          zones, since those zones are nested within the firewall zone.</para>
+                <para>zone may also be one of the following:</para>
 
-          <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
-          role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] or
-          <emphasis role="bold">any</emphasis>[<emphasis
-          role="bold">+</emphasis>][<emphasis role="bold">-</emphasis>] is
-          specified, clients may be further restricted to a list of networks
-          and/or hosts by appending ":" and a comma-separated list of network
-          and/or host addresses. Hosts may be specified by IP or MAC address;
-          mac addresses must begin with "~" and must use "-" as a
-          separator.</para>
+                <variablelist>
+                  <varlistentry>
+                    <term>all[+][-]</term>
 
-          <para>Hosts may also be specified as an IP address range using the
-          syntax
-          <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.
-          This requires that your kernel and ip6tables contain iprange match
-          support. If your kernel and ip6tables have ipset match support then
-          you may give the name of an ipset prefaced by "+". The ipset name
-          may be optionally followed by a number from 1 to 6 enclosed in
-          square brackets ([]) to indicate the number of levels of source
-          bindings to be matched.</para>
+                    <listitem>
+                      <para><emphasis role="bold">all</emphasis>, without the
+                      "-" means "All Zones, including the firewall zone". If
+                      the "-" is included, the firewall zone is omitted.
+                      Normally all omits intra-zone traffic, but intra-zone
+                      traffic can be included specifying "+".</para>
+                    </listitem>
+                  </varlistentry>
 
-          <para>Beginning with Shorewall6 4.4.17, the primary IP address of a
-          firewall interface can be specified by an ampersand ('&amp;')
-          followed by the logical name of the interface as found in the
-          INTERFACE column of <ulink
-          url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
-          (5).</para>
+                  <varlistentry>
+                    <term>any[+][-]</term>
 
-          <para>Beginning with Shorewall 4.5.4, A
-          <replaceable>countrycode-list</replaceable> may be specified. A
-          countrycode-list is a comma-separated list of up to 15 two-character
-          ISO-3661 country codes enclosed in square brackets ('[...]') and
-          preceded by a caret ('^'). When a single country code is given, the
-          square brackets may be omitted. A list of country codes supported by
-          Shorewall may be found at <ulink
-          url="/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
-          Specifying a <replaceable>countrycode-list</replaceable> requires
-          <firstterm>GeoIP Match</firstterm> support in your ip6tables and
-          Kernel.</para>
+                    <listitem>
+                      <para><emphasis role="bold">any</emphasis> is equivalent
+                      to <emphasis role="bold">all</emphasis> when there are
+                      no nested zones. When there are nested zones, <emphasis
+                      role="bold">any</emphasis> only refers to top-level
+                      zones (those with no parent zones). Note that <emphasis
+                      role="bold">any</emphasis> excludes all vserver zones,
+                      since those zones are nested within the firewall
+                      zone.</para>
+                    </listitem>
+                  </varlistentry>
 
-          <para>When an <replaceable>interface</replaceable> is not specified,
-          you may omit the angled brackets ('&lt;' and '&gt;') around the
-          address(es) or you may supply them to improve readability.</para>
+                  <varlistentry>
+                    <term>none</term>
 
-          <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+                    <listitem>
+                      <para>When <emphasis role="bold">none</emphasis> is used
+                      either in the <emphasis role="bold">SOURCE</emphasis> or
+                      <emphasis role="bold">DEST</emphasis> column, the rule
+                      is ignored.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+
+                <para>Similar to with <emphasis role="bold">all</emphasis> and
+                <emphasis role="bold">any</emphasis>, intra-zone traffic is
+                normally excluded when multiple zones are listed. Intra-zone
+                traffic may be included by following the list with a plus sign
+                ("+").</para>
+
+                <para><emphasis role="bold">all</emphasis> and <emphasis
+                role="bold">any</emphasis> may be followed by an exclamation
+                point ("!") and a comma-separated list of zone names to be
+                omitted.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable></term>
+
+              <listitem>
+                <para>When this form is used,
+                <replaceable>interface</replaceable> must be the name of an
+                interface associated with the named
+                <replaceable>zone</replaceable> in either <ulink
+                url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5)
+                or <ulink
+                url="shorewall6.hosts.html">shorewall6-hosts</ulink>(5). Only
+                packets from hosts in the <replaceable>zone</replaceable> that
+                arrive through the named interface will match the rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>address</replaceable>[,...]</term>
+
+              <listitem>
+                <para>where address can be:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>A host or network IP address. IPv6 ddresses must
+                    follow the standard convention and be enclosed in square
+                    brackets (e.g., [2001:470:b:227::0]/64). A network address
+                    may be followed by exclusion (see <ulink
+                    url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>An address range, specified using the syntax
+                    <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>+<replaceable>ipset</replaceable> where
+                    <replaceable>ipset</replaceable> is the name of an ipset
+                    and must be preceded by a plus sign ("+").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>A MAC address in Shorewall format (preceded by a
+                    tilde ("~") and with the hex byte values separated by
+                    dashes (e.g., "~00-0a-f6-04-9c-7d").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>^<replaceable>country-code</replaceable> where
+                    country-code is a two-character ISO-3661 country code
+                    preceded by a caret ("^").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>^<replaceable>country-code-list</replaceable> where
+                    <replaceable>country-code-list</replaceable> is a
+                    comma-separated list of up to 15 ISO-3661 country codes
+                    enclosed in square brackets ("[...]").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The primary IP address of a firewall interface can
+                    be specified by an ampersand ('&amp;') followed by the
+                    logical name of the interface as found in the INTERFACE
+                    column of <ulink
+                    url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>
+                    (5).</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>zone:interface:address[,...]</term>
+
+              <listitem>
+                <para>This form combines the preceding two and requires that
+                both the incoming interface and source address match.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>This form matches if the host IP address does not match
+                any of the entries in the exclusion (see <ulink
+                url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>Beginning with Shorewall 5.1.0, multiple
+          <replaceable>source-spec</replaceable>s may be listed, provided that
+          extended forms of the source-spec are used:</para>
+
+          <blockquote>
+            <para><replaceable>zone</replaceable>:(<replaceable>interface</replaceable>)</para>
+
+            <para><replaceable>zone</replaceable>:(<replaceable>address</replaceable>[,...])</para>
+
+            <para>zone:(interface:address[,...])</para>
+
+            <para><replaceable>zone</replaceable>:(<replaceable>exclusion</replaceable>)</para>
+          </blockquote>
 
           <para>Examples:</para>
 
@@ -1011,108 +1098,229 @@
               </listitem>
             </varlistentry>
           </variablelist>
-
-          <para>Alternatively, clients may be specified by interface by
-          appending ":" to the zone name followed by the interface name. For
-          example, <emphasis role="bold">loc:eth1</emphasis> specifies a
-          client that communicates with the firewall system through eth1. This
-          may be optionally followed by another colon (":") and an
-          IP/MAC/subnet address as described above (e.g., <emphasis
-          role="bold">loc:eth1:&lt;2002:ce7c::92b4:1::2&gt;</emphasis>).</para>
-
-          <para>Examples:</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>loc:eth1:[2002:cec792b4:1::2],[2002:cec792b4:1::44]</term>
-
-              <listitem>
-                <para>Hosts 2002:cec792b4:1::2 and 2002:cec792b4:1::44 in the
-                Local zone, with <emphasis role="bold">both</emphasis>
-                originating from eth1</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-
-          <para>Beginning with Shorewall 5.1.0, multiple
-          <replaceable>zone</replaceable>:[<replaceable>interface</replaceable>:](<replaceable>address-list</replaceable>)
-          tupples can be listed, separated by commas. Where the
-          <replaceable>address-list</replaceable> consists of more than a
-          single address, the list must be enclosed in parentheses.</para>
-
-          <para>Example:</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>dmz:([2002:c37c:92b4:1::2],[2002:c37c:92b4:1::3]),loc:eth1:([2002:cec792b4:1::2],[2002:cec792b4:1::44])</term>
-
-              <listitem>
-                <para>Hosts 2002:c37c:92b4:1::2 and 2002:c37c:92b4:1::3 in the
-                dmz zone and hosts 2002:cec792b4:1::2 and 2002:cec792b4:1::44
-                in the loc zone via interface eth1</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold"><emphasis role="bold">DEST</emphasis> -
-        {<emphasis>zone|zone-list</emphasis>[+]|<emphasis
-        role="bold">all</emphasis>[<emphasis
-        role="bold">+</emphasis>][<emphasis
-        role="bold">-</emphasis>]}<emphasis
-        role="bold">[:</emphasis><emphasis>interface</emphasis>][<emphasis
-        role="bold">:<option>&lt;</option></emphasis>{<emphasis>address-or-range</emphasis>[,<emphasis>address-or-range</emphasis>]...[<emphasis>exclusion</emphasis>]<option>&gt;</option>|<emphasis>exclusion</emphasis>|<emphasis
-        role="bold">+</emphasis><emphasis>ipset</emphasis>|^<emphasis>countrycode-list</emphasis>}[<option>:</option><replaceable>port</replaceable>[:<emphasis
-        role="bold">random</emphasis>]]</emphasis></term>
+        <term><emphasis role="bold">DEST -
+        <replaceable>dest-spec</replaceable>[,...]</emphasis></term>
 
         <listitem>
-          <para>Location of Server. May be a zone declared in <ulink
-          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>(5),
-          $<emphasis role="bold">FW</emphasis> to indicate the firewall
-          itself, <emphasis role="bold">all</emphasis>. <emphasis
-          role="bold">all+</emphasis> or <emphasis
-          role="bold">none</emphasis>.</para>
+          <para>Destination hosts to which the rule applies.</para>
 
-          <para>Beginning with Shorewall 4.4.13, you may use a
-          <replaceable>zone-list </replaceable>which consists of a
-          comma-separated list of zones declared in <ulink
-          url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink> (5).
-          Ths <replaceable>zone-list</replaceable> may be optionally followed
-          by "+" to indicate that the rule is to apply to intra-zone traffic
-          as well as inter-zone traffic. Beginning with Shorewall-4.4.13,
-          exclusion is supported -- see see <ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5).</para>
+          <para><replaceable>dest-spec</replaceable> is one of the
+          following:</para>
 
-          <para>Beginning with Shorewall6 4.4.17, the primary IP address of a
-          firewall interface can be specified by an ampersand ('&amp;')
-          followed by the logical name of the interface as found in the
-          INTERFACE column of <ulink
-          url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
-          (5).</para>
+          <variablelist>
+            <varlistentry>
+              <term><emphasis
+              role="bold"><replaceable>zone</replaceable>[,...[+]]</emphasis></term>
 
-          <para>Beginning with Shorewall 4.5.4, A
-          <replaceable>countrycode-list</replaceable> may be specified. A
-          countrycode-list is a comma-separated list of up to 15 two-character
-          ISO-3661 country codes enclosed in square brackets ('[...]') and
-          preceded by a caret ('^'). When a single country code is given, the
-          square brackets may be omitted. A list of country codes supported by
-          Shorewall may be found at <ulink
-          url="/ISO-3661.html">http://www.shorewall.net/ISO-3661.html</ulink>.
-          Specifying a <replaceable>countrycode-list</replaceable> requires
-          <firstterm>GeoIP Match</firstterm> support in your ip6tables and
-          Kernel.</para>
+              <listitem>
+                <para>The name of a zone defined in <ulink
+                url="shorewall6-zones.html">shorewall6-zones</ulink>(5). When
+                only the zone name is specified, the packet destination may be
+                any host in that zone.</para>
 
-          <para>When <emphasis role="bold">none</emphasis> is used either in
-          the <emphasis role="bold">SOURCE</emphasis> or <emphasis
-          role="bold">DEST</emphasis> column, the rule is ignored.</para>
+                <para>zone may also be one of the following:</para>
 
-          <para>When <emphasis role="bold">all</emphasis> is used either in
-          the <emphasis role="bold">SOURCE</emphasis> or <emphasis
-          role="bold">DEST</emphasis> column intra-zone traffic is not
-          affected. When <emphasis role="bold">all+</emphasis> is used,
-          intra-zone traffic is affected.</para>
+                <variablelist>
+                  <varlistentry>
+                    <term>all[+][-]</term>
+
+                    <listitem>
+                      <para><emphasis role="bold">all</emphasis>, without the
+                      "-" means "All Zones, including the firewall zone". If
+                      the "-" is included, the firewall zone is omitted.
+                      Normally all omits intra-zone traffic, but intra-zone
+                      traffic can be included specifying "+".</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>any[+][-]</term>
+
+                    <listitem>
+                      <para><emphasis role="bold">any</emphasis> is equivalent
+                      to <emphasis role="bold">all</emphasis> when there are
+                      no nested zones. When there are nested zones, <emphasis
+                      role="bold">any</emphasis> only refers to top-level
+                      zones (those with no parent zones). Note that <emphasis
+                      role="bold">any</emphasis> excludes all vserver zones,
+                      since those zones are nested within the firewall
+                      zone.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>none</term>
+
+                    <listitem>
+                      <para>When <emphasis role="bold">none</emphasis> is used
+                      either in the <emphasis role="bold">SOURCE</emphasis> or
+                      <emphasis role="bold">DEST</emphasis> column, the rule
+                      is ignored.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+
+                <para>Similar to with <emphasis role="bold">all</emphasis> and
+                <emphasis role="bold">any</emphasis>, intra-zone traffic is
+                normally excluded when multiple zones are listed. Intra-zone
+                traffic may be included by following the list with a plus sign
+                ("+").</para>
+
+                <para><emphasis role="bold">all</emphasis> and <emphasis
+                role="bold">any</emphasis> may be followed by an exclamation
+                point ("!") and a comma-separated list of zone names to be
+                omitted.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable></term>
+
+              <listitem>
+                <para>When this form is used,
+                <replaceable>interface</replaceable> must be the name of an
+                interface associated with the named
+                <replaceable>zone</replaceable> in either <ulink
+                url="shorewall-interfaces.html">shorewall6-interfaces</ulink>(5)
+                or <ulink
+                url="shorewall.hosts.html">shorewall6-hosts</ulink>(5). Only
+                packets to hosts in the <replaceable>zone</replaceable> that
+                are sent through the named interface will match the
+                rule.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>address</replaceable>[,...]</term>
+
+              <listitem>
+                <para>where address can be:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>A host or network IP address. A network address may
+                    be followed by exclusion (see <ulink
+                    url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>An address range, specified using the syntax
+                    <emphasis>lowaddress</emphasis>-<emphasis>highaddress</emphasis>.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>+<replaceable>ipset</replaceable> where
+                    <replaceable>ipset</replaceable> is the name of an ipset
+                    and must be preceded by a plus sign ("+").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>^<replaceable>country-code</replaceable> where
+                    country-code is a two-character ISO-3661 country code
+                    preceded by a caret ("^").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>^<replaceable>country-code-list</replaceable> where
+                    <replaceable>country-code-list</replaceable> is a
+                    comma-separated list of up to 15 ISO-3661 country codes
+                    enclosed in square brackets ("[...]").</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The primary IP address of a firewall interface can
+                    be specified by an ampersand ('&amp;') followed by the
+                    logical name of the interface as found in the INTERFACE
+                    column of <ulink
+                    url="/manpages/shorewall6-interfaces.html">shorewall6-interfaces</ulink>
+                    (5).</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>zone:interface:address[,...]</term>
+
+              <listitem>
+                <para>This form combines the preceding two and requires that
+                both the outgoing interface and destinationaddress
+                match.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>This form matches if the host IP address does not match
+                any of the entries in the exclusion (see <ulink
+                url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>[<replaceable>zone</replaceable>]:[<replaceable>server-IP</replaceable>][:<replaceable>port-or-port-range</replaceable>[:random]]</term>
+
+              <listitem>
+                <para>This form applies when the ACTION is DNAT[-] or
+                REDIRECT[-]. The zone may be omitted in REDIRECT rules ($FW is
+                assumed) and must be omitted in DNAT-, REDIRECT- and NONAT
+                rules.</para>
+
+                <para><replaceable role="bold">server-IP</replaceable> is not
+                allowed in REDIRECT rules and may be omitted in DNAT[-] rules
+                provided that <replaceable>port-or-port-range</replaceable> is
+                included. When omitting the
+                <replaceable>server-IP</replaceable>, simply enter "[]" (e.g.,
+                <emphasis role="bold">loc:[]:3128</emphasis>).</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>The IP address of the server to which the packet is
+                    to be sent.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>A range of IP address with the low and high address
+                    separated by a dash (:"-"). Connections are distributed
+                    among the IP addresses in the range.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>If <replaceable>server-IP </replaceable>is omitted in a
+                DNAT[-] rule, only the destination port number is modified by
+                the rule.</para>
+
+                <para>port-or-port-range may be:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>An integer port number in the range 1 -
+                    65535.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The name of a service from
+                    <filename>/etc/services</filename>.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>A port range with the low and high integer port
+                    numbers separated by a dash ("-"). Connections are
+                    distributed among the ports in the range.</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para>If <emphasis role="bold">random</emphasis> is specified,
+                port mapping will be randomized.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
 
           <para>If the DEST <replaceable>zone</replaceable> is a bport zone,
           then either:<orderedlist numeration="loweralpha">
@@ -1127,79 +1335,24 @@
 
               <listitem>
                 <para>the SOURCE <replaceable>zone</replaceable> must be an
-                ipv4 zone that is associated with only the same bridge.</para>
+                ipv6 zone that is associated with only the same bridge.</para>
               </listitem>
-            </orderedlist></para>
+            </orderedlist>Beginning with Shorewall 5.1.0, multiple
+          <replaceable>dest-spec</replaceable>s may be listed, provided that
+          extended forms of the source-spec are used:</para>
 
-          <para>Except when <emphasis role="bold">all</emphasis>[<emphasis
-          role="bold">+]|[-</emphasis>] is specified, the server may be
-          further restricted to a particular network, host or interface by
-          appending ":" and the network, host or interface. See <emphasis
-          role="bold">SOURCE</emphasis> above.</para>
+          <blockquote>
+            <para><replaceable>zone</replaceable>:(<replaceable>interface</replaceable>)</para>
 
-          <para>You may exclude certain hosts from the set already defined
-          through use of an <emphasis>exclusion</emphasis> (see <ulink
-          url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+            <para><replaceable>zone</replaceable>:(<replaceable>address</replaceable>[,...])</para>
 
-          <para>Restriction: MAC addresses are not allowed (this is a
-          Netfilter restriction).</para>
+            <para>zone:(interface:address[,...])</para>
 
-          <para>If your kernel and ip6tables have ipset match support then you
-          may give the name of an ipset prefaced by "+". The ipset name may be
-          optionally followed by a number from 1 to 6 enclosed in square
-          brackets ([]) to indicate the number of levels of destination
-          bindings to be matched. Only one of the <emphasis
-          role="bold">SOURCE</emphasis> and <emphasis
-          role="bold">DEST</emphasis> columns may specify an ipset
-          name.</para>
+            <para><replaceable>zone</replaceable>:(<replaceable>exclusion</replaceable>)</para>
+          </blockquote>
 
-          <para>The <replaceable>port</replaceable> that the server is
-          listening on may be included and separated from the server's IP
-          address by ":". If omitted, the firewall will not modify the
-          destination port. A destination port may only be included if the
-          <emphasis role="bold">ACTION</emphasis> is <emphasis
-          role="bold">DNAT</emphasis> or <emphasis
-          role="bold">REDIRECT</emphasis>.</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>Example 1:</term>
-
-              <listitem>
-                <para><emphasis
-                role="bold">loc:[2001:470:b:227::44]:3128</emphasis> specifies
-                a local server at IP address 2001:470:b:227::44 and listening
-                on port 3128.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>Example 2:</term>
-
-              <listitem>
-                <para><emphasis role="bold">loc:[]:3128</emphasis> specifies
-                that the destination port should be changed to 3128 but the IP
-                address should remain the same.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-
-          <para>The <emphasis>port</emphasis> may be specified as a service
-          name. You may specify a port range in the form
-          <emphasis>lowport-highport</emphasis> to cause connections to be
-          assigned to ports in the range in round-robin fashion. When a port
-          range is specified, <emphasis>lowport</emphasis> and
-          <emphasis>highport</emphasis> must be given as integers; service
-          names are not permitted. Additionally, the port range may be
-          optionally followed by <emphasis role="bold">:random</emphasis>
-          which causes assignment to ports in the list to be random.</para>
-
-          <para>If the <emphasis role="bold">ACTION</emphasis> is <emphasis
-          role="bold">REDIRECT</emphasis> or <emphasis
-          role="bold">REDIRECT-</emphasis>, this column needs only to contain
-          the port number on the firewall that the request should be
-          redirected to. That is equivalent to specifying
-          <option>$FW</option>::<replaceable>port</replaceable>.</para>
+          <para>Multiple <replaceable>dest-spec</replaceable>s are not
+          permitted in DNAT[-] and REDIRECT[-] rules.</para>
         </listitem>
       </varlistentry>
 

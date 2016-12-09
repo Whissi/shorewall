@@ -810,7 +810,6 @@ sub initialize( $$$ ) {
 		     DNAT         => 1,
 		     MASQUERADE   => 1,
 		     NETMAP       => 1,
-		     NFQUEUE      => 1,
 		     NOTRACK      => 1,
 		     RAWDNAT      => 1,
 		     REDIRECT     => 1,

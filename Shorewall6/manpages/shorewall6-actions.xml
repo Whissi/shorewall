@@ -132,6 +132,18 @@
             </varlistentry>
 
             <varlistentry>
+              <term><option>logjump</option></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.8. Performs the same function as
+                <option>nolog</option> (below), with the addition that the
+                jump to the actions chain is logged if a log level is
+                specified on the action invocation. For inline actions, this
+                option is identical to <option>nolog</option>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><option>mangle</option></term>
 
               <listitem>
@@ -140,6 +152,20 @@
                 url="shorewall6-mangle.html">shorewall6-mangle(5)</ulink>
                 rather than <ulink
                 url="shorewall6-rules.html">shorewall6-rules(5)</ulink>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><option>nat</option></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.0.13. Specifies that this action is
+                to be used in <ulink
+                url="shorewall6-snat.html">shorewall6-snat(5)</ulink> rather
+                than <ulink
+                url="shorewall6-rules.html">shorewall6-rules(5)</ulink>. The
+                <option>mangle</option> and <option>nat</option> options are
+                mutually exclusive.</para>
               </listitem>
             </varlistentry>
 

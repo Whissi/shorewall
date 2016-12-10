@@ -1017,7 +1017,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>zone:interface:address[,...]</term>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable>:<replaceable>address</replaceable>[,...]</term>
 
               <listitem>
                 <para>This form combines the preceding two and requires that
@@ -1034,6 +1034,18 @@
                 url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable>:<replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>This form matches packets from the named
+                <replaceable>zone</replaceable> entering through the specified
+                <replaceable>interface</replaceable> where the source address
+                does not match any entry in the
+                <replaceable>exclusion</replaceable>.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
           <para>Beginning with Shorewall 5.1.0, multiple
@@ -1048,6 +1060,8 @@
             <para>zone:(interface:address[,...])</para>
 
             <para><replaceable>zone</replaceable>:(<replaceable>exclusion</replaceable>)</para>
+
+            <para><replaceable>zone</replaceable>:(<replaceable>interface</replaceable>:<replaceable>exclusion</replaceable>)</para>
           </blockquote>
 
           <para>Examples:</para>
@@ -1251,7 +1265,7 @@
             </varlistentry>
 
             <varlistentry>
-              <term>zone:interface:address[,...]</term>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable>:<replaceable>address</replaceable>[,...]</term>
 
               <listitem>
                 <para>This form combines the preceding two and requires that
@@ -1267,6 +1281,18 @@
                 <para>This form matches if the host IP address does not match
                 any of the entries in the exclusion (see <ulink
                 url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>zone</replaceable>:<replaceable>interface</replaceable>:<replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>This form matches packets to the named
+                <replaceable>zone</replaceable> leaving through the specified
+                <replaceable>interface</replaceable> where the destination
+                address does not match any entry in the
+                <replaceable>exclusion</replaceable>.</para>
               </listitem>
             </varlistentry>
 

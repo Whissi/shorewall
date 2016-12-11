@@ -370,7 +370,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>SOURCE (format 3) ‒
+        <term>SOURCE (format 3 prior to Shorewall 5.1.0) ‒
         {-|<emphasis>interface</emphasis>[:<emphasis>address-list</emphasis>]|<replaceable>address-list</replaceable>}</term>
 
         <listitem>
@@ -388,7 +388,91 @@
       </varlistentry>
 
       <varlistentry>
-        <term>DEST ‒
+        <term><emphasis role="bold">SOURCE (format 3 on Shorewall 5.1.0 and
+        later) -
+        {-|[<replaceable>source-spec</replaceable>[,...]]}</emphasis></term>
+
+        <listitem>
+          <para>where <replaceable>source-spec</replaceable> is one of the
+          following:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><replaceable>interface</replaceable></term>
+
+              <listitem>
+                <para>Where interface is the logical name of an interface
+                defined in <ulink
+                url="shorewall-interfaces.html">shorewall-interface</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>]</term>
+
+              <listitem>
+                <para>where <replaceable>address</replaceable> may be:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>A host or network IP address.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>A MAC address in Shorewall format (preceded by a
+                    tilde ("~") and using dash ("-") as a separator.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The name of an ipset preceded by a plus sign ("+").
+                    See <ulink
+                    url="shorewall-ipsets.html">shorewall-ipsets</ulink>(5).</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para><replaceable>exclusion</replaceable> is described in
+                <ulink
+                url="/manpages/shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>interface</replaceable>:<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>]</term>
+
+              <listitem>
+                <para>This form combines the preceding two and requires that
+                both the incoming interace and source address match.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>See <ulink
+                url="/manpages/shorewall-exclusion.html">shorewall-exclusion</ulink>
+                (5)</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>Beginning with Shorewall 5.1.0, multiple
+          <replaceable>source-spec</replaceable>s separated by commas may be
+          specified provided that the following alternative forms are
+          used:</para>
+
+          <blockquote>
+            <para>(<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>])</para>
+
+            <para><replaceable>interface</replaceable>:(<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>])</para>
+
+            <para>(<replaceable>exclusion</replaceable>)</para>
+          </blockquote>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DEST (Prior to Shorewall 5.1.0) ‒
         {-|<emphasis>interface</emphasis>[:<emphasis>address-list</emphasis>]|<replaceable>address-list</replaceable>}</term>
 
         <listitem>
@@ -397,6 +481,89 @@
           <ulink
           url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>
           (5)).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">DEST (Shorewall 5.1.0 and later) -
+        {-|<replaceable>dest-spec</replaceable>[,...]}</emphasis></term>
+
+        <listitem>
+          <para>where <replaceable>dest-spec</replaceable> is one of the
+          following:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><replaceable>interface</replaceable></term>
+
+              <listitem>
+                <para>Where interface is the logical name of an interface
+                defined in <ulink
+                url="shorewall-interfaces.html">shorewall-interface</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>]</term>
+
+              <listitem>
+                <para>where <replaceable>address</replaceable> may be:</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>A host or network IP address.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>A MAC address in Shorewall format (preceded by a
+                    tilde ("~") and using dash ("-") as a separator.</para>
+                  </listitem>
+
+                  <listitem>
+                    <para>The name of an ipset preceded by a plus sign ("+").
+                    See <ulink
+                    url="shorewall-ipsets.html">shorewall-ipsets</ulink>(5).</para>
+                  </listitem>
+                </itemizedlist>
+
+                <para><replaceable>exclusion</replaceable> is described in
+                <ulink
+                url="/manpages/shorewall-exclusion.html">shorewall-exclusion</ulink>(5).</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>interface</replaceable>:<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>]</term>
+
+              <listitem>
+                <para>This form combines the preceding two and requires that
+                both the outgoing interace and destination address
+                match.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><replaceable>exclusion</replaceable></term>
+
+              <listitem>
+                <para>See <ulink
+                url="/manpages/shorewall-exclusion.html">shorewall-exclusion</ulink>
+                (5)</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>Beginning with Shorewall 5.1.0, multiple source-specs
+          separated by commas may be specified provided that the following
+          alternative forms are used:</para>
+
+          <blockquote>
+            <para>(<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>])</para>
+
+            <para><replaceable>interface</replaceable>:(<replaceable>address</replaceable>[,...][<replaceable>exclusion</replaceable>])</para>
+
+            <para>(<replaceable>exclusion</replaceable>)</para>
+          </blockquote>
         </listitem>
       </varlistentry>
 

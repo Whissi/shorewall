@@ -167,7 +167,7 @@ if [ $# -eq 0 ]; then
 	file=./shorewallrc
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
-	file=./.shorewallrc
+	file=~/.shorewallrc
      else
 	fatal_error "No configuration file specified and ~/.shorewallrc not found"
     fi

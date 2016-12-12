@@ -164,7 +164,7 @@ if [ $# -eq 0 ]; then
     #
     if [ -f ./shorewallrc ]; then
 	. ./shorewallrc || exit 1
-	file=~/.shorewallrc
+	file=./shorewallrc
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
 	file=./.shorewallrc

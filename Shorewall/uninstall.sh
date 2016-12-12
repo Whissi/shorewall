@@ -28,6 +28,7 @@
 
 VERSION=xxx #The Build script inserts the actual version
 PRODUCT=shorewall
+Product=Shorewall
 
 usage() # $1 = exit status
 {

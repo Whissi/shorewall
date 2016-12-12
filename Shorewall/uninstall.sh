@@ -128,7 +128,7 @@ if [ $# -eq 0 ]; then
 	. ./shorewallrc
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc || exit 1
-	file=./.shorewallrc
+	file=~/.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
 	. /usr/share/shorewall/shorewallrc
     else

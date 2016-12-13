@@ -2059,17 +2059,17 @@ sub process_action(\$\$$) {
 
 	    for my $proto (split_list( $protos, 'Protocol' ) ) {
 		process_snat1( $chainref,
-				   $action,
-				   $source,
-				   $dest,
-				   $proto,
-				   $port,
-				   $ipsec,
-				   $mark,
-				   $user,
-				   $condition,
-				   $origdest,
-				   $probability,
+			       $action,
+			       $source,
+			       $dest,
+			       $proto,
+			       $port,
+			       $ipsec,
+			       $mark,
+			       $user,
+			       $condition,
+			       $origdest,
+			       $probability,
 		    );
 	    }
 	}
@@ -2081,6 +2081,12 @@ sub process_action(\$\$$) {
     pop @actionstack;
 
     pop_open;
+
+    unless ( @{$chainref->{rules}} ) {
+	my $file = find_file( $action );
+
+	fatal_error "File action.${action} is empty and file $action exists - the two must be combined as described in the Migration Considerations section of the Shorewall release notes" if -f $file;
+    }
 
     #
     # Pop the action parameters

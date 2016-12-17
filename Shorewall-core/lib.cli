@@ -1584,6 +1584,19 @@ show_status() {
 }
 
 #
+# Don't dump empty SPD entries
+#
+spd_filter()
+{
+    awk \
+    'BEGIN            { skip=0; }; \
+    /^src/            { skip=0; }; \
+    /^src 0.0.0.0\/0/ { skip=1; }; \
+    /^src ::\/0/      { skip=1; }; \
+                      { if ( skip == 0 ) print; };'
+}
+
+#
 # Dump Command Executor
 #
 do_dump_command() {
@@ -1733,12 +1746,10 @@ do_dump_command() {
     heading "Events"
     show_events
 
-    if qt mywhich setkey; then
-	heading "PFKEY SPD"
-	setkey -DP
-	heading "PFKEY SAD"
-	setkey -D | grep -Ev '^[[:space:]](A:|E:)'  # Don't divulge the keys
-    fi
+    heading "PFKEY SPD"
+    $IP -s xfrm policy | spd_filter
+    heading "PFKEY SAD"
+    $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys
 
     heading "/proc"
     show_proc /proc/version

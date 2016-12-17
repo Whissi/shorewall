@@ -30,7 +30,11 @@
 
       <year>2006</year>
 
-      <holder>2009 Thomas M. Eastep</holder>
+      <year>2009</year>
+
+      <year>2016</year>
+
+      <holder>Thomas M. Eastep</holder>
     </copyright>
 
     <copyright>
@@ -71,8 +75,8 @@
   <important>
     <para>While this <emphasis role="bold">article shows configuration of
     IPsec using ipsec-tools</emphasis>, <emphasis role="bold">Shorewall
-    configuration is exactly the same when using OpenSwan</emphasis> or
-    FreeSwan.</para>
+    configuration is exactly the same when using OpenSwan</emphasis> <emphasis
+    role="bold">or any of the other Swan derivatives</emphasis>.</para>
   </important>
 
   <warning>
@@ -158,7 +162,7 @@
         from MASQUERADE/SNAT using existing entries. If you want to
         MASQUERADE/SNAT outgoing traffic that will later be encrypted, you
         must include the appropriate indication in the IPSEC column in that
-        file. </para>
+        file.</para>
       </listitem>
 
       <listitem>
@@ -321,6 +325,14 @@ vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ips
 vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis></programlisting>
     </blockquote>
 
+    <para>If you want to keep things simple, you can simply not restrict the
+    set of addresses in the ipsec zones:</para>
+
+    <blockquote>
+      <programlisting>#ZONE             HOSTS                                OPTIONS
+vpn               eth0:0.0.0.0/o                       <emphasis role="bold">ipsec</emphasis></programlisting>
+    </blockquote>
+
     <para>Assuming that you want to give each local network free access to the
     remote network and vice versa, you would need the following
     <filename>/etc/shorewall/policy</filename> entries on each system:</para>
@@ -450,12 +462,12 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         tunnel, then it is a good idea to set the MSS value for traffic from
         those hosts explicitly in the
         <filename>/etc/shorewall/zones</filename> file. For example, if hosts
-        in the <emphasis role="bold">sec</emphasis> zone access the Internet
+        in the <emphasis role="bold">vpn</emphasis> zone access the Internet
         through an ESP tunnel then the following entry would be
         appropriate:</para>
 
         <programlisting>#ZONE   TYPE    OPTIONS                 IN_OPTIONS              OUT_OPTIONS
-sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
+vpn     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
         <para>You should also set FASTACCEPT=No in shorewall.conf to ensure
         that both the SYN and SYN,ACK packets have their MSS field
@@ -467,6 +479,36 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
         2.4 and earlier kernels.</para>
       </warning>
     </blockquote>
+  </section>
+
+  <section>
+    <title>IPCOMP and IPSEC</title>
+
+    <para>IPSEC can be configured to perform data compression. This is
+    accomplished by compressing the original IP packet, then encapsulating it
+    in an ipcomp (protocol 108) packet. That packet is then encrypted and
+    encapsulated within an ESP packet. Because of the extra protocol header
+    required for compression, short IP packets (such as default ping packets)
+    are not compressed. The Linux IP stack handles these uncompressed packets
+    by creating an IPIP (protocol 4) SA. As a consequence, IPIP packets from
+    the remote gateway must be handled in Shorewall. The easiest way to
+    accomplish this is to add an ACCEPT rule for protocol 4 from the IPSEC vpn
+    zone to the $FW zone:</para>
+
+    <blockquote>
+      <programlisting>#ACTION         SOURCE         DEST       PROTO       DPORT ...
+ACCEPT          vpn            $FW        4</programlisting>
+    </blockquote>
+
+    <para>Note that the source IP address is these IPIP packets is that of the
+    remote peer, so the definition of the ipsec zone in <ulink
+    url="manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5) must
+    include the peer.</para>
+
+    <para>Finally, when IPCOMP is used, it is recommended that the OPTIONS
+    column of the ipsec zone's entry in <ulink
+    url="manpages/shorewall-zones.html">shorewall-zones</ulink>(5) be left
+    empty.</para>
   </section>
 
   <section id="RoadWarrior">

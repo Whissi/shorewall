@@ -35,7 +35,7 @@ fatal_error() # $@ = Message
     exit 2
 }
 
-setup_product_environment() { # $1 -- if non-empty, source shorewallrc 
+setup_product_environment() {
     g_basedir=${SHAREDIR}/shorewall
 
     g_sharedir="$SHAREDIR"/$PRODUCT
@@ -88,16 +88,32 @@ setup_product_environment() { # $1 -- if non-empty, source shorewallrc
 }
 
 set_default_product() {
-    if [ -f ${g_basedir}/version ]; then
-	PRODUCT=shorewall
-    elif [ -f ${SHAREDIR}/shorewall-lite/version ]; then
-	PRODUCT=shorewall-lite
-    elif [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
-	PRODUCT=shorewall6-lite
-    else
-	fatal_error "No Shorewall firewall product is installed"
-    fi
-}   
+    case $(basename $0) in
+	shorewall6)
+	    PRODUCT=shorewall6
+	    ;;
+	shorewall4)
+	    PRODUCT=shorewall
+	    ;;
+	shorewall-lite)
+	    PRODUCT=shorewall-lite
+	    ;;
+	shorewall6-lite)
+	    PRODUCT=shorewall6-lite
+	    ;;
+	*)
+	    if [ -f ${g_basedir}/version ]; then
+		PRODUCT=shorewall
+	    elif [ -f ${SHAREDIR}/shorewall-lite/version ]; then
+		PRODUCT=shorewall-lite
+	    elif [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
+		PRODUCT=shorewall6-lite
+	    else
+		fatal_error "No Shorewall firewall product is installed"
+	    fi
+	    ;;
+    esac
+}
 
 # Not configured Error
 #

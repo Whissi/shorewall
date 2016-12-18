@@ -379,6 +379,7 @@ delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
 mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
+mkdir -p ${DESTDIR}${SBINDIR}
 mkdir -p ${DESTDIR}${VARDIR}
 
 chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
@@ -529,7 +530,11 @@ fi
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.common
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/lib.cli
 delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/wait4ifup
-delete_file ${DESTDIR}${SBINDIR}/$PRODUCT
+
+#
+#  Creatae the symbolic link for the CLI
+#
+ln -sf shorewall ${DESTDIR}${SBINDIR}/${PRODUCT}
 
 #
 # Note -- not all packages will have the SYSCONFFILE so we need to check for its existance here

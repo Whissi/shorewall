@@ -464,7 +464,6 @@ if [ -z "$first_install" ]; then
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
 	delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
-	delete_file ${DESTDIR}/${SBINDIR}/shorewall6
     fi
 
     delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
@@ -1101,6 +1100,10 @@ if [ $PRODUCT = shorewall6 ]; then
     # Symbolically link 'functions' to lib.base
     #
     ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
+    #
+    # And create a sybolic link for the CLI
+    #
+    ln -sf shorewall ${DESTDIR}${SBINDIR}/shorewall6
 fi
 
 if [ -d Perl ]; then

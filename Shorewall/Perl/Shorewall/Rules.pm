@@ -638,7 +638,8 @@ sub process_a_policy1($$$$$$$) {
     my ( $client, $server, $originalpolicy, $loglevel, $synparams, $connlimit, $intrazone ) = @_;
 
     my $clientwild = ( "\L$client" =~ /^all(\+)?$/ );
-    $intrazone  = $clientwild && $1;
+
+    $intrazone  ||= $clientwild && $1;
 
     fatal_error "Undefined zone ($client)" unless $clientwild || defined_zone( $client );
 
@@ -763,25 +764,28 @@ sub process_a_policy() {
     $synparams = '' if $synparams eq '-';
     $connlimit = '' if $connlimit eq '-';
 
-    my $intrazone;
+    my ( $intrazone, $clientlist, $serverlist );
 
-    if ( $intrazone = $clients =~ /.*,.*\+$/) {
-	$clients =~ s/\+$//;
+    if ( $clientlist = ( $clients =~ /,/ ) ) {
+	$intrazone = ( $clients =~ s/\+$// );
     }
 
-    if ( $servers =~ /.*,.*\+$/ ) {
-	$servers =~ s/\+$//;
-	$intrazone = 1;
+    if ( $serverlist = ( $servers =~ /,/ ) ) {
+	$intrazone ||= ( $servers =~ s/\+$// );
     }	
 
     fatal_error 'SOURCE must be specified' if $clients eq '-';
     fatal_error 'DEST must be specified'   if $servers eq '-';
     fatal_error 'POLICY must be specified' if $policy  eq '-';
 
-    for my $client ( split_list( $clients, 'zone' ) ) {
-	for my $server ( split_list( $servers, 'zone' ) ) {
-	    process_a_policy1( $client, $server, $policy, $loglevel, $synparams, $connlimit, $intrazone );
+    if ( $clientlist || $serverlist ) {
+	for my $client ( split_list( $clients, 'zone' ) ) {
+	    for my $server ( split_list( $servers, 'zone' ) ) {
+		process_a_policy1( $client, $server, $policy, $loglevel, $synparams, $connlimit, $intrazone ) if $intrazone || $client ne $server;
+	    }
 	}
+    } else {
+	process_a_policy1( $clients, $servers, $policy, $loglevel, $synparams, $connlimit, 0 );
     }
 }
 

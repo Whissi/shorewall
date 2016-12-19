@@ -504,6 +504,14 @@ if [ -d manpages -a -n "$MANDIR" ]; then
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
     done
 
+    mkdir -p ${DESTDIR}${MANDIR}/man8/
+
+    for f in *.8; do
+	gzip -c $f > $f.gz
+	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+    done
+
     cd ..
 
     echo "Man Pages Installed"

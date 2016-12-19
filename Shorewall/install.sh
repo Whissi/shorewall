@@ -1186,15 +1186,13 @@ for f in *.5; do
     echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
 done
 
-if [ $PRODUCT = shorewall ]; then
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/
+[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man8/
 
-    for f in *.8; do
-	gzip -9c $f > $f.gz
-	run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
-	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
-    done
-fi
+for f in *.8; do
+    gzip -9c $f > $f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+done
 
 cd ..
 

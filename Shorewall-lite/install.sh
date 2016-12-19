@@ -172,7 +172,6 @@ if [ $# -eq 0 ]; then
 	file=./shorewallrc
     elif [ -f ~/.shorewallrc ]; then
 	. ~/.shorewallrc
-        file=~/.shorewallrc
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
 	. /usr/share/shorewall/shorewallrc
     else

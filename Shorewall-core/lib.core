@@ -35,7 +35,7 @@ fatal_error() # $@ = Message
     exit 2
 }
 
-setup_product_environment() {
+setup_product_environment() { # $1 = if non-empty, source shorewallrc again now that we have the correct product
     g_basedir=${SHAREDIR}/shorewall
 
     g_sharedir="$SHAREDIR"/$PRODUCT

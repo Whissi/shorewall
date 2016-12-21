@@ -4965,6 +4965,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 		     do_dscp( $dscp ) .
 		     state_match( $state ) .
 		     do_time( $time ) .
+		     do_condition( $condition, $chainref->{name} ) .
 		     ( $ttl ? "-t $ttl " : '' ) .
 		     $raw_matches ,
 		     $source ,

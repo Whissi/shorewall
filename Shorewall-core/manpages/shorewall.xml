@@ -882,10 +882,11 @@
   <refsect1>
     <title>Description</title>
 
-    <para>The shorewall utility is used to control the Shoreline Firewall
-    (Shorewall), Shorewall Firewall 6 (Shorewall6), Shorewall Firewall Lite
-    (Shorewall-lite) and Shorewall Firewall 6 Lite (Shorewall6-lite). The
-    utility may be accessed under four different names:</para>
+    <para>Beginning with Shorewall 5.1.0, the <command>shorewall</command>
+    utility is used to control the Shoreline Firewall (Shorewall), Shorewall
+    Firewall 6 (Shorewall6), Shorewall Firewall Lite (Shorewall-lite) and
+    Shorewall Firewall 6 Lite (Shorewall6-lite). The utility may be accessed
+    under four different names:</para>
 
     <variablelist>
       <varlistentry>
@@ -928,6 +929,11 @@
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <para>Prior to Shorewall 5.1.0, these four commands were implemented as
+    four separate program, each of which controlled only a single firewall
+    package. This manpage serves to document both the Shorewall 5.1 and
+    Shorewall 5.0 CLI.</para>
   </refsect1>
 
   <refsect1>
@@ -949,10 +955,10 @@
         <term><option>-4</option></term>
 
         <listitem>
-          <para>Causes the command to operate on the Shorewall configuration
-          or the Shorewall-lite configuration. It is the default when either
-          of those products is installed and when the command is
-          <command>shorewall</command> or
+          <para>Added in Shorewall 5.1.0. Causes the command to operate on the
+          Shorewall configuration or the Shorewall-lite configuration. It is
+          the default when either of those products is installed and when the
+          command is <command>shorewall</command> or
           <command>shorewall-lite</command>.</para>
         </listitem>
       </varlistentry>
@@ -961,9 +967,9 @@
         <term><option>-6</option></term>
 
         <listitem>
-          <para>Causes the command to operate on the Shorewall6 or
-          Shorewall6-lite configuration. It is the default when only
-          Shorewall6-lite is installed and when the command is
+          <para>Added in Shorewall 5.1.0. Causes the command to operate on the
+          Shorewall6 or Shorewall6-lite configuration. It is the default when
+          only Shorewall6-lite is installed and when the command is
           <command>shorewall6</command> or
           <command>shorewall6-lite</command>.</para>
         </listitem>
@@ -973,9 +979,10 @@
         <term><option>-l</option></term>
 
         <listitem>
-          <para>Causes the command to operate on either Shorewall-lite or
-          Shorewall-6 lite and is the default when Shorewall is not installed
-          or when the command is <command>shorewall-lite</command> or
+          <para>Added in Shorewall 5.1.0. Causes the command to operate on
+          either Shorewall-lite or Shorewall-6 lite and is the default when
+          Shorewall is not installed or when the command is
+          <command>shorewall-lite</command> or
           <command>shorewall6-lite</command>.</para>
         </listitem>
       </varlistentry>

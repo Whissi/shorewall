@@ -1054,6 +1054,8 @@ fi
 #
 # Install the Action files
 #
+cd Actions
+
 for f in action.* ; do
     case $f in
 	*.deprecated)
@@ -1066,8 +1068,10 @@ for f in action.* ; do
 	    ;;
     esac
 done
-
-cd Macros
+#
+# Now the Macros
+#
+cd ../Macros
 
 for f in macro.* ; do
     case $f in

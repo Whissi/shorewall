@@ -1161,6 +1161,38 @@ show_a_macro() {
     echo "Shorewall $SHOREWALL_VERSION Macro $1 at $g_hostname - $(date)"
     cat ${directory}/macro.$1
 }
+#
+# Don't dump empty SPD entries
+#
+spd_filter()
+{
+    awk \
+    'BEGIN            { skip=0; }; \
+    /^src/            { skip=0; }; \
+    /^src 0.0.0.0\/0/ { skip=1; }; \
+    /^src ::\/0/      { skip=1; }; \
+                      { if ( skip == 0 ) print; };'
+}
+#
+# Print a heading with leading and trailing black lines
+#
+heading() {
+    echo
+    echo "$@"
+    echo
+}
+
+show_ipsec() {
+    heading "PFKEY SPD"
+    $IP -s xfrm policy | spd_filter
+    heading "PFKEY SAD"
+    $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys
+}
+
+show_ipsec_command() {
+    echo "$g_product $SHOREWALL_VERSION IPSEC at $g_hostname - $(date)"
+    show_ipsec
+}
 
 #
 # Show Command Executor
@@ -1427,6 +1459,10 @@ show_command() {
 		$g_tool -t filter -L dynamic $g_ipt_options  | fgrep ACCEPT | $output_filter
 	    fi
 	    ;;
+	ipsec)
+	    [ $# -gt 1 ] && too_many_arguments $2
+	    eval show_ipsec_command $g_pager
+	    ;;
 	*)
 	    case "$PRODUCT" in
 		*-lite)
@@ -1580,19 +1616,6 @@ show_status() {
 }
 
 #
-# Don't dump empty SPD entries
-#
-spd_filter()
-{
-    awk \
-    'BEGIN            { skip=0; }; \
-    /^src/            { skip=0; }; \
-    /^src 0.0.0.0\/0/ { skip=1; }; \
-    /^src ::\/0/      { skip=1; }; \
-                      { if ( skip == 0 ) print; };'
-}
-
-#
 # Dump Command Executor
 #
 do_dump_command() {
@@ -1742,10 +1765,7 @@ do_dump_command() {
     heading "Events"
     show_events
 
-    heading "PFKEY SPD"
-    $IP -s xfrm policy | spd_filter
-    heading "PFKEY SAD"
-    $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys
+    show_ipsec
 
     heading "/proc"
     show_proc /proc/version
@@ -1943,15 +1963,6 @@ read_yesno_with_timeout() {
 		;;
 	esac
     fi
-}
-
-#
-# Print a heading with leading and trailing black lines
-#
-heading() {
-    echo
-    echo "$@"
-    echo
 }
 
 #
@@ -4310,6 +4321,7 @@ usage() # $1 = exit status
 	echo "   [ show | list | ls ] ipa"
     fi
 
+    echo "   [ show | list | ls ] ipsec"
     echo "   [ show | list | ls ] [ -m ] log [<regex>]"
     echo "   [ show | list | ls ] [ -x ] mangle|nat|raw|rawpost"
     ecko "   [ show | list | ls ] macro <macro>"

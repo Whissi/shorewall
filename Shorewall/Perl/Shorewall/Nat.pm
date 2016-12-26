@@ -790,88 +790,39 @@ sub setup_netmap() {
 
 		my @rule = do_iproto( $proto, $dport, $sport );
 
-		unless ( $type =~ /:/ ) {
-		    my @rulein;
-		    my @ruleout;
+		my @rulein;
+		my @ruleout;
 
-		    $net1 = validate_net $net1, 0;
-		    $net2 = validate_net $net2, 0;
+		$net1 = validate_net $net1, 0;
+		$net2 = validate_net $net2, 0;
 
-		    if ( $interfaceref->{root} ) {
-			$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
-		    } else {
-			@rulein  = imatch_source_dev( $interface );
-			@ruleout = imatch_dest_dev( $interface );
-			$interface = $interfaceref->{name};
-		    }
+		if ( $interfaceref->{root} ) {
+		    $interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+		} else {
+		    @rulein  = imatch_source_dev( $interface );
+		    @ruleout = imatch_dest_dev( $interface );
+		    $interface = $interfaceref->{name};
+		}
 
-		    require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
+		require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
 
-		    if ( $type eq 'DNAT' ) {
-			dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) ,
-					  j => 'NETMAP' ,
-					  "--to $net2",
-					  $net1 ,
-					  @rulein  ,
-					  imatch_source_net( $net3 ) );
-		    } elsif ( $type eq 'SNAT' ) {
-			source_iexclusion( ensure_chain( 'nat' , output_chain $interface ) ,
-					   j => 'NETMAP' ,
-					   "--to $net2" ,
-					   $net1 ,
-					   @ruleout ,
-					   imatch_dest_net( $net3 ) );
-		    } else {
-			fatal_error "Invalid type ($type)";
-		    }
-		} elsif ( $type =~ /^(DNAT|SNAT):([POT])$/ ) {
-		    my ( $target , $chain ) = ( $1, $2 );
-		    my $table = 'raw';
-		    my @match;
-
-		    require_capability 'RAWPOST_TABLE', 'Stateless NAT Entries', '';
-
-		    $net2 = validate_net $net2, 0;
-
-		    unless ( $interfaceref->{root} ) {
-			@match = imatch_dest_dev(  $interface );
-			$interface = $interfaceref->{name};
-		    }
-
-		    if ( $chain eq 'P' ) {
-			$chain = prerouting_chain $interface;
-			@match = imatch_source_dev( $iface ) unless $iface eq $interface;
-		    } elsif ( $chain eq 'O' ) {
-			$chain = output_chain $interface;
-		    } else {
-			$chain = postrouting_chain $interface;
-			$table = 'rawpost';
-		    }
-
-		    my $chainref = ensure_chain( $table, $chain );
-
-
-		    if ( $target eq 'DNAT' ) {
-			dest_iexclusion( $chainref ,
-					 j => 'RAWDNAT' ,
-					 "--to-dest $net2" ,
-					 $net1 ,
-					 imatch_source_net( $net3 ) ,
-					 @rule ,
-					 @match
-				       );
-		    } else {
-			source_iexclusion( $chainref ,
-					   j  => 'RAWSNAT' ,
-					   "--to-source $net2" ,
-					   $net1 ,
-					   imatch_dest_net( $net3 ) ,
-					   @rule ,
-					   @match );
-		    }
+		if ( $type eq 'DNAT' ) {
+		    dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) ,
+				      j => 'NETMAP' ,
+				      "--to $net2",
+				      $net1 ,
+				      @rulein  ,
+				      imatch_source_net( $net3 ) );
+		} elsif ( $type eq 'SNAT' ) {
+		    source_iexclusion( ensure_chain( 'nat' , output_chain $interface ) ,
+				       j => 'NETMAP' ,
+				       "--to $net2" ,
+				       $net1 ,
+				       @ruleout ,
+				       imatch_dest_net( $net3 ) );
 		} else {
 		    fatal_error 'TYPE must be specified' if $type eq '-';
-		    fatal_error "Invalid TYPE ($type)";
+		    fatal_error "Invalid type ($type)";
 		}
 
 		progress_message "   Network $net1 on $iface mapped to $net2 ($type)";

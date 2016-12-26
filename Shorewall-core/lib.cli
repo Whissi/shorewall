@@ -1007,13 +1007,6 @@ show_raw() {
     $g_tool -t raw -L $g_ipt_options | $output_filter
 }
 
-show_rawpost() {
-    echo "$g_product $SHOREWALL_VERSION RAWPOST Table at $g_hostname - $(date)"
-    echo
-    show_reset
-    $g_tool -t rawpost -L $g_ipt_options | $output_filter
-}
-
 show_mangle() {
     echo "$g_product $SHOREWALL_VERSION Mangle Table at $g_hostname - $(date)"
     echo
@@ -1264,7 +1257,7 @@ show_command() {
 			    [ $# -eq 1 ] && missing_option_value -t
 
 			    case $2 in
-				mangle|nat|filter|raw|rawpost)
+				mangle|nat|filter|raw)
 				    table=$2
 				    table_given=Yes
 				    ;;
@@ -1317,10 +1310,6 @@ show_command() {
 	raw)
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_raw $g_pager
-	    ;;
-	rawpost)
-	    [ $# -gt 1 ] && too_many_arguments $2
-	    eval show_rawpost $g_pager
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && too_many_arguments $2
@@ -1708,11 +1697,6 @@ do_dump_command() {
     if qt $g_tool -t raw -L -n; then
 	heading "Raw Table"
 	$g_tool -t raw -L $g_ipt_options
-    fi
-
-    if qt $g_tool -t rawpost -L -n; then
-	heading "Rawpost Table"
-	$g_tool -t rawpost -L $g_ipt_options
     fi
 
     local count
@@ -2765,7 +2749,6 @@ determine_capabilities() {
     CONNMARK_MATCH=
     XCONNMARK_MATCH=
     RAW_TABLE=
-    RAWPOST_TABLE=
     IPP2P_MATCH=
     OLD_IPP2P_MATCH=
     LENGTH_MATCH=
@@ -3017,7 +3000,6 @@ determine_capabilities() {
     fi
 
     qt $g_tool -t raw	  -L -n && RAW_TABLE=Yes
-    qt $g_tool -t rawpost -L -n && RAWPOST_TABLE=Yes
 
     if [ -n "$RAW_TABLE" ]; then
 	qt $g_tool -t raw -F $chain
@@ -3243,7 +3225,6 @@ report_capabilities_unsorted() {
     report_capability "Connmark Match (CONNMARK_MATCH)" $CONNMARK_MATCH
     [ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match (XCONNMARK_MATCH)" $XCONNMARK_MATCH
     report_capability "Raw Table (RAW_TABLE)" $RAW_TABLE
-    report_capability "Rawpost Table (RAWPOST_TABLE)" $RAWPOST_TABLE
     report_capability "IPP2P Match (IPP2P_MATCH)" $IPP2P_MATCH
     [ -n "$OLD_IPP2P_MATCH" ] && report_capability "Old IPP2P Match Syntax (OLD_IPP2P_MATCH)" $OLD_IPP2P_MATCH
     report_capability "CLASSIFY Target (CLASSIFY_TARGET)" $CLASSIFY_TARGET
@@ -3372,7 +3353,6 @@ report_capabilities_unsorted1() {
     report_capability1 CONNMARK_MATCH
     report_capability1 XCONNMARK_MATCH
     report_capability1 RAW_TABLE
-    report_capability1 RAWPOST_TABLE
     report_capability1 IPP2P_MATCH
     report_capability1 OLD_IPP2P_MATCH
     report_capability1 CLASSIFY_TARGET
@@ -4323,7 +4303,7 @@ usage() # $1 = exit status
 
     echo "   [ show | list | ls ] ipsec"
     echo "   [ show | list | ls ] [ -m ] log [<regex>]"
-    echo "   [ show | list | ls ] [ -x ] mangle|nat|raw|rawpost"
+    echo "   [ show | list | ls ] [ -x ] mangle|nat|raw"
     ecko "   [ show | list | ls ] macro <macro>"
     ecko "   [ show | list | ls ] macros"
     echo "   [ show | list | ls ] nfacct"

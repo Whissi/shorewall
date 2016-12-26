@@ -1679,12 +1679,6 @@ sub add_interface_jumps {
 	addnatjump $globals{POSTROUTING} , output_chain( $interface ) , imatch_dest_dev( $interface );
 	addnatjump $globals{POSTROUTING} , masq_chain( $interface ) , imatch_dest_dev( $interface );
 
-	if ( have_capability 'RAWPOST_TABLE' ) {
-	    insert_ijump ( $rawpost_table->{POSTROUTING}, j => postrouting_chain( $interface ), 0, imatch_dest_dev( $interface) )   if $rawpost_table->{postrouting_chain $interface};
-	    insert_ijump ( $raw_table->{PREROUTING},      j => prerouting_chain( $interface ),  0, imatch_source_dev( $interface) ) if $raw_table->{prerouting_chain $interface};
-	    insert_ijump ( $raw_table->{OUTPUT},          j => output_chain( $interface ),      0, imatch_dest_dev( $interface) )   if $raw_table->{output_chain $interface};
-	}
-
 	add_ijump( $mangle_table->{PREROUTING}, j => 'rpfilter' , imatch_source_dev( $interface ) ) if interface_has_option( $interface, 'rpfilter', $dummy );
     }
     #

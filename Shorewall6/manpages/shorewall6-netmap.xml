@@ -29,8 +29,8 @@
     addresses in a second network. It was added in Shorewall6 4.4.23.3.</para>
 
     <warning>
-      <para>To use this file, your kernel and ip6tables must have RAWPOST
-      table support included.</para>
+      <para>To use this file, your kernel and ip6tables must have NETMAP
+      support included.</para>
     </warning>
 
     <para>The columns in the file are as follows (where the column name is
@@ -41,7 +41,7 @@
       <varlistentry>
         <term><emphasis role="bold">TYPE</emphasis> - <emphasis
         role="bold">{DNAT</emphasis>|<emphasis
-        role="bold">SNAT}:{P|O|T}</emphasis></term>
+        role="bold">SNAT}</emphasis></term>
 
         <listitem>
           <para>Must be DNAT or SNAT followed by :P, :O or :T to perform
@@ -50,29 +50,13 @@
           iptables (see the output of <command>shorewall6 show
           capabilities</command>).</para>
 
-          <para>If DNAT:P, traffic entering INTERFACE and addressed to NET1
-          has its destination address rewritten to the corresponding address
-          in NET2.</para>
+          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
+          its destination address rewritten to the corresponding address in
+          NET2.</para>
 
-          <para>If SNAT:T, traffic leaving INTERFACE with a source address in
+          <para>If SNAT, traffic leaving INTERFACE with a source address in
           NET1 has it's source address rewritten to the corresponding address
           in NET2.</para>
-
-          <para>If DNAT:O, traffic originating on the firewall and leaving via
-          INTERFACE and addressed to NET1 has its destination address
-          rewritten to the corresponding address in NET2.</para>
-
-          <para>If DNAT:P, traffic entering via INTERFACE and addressed to
-          NET1 has its destination address rewritten to the corresponding
-          address in NET2.</para>
-
-          <para>If SNAT:P, traffic entering via INTERFACE with a destination
-          address in NET1 has it's source address rewritten to the
-          corresponding address in NET2.</para>
-
-          <para>If SNAT:O, traffic originating on the firewall and leaving via
-          INTERFACE with a source address in NET1 has it's source address
-          rewritten to the corresponding address in NET2.</para>
         </listitem>
       </varlistentry>
 

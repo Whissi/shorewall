@@ -389,7 +389,6 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 HEADER_MATCH    => 'Header Match',
 		 ACCOUNT_TARGET  => 'ACCOUNT Target',
 		 AUDIT_TARGET    => 'AUDIT Target',
-		 RAWPOST_TABLE   => 'Rawpost Table',
 		 CONDITION_MATCH => 'Condition Match',
 		 IPTABLES_S      => 'iptables -S',
 		 BASIC_FILTER    => 'Basic Filter',
@@ -980,7 +979,6 @@ sub initialize( $;$$) {
 	       CONNMARK_MATCH => undef,
 	       XCONNMARK_MATCH => undef,
 	       RAW_TABLE => undef,
-	       RAWPOST_TABLE => undef,
 	       IPP2P_MATCH => undef,
 	       OLD_IPP2P_MATCH => undef,
 	       CLASSIFY_TARGET => undef,
@@ -4516,10 +4514,6 @@ sub Raw_Table() {
     qt1( "$iptables $iptablesw -t raw -L -n" );
 }
 
-sub Rawpost_Table() {
-    qt1( "$iptables $iptablesw -t rawpost -L -n" );
-}
-
 sub Old_IPSet_Match() {
     my $ipset  = $config{IPSET} || 'ipset';
     my $result = 0;
@@ -4926,7 +4920,6 @@ our %detect_capability =
       POLICY_MATCH => \&Policy_Match,
       PPTP_HELPER => \&PPTP_Helper,
       RAW_TABLE => \&Raw_Table,
-      RAWPOST_TABLE => \&Rawpost_Table,
       REALM_MATCH => \&Realm_Match,
       REAP_OPTION => \&Reap_Option,
       RECENT_MATCH => \&Recent_Match,
@@ -5054,7 +5047,6 @@ sub determine_capabilities() {
 	$capabilities{TPROXY_TARGET}   = detect_capability( 'TPROXY_TARGET' );
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
-	$capabilities{RAWPOST_TABLE}   = detect_capability( 'RAWPOST_TABLE' );
 	$capabilities{IPSET_MATCH}     = detect_capability( 'IPSET_MATCH' );
 	$capabilities{USEPKTTYPE}      = detect_capability( 'USEPKTTYPE' );
 	$capabilities{ADDRTYPE}        = detect_capability( 'ADDRTYPE' );

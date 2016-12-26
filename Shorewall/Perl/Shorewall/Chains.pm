@@ -120,7 +120,6 @@ our @EXPORT = ( qw(
 		    %chain_table
 		    %targets
 		    $raw_table
-		    $rawpost_table
 		    $nat_table
 		    $mangle_table
 		    $filter_table
@@ -197,7 +196,6 @@ our %EXPORT_TAGS = (
 				       ensure_mangle_chain
 				       ensure_nat_chain
 				       ensure_raw_chain
-				       ensure_rawpost_chain
 				       new_standard_chain
 				       new_action_chain
 				       new_builtin_chain
@@ -418,7 +416,6 @@ our $VERSION = 'MODULEVERSION';
 #
 our %chain_table;
 our $raw_table;
-our $rawpost_table;
 our $nat_table;
 our $mangle_table;
 our $filter_table;
@@ -759,13 +756,11 @@ sub initialize( $$$ ) {
     ( $family, my $hard, $export ) = @_;
 
     %chain_table = ( raw    =>  {},
-		     rawpost => {},
 		     mangle =>  {},
 		     nat    =>  {},
 		     filter =>  {} );
 
     $raw_table     = $chain_table{raw};
-    $rawpost_table = $chain_table{rawpost};
     $nat_table     = $chain_table{nat};
     $mangle_table  = $chain_table{mangle};
     $filter_table  = $chain_table{filter};
@@ -2764,14 +2759,6 @@ sub ensure_raw_chain($) {
     $chainref;
 }
 
-sub ensure_rawpost_chain($) {
-    my $chain = $_[0];
-
-    my $chainref = ensure_chain 'rawpost', $chain;
-    $chainref->{referenced} = 1;
-    $chainref;
-}
-
 #
 # Add a builtin chain
 #
@@ -2970,8 +2957,6 @@ sub initialize_chain_table($) {
 	    new_builtin_chain( 'raw', $chain, 'ACCEPT' )->{insert} = 0;
 	}
 
-	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
-
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
 	}
@@ -3033,8 +3018,6 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(OUTPUT PREROUTING) ) {
 	    new_builtin_chain( 'raw', $chain, 'ACCEPT' )->{insert} = 0;
 	}
-
-	new_builtin_chain 'rawpost', 'POSTROUTING', 'ACCEPT';
 
 	for my $chain ( qw(INPUT OUTPUT FORWARD) ) {
 	    new_builtin_chain 'filter', $chain, 'DROP';
@@ -3339,7 +3322,7 @@ sub check_optimization( $ ) {
 # When an unreferenced chain is found, it is deleted unless its 'dont_delete' flag is set.
 #
 sub optimize_level0() {
-    for my $table ( qw/raw rawpost mangle nat filter/ ) {
+    for my $table ( qw/raw mangle nat filter/ ) {
 	my $tableref = $chain_table{$table};
 	next unless $tableref;
 
@@ -4258,7 +4241,6 @@ sub valid_tables() {
     my @table_list;
 
     push @table_list, 'raw'     if have_capability( 'RAW_TABLE' );
-    push @table_list, 'rawpost' if have_capability( 'RAWPOST_TABLE' );
     push @table_list, 'nat'     if have_capability( 'NAT_ENABLED' );
     push @table_list, 'mangle'  if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
     push @table_list, 'filter'; #MUST BE LAST!!!
@@ -8939,7 +8921,7 @@ sub create_chainlist_reload($) {
 	for my $chain ( @chains ) {
 	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
 
-	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw|rawpost)$/;
+	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
 
 	    $chains{$table} = {} unless $chains{$table};
 
@@ -8968,7 +8950,7 @@ sub create_chainlist_reload($) {
 
 	enter_cat_mode;
 
-	for $table ( qw(raw rawpost nat mangle filter) ) {
+	for $table ( qw(raw nat mangle filter) ) {
 	    my $tableref=$chains{$table};
 
 	    next unless $tableref;

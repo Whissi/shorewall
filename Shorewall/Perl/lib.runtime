@@ -526,13 +526,6 @@ debug_restore_input() {
 	qt1 $g_tool -t raw -P $chain ACCEPT
     done
 
-    qt1 $g_tool -t rawpost -F
-    qt1 $g_tool -t rawpost    -X
-
-    for chain in POSTROUTING; do
-	qt1 $g_tool -t rawpost -P $chain ACCEPT
-    done
-
     qt1 $g_tool -t nat    -F
     qt1 $g_tool -t nat    -X
 
@@ -581,9 +574,6 @@ debug_restore_input() {
 	    #
 	    '*'raw)
 		table=raw
-		;;
-	    '*'rawpost)
-		table=rawpost
 		;;
 	    '*'mangle)
 		table=mangle

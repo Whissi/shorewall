@@ -41,38 +41,18 @@
       <varlistentry>
         <term><emphasis role="bold">TYPE</emphasis> - <emphasis
         role="bold">{DNAT</emphasis>|<emphasis
-        role="bold">SNAT}[:{P|O|T}</emphasis>]</term>
+        role="bold">SNAT}</emphasis></term>
 
         <listitem>
-          <para>Must be DNAT or SNAT; beginning with Shorewall 4.4.23, may be
-          optionally followed by :P, :O or :T to perform <firstterm>stateless
-          NAT</firstterm>. Stateless NAT requires <firstterm>Rawpost Table
-          support</firstterm> in your kernel and iptables (see the output of
-          <command>shorewall show capabilities</command>).</para>
+          <para>Must be DNAT or SNAT</para>
 
-          <para>If DNAT or DNAT:P, traffic entering INTERFACE and addressed to
-          NET1 has its destination address rewritten to the corresponding
-          address in NET2.</para>
+          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
+          its destination address rewritten to the corresponding address in
+          NET2.</para>
 
-          <para>If SNAT or SNAT:T, traffic leaving INTERFACE with a source
-          address in NET1 has it's source address rewritten to the
-          corresponding address in NET2.</para>
-
-          <para>If DNAT:O, traffic originating on the firewall and leaving via
-          INTERFACE and addressed to NET1 has its destination address
-          rewritten to the corresponding address in NET2.</para>
-
-          <para>If DNAT:P, traffic entering via INTERFACE and addressed to
-          NET1 has its destination address rewritten to the corresponding
-          address in NET2.</para>
-
-          <para>If SNAT:P, traffic entering via INTERFACE with a destination
-          address in NET1 has it's source address rewritten to the
-          corresponding address in NET2.</para>
-
-          <para>If SNAT:O, traffic originating on the firewall and leaving via
-          INTERFACE with a source address in NET1 has it's source address
-          rewritten to the corresponding address in NET2.</para>
+          <para>If SNAT, traffic leaving INTERFACE with a source address in
+          NET1 has it's source address rewritten to the corresponding address
+          in NET2.</para>
         </listitem>
       </varlistentry>
 

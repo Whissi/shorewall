@@ -412,6 +412,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
                  TCPMSS_TARGET   => 'TCPMSS Target',
                  WAIT_OPTION     => 'iptables --wait option',
                  CPU_FANOUT      => 'NFQUEUE CPU Fanout',
+                 NETMAP_TARGET   => 'NETMAP Target',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -1035,6 +1036,7 @@ sub initialize( $;$$) {
 	       TCPMSS_TARGET => undef,
 	       WAIT_OPTION => undef,
 	       CPU_FANOUT => undef,
+	       NETMAP_TARGET => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4316,6 +4318,22 @@ sub Masquerade_Tgt() {
     $result;
 }
 
+sub Netmap_Target() {
+    have_capability( 'NAT_ENABLED' ) || return '';
+
+    my $result = '';
+    my $address = $family == F_IPV4 ? '1.2.3.0/24' : '2001::/64';
+
+    if ( qt1( "$iptables $iptablesw -t nat -N $sillyname" ) ) {
+	$result = qt1( "$iptables $iptablesw -t nat -A $sillyname -j NETMAP --to $address" );
+	qt1( "$iptables $iptablesw -t nat -F $sillyname" );
+	qt1( "$iptables $iptablesw -t nat -X $sillyname" );
+
+    }
+
+    $result;
+}
+
 sub Udpliteredirect() {
     have_capability( 'NAT_ENABLED' ) || return '';
 
@@ -4905,6 +4923,7 @@ our %detect_capability =
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
       NETBIOS_NS_HELPER => \&Netbios_ns_Helper,
+      NETMAP_TARGET => \&Netmap_Target,
       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
       NFACCT_MATCH => \&NFAcct_Match,
       NFQUEUE_TARGET => \&Nfqueue_Target,
@@ -5088,6 +5107,7 @@ sub determine_capabilities() {
 	$capabilities{IFACE_MATCH}     = detect_capability( 'IFACE_MATCH' );
 	$capabilities{TCPMSS_TARGET}   = detect_capability( 'TCPMSS_TARGET' );
 	$capabilities{CPU_FANOUT}      = detect_capability( 'CPU_FANOUT' );
+	$capabilities{NETMAP_TARGET}   = detect_capability( 'NETMAP_TARGET' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

@@ -804,7 +804,7 @@ sub setup_netmap() {
 		    $interface = $interfaceref->{name};
 		}
 
-		require_capability 'NAT_ENABLED', 'Stateful NAT Entries', '';
+		require_capability 'NETMAP_TARGET', 'Stateful Netmap Entries', '';
 
 		if ( $type eq 'DNAT' ) {
 		    dest_iexclusion(  ensure_chain( 'nat' , input_chain $interface ) ,

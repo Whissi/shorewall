@@ -2805,6 +2805,7 @@ determine_capabilities() {
     TCPMSS_TARGET=
     WAIT_OPTION=
     CPU_FANOUT=
+    NETMAP_TARGET=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2839,8 +2840,10 @@ determine_capabilities() {
 	if qt $g_tool -t nat -N $chain; then
 	    if [ $g_family -eq 4 ]; then
 		qt $g_tool -t nat -A $chain -j SNAT --to-source 1.2.3.4 --persistent && PERSISTENT_SNAT=Yes
+		qt $g_tool -t nat -A $chain -j NETMAP --to 1.2.3.0/24 && NETMAP_TARGET=Yes
 	    else
 		qt $g_tool -t nat -A $chain -j SNAT --to-source 2001::1 --persistent && PERSISTENT_SNAT=Yes
+		qt $g_tool -t nat -A $chain -j NETMAP --to 2001:470:B:227::/64 && NETMAP_TARGET=Yes
 	    fi
 	    qt $g_tool -t nat -A $chain -j MASQUERADE && MASQUERADE_TGT=Yes
 	    qt $g_tool -t nat -A $chain -p udplite -m multiport --dport 33 -j REDIRECT --to-port 22 && UDPREDIRECT=Yes
@@ -3304,6 +3307,7 @@ report_capabilities_unsorted() {
     report_capability "Basic Ematch (BASIC_EMATCH)" $BASIC_EMATCH
     report_capability "CT Target (CT_TARGET)" $CT_TARGET
     report_capability "NFQUEUE CPU Fanout (CPU_FANOUT)" $CPU_FANOUT
+    report_capability "NETMAP Target (NETMAP_TARGET)" $NETMAP_TARGET
 
     echo "   Kernel Version (KERNELVERSION): $KERNELVERSION"
     echo "   Capabilities Version (CAPVERSION): $CAPVERSION"
@@ -3409,6 +3413,7 @@ report_capabilities_unsorted1() {
     report_capability1 TCPMSS_TARGET
     report_capability1 WAIT_OPTION
     report_capability1 CPU_FANOUT
+    report_capability1 NETMAP_TARGET
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

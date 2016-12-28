@@ -1235,7 +1235,7 @@ safe_commands() {
 	    echo "New configuration has been accepted"
 	else
 	    if [ "$command" = "restart" -o "$command" = "reload" ]; then
-		run_it ${VARDIR}/.safe restore
+		run_it ${VARDIR}/.safe -r restore
 	    else
 		run_it ${VARDIR}/.$command clear
 	    fi

@@ -38,7 +38,7 @@ if [ -f ${SYSCONFDIR}/$prog ]; then
 fi
 
 start() {
-    echo -n $"Starting Shorewall: "
+    printf $"Starting Shorewall: "
     $shorewall $OPTIONS start $STARTOPTIONS 2>&1 | $logger
     retval=${PIPESTATUS[0]}
     if [[ $retval == 0 ]]; then
@@ -52,7 +52,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping Shorewall: "
+    printf $"Stopping Shorewall: "
     $shorewall $OPTIONS stop 2>&1 | $logger
     retval=${PIPESTATUS[0]}
     if [[ $retval == 0 ]]; then
@@ -68,7 +68,7 @@ stop() {
 restart() {
 # Note that we don't simply stop and start since shorewall has a built in
 # restart which stops the firewall if running and then starts it.
-    echo -n $"Restarting Shorewall: "
+    printf $"Restarting Shorewall: "
     $shorewall $OPTIONS restart $RESTARTOPTIONS 2>&1 | $logger
     retval=${PIPESTATUS[0]}
     if [[ $retval == 0 ]]; then

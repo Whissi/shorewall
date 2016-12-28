@@ -391,13 +391,13 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 
-	    $g_ring_bell
+	    printf '\a'
 
 	    packet_log 40
 
 	    if [ "$pause" = "Yes" ]; then
 		echo
-		echo $g_echo_n 'Enter any character to continue: '
+		printf 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -4551,26 +4551,6 @@ shorewall_cli() {
     fi
 
     banner="${g_product}-${SHOREWALL_VERSION} Status at $g_hostname -"
-
-    case $(echo -e) in
-	-e*)
-	    g_ring_bell="echo \a"
-	    g_echo_e="echo"
-	    ;;
-	*)
-	    g_ring_bell="echo -e \a"
-	    g_echo_e="echo -e"
-	    ;;
-    esac
-
-    case $(echo -n "Testing") in
-	-n*)
-	    g_echo_n=
-	    ;;
-	*)
-	    g_echo_n=-n
-	    ;;
-    esac
 
     COMMAND=$1
 

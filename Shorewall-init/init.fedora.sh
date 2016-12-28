@@ -64,7 +64,7 @@ start () {
 	return 6 #Not configured
     fi
 
-    echo -n "Initializing \"Shorewall-based firewalls\": "
+    printf "Initializing \"Shorewall-based firewalls\": "
 
     for PRODUCT in $PRODUCTS; do
 	setstatedir
@@ -99,7 +99,7 @@ stop () {
     local PRODUCT
     local STATEDIR
 
-    echo -n "Clearing \"Shorewall-based firewalls\": "
+    printf "Clearing \"Shorewall-based firewalls\": "
 
     for PRODUCT in $PRODUCTS; do
 	setstatedir

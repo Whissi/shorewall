@@ -1229,7 +1229,7 @@ safe_commands() {
 
     if run_it ${VARDIR}/.$command $g_debugging $command; then
 
-	echo -n "Do you want to accept the new firewall configuration? [y/n] "
+	printf "Do you want to accept the new firewall configuration? [y/n] "
 
 	if read_yesno_with_timeout $timeout ; then
 	    echo "New configuration has been accepted"

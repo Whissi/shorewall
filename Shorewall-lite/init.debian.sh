@@ -85,7 +85,7 @@ fi
 
 # start the firewall
 shorewall_start () {
-  echo -n "Starting \"Shorewall firewall\": "
+  printf "Starting \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS start $STARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
@@ -93,10 +93,10 @@ shorewall_start () {
 # stop the firewall
 shorewall_stop () {
   if [ "$SAFESTOP" = 1 ]; then
-      echo -n "Stopping \"Shorewall Lite firewall\": "
+      printf "Stopping \"Shorewall Lite firewall\": "
       $SRWL $SRWL_OPTS stop >> $INITLOG 2>&1 && echo "done." || echo_notdone
   else
-      echo -n "Clearing all \"Shorewall Lite firewall\" rules: "
+      printf "Clearing all \"Shorewall Lite firewall\" rules: "
       $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
   fi
   return 0
@@ -104,14 +104,14 @@ shorewall_stop () {
 
 # restart the firewall
 shorewall_restart () {
-  echo -n "Restarting \"Shorewall firewall\": "
+  printf "Restarting \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS restart $RESTARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
 shorewall_refresh () {
-  echo -n "Refreshing \"Shorewall firewall\": "
+  printf "Refreshing \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }

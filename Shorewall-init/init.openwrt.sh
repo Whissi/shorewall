@@ -89,7 +89,7 @@ start () {
     local PRODUCT
   local STATEDIR
 
-  echo -n "Initializing \"Shorewall-based firewalls\": "
+  printf "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
       if setstatedir; then
 	  if [ -x ${STATEDIR}/firewall ]; then
@@ -114,7 +114,7 @@ stop () {
     local PRODUCT
     local STATEDIR
 
-    echo -n "Clearing \"Shorewall-based firewalls\": "
+    printf "Clearing \"Shorewall-based firewalls\": "
     for PRODUCT in $PRODUCTS; do
 	if setstatedir; then
 	    if [ -x ${STATEDIR}/firewall ]; then

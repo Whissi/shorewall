@@ -104,7 +104,7 @@ shorewall_start () {
   local PRODUCT
   local STATEDIR
 
-  echo -n "Initializing \"Shorewall-based firewalls\": "
+  printf "Initializing \"Shorewall-based firewalls\": "
 
   for PRODUCT in $PRODUCTS; do
       if setstatedir; then
@@ -125,7 +125,7 @@ shorewall_start () {
 
   if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
 
-      echo -n "Restoring ipsets: "
+      printf "Restoring ipsets: "
 
       if ! ipset -R < "$SAVE_IPSETS"; then
 	  echo_notdone
@@ -142,7 +142,7 @@ shorewall_stop () {
   local PRODUCT
   local STATEDIR
 
-  echo -n "Clearing \"Shorewall-based firewalls\": "
+  printf "Clearing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
       if setstatedir; then
 	  if [ -x ${STATEDIR}/firewall ]; then

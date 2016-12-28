@@ -378,25 +378,6 @@ resolve_file() # $1 = file name
     esac
 }
 
-#
-# Determine how to do "echo -e"
-#
-
-find_echo() {
-    local result
-
-    result=$(echo "a\tb")
-    [ ${#result} -eq 3 ] && { echo echo; return; }
-
-    result=$(echo -e "a\tb")
-    [ ${#result} -eq 3 ] && { echo "echo -e"; return; }
-
-    result=$(which echo)
-    [ -n "$result" ] && { echo "$result -e"; return; }
-
-    echo echo
-}
-
 # Determine which version of mktemp is present (if any) and set MKTEMP accortingly:
 #
 #     None - No mktemp

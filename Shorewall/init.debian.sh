@@ -89,7 +89,7 @@ wait_for_pppd () {
 
 # start the firewall
 shorewall_start () {
-  echo -n "Starting \"Shorewall firewall\": "
+  printf "Starting \"Shorewall firewall\": "
   wait_for_pppd
   $SRWL $SRWL_OPTS start $STARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
@@ -98,10 +98,10 @@ shorewall_start () {
 # stop the firewall
 shorewall_stop () {
   if [ "$SAFESTOP" = 1 ]; then
-      echo -n "Stopping \"Shorewall firewall\": "
+      printf "Stopping \"Shorewall firewall\": "
       $SRWL $SRWL_OPTS stop >> $INITLOG 2>&1 && echo "done." || echo_notdone
   else
-      echo -n "Clearing all \"Shorewall firewall\" rules: "
+      printf "Clearing all \"Shorewall firewall\" rules: "
       $SRWL $SRWL_OPTS clear >> $INITLOG 2>&1 && echo "done." || echo_notdone
   fi
   return 0
@@ -109,21 +109,21 @@ shorewall_stop () {
 
 # reload the firewall
 shorewall_reload () {
-  echo -n "Reloading \"Shorewall firewall\": "
+  printf "Reloading \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS restart $RELOADOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # restart the firewall
 shorewall_restart () {
-  echo -n "Restarting \"Shorewall firewall\": "
+  printf "Restarting \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS restart $RESTARTOPTIONS >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 
 # refresh the firewall
 shorewall_refresh () {
-  echo -n "Refreshing \"Shorewall firewall\": "
+  printf "Refreshing \"Shorewall firewall\": "
   $SRWL $SRWL_OPTS refresh >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }

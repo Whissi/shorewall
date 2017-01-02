@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Anatomy of Shorewall 5.0</title>
+    <title>Anatomy of Shorewall 5.0/5.1</title>
 
     <authorgroup>
       <author>
@@ -25,6 +25,8 @@
       <year>2012</year>
 
       <year>2015</year>
+
+      <year>2017</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -49,7 +51,9 @@
       <listitem>
         <para><emphasis role="bold">Shorewall Core</emphasis>. This package
         contains the core Shorewall shell libraries and is required to install
-        any of the other packages.</para>
+        any of the other packages. Beginning with Shorewall 5.1.0, it also
+        includes the Command Line Interface (CLI) program common to all of the
+        packages.</para>
       </listitem>
 
       <listitem>
@@ -83,11 +87,12 @@
       </listitem>
 
       <listitem>
-        <para>Shorewall-init. An add-on to any of the above packages that
-        allows the firewall state to be altered in reaction to interfaces
-        coming up and going down. Where Upstart is not being used, this
-        package can also be configured to place the firewall in a safe state
-        prior to bringing up the network interfaces.</para>
+        <para><emphasis role="bold">Shorewall-init</emphasis>. An add-on to
+        any of the above packages that allows the firewall state to be altered
+        in reaction to interfaces coming up and going down. Where Upstart is
+        not being used, this package can also be configured to place the
+        firewall in a safe state prior to bringing up the network
+        interfaces.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -101,10 +106,7 @@
     class="directory">/etc/shorewall</filename>,
     <filename>/etc/init.d</filename> and <filename
     class="directory">/var/lib/shorewall/</filename>. These are described in
-    the sub-sections that follow. Since Shorewall 4.5.2, each of these
-    directories is now relocatable using the <ulink
-    url="Install.htm#idp8774904608">configure scripts included with Shorewall
-    Core</ulink>.</para>
+    the sub-sections that follow. </para>
 
     <important>
       <para>Since Shorewall 4.5.2, each of these directories is now

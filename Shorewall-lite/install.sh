@@ -430,15 +430,6 @@ elif [ $HOST = gentoo ]; then
     # Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
     perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 fi
-
-#
-# Install the  Makefile
-#
-install_file Makefile ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile 0600
-[ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
-[ $SBINDIR = /sbin ]       || eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\'       ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile
-echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
-
 #
 # Install the default config path file
 #

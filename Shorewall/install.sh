@@ -1043,15 +1043,6 @@ fi
 cd ..
 
 #
-# Install the  Makefiles
-#
-run_install $OWNERSHIP -m 0644 Makefile-lite ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/Makefile
-
-if [ -z "$SPARSE" ]; then
-    run_install $OWNERSHIP -m 0600 Makefile ${DESTDIR}${CONFDIR}/$PRODUCT
-    echo "Makefile installed as ${DESTDIR}${CONFDIR}/$PRODUCT/Makefile"
-fi
-#
 # Install the Action files
 #
 cd Actions

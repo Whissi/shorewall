@@ -315,7 +315,7 @@ our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT', BLACKLIST_LOGLEVEL => 'BLACKLIST
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY RESTART/;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE LOG_VERBOSITY RESTART/;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -636,14 +636,15 @@ our %converted = (
 # Eliminated options
 #
 our %eliminated = ( LOGRATE          => 1,
-		    LOGBURST         => 1,
+		    LOGBURST	     => 1,
 		    EXPORTPARAMS     => 1,
 		    LEGACY_FASTSTART => 1,
-		    IPSECFILE        => 1,
+		    IPSECFILE	     => 1,
 		    WIDE_TC_MARKS    => 1,
 		    HIGH_ROUTE_MARKS => 1,
 		    BLACKLISTNEWONLY => 1,
 		    CHAIN_SCRIPTS    => 1,
+		    SUBSYSLOCK	     => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -801,7 +802,6 @@ sub initialize( $;$$) {
 	  PERL => undef,
 	  PATH => undef,
 	  SHOREWALL_SHELL => undef,
-	  SUBSYSLOCK => undef,
 	  MODULESDIR => undef,
 	  CONFIG_PATH => undef,
 	  RESTOREFILE => undef,
@@ -6805,7 +6805,7 @@ sub generate_aux_config() {
 
     emit "#\n# Shorewall auxiliary configuration file created by Shorewall version $globals{VERSION} - $date\n#";
 
-    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL SUBSYSLOCK LOCKFILE RESTOREFILE WORKAROUNDS RESTART DYNAMIC_BLACKLIST) ) {
+    for my $option ( qw(VERBOSITY LOGFILE LOGFORMAT ARPTABLES IPTABLES IP6TABLES IP TC IPSET PATH SHOREWALL_SHELL LOCKFILE RESTOREFILE WORKAROUNDS RESTART DYNAMIC_BLACKLIST) ) {
 	conditionally_add_option $option;
     }
 

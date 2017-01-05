@@ -1546,16 +1546,8 @@ remote_reload_command() # $* = original arguments less the command.
     file=$(resolve_file $g_shorewalldir/firewall)
 
     g_export=Yes
-    #
-    # Determine the remote CLI program
-    #
-    temp=$(rsh_command /bin/ls $sbindir/${PRODUCT}-lite 2> /dev/null)
 
-    if [ -n "$temp" ]; then
-	program=$sbindir/${PRODUCT}-lite
-    else
-	program="$sbindir/shorewall $g_options"
-    fi
+    program=$sbindir/${PRODUCT}-lite
     #
     # Handle nonstandard remote VARDIR
     #

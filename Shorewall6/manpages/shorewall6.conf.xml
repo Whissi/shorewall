@@ -2204,10 +2204,20 @@ INLINE          -       -       -       ;; -j REJECT
         <listitem>
           <para>This parameter should be set to the name of a file that the
           firewall should create if it starts successfully and remove when it
-          stops. Creating and removing this file allows Shorewall6 to work
-          with your distribution's initscripts. For RedHat, this should be set
-          to /var/lock/subsys/shorewall6. For Debian, the value is
-          /var/lock/shorewall6 and in LEAF it is /var/run/shorewall.</para>
+          stops. Creating and removing this file allows Shorewall to work with
+          your distribution's initscripts. For OpenSuSE, this should be set to
+          /var/lock/subsys/shorewall6 (var/lock/subsys/shorewall6-lite if
+          building for export). For Gentoo, it should be set to
+          /run/lock/shorewall6 (/run/lock/shorewall6-lite). For Redhat and
+          derivatives as well as Debian and derivatives, the pathname should
+          be omitted.</para>
+
+          <important>
+            <para>Beginning with Shorewall 5.1.0, this setting is ignored when
+            SERVICEDIR is non-empty in
+            <filename>${SHAREDIR}/shorewall/shorewallrc</filename> (usually
+            <filename>/usr/share/shorewall/shorewallrc</filename>).</para>
+          </important>
         </listitem>
       </varlistentry>
 

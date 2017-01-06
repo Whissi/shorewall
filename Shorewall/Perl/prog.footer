@@ -49,6 +49,7 @@ start_command() {
 	define_firewall
 	status=$?
 	if [ $status -eq 0 ]; then
+	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    progress_message3 "done."
 	fi
     fi
@@ -60,6 +61,7 @@ stop_command() {
     progress_message3 "Stopping $g_product...."
     detect_configuration
     stop_firewall
+    [ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
     progress_message3 "done."
     return 0
 }
@@ -76,6 +78,9 @@ reload_command() {
     detect_configuration
     define_firewall
     status=$?
+    if [ -n "$SUBSYSLOCK" ]; then
+ 	[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+    fi
 
     [ $status -eq 0 ] && progress_message3 "done."
 }
@@ -334,6 +339,9 @@ case "$COMMAND" in
 	detect_configuration
 	define_firewall
 	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi
 	[ $status -eq 0 ] && progress_message3 "done."
 	;;
     clear)
@@ -341,6 +349,9 @@ case "$COMMAND" in
 	progress_message3 "Clearing $g_product...."
 	clear_firewall
 	status=0
+	if [ -n "$SUBSYSLOCK" ]; then
+	    rm -f $SUBSYSLOCK
+	fi
 	progress_message3 "done."
 	;;
     status)

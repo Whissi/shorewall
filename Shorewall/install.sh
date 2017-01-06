@@ -540,6 +540,9 @@ if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
 	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
     elif [ $HOST = debian ]; then
 	perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
+    elif [ $HOST = gentoo ]; then
+	# Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
+	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
     fi
 
     echo "Config file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf"
@@ -1219,7 +1222,7 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	    if [ $HOST = debian ]; then
 		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
 		touch /var/log/$PRODUCT-init.log
-		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
 	    else
 		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
 	    fi
@@ -1238,7 +1241,7 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	echo "$PRODUCT will start automatically at boot"
 	echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
 	touch /var/log/$PRODUCT-init.log
-	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
 	update-rc.d $PRODUCT enable
     elif mywhich rc-update ; then
 	if rc-update add $PRODUCT default; then
@@ -1246,7 +1249,7 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	    if [ $HOST = debian ]; then
 		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
 		touch /var/log/$PRODUCT-init.log
-		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
 	    else
 		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
 	    fi

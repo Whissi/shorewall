@@ -122,7 +122,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	    fatal_error "Invalid conntrack ACTION (IPTABLES)" unless $1;
 	}
 
-	my ( $tgt, $options ) = split( ' ', $2 );
+	my ( $tgt, $options ) = split( ' ', $2, 2 );
 	my $target_type = $builtin_target{$tgt};
 	fatal_error "Unknown target ($tgt)" unless $target_type;
 	fatal_error "The $tgt TARGET is not allowed in the raw table" unless $target_type & RAW_TABLE;

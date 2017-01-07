@@ -2893,7 +2893,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	      IPTABLES => sub {
 		  if ( $param ) {
 		      fatal_error "Unknown ACTION (IPTABLES)" unless $family == F_IPV4;
-		      my ( $tgt, $options ) = split / /, $param;
+		      my ( $tgt, $options ) = split / /, $param, 2;
 		      my $target_type = $builtin_target{$tgt};
 		      fatal_error "Unknown target ($tgt)" unless $target_type;
 		      fatal_error "The $tgt TARGET is not allowed in the filter table" unless $target_type & FILTER_TABLE;
@@ -2906,7 +2906,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	      IP6TABLES => sub {
 		  if ( $param ) {
 		      fatal_error "Unknown ACTION (IP6TABLES)" unless $family == F_IPV6;
-		      my ( $tgt, $options ) = split / /, $param;
+		      my ( $tgt, $options ) = split / /, $param, 2;
 		      my $target_type = $builtin_target{$tgt};
 		      fatal_error "Unknown target ($tgt)" unless $target_type;
 		      fatal_error "The $tgt TARGET is not allowed in the filter table" unless $target_type & FILTER_TABLE;
@@ -4510,7 +4510,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub () {
 		fatal_error "Invalid ACTION (IPTABLES)" unless $family == F_IPV4;
-		my ( $tgt,  $options ) = split( ' ', $params );
+		my ( $tgt,  $options ) = split( ' ', $params, 2 );
 		my $target_type = $builtin_target{$tgt};
 		fatal_error "Unknown target ($tgt)" unless $target_type;
 		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless $target_type & MANGLE_TABLE;
@@ -4526,7 +4526,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 	    maxparams      => 1,
 	    function       => sub () {
 		fatal_error "Invalid ACTION (IP6TABLES)" unless $family == F_IPV6;
-		my ( $tgt,  $options ) = split( ' ', $params );
+		my ( $tgt,  $options ) = split( ' ', $params, 2 );
 		my $target_type = $builtin_target{$tgt};
 		fatal_error "Unknown target ($tgt)" unless $target_type;
 		fatal_error "The $tgt TARGET is not allowed in the mangle table" unless $target_type & MANGLE_TABLE;

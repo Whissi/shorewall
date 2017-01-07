@@ -2002,6 +2002,21 @@ sub find_writable_file($) {
 }
 
 #
+# Determine if a value has been supplied
+#
+sub supplied( $ ) {
+    my $val = shift;
+
+    defined $val && $val ne '';
+}
+
+sub passed( $ ) {
+    my $val = shift;
+
+    defined $val && $val ne '' && $val ne '-';
+}
+
+#
 # Split a comma-separated list into a Perl array
 #
 sub split_list( $$;$ ) {
@@ -2059,7 +2074,7 @@ sub split_list1( $$;$ ) {
 sub split_list2( $$ ) {
     my ($list, $type ) = @_;
 
-    fatal_error "Invalid $type ($list)" if $list =~ /^:|::/;
+    fatal_error "Invalid $type ($list)" if $list =~ /^:/;
 
     my @list1 = split /:/, $list;
     my @list2;
@@ -2096,6 +2111,7 @@ sub split_list2( $$ ) {
 		fatal_error "Invalid $type ($list)" if $opencount < 0;
 	    }
 	} elsif ( $element eq '' ) {
+	    fatal_error "Invalid $type ($list)" unless supplied $_;
 	    push @list2 , $_;
 	} else {
 	    $element = join ':', $element , $_;
@@ -2259,21 +2275,6 @@ sub split_columns( $ ) {
     }
 
     @list2;
-}
-
-#
-# Determine if a value has been supplied
-#
-sub supplied( $ ) {
-    my $val = shift;
-
-    defined $val && $val ne '';
-}
-
-sub passed( $ ) {
-    my $val = shift;
-
-    defined $val && $val ne '' && $val ne '-';
 }
 
 sub clear_comment();

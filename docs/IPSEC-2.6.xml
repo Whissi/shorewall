@@ -106,10 +106,10 @@
     traffic that is to be encrypted according to the contents of the SPD
     requires an appropriate SA to exist. SAs may be created manually using
     <command>setkey</command>(8) but most often, they are created by a
-    cooperative process involving the ISAKMP protocol and daemons such
-    as<command> racoon</command> or <command>isakmpd</command>. Incoming
-    traffic is verified against the SPD to ensure that no unencrypted traffic
-    is accepted in violation of the administrator's policies.</para>
+    cooperative process involving the ISAKMP protocol and a daemon included in
+    your IPSEC package (StrongSwan, LibreSwan, ipsec-tools/Racoon, etc.) .
+    Incoming traffic is verified against the SPD to ensure that no unencrypted
+    traffic is accepted in violation of the administrator's policies.</para>
 
     <para>There are three ways in which IPsec traffic can interact with
     Shorewall policies and rules:</para>
@@ -225,18 +225,11 @@
     of) SA(s) used to encrypt and decrypt traffic to/from the zone and the
     security policies that select which traffic to encrypt/decrypt.</para>
 
-    <para>This article assumes the use of ipsec-tools (<ulink
-    url="http://ipsec-tools.sourceforge.net">http://ipsec-tools.sourceforge.net</ulink>).
-    As of this writing, I recommend that you run at least version 0.5.2.
-    Debian users, please note that there are separate Debian packages for
-    ipsec-tools and racoon although the ipsec-tools project releases them as a
-    single package.</para>
-
-    <para>For more information on IPsec, Kernel 2.6 and Shorewall see <ulink
-    url="LinuxFest.pdf">my presentation on the subject given at LinuxFest NW
-    2005</ulink>. Be warned though that the presentation is based on Shorewall
-    2.2 and there are some differences in the details of how IPsec is
-    configured.</para>
+    <important>
+      <para>This article provides guidance regarding configuring Shorewall to
+      use with IPSEC. For configuring IPSEC itself, consult your IPSEC
+      product's documentation.</para>
+    </important>
   </section>
 
   <section id="GwFw">
@@ -360,155 +353,25 @@ $FW              vpn             ACCEPT</programlisting>
 ACCEPT     vpn:134.28.54.2  $FW</programlisting>
     </blockquote>
 
-    <para>Note that your Security Policies must also be set up to send traffic
-    between 134.28.54.2 and 206.162.148.9 through the tunnel (see
-    below).</para>
+    <warning>
+      <para>If you have hosts that access the Internet through an IPsec
+      tunnel, then it is a good idea to set the MSS value for traffic from
+      those hosts explicitly in the <filename>/etc/shorewall/zones</filename>
+      file. For example, if hosts in the <emphasis role="bold">vpn</emphasis>
+      zone access the Internet through an ESP tunnel then the following entry
+      would be appropriate:</para>
 
-    <para>Once you have these entries in place, restart Shorewall (type
-    shorewall restart); you are now ready to configure IPsec.</para>
-
-    <para>For full encrypted connectivity in this configuration (between the
-    subnets, between each subnet and the opposite gateway, and between the
-    gateways), you will need eight policies in
-    <filename>/etc/racoon/setkey.conf</filename>. For example, on gateway
-    A:</para>
-
-    <blockquote>
-      <programlisting># First of all flush the SPD and SAD databases
-spdflush;
-flush;
-
-# Add some SPD rules
-
-spdadd 192.168.1.0/24   10.0.0.0/8       any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
-spdadd 192.168.1.0/24   134.28.54.2/32   any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
-spdadd 206.162.148.9/32 134.28.54.2/32   any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
-spdadd 206.162.148.9/32 10.0.0.0/8       any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
-spdadd 10.0.0.0/8       192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
-spdadd 10.0.0.0/8       206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
-spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
-spdadd 134.28.54.2/32   206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;</programlisting>
-    </blockquote>
-
-    <para>The <filename>setkey.conf</filename> file on gateway B would be
-    similar.</para>
-
-    <para>A sample <filename>/etc/racoon/racoon.conf</filename> file using
-    X.509 certificates might look like:</para>
-
-    <blockquote>
-      <programlisting>path certificates "/etc/certs" ;
-
-listen 
-{
-        isakmp 206.162.148.9;
-}
-
-remote 134.28.54.2
-{
-        exchange_mode main ;
-        certificate_type x509 "GatewayA.pem" "GatewayA_key.pem" ;
-        verify_cert on;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 24 hour ;
-        proposal {
-                encryption_algorithm blowfish;
-                hash_algorithm sha1;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
-
-sainfo address 192.168.1.0/24 any address 10.0.0.0/8 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-
-sainfo address 206.162.148.9/32 any address 10.0.0.0/8 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-
-sainfo address 206.162.148.9/32 any address 134.28.54.2/32 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-
-sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}</programlisting>
-
-      <warning>
-        <para>If you have hosts that access the Internet through an IPsec
-        tunnel, then it is a good idea to set the MSS value for traffic from
-        those hosts explicitly in the
-        <filename>/etc/shorewall/zones</filename> file. For example, if hosts
-        in the <emphasis role="bold">vpn</emphasis> zone access the Internet
-        through an ESP tunnel then the following entry would be
-        appropriate:</para>
-
-        <programlisting>#ZONE   TYPE    OPTIONS                 IN_OPTIONS              OUT_OPTIONS
+      <programlisting>#ZONE   TYPE    OPTIONS                 IN_OPTIONS              OUT_OPTIONS
 vpn     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
-        <para>You should also set FASTACCEPT=No in shorewall.conf to ensure
-        that both the SYN and SYN,ACK packets have their MSS field
-        adjusted.</para>
+      <para>You should also set FASTACCEPT=No in shorewall.conf to ensure that
+      both the SYN and SYN,ACK packets have their MSS field adjusted.</para>
 
-        <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
-        isn't effective with the 2.6 native IPsec implementation because there
-        is no separate IPsec device with a lower mtu as there was under the
-        2.4 and earlier kernels.</para>
-      </warning>
-    </blockquote>
-  </section>
-
-  <section>
-    <title>IPCOMP and IPSEC</title>
-
-    <para>IPSEC can be configured to perform data compression. This is
-    accomplished by compressing the original IP packet, then encapsulating it
-    in an ipcomp (protocol 108) packet. That packet is then encrypted and
-    encapsulated within an ESP packet. Because of the extra protocol header
-    required for compression, short IP packets (such as default ping packets)
-    are not compressed. The Linux IP stack handles these uncompressed packets
-    by creating an IPIP (protocol 4) SA. As a consequence, IPIP packets from
-    the remote gateway must be handled in Shorewall. The easiest way to
-    accomplish this is to add an ACCEPT rule for protocol 4 from the IPSEC vpn
-    zone to the $FW zone:</para>
-
-    <blockquote>
-      <programlisting>#ACTION         SOURCE         DEST       PROTO       DPORT ...
-ACCEPT          vpn            $FW        4</programlisting>
-    </blockquote>
-
-    <para>Note that the source IP address is these IPIP packets is that of the
-    remote peer, so the definition of the ipsec zone in <ulink
-    url="manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5) must
-    include the peer.</para>
-
-    <para>Finally, when IPCOMP is used, it is recommended that the OPTIONS
-    column of the ipsec zone's entry in <ulink
-    url="manpages/shorewall-zones.html">shorewall-zones</ulink>(5) be left
-    empty.</para>
+      <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
+      isn't effective with the 2.6 native IPsec implementation because there
+      is no separate IPsec device with a lower mtu as there was under the 2.4
+      and earlier kernels.</para>
+    </warning>
   </section>
 
   <section id="RoadWarrior">
@@ -586,116 +449,7 @@ ipsec         net         206.162.148.9       vpn</programlisting>
         <programlisting>#ZONE             HOSTS                  OPTIONS
 vpn               eth0:0.0.0.0/0</programlisting>
       </blockquote>
-
-      <para>On system A, here are the IPsec files:</para>
-
-      <blockquote>
-        <para><filename>/etc/racoon/racoon.conf</filename> - System A:</para>
-
-        <programlisting>path certificate "/etc/certs" ;
- 
-listen
-{
-        isakmp 206.162.148.9;
-}
- 
-remote <emphasis role="bold">anonymous</emphasis>
-{
-        exchange_mode main ;
-        <emphasis role="bold">generate_policy on</emphasis> ;
-        <emphasis role="bold">passive on</emphasis> ;
-        certificate_type x509 "GatewayA.pem" "GatewayA_key.pem" ;
-        verify_cert on;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 24 hour ;
-        proposal {
-                encryption_algorithm blowfish ;
-                hash_algorithm sha1;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
- 
-sainfo <emphasis role="bold">anonymous</emphasis>
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}</programlisting>
-
-        <para><filename>/etc/racoon/setkey.conf</filename> - System A:</para>
-
-        <programlisting>flush;
-spdflush;</programlisting>
-      </blockquote>
-
-      <para>If system A is running kernel 2.6.10 or later then it must also be
-      running ipsec-tools (racoon) 0.5rc1 or later.</para>
-
-      <para>On the mobile system (system B), it is not possible to create a
-      static IPsec configuration because the IP address of the laptop's
-      Internet connection isn't static. I have created an 'ipsecvpn' script
-      and included in the tarball and in the RPM's documentation directory;
-      this script can be used to start and stop the connection.</para>
-
-      <para>The ipsecvpn script has some variable assignments at the top -- in
-      the above case, these would be as follows:</para>
-
-      <blockquote>
-        <programlisting>#
-# External Interface
-#
-INTERFACE=eth0
-#
-# Remote IPsec Gateway
-#
-GATEWAY=206.162.148.9
-#
-# Networks behind the remote gateway
-#
-NETWORKS="192.168.1.0/24"
-#
-# Directory where X.509 certificates are stored.
-#
-CERTS=/etc/certs
-#
-# Certificate to be used for this connection. The cert
-# directory must contain:
-#
-#     ${CERT}.pem     - the certificate
-#     ${CERT}_key.pem - the certificates's key
-#
-CERT=roadwarrior
-#
-#     The setkey binary
-#
-SETKEY=/usr/sbin/setkey
-#
-#     The racoon binary
-#
-RACOON=/usr/sbin/racoon</programlisting>
-      </blockquote>
-
-      <para>The ipsecvpn script can be installed in /etc/init.d/ but it is
-      probably best installed in /usr/local/sbin and run manually:</para>
-
-      <blockquote>
-        <para><command>ipsecvpn start </command># Starts the tunnel</para>
-
-        <para><command>ipsecvpn stop</command> # Stops the tunnel</para>
-      </blockquote>
     </example>
-
-    <warning>
-      <para>Although the ipsecvpn script allows you to specify multiple remote
-      NETWORKS as a space-separated list, SAs are created on the gateway only
-      during ISAKMP negotiation. So in practice, only the first remote network
-      accessed will be accessible from the roadwarrior.</para>
-    </warning>
   </section>
 
   <section id="RW-L2TP">
@@ -853,62 +607,7 @@ HTTPS(ACCEPT)   l2tp    $FW</programlisting>
     hosts in that network. In that case, IPsec transport mode is an
     appropriate solution.</para>
 
-    <para><graphic fileref="images/TransportMode.png"/>Here's an example using
-    the ipsec-tools package. The files shown are from host 192.168.20.10; the
-    configuration of the other nodes is similar.</para>
-
-    <blockquote>
-      <para><filename>/etc/racoon/racoon.conf</filename>:</para>
-
-      <programlisting>path pre_shared_key "/etc/racoon/psk.txt" ;
-
-remote anonymous
-{
-        exchange_mode main ;
-        my_identifier address ;
-        lifetime time 24 hour ;
-        proposal {
-                encryption_algorithm blowfish ;
-                hash_algorithm sha1;
-                authentication_method pre_shared_key ;
-                dh_group 2 ;
-        }
-}
-
-sainfo anonymous
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-</programlisting>
-
-      <para><filename>/etc/racoon/setkey.conf</filename>:</para>
-
-      <programlisting># First of all flush the SPD database
-spdflush;
-
-# Add some SPD rules
-
-spdadd 192.168.20.10/32 192.168.20.20/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.20/require;
-spdadd 192.168.20.20/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.20-192.168.20.10/require;
-spdadd 192.168.20.10/32 192.168.20.30/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.30/require;
-spdadd 192.168.20.30/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.30-192.168.20.10/require;
-spdadd 192.168.20.10/32 192.168.20.40/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.40/require;
-spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.40-192.168.20.10/require;
-</programlisting>
-
-      <para><filename>/etc/racoon/psk.txt</filename>:</para>
-
-      <programlisting>192.168.20.20             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.20&gt;
-192.168.20.30             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.30&gt;
-192.168.20.40             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.40&gt;</programlisting>
-
-      <para>Note that the <emphasis role="bold">same key</emphasis>must be
-      used in both directions.</para>
-    </blockquote>
+    <para><graphic fileref="images/TransportMode.png"/></para>
 
     <para>Shorewall configuration goes as follows:</para>
 
@@ -973,75 +672,13 @@ all             all             REJECT          info</programlisting>
 ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</programlisting>The
     above assumes that the name of your IPsec vpn zone is
     <emphasis>vpn</emphasis>.</para>
-  </section>
 
-  <section id="XP">
-    <title>IPsec and <trademark>Windows</trademark> XP</title>
-
-    <para>I have successfully configured my work laptop to use IPsec with
-    X.509 certificates for wireless IP communication when it is undocked at
-    home. I looked at dozens of sites and the one I found most helpful was
-    <ulink
-    url="http://ipsec.math.ucla.edu/services/ipsec-windows.html">http://ipsec.math.ucla.edu/services/ipsec-windows.html</ulink>.
-    The instructions on that site are directed to students at UCLA but they
-    worked fine for me (once I followed them very carefully).</para>
-
-    <warning>
-      <para>The instructions found on the UCLA site are complex and do not
-      include any information on the generation of X.509 certificates. There
-      are lots of sites however that can tell you how to generate
-      certificates, including <ulink
-      url="http://www.ipsec-howto.org/">http://www.ipsec-howto.org/</ulink>.</para>
-
-      <para>One piece of information that may not be so easy to find is "How
-      do I generate a PKCS#12 certificate to import into Windows?". Here's the
-      openssl command that I used:</para>
-
-      <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPsec Cert for Home Wireless"</command> </programlisting>
-
-      <para>I was prompted for a password to associate with the certificate.
-      This password is entered on the Windows system during import.</para>
-
-      <para>In the above command:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para><filename>eastepnc6000.pem</filename> was the laptop's
-          certificate in PEM format.</para>
-        </listitem>
-
-        <listitem>
-          <para><filename>eastepnc6000_key.pem</filename> was the laptop's
-          private key (actually, it's the original signing request which
-          includes the private key).</para>
-        </listitem>
-
-        <listitem>
-          <para><filename>eastepnc6000.pfx</filename> is the PKCS#12 output
-          file.</para>
-        </listitem>
-
-        <listitem>
-          <para>"IPsec Cert for Home Wireless" is the friendly name for the
-          certificate.</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>I started to write an article about how to do this, complete with
-      graphics captured from my laptop. I gave up. I had captured 12 images
-      and hadn't really started yet. The Windows interface for configuring
-      IPsec is the worst GUI that I have ever used. What can be displayed on
-      one split Emacs screen (racoon.conf plus setkey.conf) takes 20+
-      different dialog boxes on Windows XP!!!</para>
-    </warning>
-  </section>
-
-  <section id="More">
-    <title>Source of Additional Samples</title>
-
-    <para>Be sure to check out the <filename
-    class="directory">src/racoon/samples</filename> subdirectory in the
-    ipsec-tools source tree. It has a wide variety of sample racoon
-    configuration files.</para>
+    <important>
+      <para>Note that this protocol 4 (IPIP) traffic appears to originate in
+      the vpn zone, but it's source IP address is that of the remote gateway.
+      As a consequence, that address must be included in the definition of the
+      remote zone. If you haven't done that, the traffic will be dropped in
+      the INPUT chain.</para>
+    </important>
   </section>
 </article>

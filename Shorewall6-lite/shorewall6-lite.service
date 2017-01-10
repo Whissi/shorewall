@@ -2,6 +2,7 @@
 #     The Shoreline Firewall (Shorewall) Packet Filtering Firewall
 #
 #     Copyright 2011 Jonathan Underwood <jonathan.underwood@gmail.com>
+#     Copyright 2017 Tom Eastep <teastep@shorewall.net>
 #
 [Unit]
 Description=Shorewall IPv6 firewall (lite)
@@ -14,7 +15,7 @@ Type=oneshot
 RemainAfterExit=yes
 EnvironmentFile=-/etc/sysconfig/shorewall6-lite
 StandardOutput=syslog
-ExecStart=/sbin/shorewal -6l $OPTIONS start $STARTOPTIONS
+ExecStart=/sbin/shorewall -6l $OPTIONS start $STARTOPTIONS
 ExecStop=/sbin/shorewall -6l $OPTIONS stop
 ExecReload=/sbin/shorewall -6l $OPTIONS reload $RELOADOPTIONS
 

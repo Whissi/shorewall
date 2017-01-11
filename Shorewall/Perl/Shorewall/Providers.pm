@@ -616,11 +616,21 @@ sub process_a_provider( $ ) {
 	fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
 	fatal_error "'persistent' is not valid with 'tproxy"   if $persistent;
 	$mark = $globals{TPROXY_MARK};
-    } elsif ( $interfaceref->{options}{routefilter} ) {
+    } elsif ( my $rf = $config{ROUTE_FILTER} || $interfaceref->{options}{routefilter} ) {
 	if ( $config{USE_DEFAULT_RT} ) {
-	    fatal_error "Provider interfaces may not specify 'routefilter' when USE_DEFAULT_RT=Yes";
+	    if ( $rf ) {
+		fatal_error "There may be no providers when ROUTE_FILTER=Yes and USE_DEFAULT_RT=Yes";
+	    } else {
+		fatal_error "Providers interfaces may not specify 'routefilter' when USE_DEFAULT_RT=Yes";
+	    }
 	} else {
-	    fatal_error "Provider interfaces may not specify 'routefilter' without 'balance' or 'primary'" unless $balance;
+	    unless ( $balance ) {
+		if ( $rf ) {
+		    fatal_error "The 'balance' option is required when ROUTE_FILTER=Yes";
+		} else {
+		    fatal_error "Provider interfaces may not specify 'routefilter' without 'balance' or 'primary'";
+		}
+	    }
 	}
     }
 

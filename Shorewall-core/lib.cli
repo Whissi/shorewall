@@ -1207,10 +1207,10 @@ show_command() {
 	if [ -n "$foo" ]; then
 	    macro=${macro#*.}
 	    foo=${foo%.*}
-	    if [ ${#macro} -gt 10 ]; then
-		echo "   $macro  ${foo#\#}"
+	    if [ ${#macro} -gt 5 ]; then
+		printf "  $macro\t${foo#\#}\n"
 	    else
-		$g_echo_e "   $macro  \t${foo#\#}"
+		printf "  $macro\t\t${foo#\#}\n"
 	    fi
 	fi
     }

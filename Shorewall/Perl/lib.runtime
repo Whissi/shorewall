@@ -349,7 +349,7 @@ replace_default_route() # $1 = USE_DEFAULT_RT
 	case "$default_route" in
 	    *metric*)
 	        #
-	        # Don't restore a default route with a metric unless USE_DEFAULT_RT=Yes. Otherwise, we only replace the one with metric 0
+	        # Don't restore a default route with a metric unless USE_DEFAULT_RT=Yes or =Exact. Otherwise, we only replace the one with metric 0
 	        #
 		[ -n "$1" ] && qt $IP -$g_family route replace $default_route && progress_message "Default Route (${default_route# }) restored"
 		default_route=

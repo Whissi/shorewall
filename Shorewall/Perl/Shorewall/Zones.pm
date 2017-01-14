@@ -1275,7 +1275,7 @@ sub process_interface( $$ ) {
 		my $numval = numeric_value $value;
 		fatal_error "Invalid value ($value) for option $option" unless defined $numval && $numval <= $maxoptionvalue{$option};
 		require_capability 'TCPMSS_TARGET', "mss=$value", 's' if $option eq 'mss';
-		$options{logmartians} = 1 if $numval && $option eq 'routefilter';
+		$options{logmartians} = 1 if $option eq 'routefilter' && $numval && ! $config{LOG_MARTIANS};
 		$options{$option} = $numval;
 		$hostoptions{$option} = $numval if $hostopt;
 	    } elsif ( $type == IPLIST_IF_OPTION ) {

@@ -6282,19 +6282,10 @@ sub get_configuration( $$$$ ) {
     require_capability 'COMMENTS', 'TRACK_RULES=Yes', 's' if $config{TRACK_RULES};
 
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
+    default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
-
-    if ( supplied( $val = $config{USE_DEFAULT_RT} ) ) {
-	if ( lc( $val ) eq 'exact' ) {
-	    $config{USE_DEFAULT_RT} = 'exact';
-	} else {
-	    default_yes_no 'USE_DEFAULT_RT' , '';
-	}
-    } else {
-	default_yes_no 'USE_DEFAULT_RT' , '';
-    }
 
     unless ( ( $config{NULL_ROUTE_RFC1918} || '' ) =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
 	default_yes_no( 'NULL_ROUTE_RFC1918', '' );

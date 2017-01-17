@@ -2307,10 +2307,9 @@ INLINE          -       -       -       ;; -j REJECT
 
           <para>RESTORE_DEFAULT_ROUTE=No is appropriate when you don't want a
           default route in the main table (USE_DEFAULT_RT=No) or in the
-          default table (USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact) when
-          there are no balance providers available. In that case,
-          RESTORE_DEFAULT_ROUTE=No will cause any default route in the
-          relevant table to be deleted.</para>
+          default table (USE_DEFAULT_RT=Yes) when there are no balance
+          providers available. In that case, RESTORE_DEFAULT_ROUTE=No will
+          cause any default route in the relevant table to be deleted.</para>
         </listitem>
       </varlistentry>
 
@@ -2806,8 +2805,7 @@ INLINE          -       -       -       ;; -j REJECT
 
       <varlistentry>
         <term><emphasis role="bold">USE_DEFAULT_RT=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis
-        role="bold">No|Exact</emphasis>]</term>
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>When set to 'Yes', this option causes the Shorewall multi-ISP
@@ -2818,8 +2816,7 @@ INLINE          -       -       -       ;; -j REJECT
           the Shorewall-generated routing rules. So changes to the main table
           will affect the routing of packets by default.</para>
 
-          <para>When USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact (Shorewall
-          5.1.1 or later):</para>
+          <para>When USE_DEFAULT_RT=Yes:</para>
 
           <orderedlist>
             <listitem>
@@ -2834,11 +2831,8 @@ INLINE          -       -       -       ;; -j REJECT
             </listitem>
 
             <listitem>
-              <para>The <emphasis role="bold">balance</emphasis> provider
-              option is assumed unless <emphasis role="bold">loose</emphasis>,
-              <option>fallback</option>,<option> load=</option> or
-              <option>tproxy</option> is specified for the provider or unless
-              USE_DEFAULT_RT=Exact.</para>
+              <para><emphasis role="bold">balance</emphasis> is assumed unless
+              <emphasis role="bold">loose</emphasis> is specified.</para>
             </listitem>
 
             <listitem>

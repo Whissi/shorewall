@@ -219,16 +219,14 @@
       <para>The behavior and configuration of Multiple ISP support is
       dependent on the setting of USE_DEFAULT_RT in shorewall[6].conf.</para>
 
-      <para>When USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact (Shorewall 5.1.1
-      and later), packets are first routed through the main routing table
-      <emphasis>which does not contain a default route</emphasis>. Packets
-      which fail to be routed by an entry in the main table are then passed to
-      shorewall-defined routing tables based on your Multi-ISP configuration.
-      The advantage of this approach is that dynamic changes to the ip
-      configuration, such as VPNs going up and down, do not require
-      notificaiton of Shorewall. USE_DEFAULT_RT=No (USE_DEFAULT_RT=Exact in
-      Shorewall 5.1.1 and later) is now the default and use of
-      USE_DEFAULT_RT=No is deprecated.</para>
+      <para>When USE_DEFAULT_RT=Yes, packets are first routed through the main
+      routing table <emphasis>which does not contain a default
+      route</emphasis>. Packets which fail to be routed by an entry in the
+      main table are then passed to shorewall-defined routing tables based on
+      your Multi-ISP configuration. The advantage of this approach is that
+      dynamic changes to the ip configuration, such as VPNs going up and down,
+      do not require notificaiton of Shorewall. USE_DEFAULT_RT is now the
+      default and use of USE_DEFAULT_RT=No is deprecated.</para>
 
       <para>When USE_DEFAULT_RT=No, packets are routed via Shorewall-generated
       routing tables. As a consequence, the main routing table must be copied
@@ -321,10 +319,9 @@
             <para>Gives the name or number of a routing table to duplicate.
             May be 'main' or the name or number of a previously declared
             provider. This field should be be specified as '-' when
-            USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact in
-            <filename>shorewall.conf. When USE_DEFAULT_RT=No (not
-            recommended), this column is normally specified as
-            <option>main</option>.</filename></para>
+            USE_DEFAULT_RT=Yes in <filename>shorewall.conf. When
+            USE_DEFAULT_RT=No (not recommended), this column is normally
+            specified as <option>main</option>.</filename></para>
           </listitem>
         </varlistentry>
 
@@ -698,8 +695,7 @@ fi</programlisting>
       interfaces should be routed through the main table using entries in
       <filename>/etc/shorewall/rtrules</filename> (see Example 2 <link
       linkend="Examples">below</link>) or by using <link
-      linkend="USE_DEFAULT_RT">USE_DEFAULT_RT=Yes or
-      USE_DEFAULT_RT=Exact</link> (recommended)</para>
+      linkend="USE_DEFAULT_RT">USE_DEFAULT_RT=Yes</link> (recommended)</para>
 
       <para>In addition:</para>
 
@@ -911,8 +907,8 @@ DROP:info        net:192.168.1.0/24         all</programlisting>
       <title id="Example">Legacy Example</title>
 
       <para>This section describes the legacy method of configuring multiple
-      uplinks. It is deprecated in favor of the USE_DEFAULT_RT=Yes or
-      USE_DEFAULT_RT=Exact configuration described <link
+      uplinks. It is deprecated in favor of the USE_DEFAULT_RT=Yes
+      configuration described <link
       linkend="USE_DEFAULT_RT">below</link>.</para>
 
       <para>The configuration in the figure at the top of this section would
@@ -944,8 +940,7 @@ eth1             0.0.0.0/0         130.252.99.27</programlisting>
     </section>
 
     <section id="Example2">
-      <title id="Example99">Example using USE_DEFAULT_RT=Yes or
-      USE_DEFAULT_RT=Exact</title>
+      <title id="Example99">Example using USE_DEFAULT_RT=Yes</title>
 
       <para>This section shows the differences in configuring the above
       example with USE_DEFAULT_RT=Yes. The changes are confined to the
@@ -1219,12 +1214,12 @@ gateway:~ #</programlisting>
         VPN clients (including but not limited to OpenVPN in routed mode and
         PPTP), the VPN software adds a host route to the <emphasis
         role="bold">main</emphasis> table for each VPN client. The best
-        approach is to use USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact as
-        described <link linkend="USE_DEFAULT_RT">below</link>. If that isn't
-        possible, you must add a routing rule in the 1000-1999 range to
-        specify the <emphasis role="bold">main</emphasis> table for traffic
-        addressed to those clients. See<link linkend="Openvpn"> Example
-        2</link> below.</para>
+        approach is to use USE_DEFAULT_RT=Yes as described <link
+        linkend="USE_DEFAULT_RT">below</link>. If that isn't possible, you
+        must add a routing rule in the 1000-1999 range to specify the
+        <emphasis role="bold">main</emphasis> table for traffic addressed to
+        those clients. See<link linkend="Openvpn"> Example 2</link>
+        below.</para>
 
         <para>If you have an IPSEC gateway on your firewall, be sure to
         arrange for ESP packets to be routed out of the same interface that
@@ -1794,9 +1789,9 @@ lillycat: #</programlisting>
       route rules such as described in <link linkend="Openvpn">one of the
       examples above</link> necessary.</para>
 
-      <para>USE_DEFAULT_RT=Yes and USE_DEFAULT_RT=Exact work around that
-      problem by passing packets through the main table first rather than
-      last. This has a number of implications:</para>
+      <para>USE_DEFAULT_RT=Yes works around that problem by passing packets
+      through the main table first rather than last. This has a number of
+      implications:</para>
 
       <orderedlist>
         <listitem>
@@ -1807,12 +1802,9 @@ lillycat: #</programlisting>
         </listitem>
 
         <listitem>
-          <para>When USE_DEFAULT_RT=Yes, the <emphasis
-          role="bold">balance</emphasis> option is assumed for all interfaces
-          that do not have the <emphasis role="bold">loose</emphasis>,
-          <emphasis role="bold">primary</emphasis>, <emphasis
-          role="bold">fallback</emphasis> or <emphasis
-          role="bold">tproxy</emphasis> option. When you want both <emphasis
+          <para>The <emphasis role="bold">balance</emphasis> option is assumed
+          for all interfaces that do not have the <emphasis
+          role="bold">loose</emphasis> option. When you want both <emphasis
           role="bold">balance</emphasis> and <emphasis
           role="bold">loose</emphasis>, both must be specified.</para>
         </listitem>
@@ -1906,9 +1898,8 @@ shorewall     2    2    -        eth0    192.168.1.254 track,balance=2,optional<
       <section>
         <title>DHCP with USE_DEFAULT_RT</title>
 
-        <para>When USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact, you don't want
-        your DHCP client inserting a default route into the main routing
-        table.</para>
+        <para>When USE_DEFAULT_RT=Yes, you don't want your DHCP client
+        inserting a default route into the main routing table.</para>
 
         <section>
           <title>Debian</title>

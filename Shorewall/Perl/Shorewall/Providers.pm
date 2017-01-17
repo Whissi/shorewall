@@ -519,11 +519,11 @@ sub process_a_provider( $ ) {
     my ( $loose, $track, $balance, $default, $default_balance, $optional, $mtu, $tproxy, $local, $load, $what, $hostroute, $persistent );
 
     if ( $pseudo ) {	
-	( $loose, $track,                   $balance , $default, $default_balance,                         $optional,                           $mtu, $tproxy , $local, $load, $what ,      $hostroute,        $persistent ) =
-	( 0,      0                       , 0 ,        0,        0,                                        1                                  , ''  , 0       , 0,      0,     'interface', 0,                 0);
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what ,      $hostroute,        $persistent ) =
+	( 0,      0                       , 0 ,        0,        0,                               1                                  , ''  , 0       , 0,      0,     'interface', 0,                 0);
     } else {
-	( $loose, $track,                   $balance , $default, $default_balance,                         $optional,                           $mtu, $tproxy , $local, $load, $what      , $hostroute,        $persistent  )=
-	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} eq 'Yes' ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider',  1,                 0);
+	( $loose, $track,                   $balance , $default, $default_balance,                $optional,                           $mtu, $tproxy , $local, $load, $what      , $hostroute,        $persistent  )=
+	( 0,      $config{TRACK_PROVIDERS}, 0 ,        0,        $config{USE_DEFAULT_RT} ? 1 : 0, interface_is_optional( $interface ), ''  , 0       , 0,      0,     'provider',  1,                 0);
     }
 
     unless ( $options eq '-' ) {

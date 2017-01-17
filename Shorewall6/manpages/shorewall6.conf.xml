@@ -2448,8 +2448,7 @@ INLINE          -       -       -       ;; -j REJECT
 
       <varlistentry>
         <term><emphasis role="bold">USE_DEFAULT_RT=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis
-        role="bold">No</emphasis>|Exact]</term>
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
           <para>Added in Shorewall6 4.4.25. When set to 'Yes', this option
@@ -2461,8 +2460,7 @@ INLINE          -       -       -       ;; -j REJECT
           changes to the main table will affect the routing of packets by
           default.</para>
 
-          <para>When USE_DEFAULT_RT=Yes or USE_DEFAULT_RT=Exact (Shorewall
-          5.1.1 or later):</para>
+          <para>When USE_DEFAULT_RT=Yes:</para>
 
           <orderedlist>
             <listitem>
@@ -2477,11 +2475,8 @@ INLINE          -       -       -       ;; -j REJECT
             </listitem>
 
             <listitem>
-              <para>The <emphasis role="bold">balance</emphasis> provider
-              option is assumed unless <emphasis role="bold">loose</emphasis>,
-              <option>fallback</option>,<option> load=</option> or
-              <option>tproxy</option> is specified for the provider or unless
-              USE_DEFAULT_RT=Exact.</para>
+              <para><emphasis role="bold">balance</emphasis> is assumed unless
+              <emphasis role="bold">loose</emphasis> is specified.</para>
             </listitem>
 
             <listitem>

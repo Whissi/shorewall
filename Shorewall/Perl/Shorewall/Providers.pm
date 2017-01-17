@@ -603,38 +603,38 @@ sub process_a_provider( $ ) {
 
     fatal_error "A provider interface must have at least one associated zone" unless $tproxy || %{interface_zones($interface)};
 
-    if ( $local ) {
-	fatal_error "GATEWAY not valid with 'local' provider"  unless $gatewaycase eq 'omitted';
-	fatal_error "'track' not valid with 'local'"           if $track;
-	fatal_error "DUPLICATE not valid with 'local'"         if $duplicate ne '-';
-	fatal_error "'persistent' is not valid with 'local"    if $persistent;
-    } elsif ( $tproxy ) {
-	fatal_error "Only one 'tproxy' provider is allowed"    if $tproxies++;
-	fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'omitted';
-	fatal_error "'track' not valid with 'tproxy'"          if $track;
-	fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';
-	fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
-	fatal_error "'persistent' is not valid with 'tproxy"   if $persistent;
-	$mark = $globals{TPROXY_MARK};
-    } elsif ( ! $pseudo && ( ( my $rf = ( $config{ROUTE_FILTER} eq 'on' ) ) || $interfaceref->{options}{routefilter} ) ) {
-	if ( $config{USE_DEFAULT_RT} ) {
-	    if ( $rf ) {
-		fatal_error "There may be no providers when ROUTE_FILTER=Yes and USE_DEFAULT_RT=Yes";
-	    } else {
-		fatal_error "Providers interfaces may not specify 'routefilter' when USE_DEFAULT_RT=Yes";
-	    }
-	} else {
-	    unless ( $balance ) {
+    unless ( $pseudo ) {
+	if ( $local ) {
+	    fatal_error "GATEWAY not valid with 'local' provider"  unless $gatewaycase eq 'omitted';
+	    fatal_error "'track' not valid with 'local'"           if $track;
+	    fatal_error "DUPLICATE not valid with 'local'"         if $duplicate ne '-';
+	    fatal_error "'persistent' is not valid with 'local"    if $persistent;
+	} elsif ( $tproxy ) {
+	    fatal_error "Only one 'tproxy' provider is allowed"    if $tproxies++;
+	    fatal_error "GATEWAY not valid with 'tproxy' provider" unless $gatewaycase eq 'omitted';
+	    fatal_error "'track' not valid with 'tproxy'"          if $track;
+	    fatal_error "DUPLICATE not valid with 'tproxy'"        if $duplicate ne '-';
+	    fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
+	    fatal_error "'persistent' is not valid with 'tproxy"   if $persistent;
+	    $mark = $globals{TPROXY_MARK};
+	} elsif ( ( my $rf = ( $config{ROUTE_FILTER} eq 'on' ) ) || $interfaceref->{options}{routefilter} ) {
+	    if ( $config{USE_DEFAULT_RT} ) {
 		if ( $rf ) {
-		    fatal_error "The 'balance' option is required when ROUTE_FILTER=Yes";
+		    fatal_error "There may be no providers when ROUTE_FILTER=Yes and USE_DEFAULT_RT=Yes";
 		} else {
-		    fatal_error "Provider interfaces may not specify 'routefilter' without 'balance' or 'primary'";
+		    fatal_error "Providers interfaces may not specify 'routefilter' when USE_DEFAULT_RT=Yes";
+		}
+	    } else {
+		unless ( $balance ) {
+		    if ( $rf ) {
+			fatal_error "The 'balance' option is required when ROUTE_FILTER=Yes";
+		    } else {
+			fatal_error "Provider interfaces may not specify 'routefilter' without 'balance' or 'primary'";
+		    }
 		}
 	    }
 	}
     }
-
-
 
     my $val = 0;
     my $pref;

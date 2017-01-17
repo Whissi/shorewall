@@ -5280,7 +5280,13 @@ sub update_config_file( $ ) {
     }
 
     update_default( 'USE_DEFAULT_RT', 'No' );
-    update_default( 'BALANCE_PROVIDERS', 'Yes' );
+
+    if ( $config{USE_DEFAULT_RT} eq '' || $config{USE_DEFAULT_RT} =~ /^no$/i ) {
+	update_default( 'BALANCE_PROVIDERS', 'No' );
+    } else {
+	update_default( 'BALANCE_PROVIDERS', 'Yes' );
+    }
+
     update_default( 'EXPORTMODULES',  'No' );
     update_default( 'RESTART',        'reload' );
     update_default( 'PAGER',          $shorewallrc1{DEFAULT_PAGER} );
@@ -6288,9 +6294,7 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
-    default_yes_no 'BALANCE_PROVIDERS'          , 'Yes';
-
-    $config{BALANCE_PROVIDERS} = '' unless $config{USE_DEFAULT_RT};
+    default_yes_no 'BALANCE_PROVIDERS'          , $config{USE_DEFAULT_RT} ? 'Yes' : '';
 
     unless ( ( $config{NULL_ROUTE_RFC1918} || '' ) =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
 	default_yes_no( 'NULL_ROUTE_RFC1918', '' );

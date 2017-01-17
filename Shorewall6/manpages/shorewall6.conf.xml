@@ -375,6 +375,23 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">BALANCE_PROVIDERS=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.1.1. When USE_DEFAULT_RT=Yes, this option
+          determines whether the <option>balance</option> provider option (see
+          <ulink
+          url="shorewall6-providers.html">shorewall6-providers(5)</ulink>) is
+          the default. When BALANCE_PROVIDERS=Yes (the default), then the
+          <option>balance</option> option is assumed unless the
+          <option>fallback</option>, <option>loose</option>,
+          <option>load</option> or <option>tproxy</option> option is
+          specified.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">BASIC_FILTERS=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
@@ -2475,8 +2492,12 @@ INLINE          -       -       -       ;; -j REJECT
             </listitem>
 
             <listitem>
-              <para><emphasis role="bold">balance</emphasis> is assumed unless
-              <emphasis role="bold">loose</emphasis> is specified.</para>
+              <para>If running Shorewall 5.1.0 or earlier or if
+              BALANCE_PROVIDERS=Yes (Shorewall 5.1.1 or later), then the
+              <emphasis role="bold">balance</emphasis> provider option is
+              assumed unless the <option>fallback</option>,
+              <option>loose</option>, <option>load</option> or
+              <option>tproxy</option> option is specified.</para>
             </listitem>
 
             <listitem>

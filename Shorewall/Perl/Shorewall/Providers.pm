@@ -616,7 +616,7 @@ sub process_a_provider( $ ) {
 	fatal_error "MARK not allowed with 'tproxy'"           if $mark ne '-';
 	fatal_error "'persistent' is not valid with 'tproxy"   if $persistent;
 	$mark = $globals{TPROXY_MARK};
-    } elsif ( ( my $rf = ( $config{ROUTE_FILTER} eq 'on' ) ) || $interfaceref->{options}{routefilter} ) {
+    } elsif ( ! $pseudo && ( ( my $rf = ( $config{ROUTE_FILTER} eq 'on' ) ) || $interfaceref->{options}{routefilter} ) ) {
 	if ( $config{USE_DEFAULT_RT} ) {
 	    if ( $rf ) {
 		fatal_error "There may be no providers when ROUTE_FILTER=Yes and USE_DEFAULT_RT=Yes";

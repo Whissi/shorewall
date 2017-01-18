@@ -816,6 +816,7 @@ sub initialize( $;$$) {
 	  ACCEPT_DEFAULT => undef,
 	  QUEUE_DEFAULT => undef,
 	  NFQUEUE_DEFAULT => undef,
+	  BLACKLIST_DEFAULT => undef,
 	  #
 	  # RSH/RCP Commands
 	  #
@@ -6625,11 +6626,12 @@ sub get_configuration( $$$$ ) {
     default 'RESTOREFILE'           , 'restore';
     default 'DROP_DEFAULT'          , 'Drop';
     default 'REJECT_DEFAULT'        , 'Reject';
+    default 'BLACKLIST_DEFAULT'     , 'Drop';
     default 'QUEUE_DEFAULT'         , 'none';
     default 'NFQUEUE_DEFAULT'       , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';
 
-    for my $default ( qw/DROP_DEFAULT REJECT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ ) {
+    for my $default ( qw/DROP_DEFAULT REJECT_DEFAULT BLACKLIST_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT ACCEPT_DEFAULT/ ) {
 	$config{$default} = 'none' if "\L$config{$default}" eq 'none';
     }
 

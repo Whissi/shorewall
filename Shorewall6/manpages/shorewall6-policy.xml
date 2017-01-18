@@ -114,7 +114,7 @@
         <term><emphasis role="bold">POLICY</emphasis> - {<emphasis
         role="bold">ACCEPT</emphasis>|<emphasis
         role="bold">DROP</emphasis>|<emphasis
-        role="bold">REJECT</emphasis>|<emphasis
+        role="bold">REJECT</emphasis>|BLACKLIST|<emphasis
         role="bold">CONTINUE</emphasis>|<emphasis
         role="bold">QUEUE</emphasis>|<emphasis
         role="bold">NFQUEUE</emphasis>[(<emphasis>queuenumber1</emphasis>[:<replaceable>queuenumber2</replaceable>])]|<emphasis
@@ -174,6 +174,19 @@
               <listitem>
                 <para>For TCP, send RST. For all other, send an "unreachable"
                 ICMP.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">BLACKLIST</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.1.1 and requires that the
+                DYNAMIC_BLACKLIST setting in <ulink
+                url="/manpages/shorewall.conf.html">shorewall6.conf</ulink>(5)
+                specifies ipset-based dynamic blacklisting. The SOURCE IP
+                address is added to the blacklist ipset and the connection
+                request is ignored.</para>
               </listitem>
             </varlistentry>
 

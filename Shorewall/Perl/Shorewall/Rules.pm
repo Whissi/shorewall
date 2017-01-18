@@ -309,11 +309,12 @@ sub initialize( $ ) {
     # This is updated from the *_DEFAULT settings in shorewall.conf. Those settings were stored
     # in the %config hash when shorewall[6].conf was processed.
     #
-    %default_actions  = ( DROP     => 'none' ,
-		 	  REJECT   => 'none' ,
-			  ACCEPT   => 'none' ,
-			  QUEUE    => 'none' ,
-			  NFQUEUE  => 'none' ,
+    %default_actions  = ( DROP      => 'none' ,
+		 	  REJECT    => 'none' ,
+			  BLACKLIST => 'none' ,
+			  ACCEPT    => 'none' ,
+			  QUEUE     => 'none' ,
+			  NFQUEUE   => 'none' ,
 			);
     #
     # These are set to 1 as sections are encountered.
@@ -679,6 +680,8 @@ sub process_a_policy1($$$$$$$) {
 	    if $clientwild || $serverwild;
 	fatal_error "NONE policy not allowed to/from firewall zone"
 	    if ( zone_type( $client ) == FIREWALL ) || ( zone_type( $server ) == FIREWALL );
+    } elsif ( $policy eq 'BLACKLIST' ) {
+	fatal_error 'BLACKLIST policies require ipset-based dynamic blacklisting' unless $config{DYNAMIC_BLACKLIST} =~ /^ipset/;
     }
 
     unless ( $clientwild || $serverwild ) {
@@ -817,24 +820,26 @@ sub process_policies()
     our %validpolicies = (
 			  ACCEPT => undef,
 			  REJECT => undef,
-			  DROP   => undef,
+			  DROP	 => undef,
 			  CONTINUE => undef,
+			  BLACKLIST => undef,
 			  QUEUE => undef,
 			  NFQUEUE => undef,
 			  NONE => undef
 			  );
 
-    our %map = ( DROP_DEFAULT    => 'DROP' ,
-		 REJECT_DEFAULT  => 'REJECT' ,
-		 ACCEPT_DEFAULT  => 'ACCEPT' ,
-		 QUEUE_DEFAULT   => 'QUEUE' ,
-		 NFQUEUE_DEFAULT => 'NFQUEUE' );
+    our %map = ( DROP_DEFAULT      => 'DROP' ,
+		 REJECT_DEFAULT    => 'REJECT' ,
+		 BLACKLIST_DEFAULT => 'BLACKLIST' ,
+		 ACCEPT_DEFAULT    => 'ACCEPT' ,
+		 QUEUE_DEFAULT     => 'QUEUE' ,
+		 NFQUEUE_DEFAULT   => 'NFQUEUE' );
 
     my $zone;
     my $firewall = firewall_zone;
     our @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
-    for my $option ( qw( DROP_DEFAULT REJECT_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) ) {
+    for my $option ( qw( DROP_DEFAULT REJECT_DEFAULT BLACKLIST_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) ) {
 	my $action = $config{$option};
 
 	unless ( $action eq 'none' ) {
@@ -951,7 +956,20 @@ sub add_policy_rules( $$$$$ ) {
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
 	fatal_error "Null target in policy_rules()" unless $target;
 
-	add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $target ) if $chainref->{audit};
+	if ( $target eq 'BLACKLIST' ) {
+	    my ( $dbl_type, $dbl_ipset, $dbl_level, $dbl_tag ) = split( ':', $config{DYNAMIC_BLACKLIST} );
+
+	    if ( my $timeout = $globals{DBL_TIMEOUT} ) {
+		add_ijump( $chainref, j => "SET --add-set $dbl_ipset src --exist --timeout $timeout" );
+	    } else {
+		add_ijump( $chainref, j => "SET --add-set $dbl_ipset src --exist" );
+	    }
+
+	    $target = 'DROP';
+	} else {
+	    add_ijump( $chainref , j => 'AUDIT', targetopts => '--type ' . lc $target ) if $chainref->{audit};
+	}
+
 	add_ijump( $chainref , g => $target eq 'REJECT' ? 'reject' : $target ) unless $target eq 'CONTINUE';
     }
 }

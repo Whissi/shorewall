@@ -9,44 +9,45 @@
 # Builtin Actions are:
 #
 ?if 0
-A_ACCEPT                        # Audits then accepts a connection request
-A_DROP                          # Audits then drops a connection request
-allowBcast		        # Silently Allow Broadcast/multicast
-dropBcast		        # Silently Drop Broadcast/multicast
-dropNotSyn		        # Silently Drop Non-syn TCP packets
-rejNotSyn		        # Silently Reject Non-syn TCP packets
-allowinUPnP	                # Allow UPnP inbound (to firewall) traffic
-forwardUPnP	                # Allow traffic that upnpd has redirected from 'upnp' interfaces.
-Limit                           # Limit the rate of connections from each individual IP address
+A_ACCEPT			# Audits then accepts a connection request
+A_DROP				# Audits then drops a connection request
+allowBcast			# Silently Allow Broadcast/multicast
+dropBcast			# Silently Drop Broadcast/multicast
+dropNotSyn			# Silently Drop Non-syn TCP packets
+rejNotSyn			# Silently Reject Non-syn TCP packets
+allowinUPnP			# Allow UPnP inbound (to firewall) traffic
+forwardUPnP			# Allow traffic that upnpd has redirected from 'upnp' interfaces.
+Limit				# Limit the rate of connections from each individual IP address
 ?endif
 ###############################################################################
 #ACTION
-A_Drop 		                # Audited Default Action for DROP policy
-A_REJECT     noinline,logjump   # Audits then rejects a connection request
-A_REJECT!    inline             # Audits then rejects a connection request
-A_Reject	                # Audited Default action for REJECT policy
+A_Drop				# Audited Default Action for DROP policy
+A_REJECT     noinline,logjump	# Audits then rejects a connection request
+A_REJECT!    inline		# Audits then rejects a connection request
+A_Reject			# Audited Default action for REJECT policy
 allowInvalid inline		# Accepts packets in the INVALID conntrack state
-AutoBL       noinline           # Auto-blacklist IPs that exceed thesholds
-AutoBLL      noinline           # Helper for AutoBL
-Broadcast    noinline,audit     # Handles Broadcast/Multicast/Anycast
-DNSAmp                          # Matches one-question recursive DNS queries
-Drop		                # Default Action for DROP policy
+AutoBL	     noinline		# Auto-blacklist IPs that exceed thesholds
+AutoBLL	     noinline		# Helper for AutoBL
+BLACKLIST    logjump		# Add sender to the dynamic blacklist
+Broadcast    noinline,audit	# Handles Broadcast/Multicast/Anycast
+DNSAmp				# Matches one-question recursive DNS queries
+Drop				# Default Action for DROP policy
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
-DropSmurfs   noinline           # Drop smurf packets
+DropSmurfs   noinline		# Drop smurf packets
 Established  inline,\		# Handles packets in the ESTABLISHED state
-	     state=ESTABLISHED  #
+	     state=ESTABLISHED	#
 GlusterFS    inline		# Handles GlusterFS
-IfEvent      noinline           # Perform an action based on an event
-Invalid      inline,audit,\     # Handles packets in the INVALID conntrack state
-             state=INVALID      #
+IfEvent	     noinline		# Perform an action based on an event
+Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
+	     state=INVALID	#
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
-NotSyn       inline,audit       # Handles TCP packets which do not have SYN=1 and ACK=0
-Reject                          # Default Action for REJECT policy
-Related      inline,\		# Handles packets in the RELATED conntrack state
-             state=RELATED      #
+NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
+Reject				# Default Action for REJECT policy
+Related	     inline,\		# Handles packets in the RELATED conntrack state
+	     state=RELATED	#
 ResetEvent   inline		# Reset an Event
-RST	     inline,audit       # Handle packets with RST set
+RST	     inline,audit	# Handle packets with RST set
 SetEvent     inline		# Initialize an event
-TCPFlags    			# Handle bad flag combinations.
-Untracked    inline,\           # Handles packets in the UNTRACKED conntrack state
-	     state=UNTRACKED    #
+TCPFlags			# Handle bad flag combinations.
+Untracked    inline,\		# Handles packets in the UNTRACKED conntrack state
+	     state=UNTRACKED	#

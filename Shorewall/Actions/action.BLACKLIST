@@ -1,0 +1,39 @@
+#
+# Shorewall - /usr/share/shorewall/action.BLACKLIST
+#
+# This action:
+#
+#   - Adds the sender to the dynamic blacklist ipset
+#   - Optionally acts on the packet (default is DROP)
+#
+# Parameters:
+#
+# 1 - Action to take after adding the packet. Default is DROP.
+#     Pass -- if you don't want to take any action.
+# 2 - Timeout for ipset entry. Default is the timeout specified in
+#     DYNAMIC_BLACKLIST or the one specified when the ipset was created.
+#
+###############################################################################
+?if ! "$SW_DBL_IPSET"
+?   error The BLACKLIST action may only be used with ipset-based dynamic blacklisting
+?endif
+
+DEFAULTS DROP,-
+
+#ACTION		SOURCE	DEST	PROTO	DPORT	SPORT
+#
+# Add to the blacklist
+#
+?if passed(@2)
+    ADD($SW_DBL_IPSET:src:@2)
+?elsif $SW_DBL_TIMEOUT
+    ADD($SW_DBL_IPSET:src:$SW_DBL_TIMEOUT)
+?else
+    ADD($SW_DBL_IPSET:src)
+?endif
+#
+# Dispose of the packet if asked
+#
+?if passed(@1)
+   @1
+?endif

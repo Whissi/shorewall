@@ -6312,6 +6312,8 @@ sub get_configuration( $$$$ ) {
 	$config{ACCOUNTING_TABLE} = 'filter';
     }
 
+    my %variables = ( SW_DBL_IPSET => '', SW_DBL_TIMEOUT => 0 );
+
     if ( supplied( $val = $config{DYNAMIC_BLACKLIST} ) ) {
 	if ( $val =~ /^ipset/ ) {
 	    my %simple_options = ( 'src-dst' => 1, 'disconnect' => 1 );
@@ -6352,12 +6354,17 @@ sub get_configuration( $$$$ ) {
 
 	    require_capability( 'IPSET_V5', 'DYNAMIC_BLACKLIST=ipset...', 's' );
 
+	    $variables{SW_DBL_IPSET}   = $set;
+	    $variables{SW_DBL_TIMEOUT} = $globals{DBL_TIMEOUT};
+
 	} else {
 	    default_yes_no( 'DYNAMIC_BLACKLIST', 'Yes' );
 	}
     } else {
 	default_yes_no( 'DYNAMIC_BLACKLIST', 'Yes' );
     }
+
+    add_variables( %variables );
 
     default_yes_no 'REQUIRE_INTERFACE'          , '';
     default_yes_no 'FORWARD_CLEAR_MARK'         , have_capability( 'MARK' ) ? 'Yes' : '';

@@ -1150,6 +1150,11 @@ show_macros() {
     done
 }
 
+show_an_action() {
+    echo "Shorewall $SHOREWALL_VERSION Action $1 at $g_hostname - $(date)"
+    cat ${directory}/action.$1
+}
+
 show_a_macro() {
     echo "Shorewall $SHOREWALL_VERSION Macro $1 at $g_hostname - $(date)"
     cat ${directory}/macro.$1
@@ -1458,12 +1463,26 @@ show_command() {
 		    ;;
 	    	*)
 		    case $1 in
+			action)
+			    [ $# -lt 2 ] && fatal_error 'Missing <action>'
+			    [ $# -gt 2 ] && too_many_arguments $2
+
+			    for directory in $(split $CONFIG_PATH); do
+				if [ -f ${directory}/action.$2 ]; then
+				    eval show_an_action $2 $g_pager
+				    return
+				fi
+			    done
+			    echo "   WARNING: Action $2 not found" >&2
+			    return
+			    ;;
 			actions)
 			    [ $# -gt 1 ] && too_many_arguments $2
 			    eval show_actions_sorted $g_pager
 			    return
 			    ;;
 			macro)
+			    [ $# -lt 2 ] && fatal_error 'Missing <macro>'
 			    [ $# -ne 2 ] && too_many_arguments $2
 			    for directory in $(split $CONFIG_PATH); do
 				if [ -f ${directory}/macro.$2 ]; then
@@ -4291,6 +4310,7 @@ usage() # $1 = exit status
     echo "   savesets"
     echo "   [ show | list | ls ] [ -b ] [ -x ] [ -t {filter|mangle|nat} ] [ {chain [<chain> [ <chain> ... ]"
     ecko "   [ show | list | ls ] actions"
+    ecko "   [ show | list | ls ] action <action>"
     echo "   [ show | list | ls ] arptables"
     echo "   [ show | list | ls ] [ -f ] capabilities"
     echo "   [ show | list | ls ] [ -x ] {bl|blacklists}"

@@ -686,6 +686,31 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
+      <command>shorewall[6]</command>
+
+      <arg>options</arg>
+
+      <arg choice="req"><option>show | list | ls </option></arg>
+
+      <arg><option>-f</option></arg>
+
+      <arg choice="plain"><option>{actions|macros}</option></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall[6]</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>options</arg>
+
+      <arg choice="req"><option>show | list | ls </option></arg>
+
+      <arg choice="plain"><option>action</option><arg
+      choice="plain"><replaceable>action</replaceable></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
       <command>shorewall[6][-lite]</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
@@ -695,7 +720,7 @@
       <arg choice="req"><option>show | list | ls </option></arg>
 
       <arg
-      choice="req"><option>actions|classifiers|connections|config|events|filters|ip|ipa|ipsec|macros|zones|policies|marks</option></arg>
+      choice="req"><option>classifiers|connections|config|events|filters|ip|ipa|ipsec|zones|policies|marks</option></arg>
     </cmdsynopsis>
 
     <cmdsynopsis>
@@ -2416,11 +2441,22 @@
 
           <variablelist>
             <varlistentry>
+              <term><emphasis role="bold">action
+              <replaceable>action</replaceable></emphasis></term>
+
+              <listitem>
+                <para>Lists the named action file. Available on Shorewall and
+                Shorewall6 only.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">actions</emphasis></term>
 
               <listitem>
                 <para>Produces a report about the available actions (built-in,
-                standard and user-defined).</para>
+                standard and user-defined). Available on Shorewall and
+                Shorewall6 only.</para>
               </listitem>
             </varlistentry>
 

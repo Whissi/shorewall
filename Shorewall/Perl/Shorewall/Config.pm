@@ -748,7 +748,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.0.9-Beta2",
+		    VERSION                 => "5.1.1-RC1",
 		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -2854,7 +2854,7 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+|WARNING!\s+|INFO!\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+|WARNING!\s+|INFO!\s+|REQUIRE\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -3040,6 +3040,12 @@ sub process_compiler_directive( $$$$ ) {
 						   1 ),
 			      $filename ,
 			      $linenumber ) unless $omitting;
+	  } ,
+
+	  REQUIRE => sub() {
+	      fatal_error "?REQUIRE may only be used within action files" unless $actparams{0};
+	      fatal_error "Unknown capability ($expression}" unless $capabilities{$expression};
+	      require_capability( $expression, "The $actparams{action} action", 's' );
 	  } ,
 
 	);
@@ -3755,7 +3761,7 @@ sub read_a_line($) {
 	    #
 	    # Handle directives
 	    #
-	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT|ERROR|WARNING|INFO)/i ) {
+	    if ( /^\s*\?(?:IF|ELSE|ELSIF|ENDIF|SET|RESET|FORMAT|COMMENT|ERROR|WARNING|INFO|REQUIRE)/i ) {
 		$omitting = process_compiler_directive( $omitting, $_, $currentfilename, $. );
 		next;
 	    }

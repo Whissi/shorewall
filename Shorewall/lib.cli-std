@@ -443,20 +443,21 @@ compiler() {
     fi
 
     options="--verbose=$VERBOSITY --family=$g_family --config_path=$CONFIG_PATH --shorewallrc=${shorewallrc}"
-    [ -n "$shorewallrc1" ] && options="$options --shorewallrc1=${shorewallrc1}"
-    [ -n "$STARTUP_LOG" ] && options="$options --log=$STARTUP_LOG"
-    [ -n "$LOG_VERBOSITY" ] && options="$options --log_verbosity=$LOG_VERBOSITY";
-    [ -n "$g_export" ] && options="$options --export"
-    [ -n "$g_shorewalldir" ] && options="$options --directory=$g_shorewalldir"
-    [ -n "$g_timestamp" ] && options="$options --timestamp"
-    [ -n "$g_test" ] && options="$options --test"
-    [ -n "$g_preview" ] && options="$options --preview"
+
+    [ -n "$shorewallrc1" ]     && options="$options --shorewallrc1=${shorewallrc1}"
+    [ -n "$STARTUP_LOG" ]      && options="$options --log=$STARTUP_LOG"
+    [ -n "$LOG_VERBOSITY" ]    && options="$options --log_verbosity=$LOG_VERBOSITY";
+    [ -n "$g_export" ]         && options="$options --export"
+    [ -n "$g_shorewalldir" ]   && options="$options --directory=$g_shorewalldir"
+    [ -n "$g_timestamp" ]      && options="$options --timestamp"
+    [ -n "$g_test" ]           && options="$options --test"
+    [ -n "$g_preview" ]        && options="$options --preview"
     [ "$g_debugging" = trace ] && options="$options --debug"
-    [ -n "$g_refreshchains" ] && options="$options --refresh=$g_refreshchains"
-    [ -n "$g_confess" ] && options="$options --confess"
-    [ -n "$g_update" ] && options="$options --update"
-    [ -n "$g_annotate" ] && options="$options --annotate"
-    [ -n "$g_inline" ] && options="$options --inline"
+    [ -n "$g_refreshchains" ]  && options="$options --refresh=$g_refreshchains"
+    [ -n "$g_confess" ]        && options="$options --confess"
+    [ -n "$g_update" ]         && options="$options --update"
+    [ -n "$g_annotate" ]       && options="$options --annotate"
+    [ -n "$g_inline" ]         && options="$options --inline"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then

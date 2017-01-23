@@ -233,6 +233,7 @@ use constant { INLINE_OPT           => 1 ,
 	       TERMINATING_OPT      => 256 ,
 	       AUDIT_OPT            => 512 ,
 	       LOGJUMP_OPT          => 1024 ,
+	       SECTION_OPT          => 2048 ,
 };
 
 our %options = ( inline      => INLINE_OPT ,
@@ -246,6 +247,7 @@ our %options = ( inline      => INLINE_OPT ,
 		 terminating => TERMINATING_OPT ,
 		 audit       => AUDIT_OPT ,
 		 logjump     => LOGJUMP_OPT ,
+		 section     => SECTION_OPT ,
     );
 
 our %reject_options;
@@ -2736,13 +2738,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    if ( $actiontype = $targets{$basictarget} ) {
-	if ( $section == BLACKLIST_SECTION && $basictarget eq 'BLACKLIST' ) {
-	    assert( $actiontype = find_macro( 'BLACKLIST' ) );
-	}
-    } else {
-	$actiontype = find_macro ( $basictarget );
-    }
+    $actiontype = $targets{$basictarget} || find_macro( $basictarget );
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;
@@ -3150,6 +3146,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $actionchain; # Name of the action chain
 
     if ( $actiontype & ACTION ) {
+	#
+	# Handle 'section' option
+	#
+	$param = supplied $param ? join( ',' , $section_rmap{$section}, $param ) : $section_rmap{$section} if $actions{$basictarget}{options} & SECTION_OPT;
 	#
 	# Create the action:level:tag:param tuple.
 	#

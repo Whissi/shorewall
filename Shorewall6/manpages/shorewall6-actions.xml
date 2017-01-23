@@ -193,6 +193,25 @@
             </varlistentry>
 
             <varlistentry>
+              <term><option>section</option></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.1.1. When specified, this option
+                causes the rules file section name and a comma to be prepended
+                to the parameters passed to the action (if any). Note that
+                this means that the first parameter passed to the action by
+                the user is actually the second parameter to the action. If
+                the action is invoked out of the blrules file, 'BLACKLIST' is
+                used as the section name.</para>
+
+                <para>Given that neither the <filename>snat</filename> nor the
+                <filename>mangle</filename> file is sectioned, this parameter
+                has no effect when <option>mangle</option> or
+                <option>nat</option> is specified.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><option>state</option>={<option>UNTRACKED</option>|<option>NEW</option>|<option>ESTABLISHED</option>|<option>RELATED</option>|<option>INVALID</option>}</term>
 
               <listitem>
@@ -206,9 +225,9 @@
 
               <listitem>
                 <para>Added in Shorewall 4.6.4. When used with
-                <replaceable>builtin</replaceable>, indicates that the
-                built-in action is termiating (i.e., if the action is jumped
-                to, the next rule in the chain is not evaluated).</para>
+                <option>builtin</option>, indicates that the built-in action
+                is termiating (i.e., if the action is jumped to, the next rule
+                in the chain is not evaluated).</para>
               </listitem>
             </varlistentry>
           </variablelist>

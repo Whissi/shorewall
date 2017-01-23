@@ -14,26 +14,37 @@
 #     DYNAMIC_BLACKLIST or the one specified when the ipset was created.
 #
 ###############################################################################
-?if ! "$SW_DBL_IPSET"
-?   error The BLACKLIST action may only be used with ipset-based dynamic blacklisting
-?endif
-
-DEFAULTS DROP,-
-
-#ACTION		SOURCE	DEST	PROTO	DPORT	SPORT
-#
-# Add to the blacklist
-#
-?if passed(@2)
-    ADD($SW_DBL_IPSET:src:@2)
-?elsif $SW_DBL_TIMEOUT
-    ADD($SW_DBL_IPSET:src:$SW_DBL_TIMEOUT)
+# Note -- This action is defined with the 'section' option, so the first
+#         parameter is always the section name. That means that in the
+#         following text, the first parameter passed in the rule is actually
+#         @2.
+###############################################################################
+?if $1 eq 'BLACKLIST'
+   ?if $BLACKLIST_LOGLEVEL
+       blacklog
+   ?else
+       $BLACKLIST_DISPOSITION
+   ?endif
 ?else
-    ADD($SW_DBL_IPSET:src)
-?endif
-#
-# Dispose of the packet if asked
-#
-?if passed(@1)
-   @1
+   ?if ! "$SW_DBL_IPSET"
+   ?   error The BLACKLIST action may only be used with ipset-based dynamic blacklisting
+   ?endif
+
+   DEFAULTS -,DROP,-
+   #
+   # Add to the blacklist
+   #
+   ?if passed(@3)
+       ADD($SW_DBL_IPSET:src:@3)
+   ?elsif $SW_DBL_TIMEOUT
+       ADD($SW_DBL_IPSET:src:$SW_DBL_TIMEOUT)
+   ?else
+       ADD($SW_DBL_IPSET:src)
+   ?endif
+   #
+   # Dispose of the packet if asked
+   #
+   ?if passed(@2)
+      @2
+   ?endif
 ?endif

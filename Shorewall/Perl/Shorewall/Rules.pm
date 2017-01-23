@@ -2736,7 +2736,13 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     #
     # Determine the validity of the action
     #
-    $actiontype = ( $targets{$basictarget} || find_macro ( $basictarget ) );
+    if ( $actiontype = $targets{$basictarget} ) {
+	if ( $section == BLACKLIST_SECTION && $basictarget eq 'BLACKLIST' ) {
+	    assert( $actiontype = find_macro( 'BLACKLIST' ) );
+	}
+    } else {
+	$actiontype = find_macro ( $basictarget );
+    }
 
     if ( $config{ MAPOLDACTIONS } ) {
 	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;

@@ -2712,13 +2712,13 @@ sub directive_info( $$$$ ) {
 # Add quotes to the passed value if the passed 'first part' has an odd number of quotes
 # Return an expression that concatenates $first, $val and $rest
 #
-sub join_parts( $$$ ) {
-    my ( $first, $val, $rest ) = @_;
+sub join_parts( $$$$ ) {
+    my ( $first, $val, $rest, $just_expand ) = @_;
 
     $val = '' unless defined $val;
-    $val = "'$val'" unless ( $val =~ /^-?\d+$/               ||    # Value is numeric
-			     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
-			       ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
+    $val = "'$val'" unless $just_expand || ( $val =~ /^-?\d+$/               ||    # Value is numeric
+					     ( ( ( $first =~ tr/"/"/ ) & 1 ) ||    # There are an odd number of double quotes preceding the value
+					       ( ( $first =~ tr/'/'/ ) & 1 ) ) );  # There are an odd number of single quotes preceding the value
     join( '', $first, $val, $rest );
 }
 
@@ -2771,7 +2771,7 @@ sub evaluate_expression( $$$$ ) {
 		     exists $capdesc{$var}   ? have_capability( $var ) : '' );
 	}
 
-	$expression = join_parts( $first, $val, $rest );
+	$expression = join_parts( $first, $val, $rest, $just_expand );
 	directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
     }
 
@@ -2782,7 +2782,7 @@ sub evaluate_expression( $$$$ ) {
 	    $var = numeric_value( $var ) if $var =~ /^\d/;
 	    $val = $var ? $actparams{$var} : $chain;
 	    $usedcaller = USEDCALLER if $var eq 'caller';
-	    $expression = join_parts( $first, $val, $rest );
+	    $expression = join_parts( $first, $val, $rest , $just_expand );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
     }

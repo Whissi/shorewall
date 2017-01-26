@@ -109,7 +109,7 @@ DROP            net:200.55.14.18        all
   </section>
 
   <section>
-    <title>Dynamic Blacklisting</title>
+    <title>Chain-based Dynamic Blacklisting</title>
 
     <para>Beginning with Shorewall 4.4.7, dynamic blacklisting is enabled by
     setting DYNAMIC_BLACKLIST=Yes in <filename>shorewall.conf</filename>.
@@ -175,5 +175,104 @@ DROP            net:200.55.14.18        all
         at the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section>
+    <title>Ipset-based Dynamic Blacklisting</title>
+
+    <para>Beginning with Shorewall 5.0.8, it is possible to use an ipset to
+    hold blacklisted addresses. The DYNAMIC_BLACKLIST option was expanded
+    to:</para>
+
+    <para><emphasis role="bold">DYNAMIC_BLACKLIST=</emphasis>{<emphasis
+    role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>||<emphasis
+    role="bold">ipset</emphasis>[<emphasis
+    role="bold">-only</emphasis>][<replaceable>,option</replaceable>[,...]][:[<replaceable>setname</replaceable>][:<replaceable>log_level</replaceable>|:l<replaceable>og_tag</replaceable>]]]}</para>
+
+    <para>When <option>ipset</option> or <option>ipset-only</option> is
+    specified, the <command>shorewall blacklist</command> command is used to
+    blacklist a single host or a network. The <command>allow</command> command
+    is used to remove entries from the ipset. The name of the set
+    (<replaceable>setname</replaceable>) and the level
+    (<replaceable>log_level</replaceable>), if any, at which blacklisted
+    traffic is to be logged may also be specified. The default set name is
+    SW_DBL4 and the default log level is <option>none</option> (no logging).
+    If <option>ipset-only</option> is given, then chain-based dynamic
+    blacklisting is disabled just as if DYNAMIC_BLACKLISTING=No had been
+    specified.</para>
+
+    <para>Possible <replaceable>option</replaceable>s are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>src-dst</term>
+
+        <listitem>
+          <para>Normally, only packets whose source address matches an entry
+          in the ipset are dropped. If <option>src-dst</option> is included,
+          then packets whose destination address matches an entry in the ipset
+          are also dropped.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>disconnect</option></term>
+
+        <listitem>
+          <para>The <option>disconnect</option> option was added in Shorewall
+          5.0.13 and requires that the conntrack utility be installed on the
+          firewall system. When an address is blacklisted using the
+          <command>blacklist</command> command, all connections originating
+          from that address are disconnected. if the <option>src-dst</option>
+          option was also specified, then all connections to that address are
+          also disconnected.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>timeout</option>=<replaceable>seconds</replaceable></term>
+
+        <listitem>
+          <para>Added in Shorewall 5.0.13. Normally, Shorewall creates the
+          dynamic blacklisting ipset with timeout 0 which means that entries
+          are permanent. If you want entries in the set that are not accessed
+          for a period of time to be deleted from the set, you may specify
+          that period using this option. Note that the
+          <command>blacklist</command> command can override the ipset's
+          timeout setting.</para>
+
+          <important>
+            <para>Once the dynamic blacklisting ipset has been created,
+            changing this option setting requires a complete restart of the
+            firewall; <command>shorewall restart</command> if RESTART=restart,
+            otherwise <command>shorewall stop &amp;&amp; shorewall
+            start</command></para>
+          </important>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>When ipset-based dynamic blacklisting is enabled, the contents of
+    the blacklist will be preserved over
+    <command>stop</command>/<command>reboot</command>/<command>start</command>
+    sequences if SAVE_IPSETS=Yes, SAVE_IPSETS=ipv4 or if
+    <replaceable>setname</replaceable> is included in the list of sets to be
+    saved in SAVE_IPSETS.</para>
+  </section>
+
+  <section>
+    <title>BLACKLIST Policy and Action</title>
+
+    <para>Beginning with Shorewall 5.1.1, it is possible to specify BLACKLIST
+    in the POLICY column of <ulink
+    url="manpages/shorewall-policies.html">shorewall-policies</ulink>(5) when
+    ipset-based dynamic blacklisting is being used. When a packet is disposed
+    of via the BLACKLIST policy, the packet's sender is added to the dynamic
+    blacklist ipset and the packet is dropped.</para>
+
+    <para>Also available beginning with Shorewall 5.1.1 is a BLACKLIST action
+    for use in the rules file, macros and filter table actions. Execute the
+    <command>shorewall show action BLACKLIST</command> command for
+    details.</para>
   </section>
 </article>

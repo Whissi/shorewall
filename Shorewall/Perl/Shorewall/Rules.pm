@@ -551,7 +551,7 @@ sub process_default_action( $$$$ ) {
 	    }
 
 	    $default = 'none';
-	} elsif ( ( $targets{$def} || 0 ) == ACTION ) {
+	} elsif ( ( $targets{$def} || 0 ) & ACTION ) {
 	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );

@@ -1,0 +1,10 @@
+#
+# Shorewall -- /usr/share/shorewall/action.DropDNSrep
+#
+# This macro silently drops DNS UDP replies that are in the New state
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
+DEFAULTS DROP
+@1	-	-	udp	-	53 { comment="Late DNS Replies" }

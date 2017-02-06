@@ -31,6 +31,7 @@ Broadcast    noinline,audit	# Handles Broadcast/Multicast/Anycast
 DNSAmp				# Matches one-question recursive DNS queries
 Drop				# Default Action for DROP policy
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
+DropDNSrep   inline		# Drops DNS replies
 DropSmurfs   noinline		# Drop smurf packets
 Established  inline,\		# Handles packets in the ESTABLISHED state
 	     state=ESTABLISHED	#

@@ -1,7 +1,7 @@
 #
 # Shorewall -- /usr/share/shorewall/action.Reject
 #
-# The default REJECT action common rules
+# The former default REJECT action common rules. Use of this action is deprecated.
 #
 # This action is invoked before a REJECT policy is enforced. The purpose
 # of the action is:
@@ -27,6 +27,7 @@
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
+?warning "You are using the deprecated Reject default action. Please see http://www.shorewall.net/Actions.html#Default"
 
 ?if passed(@1)
     ?if @1 eq 'audit'

@@ -1,7 +1,7 @@
 #
 # Shorewall -- /usr/share/shorewall/action.Drop
 #
-# The default DROP common rules
+# The former default DROP common rules. Use of this action is now deprecated
 #
 # This action is invoked before a DROP policy is enforced. The purpose
 # of the action is:
@@ -28,6 +28,7 @@
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 #
 ###############################################################################
+?warning "You are using the deprecated Drop default action. Please see http://www.shorewall.net/Actions.html#Default"
 
 ?if passed(@1)
     ?if @1 eq 'audit'

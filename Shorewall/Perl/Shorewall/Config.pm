@@ -5294,11 +5294,17 @@ sub update_config_file( $ ) {
 	update_default( 'BALANCE_PROVIDERS', 'Yes' );
     }
 
-    update_default( 'EXPORTMODULES',  'No' );
-    update_default( 'RESTART',        'reload' );
-    update_default( 'PAGER',          $shorewallrc1{DEFAULT_PAGER} );
-    update_default( 'LOGFORMAT',      'Shorewall:%s:%s:' );
-    update_default( 'LOGLIMIT',       '' );
+    update_default( 'EXPORTMODULES',     'No' );
+    update_default( 'RESTART',           'reload' );
+    update_default( 'PAGER',             $shorewallrc1{DEFAULT_PAGER} );
+    update_default( 'LOGFORMAT',         'Shorewall:%s:%s:' );
+    update_default( 'LOGLIMIT',          '' );
+
+    if ( $family == F_IPV4 ) {
+	update_default( 'BLACKLIST_DEFAULT', 'dropBcasts,dropNotSyn,dropInvalid' );
+    } else {
+	update_default( 'BLACKLIST_DEFAULT', 'AllowICMPs,dropBcasts,dropNotSyn,dropInvalid' );
+    }	
 
     my $fn;
 
@@ -6637,9 +6643,11 @@ sub get_configuration( $$$$ ) {
     }
 
     default 'RESTOREFILE'           , 'restore';
-    default 'DROP_DEFAULT'          , 'Drop';
-    default 'REJECT_DEFAULT'        , 'Reject';
-    default 'BLACKLIST_DEFAULT'     , 'Drop';
+
+    default 'DROP_DEFAULT'          , 'none';
+
+    default 'REJECT_DEFAULT'        , 'none';
+    default 'BLACKLIST_DEFAULT'     , 'none';
     default 'QUEUE_DEFAULT'         , 'none';
     default 'NFQUEUE_DEFAULT'       , 'none';
     default 'ACCEPT_DEFAULT'        , 'none';

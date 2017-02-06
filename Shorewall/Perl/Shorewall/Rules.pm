@@ -311,12 +311,12 @@ sub initialize( $ ) {
     # This is updated from the *_DEFAULT settings in shorewall.conf. Those settings were stored
     # in the %config hash when shorewall[6].conf was processed.
     #
-    %default_actions  = ( DROP      => 'none' ,
-		 	  REJECT    => 'none' ,
-			  BLACKLIST => 'none' ,
-			  ACCEPT    => 'none' ,
-			  QUEUE     => 'none' ,
-			  NFQUEUE   => 'none' ,
+    %default_actions  = ( DROP	    => [] ,
+			  REJECT    => [] ,
+			  BLACKLIST => [] ,
+			  ACCEPT    => [] ,
+			  QUEUE	    => [] ,
+			  NFQUEUE   => [] ,
 			);
     #
     # These are set to 1 as sections are encountered.
@@ -430,6 +430,7 @@ sub convert_to_policy_chain($$$$$$)
     $chainref->{audit}       = $audit;
     $chainref->{policychain} = $chainref->{name};
     $chainref->{policypair}  = [ $source, $dest ];
+    $chainref->{defaults}    = [];
 }
 
 #
@@ -479,7 +480,7 @@ sub set_policy_chain($$$$$$)
 		$chainref->{synchain}    = $polchainref->{synchain};
 	    }
 
-	    $chainref->{default}     = $polchainref->{default} if defined $polchainref->{default};
+	    $chainref->{defaults}    = $polchainref->{defaults};
 	    $chainref->{is_policy}   = 1;
 	    push @policy_chains, $chainref;
 	} else {
@@ -541,17 +542,7 @@ sub process_default_action( $$$$ ) {
 	    $level = 'none';
 	}
 
-	if ( "\L$default" eq 'none' ) {
-	    if ( supplied $param || ( supplied $level && $level ne 'none' ) ) {
-		if ( $default_option ) {
-		    fatal_error "Invalid setting ($originalpolicy) for $policy";
-		} else {
-		    fatal_error "Invalid policy ($originalpolicy)";
-		}
-	    }
-
-	    $default = 'none';
-	} elsif ( ( $targets{$def} || 0 ) & ACTION ) {
+	if ( ( $targets{$def} || 0 ) & ACTION ) {
 	    $default = supplied $param  ? normalize_action( $def, $level, $param  ) :
 		       $level eq 'none' ? normalize_action_name $def :
 		       normalize_action( $def, $level, '' );
@@ -566,10 +557,32 @@ sub process_default_action( $$$$ ) {
 	}
 
     } else {
-	$default = $default_actions{$policy} || 'none';
+	$default = $default_actions{$policy};
     }
 
     $default;
+}
+
+sub process_default_actions( $$$ ) {
+    my ( $originalpolicy, $policy, $defaults ) = @_;
+
+    my @defaults;
+
+    if ( supplied $defaults ) {
+	if ( $defaults ne 'none' ) {
+	    for my $default ( split_list3( $defaults, 'Default Action' ) ) {
+		my ( $action, $level, undef, $remainder ) = split( /:/, $default, ACTION_TUPLE_ELEMENTS - 1);
+
+		fatal_error "Invalid default action ($default:$level:$remainder)" if defined $remainder;
+
+		push @defaults, process_default_action( $originalpolicy, $policy, $action, $level );
+	    }
+	}
+
+	\@defaults;
+    } else {
+	$default_actions{$policy};
+    }
 }
 
 #
@@ -657,11 +670,9 @@ sub process_a_policy1($$$$$$$) {
 
     require_capability 'AUDIT_TARGET', ":audit", "s" if $audit;
 
-    my ( $policy, $default, $level, undef, $remainder ) = split( /:/, $originalpolicy, ACTION_TUPLE_ELEMENTS );
+    my ( $policy, $defaults ) = split( /:/, $originalpolicy, 2 );
 
     fatal_error "Invalid or missing POLICY ($originalpolicy)" unless $policy;
-
-    fatal_error "Invalid default action ($default:$level:$remainder)" if defined $remainder;
 
     ( $policy , my $queue ) = get_target_param $policy;
 
@@ -671,7 +682,7 @@ sub process_a_policy1($$$$$$$) {
 	fatal_error "A $policy policy may not be audited" unless $auditpolicies{$policy};
     }
 
-    $default = process_default_action( $originalpolicy, $policy, $default, $level );
+    my $default = process_default_actions( $originalpolicy, $policy, $defaults );
 
     if ( defined $queue ) {
 	$policy = handle_nfqueue( $queue,
@@ -728,11 +739,8 @@ sub process_a_policy1($$$$$$$) {
 	$chainref->{synchain}  = $chain
     }
 
-    assert( $default );
-    my $chainref1 = $usedactions{$default};
-    $chainref->{default} = $chainref1 ? $chainref1->{name} : $default;
-
-    $chainref->{origin} = shortlineinfo('');
+    $chainref->{defaults} = $default;
+    $chainref->{origin}   = shortlineinfo('');
 
     if ( $clientwild ) {
 	if ( $serverwild ) {
@@ -842,15 +850,15 @@ sub process_policies()
     our @zonelist = $config{EXPAND_POLICIES} ? all_zones : ( all_zones, 'all' );
 
     for my $option ( qw( DROP_DEFAULT REJECT_DEFAULT BLACKLIST_DEFAULT ACCEPT_DEFAULT QUEUE_DEFAULT NFQUEUE_DEFAULT) ) {
-	my $action = $config{$option};
+	my $actions = $config{$option};
 
-	unless ( $action eq 'none' ) {
-	    my ( $default, $level, $remainder ) = split( /:/, $action, 3 );
-	    fatal_error "Invalid setting ( $action ) for $option" if supplied $remainder;
-	    $action = process_default_action( $action, $option, $default, $level );
+	if ( $actions eq 'none' ) {
+	    $actions = [];
+	} else {
+	    $actions = process_default_actions( $actions, $option, $actions );
 	}
 
-	$default_actions{$map{$option}} = $action;
+	$default_actions{$map{$option}} = $actions;
     }
 
     for $zone ( all_zones ) {
@@ -910,12 +918,16 @@ sub process_policies()
 sub process_inline ($$$$$$$$$$$$$$$$$$$$$$);
 
 sub add_policy_rules( $$$$$ ) {
-    my ( $chainref , $target, $loglevel, $default, $dropmulticast ) = @_;
+    my ( $chainref , $target, $loglevel, $defaults, $dropmulticast ) = @_;
 
     unless ( $target eq 'NONE' ) {
+	my @defaults;
+
+	@defaults = @$defaults if defined $defaults;
+
 	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 
-	if ( $default && $default ne 'none' ) {
+	for my $default ( @defaults ) {
 	    my ( $action ) = split ':', $default;
 
 	    if ( ( $targets{$action} || 0 ) == ACTION ) {
@@ -987,27 +999,26 @@ sub complete_policy_chain( $$$ ) { #Chainref, Source Zone, Destination Zone
     my $chainref   = $_[0];
     my $policyref  = $filter_table->{$chainref->{policychain}};
     my $synparams  = $policyref->{synparams};
-    my $default    = $policyref->{default};
+    my $defaults   = $policyref->{defaults};
     my $policy     = $policyref->{policy};
     my $loglevel   = $policyref->{loglevel};
 
     assert( $policyref );
 
     if ( $chainref eq $policyref ) {
-	add_policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
+	add_policy_rules $chainref , $policy, $loglevel , $defaults, $config{MULTICAST};
     } else {
 	if ( $policy eq 'ACCEPT' || $policy eq 'QUEUE' || $policy =~ /^NFQUEUE/ ) {
 	    if ( $synparams ) {
 		report_syn_flood_protection;
-		add_policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
+		add_policy_rules $chainref , $policy , $loglevel , $defaults, $config{MULTICAST};
 	    } else {
 		add_ijump $chainref,  g => $policyref;
 		$chainref = $policyref;
-		add_policy_rules( $chainref, $policy, $loglevel, $default, $config{MULTICAST} ) if $default =~/^macro\./;
 	    }
 	} elsif ( $policy eq 'CONTINUE' ) {
 	    report_syn_flood_protection if $synparams;
-	    add_policy_rules $chainref , $policy , $loglevel , $default, $config{MULTICAST};
+	    add_policy_rules $chainref , $policy , $loglevel , $defaults, $config{MULTICAST};
 	} else {
 	    report_syn_flood_protection if $synparams;
 	    add_ijump $chainref , g => $policyref;
@@ -1030,7 +1041,7 @@ sub complete_policy_chains() {
 	unless ( ( my $policy = $chainref->{policy} ) eq 'NONE' ) {
 	    my $loglevel    = $chainref->{loglevel};
 	    my $provisional = $chainref->{provisional};
-	    my $default     = $chainref->{default};
+	    my $defaults    = $chainref->{defaults};
 	    my $name        = $chainref->{name};
 	    my $synparms    = $chainref->{synparms};
 
@@ -1042,7 +1053,7 @@ sub complete_policy_chains() {
 		    # is a single jump. Generate_matrix() will just use the policy target when
 		    # needed.
 		    #
-		    ensure_rules_chain $name if ( $default ne 'none' ||
+		    ensure_rules_chain $name if ( @$defaults         ||
 						  $loglevel          ||
 						  $synparms          ||
 						  $config{MULTICAST} ||
@@ -1053,7 +1064,7 @@ sub complete_policy_chains() {
 	    }
 
 	    if ( $name =~ /^all[-2]|[-2]all$/ ) {
-		add_policy_rules $chainref , $policy, $loglevel , $default, $config{MULTICAST};
+		add_policy_rules $chainref , $policy, $loglevel , $defaults, $config{MULTICAST};
 	    }
 	}
     }
@@ -1082,20 +1093,18 @@ sub complete_standard_chain ( $$$$ ) {
     my ( $stdchainref, $zone, $zone2, $default ) = @_;
 
     my $ruleschainref = $filter_table->{rules_chain( ${zone}, ${zone2} ) } || $filter_table->{rules_chain( 'all', 'all' ) };
-    my ( $policy, $loglevel, $defaultaction ) = ( $default , 6, $config{$default . '_DEFAULT'} );
+    my ( $policy, $loglevel ) = ( $default , 6 );
+    my $defaultactions = $default_actions{$policy};
     my $policychainref;
 
     $policychainref = $filter_table->{$ruleschainref->{policychain}} if $ruleschainref;
 
     if ( $policychainref ) {
-	( $policy, $loglevel, $defaultaction ) = @{$policychainref}{'policy', 'loglevel', 'default' };
+	( $policy, $loglevel, $defaultactions ) = @{$policychainref}{'policy', 'loglevel', 'defaults' };
 	$stdchainref->{origin} = $policychainref->{origin};
-    } elsif ( $defaultaction !~ /:/ ) {
-	$defaultaction = normalize_single_action( $defaultaction );
     }
 
-
-    add_policy_rules $stdchainref , $policy , $loglevel, $defaultaction, 0;
+    add_policy_rules $stdchainref , $policy , $loglevel, $defaultactions, 0;
 }
 
 #

@@ -4399,7 +4399,10 @@ shorewall_cli() {
     finished=0
 
     while [ $finished -eq 0 ]; do
-	[ $# -eq 0 ] && usage 1
+	if [ $# -eq 0 ]; then
+	    setup_product_environment 1
+	    usage 1
+	fi
 	option=$1
 	case $option in
 	    -)
@@ -4528,10 +4531,6 @@ shorewall_cli() {
 		;;
 	esac
     done
-
-    if [ $# -eq 0 ]; then
-	usage 1
-    fi
 
     setup_product_environment 1
 

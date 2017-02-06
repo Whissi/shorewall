@@ -571,7 +571,7 @@ sub process_default_actions( $$$ ) {
     if ( supplied $defaults ) {
 	if ( $defaults ne 'none' ) {
 	    for my $default ( split_list3( $defaults, 'Default Action' ) ) {
-		my ( $action, $level, undef, $remainder ) = split( /:/, $default, ACTION_TUPLE_ELEMENTS - 1);
+		my ( $action, $level, $remainder ) = split( /:/, $default );
 
 		fatal_error "Invalid default action ($default:$level:$remainder)" if defined $remainder;
 

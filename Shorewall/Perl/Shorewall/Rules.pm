@@ -930,7 +930,7 @@ sub add_policy_rules( $$$$$ ) {
 	for my $default ( @defaults ) {
 	    my ( $action ) = split ':', $default;
 
-	    if ( ( $targets{$action} || 0 ) == ACTION ) {
+	    if ( ( $targets{$action} || 0 ) & ACTION ) {
 		#
 		# Default action is a regular action -- jump to the action chain
 		#

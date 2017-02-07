@@ -136,9 +136,10 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
 
     <para>Shorewall allows the association of a <firstterm>policy
     action</firstterm> with policies. A separate policy action may be
-    associated with ACCEPT, DROP, REJECT, QUEUE and NFQUEUE policies. Policy
-    actions provide a way to invoke a set of common rules just before the
-    policy is enforced. Policy actions accomplish two goals:</para>
+    associated with ACCEPT, DROP, REJECT, QUEUE, NFQUEUE and BLACKLIST
+    policies. Policy actions provide a way to invoke a set of common rules
+    just before the policy is enforced. Policy actions accomplish two
+    goals:</para>
 
     <orderedlist>
       <listitem>
@@ -153,8 +154,8 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
     </orderedlist>
 
     <para>Shorewall supports policy actions for the ACCEPT, REJECT, DROP,
-    QUEUE and NFQUEUE policies. These default actions are specified in the
-    <filename>/etc/shorewall/shorewall.conf</filename> file using the
+    QUEUE, NFQUEUE and BLACKLIST policies. These default actions are specified
+    in the <filename>/etc/shorewall/shorewall.conf</filename> file using the
     ACCEPT_DEFAULT, REJECT_DEFAULT, DROP_DEFAULT, QUEUE_DEFAULT and
     NFQUEUE_DEFAULT options respectively. Policies whose default is set to a
     value of <quote>none</quote> have no default action.</para>
@@ -295,7 +296,7 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
 
     <variablelist>
       <varlistentry>
-        <term>Broadcasts[(<replaceable>disposition</replaceable>)]</term>
+        <term>Broadcast[(<replaceable>disposition</replaceable>)]</term>
 
         <listitem>
           <para>Handles broadcasts and multicasts based on the
@@ -335,7 +336,7 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
 
         <listitem>
           <para>Allows ICMP packets mandated by RFC 4890. In particular, this
-          ensures that Neighbor Discovery won't be broken </para>
+          ensures that Neighbor Discovery won't be broken</para>
         </listitem>
       </varlistentry>
     </variablelist>

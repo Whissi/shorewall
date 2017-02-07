@@ -120,7 +120,7 @@
         role="bold">QUEUE</emphasis>|<emphasis
         role="bold">NFQUEUE</emphasis>[(<emphasis>queuenumber1</emphasis>[:<replaceable>queuenumber2</replaceable>])]|<emphasis
         role="bold">NONE</emphasis>}[<emphasis
-        role="bold">:</emphasis>{<emphasis>default-action</emphasis>[:level][,...]|<emphasis
+        role="bold">:</emphasis>{[+]<emphasis>policy-action</emphasis>[:level][,...]|<emphasis
         role="bold">None</emphasis>}]</term>
 
         <listitem>
@@ -140,7 +140,7 @@
             <listitem>
               <para>The name of an action with optional parameters enclosed in
               parentheses. The action will be invoked before the policy is
-              enforced. </para>
+              enforced.</para>
             </listitem>
           </orderedlist>
 
@@ -154,9 +154,13 @@
           <para>Beginning with Shorewall 5.1.2, multiple
           <replaceable>action</replaceable>[:<replaceable>level</replaceable>]
           specification may be listeded, separated by commas. The actions are
-          invoked in the order listed.</para>
+          invoked in the order listed. Also beginning with Shorewall 5.1.2,
+          the policy-action list can be prefixed with a plus sign ("+")
+          indicating that the listed actions are in addition to those listed
+          in the related _DEFAULT setting in <ulink
+          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
-          <para>Possible actions are:</para>
+          <para>Possible policies are:</para>
 
           <variablelist>
             <varlistentry>

@@ -132,13 +132,13 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
   </section>
 
   <section id="Default">
-    <title>Default Actions (Formerly Common Actions)</title>
+    <title>Policy Actions (Formerly Default Actions)</title>
 
-    <para>Shorewall allows the association of a <firstterm>default
-    action</firstterm> with policies. A separate default action may be
-    associated with ACCEPT, DROP, REJECT, QUEUE and NFQUEUE policies. Default
+    <para>Shorewall allows the association of a <firstterm>policy
+    action</firstterm> with policies. A separate policy action may be
+    associated with ACCEPT, DROP, REJECT, QUEUE and NFQUEUE policies. Policy
     actions provide a way to invoke a set of common rules just before the
-    policy is enforced. Default actions accomplish two goals:</para>
+    policy is enforced. Policy actions accomplish two goals:</para>
 
     <orderedlist>
       <listitem>
@@ -152,7 +152,7 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
       </listitem>
     </orderedlist>
 
-    <para>Shorewall supports default actions for the ACCEPT, REJECT, DROP,
+    <para>Shorewall supports policy actions for the ACCEPT, REJECT, DROP,
     QUEUE and NFQUEUE policies. These default actions are specified in the
     <filename>/etc/shorewall/shorewall.conf</filename> file using the
     ACCEPT_DEFAULT, REJECT_DEFAULT, DROP_DEFAULT, QUEUE_DEFAULT and
@@ -165,14 +165,15 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
     url="manpages/shorewall-policy.html">/etc/shorewall/policy</ulink></filename>.</para>
 
     <important>
-      <para>Entries in the DROP and REJECT default actions <emphasis
+      <para>Entries in the DROP, REJECT and BLACKLIST policy actions <emphasis
       role="bold">ARE NOT THE CAUSE OF CONNECTION PROBLEMS</emphasis>.
-      Remember — default actions are only invoked immediately before the
-      packet is going to be dropped or rejected anyway!!!</para>
+      Remember — policy actions are only invoked immediately before the packet
+      is going to be dropped or rejected anyway!!!</para>
     </important>
 
-    <para>Beginning with Shorewall 4.4.21, the standard Drop and Reject
-    options are parameterized. Each has five parameters as follows:</para>
+    <para>Prior to Shorewall 5.1.2, the Drop and Reject actions were the
+    default policy actions for DROP and REJECT policies respectively. Those
+    actions are parameterized; each has five parameters as follows:</para>
 
     <informaltable>
       <tgroup cols="4">
@@ -283,6 +284,61 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
     POLICY column of <ulink
     url="manpages/shorewall-policy.html">shorewall-policy</ulink>(5) (e.g.,
     DROP:<emphasis role="bold">Drop(audit)</emphasis>:audit).</para>
+
+    <para>Beginning with Shorewall 5.1.2, Drop and Reject are deprecated. In
+    5.1.2, a list of policy actions is accepted in both shorewall.conf and the
+    policy file. This allows logging to be specified on some actions and not
+    on others and eliminates the need for a large number of policy-action
+    parameters.</para>
+
+    <para>Actions commonly included in policy-action lists are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>Broadcasts[(<replaceable>disposition</replaceable>)]</term>
+
+        <listitem>
+          <para>Handles broadcasts and multicasts based on the
+          <replaceable>disposition</replaceable>. The default
+          <replaceable>disposition</replaceable> is DROP.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>dropNotSyn[:<replaceable>level</replaceable>]</term>
+
+        <listitem>
+          <para>Drops TCP packets that are not part of an existing connection
+          but that don't have the SYN flag set or that have additional flags
+          set. We recommend that these be logged by specifying an approproate
+          <replaceable>level</replaceable>. This action is particularly
+          appropriate packets received from the Internet. Recommended when the
+          policy is BLACKLIST to avoid late-arriving FIN packets from
+          blacklisting the remote system.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DropDNSrep[:<replaceable>level</replaceable>]</term>
+
+        <listitem>
+          <para>Drops UDP packets with source port 53. We recommend that these
+          be logged by specifying an approproate
+          <replaceable>level</replaceable>. This action is recommended when
+          the policy is BLACKLIST to avoid blacklisting uplevel DNS
+          servers.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>AllowICMPs (IPv6 only)</term>
+
+        <listitem>
+          <para>Allows ICMP packets mandated by RFC 4890. In particular, this
+          ensures that Neighbor Discovery won't be broken </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
   </section>
 
   <section id="Defining">

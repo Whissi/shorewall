@@ -109,7 +109,7 @@
     <variablelist>
       <varlistentry>
         <term><emphasis
-        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">ACCEPT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -119,7 +119,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">BLACKLIST_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">BLACKLIST_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -129,7 +129,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">DROP_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -139,7 +139,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">NFQUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -149,7 +149,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">QUEUE_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
@@ -159,13 +159,13 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]|<emphasis
+        role="bold">REJECT_DEFAULT=</emphasis>{<emphasis>action</emphasis>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>][,...]|<emphasis
         role="bold">none</emphasis>}</term>
 
         <listitem>
-          <para>In earlier Shorewall versions, a "default action" for DROP and
-          REJECT policies was specified in the file
-          /usr/share/shorewall/actions.std.</para>
+          <para>In earlier Shorewall versions, a "<firstterm>default
+          action</firstterm>" for DROP and REJECT policies was specified in
+          the file /usr/share/shorewall/actions.std.</para>
 
           <para>In Shorewall 4.4.0, the DROP_DEFAULT, REJECT_DEFAULT,
           ACCEPT_DEFAULT, QUEUE_DEFAULT and NFQUEUE_DEFAULT options were
@@ -189,7 +189,7 @@
             role="bold">none</emphasis></member>
           </simplelist>
 
-          <para>The default values are:</para>
+          <para>Prior to Shorewall 5.1.2, the default values are:</para>
 
           <simplelist>
             <member>DROP_DEFAULT="Drop"</member>
@@ -203,8 +203,13 @@
 
             <member>QUEUE_DEFAULT="none"</member>
 
-            <member>NFQUEUE_DEFAULT="None"</member>
+            <member>NFQUEUE_DEFAULT="none"</member>
           </simplelist>
+
+          <para>Beginning with Shorewall 5.1.2, the default value is 'none'
+          for all of these. Note that the sample configuration files do,
+          however, provide settings for DROP_DEFAULT, BLACKLIST_DEFAULT and
+          REJECT_DEFAULT.</para>
 
           <para>If you set the value of either option to "None" then no
           default action will be used and the default action or macro must be
@@ -220,6 +225,10 @@
           <replaceable>level</replaceable>. The level will be applied to each
           rule in the action or body that does not already have a log
           level.</para>
+
+          <para>Beginning with Shorewall 5.1.2, multiple
+          <replaceable>action</replaceable>[(<replaceable>parameters</replaceable>)][:<replaceable>level</replaceable>]
+          specifications may be listed, separated by commas.</para>
         </listitem>
       </varlistentry>
 

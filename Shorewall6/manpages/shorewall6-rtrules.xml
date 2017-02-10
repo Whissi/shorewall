@@ -129,6 +129,17 @@
           <para>Beginning with Shorewall 5.0.2, the priority may be followed
           optionally by an exclaimation mark ("!"). This causes the rule to
           remain in place if the interface is disabled.</para>
+
+          <caution>
+            <para>Be careful when using rules of the same PRIORITY as some
+            unexpected behavior can occur when multiple rules have the same
+            SOURCE. For example, in the following rules, the second rule
+            overwrites the first unless the priority in the second is changed
+            to 19001 or higher:</para>
+
+            <programlisting>2601:601:8b00:bf0::/64 2001:470:b:787::542 provider1 19000
+2601:601:8b00:bf0::/64 -                   provider2 19000</programlisting>
+          </caution>
         </listitem>
       </varlistentry>
 

@@ -571,8 +571,8 @@ sub process_policy_actions( $$$ ) {
     if ( supplied $pactions ) {
 	my @pactions;
 
-	if ( $pactions ne 'none' ) {
-	    @pactions = @{$policy_actions{policy}} if $pactions =~ s/^\+//;
+	if ( lc $pactions ne 'none' ) {
+	    @pactions = @{$policy_actions{$policy}} if $pactions =~ s/^\+//;
 
 	    for my $paction ( split_list3( $pactions, 'Policy Action' ) ) {
 		my ( $action, $level, $remainder ) = split( /:/, $paction, 3 );

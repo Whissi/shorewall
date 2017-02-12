@@ -777,7 +777,11 @@ sub process_a_policy() {
     our @zonelist;
 
     my ( $clients, $servers, $policy, $loglevel, $synparams, $connlimit ) =
-	split_line 'policy file', { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, connlimit => 5 } ;
+	split_line2( 'policy file',
+		     { source => 0, dest => 1, policy => 2, loglevel => 3, limit => 4, rate => 4, connlimit => 5 } ,
+		     {} , # nopad
+		     6  , # maxcolumns
+		    );
 
     $loglevel  = '' if $loglevel  eq '-';
     $synparams = '' if $synparams eq '-';

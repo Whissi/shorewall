@@ -29,7 +29,7 @@ AutoBLL	     noinline		# Helper for AutoBL
 BLACKLIST    logjump,section	# Add sender to the dynamic blacklist
 Broadcast    noinline,audit	# Handles Broadcast/Multicast/Anycast
 DNSAmp				# Matches one-question recursive DNS queries
-Drop				# Default Action for DROP policy
+Drop				# Default Action for DROP policy (deprecated)
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 DropDNSrep   inline		# Drops DNS replies
 DropSmurfs   noinline		# Drop smurf packets
@@ -41,7 +41,7 @@ Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
 	     state=INVALID	#
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
-Reject				# Default Action for REJECT policy
+Reject				# Default Action for REJECT policy (deprecated)
 Related	     inline,\		# Handles packets in the RELATED conntrack state
 	     state=RELATED	#
 ResetEvent   inline		# Reset an Event

@@ -266,7 +266,16 @@
       <para>You will need to change all instances of log levels (usually
       <quote>info</quote>) in your Shorewall configuration files to
       <quote>NFLOG</quote> - this includes entries in the policy, rules and
-      shorewall.conf files. Here's what I had at one time:</para>
+      shorewall.conf files. If you initially installed using Shorewall 5.1.2
+      or later, you can simply change the setting of LOG_LEVEL in
+      shorewall.conf.</para>
+
+      <para>Otherwise, you must search for all instances of log levels in your
+      configuration and change them accordingly. If you currently run
+      Shorewall 5.1.2 or later, then change them to $LOG_LEVEL and set
+      LOG_LEVEL accordingly. If you are running an earlier release, using a
+      shell variable simplifies future changes. Here's what I had at one
+      time:</para>
 
       <programlisting>gateway:/etc/shorewall# grep -v ^\# * | egrep '\$LOG|ULOG|LOGFILE'
 params:LOG=NFOG
@@ -571,9 +580,9 @@ if $msg contains 'Shorewall' then {
   if ($syslogfacility == 0 and $syslogseverity &gt;= 6) then stop  # info
 }</programlisting>
 
-    <para> I log at 'notice' log level if I want the message in
+    <para>I log at 'notice' log level if I want the message in
     <filename>/var/log/messages</filename> and everything goes to
     <filename>/var/log/shorewall.log</filename>. Don't forget to add
-    /var/log/shorewall.log to logrotate. </para>
+    /var/log/shorewall.log to logrotate.</para>
   </section>
 </article>

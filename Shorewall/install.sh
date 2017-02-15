@@ -481,6 +481,16 @@ if [ -z "$first_install" ]; then
     delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
     delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
     delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
+
+    if [ $PRODUCT = shorewall ]; then
+	#
+	# Delete deprecated macros and actions
+	#
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/macro.SNMPTrap
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_REJECT
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Drop
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Reject
+    fi
 fi
 
 #

@@ -299,7 +299,17 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
         <term>Broadcast[(<replaceable>disposition</replaceable>)]</term>
 
         <listitem>
-          <para>Handles broadcasts and multicasts based on the
+          <para>Handles broadcasts based on the
+          <replaceable>disposition</replaceable>. The default
+          <replaceable>disposition</replaceable> is DROP.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Multicast[(<replaceable>disposition</replaceable>)]</term>
+
+        <listitem>
+          <para>Handles multicasts based on the
           <replaceable>disposition</replaceable>. The default
           <replaceable>disposition</replaceable> is DROP.</para>
         </listitem>
@@ -340,6 +350,27 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <para>The recommended settings for the 6 policy actions for IPv4 are:
+    </para>
+
+    <programlisting>        ACCEPT_DEFAULT=none
+        BLACKLIST_DEFAULT="Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,dropInvalid:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
+        DROP_DEFAULT="Broadcast(DROP),Multicast(DROP)"
+        NFQUEUE_DEFAULT=none
+        QUEUE_DEFAULT=none
+        REJECT_DEFAULT="Broadcast(DROP),Multicast(DROP)"
+</programlisting>
+
+    <para>The recommended settings for IPv6 are:</para>
+
+    <programlisting>        ACCEPT_DEFAULT=none
+        BLACKLIST_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
+        DROP_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP)"
+        NFQUEUE_DEFAULT=none
+        QUEUE_DEFAULT=none
+        REJECT_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP)"
+</programlisting>
   </section>
 
   <section id="Defining">

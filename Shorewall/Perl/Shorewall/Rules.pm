@@ -363,7 +363,7 @@ sub initialize( $ ) {
     @columns           = ( ( '-' ) x LAST_COLUMN, 0 );
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
+	@builtins = qw/dropBcast dropMcast allowBcast allowMcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
 	%reject_options = ( 'icmp-net-unreachable'   => 1,
 			    'icmp-host-unreachable'  => 1,
 			    'icmp-port-unreachable'  => 1,
@@ -375,7 +375,7 @@ sub initialize( $ ) {
 	                  );
 			    
     } else {
-	@builtins = qw/dropBcast allowBcast dropNotSyn rejNotSyn/;
+	@builtins = qw/dropBcast dropMcast allowBcast allowMcast dropNotSyn rejNotSyn/;
 	%reject_options = ( 'icmp6-no-route'         => 1,
 			    'no-route'               => 1,
 			    'icmp6-adm-prohibited'   => 1,
@@ -1740,16 +1740,22 @@ sub dropBcast( $$$$ ) {
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
+}
+
+sub dropMcast( $$$$ ) {
+    my ($chainref, $level, $tag, $audit) = @_;
+
+    my $target = require_audit ( 'DROP', $audit );
 
     if ( $family == F_IPV4 ) {
-	log_irule_limit $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' if $level ne '';
+	log_irule_limit $level, $chainref, 'dropMcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'dropMcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
-
+    
 sub allowBcast( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
@@ -1775,12 +1781,18 @@ sub allowBcast( $$$$ ) {
 	decr_cmd_level $chainref;
 	add_commands $chainref, 'done';
     }
+}
+
+sub allowMast( $$$$ ) {
+    my ($chainref, $level, $tag, $audit) = @_;
+
+    my $target = require_audit( 'ACCEPT', $audit );
 
     if ( $family == F_IPV4 ) {
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowMcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' ) if $level ne '';
 	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
     } else {
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', '', $tag, 'add',  '', d => IPv6_MULTICAST ) if $level ne '';
+	log_irule_limit( $level, $chainref, 'allowMcast' , 'ACCEPT', '', $tag, 'add',  '', d => IPv6_MULTICAST ) if $level ne '';
 	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
     }
 }
@@ -1870,7 +1882,9 @@ sub Limit( $$$$ ) {
 }
 
 my %builtinops = ( 'dropBcast'      => \&dropBcast,
+		   'dropMcast'      => \&dropMcast,
 		   'allowBcast'     => \&allowBcast,
+		   'allowMcast'     => \&allowMcast,
 		   'dropNotSyn'     => \&dropNotSyn,
 		   'rejNotSyn'      => \&rejNotSyn,
 		   'allowinUPnP'    => \&allowinUPnP,

@@ -9,8 +9,10 @@
 # Builtin Actions are:
 #
 ?if 0
-allowBcast			# Silently Allow Broadcast/multicast
-dropBcast			# Silently Drop Broadcast/multicast
+allowBcast			# Silently Allow Broadcast
+allowMcast			# Silently Allow Multicast
+dropBcast			# Silently Drop Broadcast
+dropMcast			# Silently Drop Multicast
 dropNotSyn			# Silently Drop Non-syn TCP packets
 rejNotSyn			# Silently Reject Non-syn TCP packets
 allowinUPnP			# Allow UPnP inbound (to firewall) traffic
@@ -27,7 +29,7 @@ allowInvalid inline		# Accepts packets in the INVALID conntrack state
 AutoBL	     noinline		# Auto-blacklist IPs that exceed thesholds
 AutoBLL	     noinline		# Helper for AutoBL
 BLACKLIST    logjump,section	# Add sender to the dynamic blacklist
-Broadcast    noinline,audit	# Handles Broadcast/Multicast/Anycast
+Broadcast    noinline,audit	# Handles Broadcast/Anycast
 DNSAmp				# Matches one-question recursive DNS queries
 Drop				# Default Action for DROP policy (deprecated)
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
@@ -39,6 +41,7 @@ GlusterFS    inline		# Handles GlusterFS
 IfEvent	     noinline		# Perform an action based on an event
 Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
 	     state=INVALID	#
+Multicast    noinline,audit	# Handles Multicast
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
 Reject				# Default Action for REJECT policy (deprecated)

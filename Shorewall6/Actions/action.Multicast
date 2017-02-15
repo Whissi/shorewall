@@ -1,5 +1,5 @@
 #
-# Shorewall6 -- /usr/share/shorewall6/action.Broadcast
+# Shorewall6 -- /usr/share/shorewall6/action.Multicast
 #
 # Multicast/Anycast IPv6 Action
 #
@@ -22,7 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Broadcast[([<action>|-[,{audit|-}])]
+# Multicast[([<action>|-[,{audit|-}])]
 #
 # Default action is DROP
 #
@@ -45,19 +45,13 @@ fatal_error "Invalid parameter to action Broadcast"   if supplied $audit && $aud
 
 if ( have_capability( 'ADDRTYPE' ) ) {
     if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-	log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type ANYCAST ';
+	log_rule_limit $level, $chainref, 'Multicast' , $action, '', $tag, 'add', ' -m addrtype --dst-type MULTICAST ';
     }
 
-    add_jump $chainref, $target, 0, '-m addrtype --dst-type BROADCAST ';
-    add_jump $chainref, $target, 0, '-m addrtype --dst-type ANYCAST ';
+    add_jump $chainref, $target, 0, '-m addrtype --dst-type MULTICAST ';
 } else {
-    add_commands $chainref, 'for address in $ALL_ACASTS; do';
-    incr_cmd_level $chainref;
-    log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d $address ' if $level ne '';
-    add_jump $chainref, $target, 0, "-d \$address ";
-    decr_cmd_level $chainref;
-    add_commands $chainref, 'done';
+    log_rule_limit( $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', join( ' ', '-d', IPv6_MULTICAST . ' ' ) )  if $level ne '';
+    add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
 }
 
 1;

@@ -1,7 +1,5 @@
 #
-# Shorewall6 -- /usr/share/shorewall6/action.Broadcast
-#
-# Multicast/Anycast IPv6 Action
+# Shorewall -- /usr/share/shorewall/action.Multicast
 #
 # This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
@@ -22,7 +20,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Broadcast[([<action>|-[,{audit|-}])]
+# Multicast[([<action>|-[,{audit|-}])]
 #
 # Default action is DROP
 #
@@ -30,36 +28,23 @@
 
 DEFAULTS DROP,-
 
+?if __ADDRTYPE
+@1	-	-	-	;; -m addrtype --dst-type MULTICAST
+?else
 ?begin perl;
 
 use Shorewall::IPAddrs;
 use Shorewall::Config;
 use Shorewall::Chains;
 
+my ( $action )         = get_action_params( 1 );
 my $chainref           = get_action_chain;
-my ( $action, $audit ) = get_action_params( 2 );
 my ( $level, $tag )    = get_action_logging;
-my $target             = require_audit ( $action , $audit );
 
-fatal_error "Invalid parameter to action Broadcast"   if supplied $audit && $audit ne 'audit';
-
-if ( have_capability( 'ADDRTYPE' ) ) {
-    if ( $level ne '' ) {
-	log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type BROADCAST ';
-	log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -m addrtype --dst-type ANYCAST ';
-    }
-
-    add_jump $chainref, $target, 0, '-m addrtype --dst-type BROADCAST ';
-    add_jump $chainref, $target, 0, '-m addrtype --dst-type ANYCAST ';
-} else {
-    add_commands $chainref, 'for address in $ALL_ACASTS; do';
-    incr_cmd_level $chainref;
-    log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d $address ' if $level ne '';
-    add_jump $chainref, $target, 0, "-d \$address ";
-    decr_cmd_level $chainref;
-    add_commands $chainref, 'done';
-}
+log_rule_limit $level, $chainref, 'Multicast' , $action, '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+add_jump $chainref, $action, 0, '-d 224.0.0.0/4 ';
 
 1;
 
 ?end perl;
+?endif

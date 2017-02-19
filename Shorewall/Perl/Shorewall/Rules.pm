@@ -1783,7 +1783,7 @@ sub allowBcast( $$$$ ) {
     }
 }
 
-sub allowMast( $$$$ ) {
+sub allowMcast( $$$$ ) {
     my ($chainref, $level, $tag, $audit) = @_;
 
     my $target = require_audit( 'ACCEPT', $audit );

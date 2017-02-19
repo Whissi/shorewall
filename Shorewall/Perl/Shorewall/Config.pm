@@ -6475,7 +6475,12 @@ sub get_configuration( $$$$ ) {
     default_log_level 'RELATED_LOG_LEVEL',    '';
     default_log_level 'INVALID_LOG_LEVEL',    '';
     default_log_level 'UNTRACKED_LOG_LEVEL',  '';
-    default_log_level 'LOG_LEVEL',            'info';
+
+    if ( supplied( $val = $config{LOG_LEVEL} ) ) {
+	validate_level( $val );
+    } else {
+	$config{LOG_LEVEL} = 'info';
+    }
 
     if ( supplied( $val = $config{LOG_BACKEND} ) ) {
 	if ( $family == F_IPV4 && $val eq 'ULOG' ) {

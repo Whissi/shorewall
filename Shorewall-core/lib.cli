@@ -1451,15 +1451,7 @@ show_command() {
 				fi
 			    done
 
-			    case $2 in
-				allowBcast|dropBcast|dropNotSyn|rejNotSyn|allowinUPnp|forwardUPnP|Limit)
-				    echo "   WARNING: $2 is a built-in action" >&2
-				    ;;
-				*)
-				    echo "   WARNING: Action $2 not found" >&2
-				    ;;
-			    esac
-
+			    echo "   WARNING: Action $2 not found" >&2
 			    return
 			    ;;
 			actions)

@@ -82,3 +82,9 @@ make_parent_directory() # $1 = directory , $2 = mode
     chmod $2 $1
     [ -n "$OWNERSHIP" ] && chown $OWNER:$GROUP $1
 }
+
+cant_autostart()
+{
+    echo
+    echo  "WARNING: Unable to configure $Product to start automatically at boot" >&2
+}

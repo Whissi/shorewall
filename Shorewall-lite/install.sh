@@ -34,12 +34,6 @@ usage() # $1 = exit status
     exit $1
 }
 
-cant_autostart()
-{
-    echo
-    echo  "WARNING: Unable to configure $Product to start automatically at boot" >&2
-}
-
 install_file() # $1 = source $2 = target $3 = mode
 {
     if cp -f $1 $2; then

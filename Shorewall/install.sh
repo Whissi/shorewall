@@ -48,12 +48,6 @@ run_install()
     fi
 }
 
-cant_autostart()
-{
-    echo
-    echo  "WARNING: Unable to configure $PRODUCT to start automatically at boot" >&2
-}
-
 install_file() # $1 = source $2 = target $3 = mode
 {
     run_install $T $OWNERSHIP -m $3 $1 ${2}

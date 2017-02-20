@@ -24,9 +24,6 @@
 
 VERSION=4.5.5       #The Build script inserts the actual version
 
-#
-# Change to the directory containing this script
-#
 usage() # $1 = exit status
 {
     ME=$(basename $0)
@@ -53,6 +50,9 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $T $OWNERSHIP -m $3 $1 ${2}
 }
 
+#
+# Change to the directory containing this script
+#
 cd "$(dirname $0)"
 
 if [ -f shorewall.service ]; then

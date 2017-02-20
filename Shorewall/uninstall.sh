@@ -41,50 +41,15 @@ usage() # $1 = exit status
     exit $1
 }
 
-fatal_error()
-{
-    echo "   ERROR: $@" >&2
-    exit 1
-}
-
-qt()
-{
-    "$@" >/dev/null 2>&1
-}
-
-split() {
-    local ifs
-    ifs=$IFS
-    IFS=:
-    set -- $1
-    echo $*
-    IFS=$ifs
-}
-
-mywhich() {
-    local dir
-
-    for dir in $(split $PATH); do
-	if [ -x $dir/$1 ]; then
-	    return 0
-	fi
-    done
-
-    return 2
-}
-
-remove_file() # $1 = file to restore
-{
-    if [ -f $1 -o -L $1 ] ; then
-	rm -f $1
-	echo "$1 Removed"
-    fi
-}
-
 #
 # Change to the directory containing this script
 #
 cd "$(dirname $0)"
+
+#
+# Source common functions
+#
+. ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
 finished=0
 configure=1

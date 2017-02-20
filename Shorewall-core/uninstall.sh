@@ -37,41 +37,15 @@ usage() # $1 = exit status
     exit $1
 }
 
-fatal_error()
-{
-    echo "   ERROR: $@" >&2
-    exit 1
-}
-
-qt()
-{
-    "$@" >/dev/null 2>&1
-}
-
-restore_file() # $1 = file to restore
-{
-    if [ -f ${1}-shorewall.bkout ]; then
-	if (mv -f ${1}-shorewall.bkout $1); then
-	    echo
-	    echo "$1 restored"
-        else
-	    exit 1
-        fi
-    fi
-}
-
-remove_file() # $1 = file to restore
-{
-    if [ -f $1 -o -L $1 ] ; then
-	rm -f $1
-	echo "$1 Removed"
-    fi
-}
-
 #
 # Change to the directory containing this script
 #
 cd "$(dirname $0)"
+
+#
+# Source common functions
+#
+. ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
 #
 # Read the RC file

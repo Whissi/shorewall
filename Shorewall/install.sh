@@ -1062,7 +1062,7 @@ if [ $PRODUCT = shorewall6 ]; then
     #
     ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
     #
-    # And create a sybolic link for the CLI
+    # And create a symbolic link for the CLI
     #
     ln -sf shorewall ${DESTDIR}${SBINDIR}/shorewall6
 fi

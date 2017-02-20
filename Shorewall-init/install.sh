@@ -270,7 +270,7 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
     
-    make_directory ${DESTDIR}${INITDIR} 0755
+    make_parent_directory ${DESTDIR}${INITDIR} 0755
 fi
 
 echo "Installing $Product Version $VERSION"
@@ -284,16 +284,13 @@ else
     first_install="Yes"
 fi
 
-if [ -n "$DESTDIR" ]; then
-    mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
-    chmod 0755 ${DESTDIR}${CONFDIR}/logrotate.d
-fi
+[ -n "$DESTDIR" ] && make_parent_directory ${DESTDIR}${CONFDIR}/logrotate.d 0755
 
 #
 # Install the Firewall Script
 #
 if [ -n "$INITFILE" ]; then
-    mkdir -p ${DESTDIR}${INITDIR}
+    make_parent_directory ${DESTDIR}${INITDIR} 0755
     install_file $INITSOURCE ${DESTDIR}${INITDIR}/$INITFILE 0544
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${INITDIR}/$INITFILE
     
@@ -312,15 +309,12 @@ if [ -z "${SERVICEDIR}" ]; then
 fi
 
 if [ -n "$SERVICEDIR" ]; then
-    mkdir -p ${DESTDIR}${SERVICEDIR}
+    make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
     install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 0644
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
-    if [ -n "$DESTDIR" -o $configure -eq 0 ]; then
-	mkdir -p ${DESTDIR}${SBINDIR}
-        chmod 0755 ${DESTDIR}${SBINDIR}
-    fi
+    [ -n "$DESTDIR" -o $configure -eq 0 ] && make_parent_directory ${DESTDIR}${SBINDIR} 0755
     install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0700
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/$PRODUCT
     echo "CLI installed as ${DESTDIR}${SBINDIR}/$PRODUCT"
@@ -329,8 +323,7 @@ fi
 #
 # Create /usr/share/shorewall-init if needed
 #
-mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
-chmod 0755 ${DESTDIR}${SHAREDIR}/$PRODUCT
+make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT 0755
 
 #
 # Install logrotate file
@@ -356,21 +349,19 @@ fi
 
 if [ $HOST = debian ]; then
     if [ -n "${DESTDIR}" ]; then
-	mkdir -p ${DESTDIR}${ETC}/network/if-up.d/
-	mkdir -p ${DESTDIR}${ETC}/network/if-down.d/
-	mkdir -p ${DESTDIR}${ETC}/network/if-post-down.d/
+	make_parent_directory ${DESTDIR}${ETC}/network/if-up.d 0755
+	make_parent_directory ${DESTDIR}${ETC}/network/if-down.d 0755
+	make_parent_directory ${DESTDIR}${ETC}/network/if-post-down.d 0755
     elif [ $configure -eq 0 ]; then
-	mkdir -p ${DESTDIR}${CONFDIR}/network/if-up.d/
-	mkdir -p ${DESTDIR}${CONFDIR}/network/if-down.d/
-	mkdir -p ${DESTDIR}${CONFDIR}/network/if-post-down.d/
+	make_parent_directory ${DESTDIR}${CONFDIR}/network/if-up.d 0755
+	make_parent_directory ${DESTDIR}${CONFDIR}/network/if-down.d 0755
+	make_parent_directory ${DESTDIR}${CONFDIR}/network/if-post-down.d 0755
     fi
 
     if [ ! -f ${DESTDIR}${CONFDIR}/default/$PRODUCT ]; then
-	if [ -n "${DESTDIR}" ]; then
-	    mkdir -p ${DESTDIR}${ETC}/default
-	fi
+	[ -n "${DESTDIR}" ] && make_parent_directory ${DESTDIR}${ETC}/default 0755
 
-	[ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/default
+	[ $configure -eq 1 ] || make_parent_directory ${DESTDIR}${CONFDIR}/default 0755
 	install_file sysconfig ${DESTDIR}${ETC}/default/$PRODUCT 0644
 	echo "sysconfig file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
     fi
@@ -378,12 +369,12 @@ if [ $HOST = debian ]; then
     IFUPDOWN=ifupdown.debian.sh
 else
     if [ -n "$DESTDIR" ]; then
-	mkdir -p ${DESTDIR}${SYSCONFDIR}
+	make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
 
 	if [ -z "$RPM" ]; then
 	    if [ $HOST = suse ]; then
-		mkdir -p ${DESTDIR}${ETC}/sysconfig/network/if-up.d
-		mkdir -p ${DESTDIR}${ETC}/sysconfig/network/if-down.d
+		make_parent_directory ${DESTDIR}${ETC}/sysconfig/network/if-up.d 0755
+		make_parent_directory ${DESTDIR}${ETC}/sysconfig/network/if-down.d 0755
 	    elif [ $HOST = gentoo ]; then
 		# Gentoo does not support if-{up,down}.d
 		/bin/true
@@ -391,7 +382,7 @@ else
 		# Not implemented on openwrt
 		/bin/true
 	    else
-		mkdir -p ${DESTDIR}/${ETC}/NetworkManager/dispatcher.d
+		make_parent_directory ${DESTDIR}/${ETC}/NetworkManager/dispatcher.d 0755
 	    fi
 	fi
     fi
@@ -413,13 +404,13 @@ if [ $HOST != openwrt ]; then
 
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 
-    mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
+    make_parent_directory ${DESTDIR}${LIBEXECDIR}/$PRODUCT 0755
 
     install_file ifupdown ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown 0544
 fi
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
-    [ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d/
+    [ $configure -eq 1 ] || make_parent_directory ${DESTDIR}${CONFDIR}/NetworkManager/dispatcher.d 0755
     install_file ifupdown ${DESTDIR}${ETC}/NetworkManager/dispatcher.d/01-shorewall 0544
 fi
 
@@ -438,8 +429,8 @@ case $HOST in
     suse)
 	if [ -z "$RPM" ]; then
 	    if [ $configure -eq 0 ]; then
-		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-up.d/
-		mkdir -p ${DESTDIR}${SYSCONFDIR}/network/if-down.d/
+		make_parent_directory ${DESTDIR}${SYSCONFDIR}/network/if-up.d 0755
+		make_parent_directory ${DESTDIR}${SYSCONFDIR}/network/if-down.d 0755
 	    fi
 
 	    install_file ifupdown ${DESTDIR}${SYSCONFDIR}/network/if-up.d/shorewall 0544
@@ -542,7 +533,7 @@ else
     if [ $configure -eq 1 -a -n "$first_install" ]; then
 	if [ $HOST = debian -a -z "$SERVICEDIR" ]; then
 	    if [ -n "${DESTDIR}" ]; then
-		mkdir -p ${DESTDIR}/etc/rcS.d
+		make_parent_directory ${DESTDIR}/etc/rcS.d 0755
 	    fi
 
 	    ln -sf ../init.d/$PRODUCT ${DESTDIR}${CONFDIR}/rcS.d/S38${PRODUCT}
@@ -557,7 +548,7 @@ if [ -d ${DESTDIR}/etc/ppp ]; then
     case $HOST in
 	debian|suse)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
-		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
+		make_parent_directory ${DESTDIR}/etc/ppp/$directory 0755 #SuSE doesn't create the IPv6 directories
 		cp -fp ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown ${DESTDIR}${CONFDIR}/ppp/$directory/shorewall
 	    done
 	    ;;

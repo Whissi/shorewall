@@ -367,22 +367,16 @@ fi
 #
 # Create /etc/$PRODUCT and other directories
 #
-mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${PERLLIBDIR}/Shorewall
-mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated
-mkdir -p ${DESTDIR}${VARDIR}
+make_parent_directory ${DESTDIR}${CONFDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${LIBEXECDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${PERLLIBDIR}/Shorewall 0755
+make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles 0755
+make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated 0755
+make_parent_directory ${DESTDIR}${VARDIR} 0755
 
-chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
-chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT
-chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated
+chmod 0755 ${DESTDIR}${SHAREDIR}/$PRODUCT
 
-if [ -n "$DESTDIR" ]; then
-    mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
-    chmod 755 ${DESTDIR}${CONFDIR}/logrotate.d
-fi
+[ -n "$DESTDIR" ] && make_parent_directory ${DESTDIR}${CONFDIR}/logrotate.d 0755
 
 #
 # Install the .service file
@@ -392,7 +386,7 @@ if [ -z "${SERVICEDIR}" ]; then
 fi
 
 if [ -n "$SERVICEDIR" ]; then
-    mkdir -p ${DESTDIR}${SERVICEDIR}
+    make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
     run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
@@ -1077,8 +1071,7 @@ if [ -d Perl ]; then
     #
     # ${SHAREDIR}/$PRODUCT/$Product if needed
     #
-    mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT/$Product
-    chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT/$Product
+    make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/$Product 0755
     #
     # Install the Compiler
     #
@@ -1145,7 +1138,7 @@ if [ -n "$MANDIR" ]; then
 
 cd manpages
 
-[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man5/
+[ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
 for f in *.5; do
     gzip -9c $f > $f.gz
@@ -1153,7 +1146,7 @@ for f in *.5; do
     echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
 done
 
-[ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man8/
+[ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man8 0755
 
 for f in *.8; do
     gzip -9c $f > $f.gz
@@ -1176,8 +1169,7 @@ fi
 #
 if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
     if [ ${DESTDIR} ]; then
-	mkdir -p ${DESTDIR}${SYSCONFDIR}
-	chmod 755 ${DESTDIR}${SYSCONFDIR}
+	make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
     fi
 
     run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/$PRODUCT

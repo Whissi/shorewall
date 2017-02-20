@@ -279,7 +279,7 @@ if [ -n "$DESTDIR" ]; then
 	OWNERSHIP=""
     fi
 
-    make_directory ${DESTDIR}${INITDIR} 755
+    make_parent_directory ${DESTDIR}${INITDIR} 0755
 
 else
     if [ ! -f ${SHAREDIR}/shorewall/coreversion ]; then
@@ -319,25 +319,20 @@ fi
 
 delete_file ${DESTDIR}/usr/share/$PRODUCT/xmodules
 
-[ -n "${INITFILE}" ] && make_directory ${DESTDIR}${INITDIR} 755
+[ -n "${INITFILE}" ] && make_parent_directory ${DESTDIR}${INITDIR} 0755
 
 #
 # Create ${CONFDIR}/$PRODUCT, /usr/share/$PRODUCT and /var/lib/$PRODUCT if needed
 #
-mkdir -p ${DESTDIR}${CONFDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
-mkdir -p ${DESTDIR}${SBINDIR}
-mkdir -p ${DESTDIR}${VARDIR}
-
-chmod 755 ${DESTDIR}${CONFDIR}/$PRODUCT
-chmod 755 ${DESTDIR}${SHAREDIR}/$PRODUCT
+make_parent_directory ${DESTDIR}${CONFDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${LIBEXECDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${SBINDIR} 0755
+make_parent_directory ${DESTDIR}${VARDIR} 0755
 
 if [ -n "$DESTDIR" ]; then
-    mkdir -p ${DESTDIR}${CONFDIR}/logrotate.d
-    chmod 755 ${DESTDIR}${CONFDIR}/logrotate.d
-    mkdir -p ${DESTDIR}${INITDIR}
-    chmod 755 ${DESTDIR}${INITDIR}
+    make_parent_directory ${DESTDIR}${CONFDIR}/logrotate.d 0755
+    make_parent_directory ${DESTDIR}${INITDIR} 0755
 fi
 
 if [ -n "$INITFILE" ]; then
@@ -358,7 +353,7 @@ if [ -z "${SERVICEDIR}" ]; then
 fi
 
 if [ -n "$SERVICEDIR" ]; then
-    mkdir -p ${DESTDIR}${SERVICEDIR}
+    make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
     install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 644
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
@@ -440,7 +435,7 @@ done
 if [ -d manpages -a -n "$MANDIR" ]; then
     cd manpages
 
-    mkdir -p ${DESTDIR}${MANDIR}/man5/
+    make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
     for f in *.5; do
 	gzip -c $f > $f.gz
@@ -448,7 +443,7 @@ if [ -d manpages -a -n "$MANDIR" ]; then
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
     done
 
-    mkdir -p ${DESTDIR}${MANDIR}/man8/
+    make_parent_directory ${DESTDIR}${MANDIR}/man8 0755
 
     for f in *.8; do
 	gzip -c $f > $f.gz
@@ -493,10 +488,7 @@ ln -sf shorewall ${DESTDIR}${SBINDIR}/${PRODUCT}
 # Note -- not all packages will have the SYSCONFFILE so we need to check for its existance here
 #
 if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
-    if [ ${DESTDIR} ]; then
-	mkdir -p ${DESTDIR}${SYSCONFDIR}
-	chmod 755 ${DESTDIR}${SYSCONFDIR}
-    fi
+    [ ${DESTDIR} ] && make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
 
     install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT} 0640
     echo "$SYSCONFFILE file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"

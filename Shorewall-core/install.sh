@@ -276,40 +276,26 @@ echo "Installing $Product Version $VERSION"
 #
 # Create directories
 #
-mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall
-chmod 755 ${DESTDIR}${LIBEXECDIR}/shorewall
+make_parent_directory ${DESTDIR}${LIBEXECDIR}/shorewall 0755
 
-mkdir -p ${DESTDIR}${SHAREDIR}/shorewall
-chmod 755 ${DESTDIR}${SHAREDIR}/shorewall
+make_parent_directory ${DESTDIR}${SHAREDIR}/shorewall 0755
 
-mkdir -p ${DESTDIR}${CONFDIR}
-chmod 755 ${DESTDIR}${CONFDIR}
+make_parent_directory ${DESTDIR}${CONFDIR} 0755
 
-if [ -n "${SYSCONFDIR}" ]; then
-    mkdir -p ${DESTDIR}${SYSCONFDIR}
-    chmod 755 ${DESTDIR}${SYSCONFDIR}
-fi
+[ -n "${SYSCONFDIR}" ] && make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
 
 if [ -z "${SERVICEDIR}" ]; then
     SERVICEDIR="$SYSTEMD"
 fi
 
-if [ -n "${SERVICEDIR}" ]; then
-    mkdir -p ${DESTDIR}${SERVICEDIR}
-    chmod 755 ${DESTDIR}${SERVICEDIR}
-fi
+[ -n "${SERVICEDIR}" ] && make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
 
-mkdir -p ${DESTDIR}${SBINDIR}
-chmod 755 ${DESTDIR}${SBINDIR}
+make_parent_directory ${DESTDIR}${SBINDIR} 0755
 
-if [ -n "${MANDIR}" ]; then
-    mkdir -p ${DESTDIR}${MANDIR}
-    chmod 755 ${DESTDIR}${MANDIR}
-fi
+[ -n "${MANDIR}" ] && make_parent_directory ${DESTDIR}${MANDIR} 0755
 
 if [ -n "${INITFILE}" ]; then
-    mkdir -p ${DESTDIR}${INITDIR}
-    chmod 755 ${DESTDIR}${INITDIR}
+    make_parent_directory ${DESTDIR}${INITDIR} 0755
 
     if [ -n "$AUXINITSOURCE" -a -f "$AUXINITSOURCE" ]; then
 	install_file $AUXINITSOURCE ${DESTDIR}${INITDIR}/$AUXINITFILE 0544
@@ -360,7 +346,7 @@ fi
 if [ -n "$MANDIR" ]; then
     cd manpages
 
-    [ -n "$INSTALLD" ] || mkdir -p ${DESTDIR}${MANDIR}/man8/
+    [ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man8 0755
 
     for f in *.8; do
 	gzip -9c $f > $f.gz

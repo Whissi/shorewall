@@ -27,17 +27,18 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-VERSION=xxx #The Build script inserts the actual version.
+VERSION=xxx # The Build script inserts the actual version
 PRODUCT=shorewall-init
 Product="Shorewall Init"
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <configuration-file> ]"
-    echo "       $ME -v"
-    echo "       $ME -h"
-    echo "       $ME -n"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -379,7 +380,7 @@ else
 		# Gentoo does not support if-{up,down}.d
 		/bin/true
 	    elif [ $HOST = openwrt ]; then
-		# Not implemented on openwrt
+		# Not implemented on OpenWRT
 		/bin/true
 	    else
 		make_parent_directory ${DESTDIR}/${ETC}/NetworkManager/dispatcher.d 0755
@@ -573,6 +574,6 @@ if [ -d ${DESTDIR}/etc/ppp ]; then
     esac
 fi
 #
-#  Report Success
+# Report Success
 #
 echo "shorewall Init Version $VERSION Installed"

@@ -22,15 +22,16 @@
 #	along with this program; if not, see <http://www.gnu.org/licenses/>.
 #
 
-VERSION=xxx #The Build script inserts the actual version
+VERSION=xxx # The Build script inserts the actual version
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <configuration-file> ]"
-    echo "       $ME -v"
-    echo "       $ME -h"
-    echo "       $ME -n"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -558,6 +559,6 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 fi
 
 #
-#  Report Success
+# Report Success
 #
 echo "$Product Version $VERSION Installed"

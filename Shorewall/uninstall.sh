@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=xxx #The Build script inserts the actual version
+VERSION=xxx # The Build script inserts the actual version
 PRODUCT=shorewall
 Product=Shorewall
 
@@ -51,6 +51,9 @@ cd "$(dirname $0)"
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
+#
+# Parse the run line
+#
 finished=0
 configure=1
 
@@ -67,7 +70,7 @@ while [ $finished -eq 0 ]; do
 			usage 0
 			;;
 		    v)
-			echo "$Product Firewall Installer Version $VERSION"
+			echo "$Product Firewall Uninstaller Version $VERSION"
 			exit 0
 			;;
 		    n*)
@@ -128,14 +131,13 @@ else
     VERSION=""
 fi
 
-
 echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
     if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall-lite ]; then
-	$PRODUCT clear
+	${SBINDIR}/$PRODUCT clear
     fi
 fi
 
@@ -161,11 +163,10 @@ if [ -f "$FIREWALL" ]; then
     remove_file $FIREWALL
 fi
 
-if [ -z "${SERVICEDIR}" ]; then
-    SERVICEDIR="$SYSTEMD"
-fi
+[ -z "${SERVICEDIR}" ] && SERVICEDIR="$SYSTEMD"
+
 if [ -n "$SERVICEDIR" ]; then
-    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
     rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
@@ -176,12 +177,12 @@ if [ -n "$SYSCONFDIR" ]; then
     [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
-rm -rf ${VARDIR}/$PRODUCT
+rm -rf ${VARDIR}
 rm -rf ${PERLLIBDIR}/$Product/*
 [ ${LIBEXECDIR} = ${SHAREDIR} ] || rm -rf ${LIBEXECDIR}/$PRODUCT
-rm -rf ${SHAREDIR}/$PRODUCT/configfiles/
-rm -rf ${SHAREDIR}/$PRODUCT/Samples/
-rm -rf ${SHAREDIR}/$PRODUCT/$Product/
+rm -rf ${SHAREDIR}/$PRODUCT/configfiles
+rm -rf ${SHAREDIR}/$PRODUCT/Samples
+rm -rf ${SHAREDIR}/$PRODUCT/$Product
 rm -f  ${SHAREDIR}/$PRODUCT/lib.cli-std
 rm -f  ${SHAREDIR}/$PRODUCT/lib.runtime
 rm -f  ${SHAREDIR}/$PRODUCT/compiler.pl
@@ -204,8 +205,9 @@ done
 
 rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
 
-[ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/${PRODUCT}.service
+[ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/${PRODUCT}.service
 
-echo "$Product Uninstalled"
-
-
+#
+# Report Success
+#
+echo "$Product $VERSION Uninstalled"

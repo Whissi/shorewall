@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Script to back uninstall Shoreline Firewall
+# Script to back uninstall Shoreline Firewall Init
 #
 #     (c) 2000-2016 - Tom Eastep (teastep@shorewall.net)
 #
@@ -26,14 +26,18 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=xxx  #The Build script inserts the actual version
+VERSION=xxx # The Build script inserts the actual version
 PRODUCT=shorewall-init
 Product="Shorewall Init"
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <shorewallrc file> ]"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -47,6 +51,9 @@ cd "$(dirname $0)"
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
+#
+# Parse the run line
+#
 finished=0
 configure=1
 
@@ -124,35 +131,35 @@ else
     VERSION=""
 fi
 
-[ -n "${LIBEXEC:=${SHAREDIR}}" ]
-
 echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
-INITSCRIPT=${CONFDIR}/init.d/$PRODUCT
+[ -n "${LIBEXEC:=${SHAREDIR}}" ]
 
-if [ -f "$INITSCRIPT" ]; then
+rm -f  ${SBINDIR}/$PRODUCT
+
+FIREWALL=${CONFDIR}/init.d/$PRODUCT
+
+if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if [ $HOST = openwrt ]; then
 	    if /etc/init.d/$PRODUCT enabled; then
 		/etc/init.d/$PRODUCT disable
 	    fi
 	elif mywhich updaterc.d ; then
-	    updaterc.d $PRODUCT remove
+	    updaterc.d ${PRODUCT} remove
 	elif mywhich insserv ; then
-            insserv -r $INITSCRIPT
+            insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
-	    chkconfig --del $(basename $INITSCRIPT)
+	    chkconfig --del $(basename $FIREWALL)
 	fi
     fi
 
-    remove_file $INITSCRIPT
+    remove_file $FIREWALL
 fi
 
-if [ -z "${SERVICEDIR}" ]; then
-    SERVICEDIR="$SYSTEMD"
-fi
+[ -z "${SERVICEDIR}" ] && SERVICEDIR="$SYSTEMD"
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
@@ -193,10 +200,11 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 fi
 
-rm -f  ${SBINDIR}/$PRODUCT
 rm -rf ${SHAREDIR}/$PRODUCT
 rm -rf ${LIBEXECDIR}/$PRODUCT
+rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
 
-echo "$Product Uninstalled"
-
-
+#
+# Report Success
+#
+echo "$Product $VERSION Uninstalled"

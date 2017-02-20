@@ -26,14 +26,18 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=xxx  #The Build script inserts the actual version
+VERSION=xxx # The Build script inserts the actual version
 PRODUCT=shorewall6-lite
 Product="Shorewall6 Lite"
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <shorewallrc file> ]"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -47,6 +51,9 @@ cd "$(dirname $0)"
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
+#
+# Parse the run line
+#
 finished=0
 configure=1
 
@@ -63,7 +70,7 @@ while [ $finished -eq 0 ]; do
 			usage 0
 			;;
 		    v)
-			echo "$Product Firewall Installer Version $VERSION"
+			echo "$Product Firewall Uninstaller Version $VERSION"
 			exit 0
 			;;
 		    n*)
@@ -134,7 +141,9 @@ if [ $configure -eq 1 ]; then
     fi
 fi
 
-if [ -f ${SHAREDIR}/$PRODUCT/init ]; then
+rm -f ${SBINDIR}/$PRODUCT
+
+if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
     if [ $HOST = openwrt ]; then
 	if [ $configure -eq 1 ] && /etc/init.d/$PRODUCT enabled; then
 	    /etc/init.d/$PRODUCT disable
@@ -151,37 +160,40 @@ fi
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
-	    updaterc.d $PRODUCT remove
+	    updaterc.d ${PRODUCT} remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
 	    chkconfig --del $(basename $FIREWALL)
-	elif mywhich systemctl ; then
-	    systemctl disable $PRODUCT
 	fi
     fi
 
     remove_file $FIREWALL
 fi
 
-[ -z "$SERVICEDIR" ] && SERVICEDIR="$SYSTEMD"
+[ -z "${SERVICEDIR}" ] && SERVICEDIR="$SYSTEMD"
 
 if [ -n "$SERVICEDIR" ]; then
-    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
     rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -f ${SBINDIR}/$PRODUCT
 rm -rf ${CONFDIR}/$PRODUCT
 rm -rf ${VARDIR}
 rm -rf ${SHAREDIR}/$PRODUCT
 rm -rf ${LIBEXECDIR}/$PRODUCT
 rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
-rm -f  ${SYSCONFDIR}/$PRODUCT
+
+if [ -n "$SYSCONFDIR" ]; then
+    [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
+fi
 
 if [ -n "${MANDIR}" ]; then
     rm -f ${MANDIR}/man5/${PRODUCT}*
     rm -f ${MANDIR}/man8/${PRODUCT}*
 fi
 
-echo "$Product Uninstalled"
+#
+# Report Success
+#
+echo "$Product $VERSION Uninstalled"

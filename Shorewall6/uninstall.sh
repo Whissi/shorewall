@@ -26,14 +26,18 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=xxx #The Build script inserts the actual version
+VERSION=xxx # The Build script inserts the actual version
 PRODUCT=shorewall6
 Product=Shorewall6
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <shorewallrc file> ]"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
+    echo "  -n"
     exit $1
 }
 
@@ -47,6 +51,9 @@ cd "$(dirname $0)"
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
+#
+# Parse the run line
+#
 finished=0
 configure=1
 
@@ -63,7 +70,7 @@ while [ $finished -eq 0 ]; do
 			usage 0
 			;;
 		    v)
-			echo "$Product Firewall Installer Version $VERSION"
+			echo "$Product Firewall Uninstaller Version $VERSION"
 			exit 0
 			;;
 		    n*)
@@ -134,6 +141,8 @@ if [ $configure -eq 1 ]; then
     fi
 fi
 
+rm -f ${SBINDIR}/$PRODUCT
+
 if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
     FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
 elif [ -n "$INITFILE" ]; then
@@ -143,7 +152,7 @@ fi
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
-	    updaterc.d $PRODUCT remove
+	    updaterc.d ${PRODUCT} remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
@@ -154,10 +163,10 @@ if [ -f "$FIREWALL" ]; then
     remove_file $FIREWALL
 fi
 
-[ -n "$SERVICEDIR" ] || SERVICEDIR=${SYSTEMD}
+[ -z "${SERVICEDIR}" ] && SERVICEDIR="$SYSTEMD"
 
 if [ -n "$SERVICEDIR" ]; then
-    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
     rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
@@ -168,24 +177,26 @@ if [ -n "$SYSCONFDIR" ]; then
     [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
-rm -f ${SBINDIR}/$PRODUCT
 rm -rf ${CONFDIR}/$PRODUCT
 rm -rf ${VARDIR}
 rm -rf ${LIBEXECDIR}/$PRODUCT
 rm -rf ${SHAREDIR}/$PRODUCT
 
-for f in ${MANDIR}/man5/${PRODUCT}* ${SHAREDIR}/man/man8/${PRODUCT}*; do
+for f in ${MANDIR}/man5/${PRODUCT}* ${MANDIR}/man8/${PRODUCT}*; do
     case $f in
 	shorewall6-lite*)
 	    ;;
 	*)
 	    rm -f $f
+	    ;;
     esac
 done
 
 rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+
 [ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/${PRODUCT}.service
 
-echo "$Product Uninstalled"
-
-
+#
+# Report Success
+#
+echo "$Product $VERSION Uninstalled"

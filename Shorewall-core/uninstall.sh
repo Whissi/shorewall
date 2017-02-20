@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Script to back uninstall Shoreline Firewall
+# Script to back uninstall Shoreline Firewall Core Modules
 #
 #     (c) 2000-2016 - Tom Eastep (teastep@shorewall.net)
 #
@@ -26,14 +26,17 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=xxx #The Build script inserts the actual version
-PRODUCT="shorewall-core"
+VERSION=xxx # The Build script inserts the actual version
+PRODUCT=shorewall-core
 Product="Shorewall Core"
- 
+
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ <shorewallrc file> ]"
+    echo "usage: $ME [ <option> ] [ <shorewallrc file> ]"
+    echo "where <option> is one of"
+    echo "  -h"
+    echo "  -v"
     exit $1
 }
 
@@ -46,6 +49,41 @@ cd "$(dirname $0)"
 # Source common functions
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }
+
+#
+# Parse the run line
+#
+finished=0
+
+while [ $finished -eq 0 ]; do
+    option=$1
+
+    case "$option" in
+	-*)
+	    option=${option#-}
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    h)
+			usage 0
+			;;
+		    v)
+			echo "$Product Firewall Uninstaller Version $VERSION"
+			exit 0
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+
+	    shift
+	    ;;
+	*)
+	    finished=1
+	    ;;
+    esac
+done
 
 #
 # Read the RC file
@@ -92,6 +130,7 @@ echo "Uninstalling $Product $VERSION"
 rm -rf ${SHAREDIR}/shorewall
 rm -f ~/.shorewallrc
 
-echo "$Product Uninstalled"
-
-
+#
+# Report Success
+#
+echo "$Product $VERSION Uninstalled"

@@ -27,8 +27,6 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx # The Build script inserts the actual version
-PRODUCT=shorewall
-Product=Shorewall
 
 usage() # $1 = exit status
 {
@@ -45,6 +43,14 @@ usage() # $1 = exit status
 # Change to the directory containing this script
 #
 cd "$(dirname $0)"
+
+if [ -f shorewall.service ]; then
+    PRODUCT=shorewall
+    Product=Shorewall
+else
+    PRODUCT=shorewall6
+    Product=Shorewall6
+fi
 
 #
 # Source common functions
@@ -138,6 +144,8 @@ echo "Uninstalling $Product $VERSION"
 if [ $configure -eq 1 ]; then
     if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall-lite ]; then
 	${SBINDIR}/$PRODUCT clear
+    elif qt ip6tables -L shorewall6 -n && [ ! -f ${SBINDIR}/shorewall6-lite ]; then
+	${SBINDIR}/$PRODUCT clear
     fi
 fi
 
@@ -178,24 +186,29 @@ if [ -n "$SYSCONFDIR" ]; then
 fi
 
 remove_directory ${VARDIR}
-remove_file_with_wildcard ${PERLLIBDIR}/$Product/\*
 [ ${LIBEXECDIR} = ${SHAREDIR} ] || remove_directory ${LIBEXECDIR}/$PRODUCT
 remove_directory ${SHAREDIR}/$PRODUCT/configfiles
-remove_directory ${SHAREDIR}/$PRODUCT/Samples
-remove_directory ${SHAREDIR}/$PRODUCT/$Product
-remove_file  ${SHAREDIR}/$PRODUCT/lib.cli-std
-remove_file  ${SHAREDIR}/$PRODUCT/lib.runtime
-remove_file  ${SHAREDIR}/$PRODUCT/compiler.pl
-remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/prog.\*
 remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/module\*
 remove_file  ${SHAREDIR}/$PRODUCT/helpers
 remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/action\*
 remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/macro.\*
-remove_file  ${SHAREDIR}/$PRODUCT/init
+
+if [ $PRODUCT = shorewall ]; then
+    remove_file_with_wildcard ${PERLLIBDIR}/$Product/\*
+    remove_directory ${SHAREDIR}/$PRODUCT/Samples
+    remove_directory ${SHAREDIR}/$PRODUCT/$Product
+    remove_file  ${SHAREDIR}/$PRODUCT/lib.cli-std
+    remove_file  ${SHAREDIR}/$PRODUCT/lib.runtime
+    remove_file  ${SHAREDIR}/$PRODUCT/compiler.pl
+    remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/prog.\*
+    remove_file  ${SHAREDIR}/$PRODUCT/init
+else
+    remove_directory ${SHAREDIR}/$PRODUCT
+fi
 
 for f in ${MANDIR}/man5/${PRODUCT}* ${MANDIR}/man8/${PRODUCT}*; do
     case $f in
-	shorewall6*|shorewall-lite*)
+	shorewall[6]-lite*)
 	    ;;
 	*)
 	    remove_file $f

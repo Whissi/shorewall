@@ -83,16 +83,17 @@ while [ $finished -eq 0 ]; do
 	    ;;
     esac
 done
+
 #
 # Read the RC file
 #
 if [ $# -eq 0 ]; then
     if [ -f ./shorewallrc ]; then
-	. ./shorewallrc
+        . ./shorewallrc || fatal_error "Can not load the RC file: ./shorewallrc"
     elif [ -f ~/.shorewallrc ]; then
-	. ~/.shorewallrc || exit 1
+        . ~/.shorewallrc || fatal_error "Can not load the RC file: ~/.shorewallrc"
     elif [ -f /usr/share/shorewall/shorewallrc ]; then
-	. /usr/share/shorewall/shorewallrc
+        . /usr/share/shorewall/shorewallrc || fatal_error "Can not load the RC file: /usr/share/shorewall/shorewallrc"
     else
 	fatal_error "No configuration file specified and /usr/share/shorewall/shorewallrc not found"
     fi
@@ -102,11 +103,11 @@ elif [ $# -eq 1 ]; then
 	/*|.*)
 	    ;;
 	*)
-	    file=./$file
+	    file=./$file || exit 1
 	    ;;
     esac
 
-    . $file || exit 1
+    . $file || fatal_error "Can not load the RC file: $file"
 else
     usage 1
 fi

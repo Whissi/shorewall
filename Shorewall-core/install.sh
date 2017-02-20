@@ -247,7 +247,7 @@ case "$HOST" in
 esac
 
 if [ -z "$file" ]; then
-    if $HOST = linux; then
+    if [ $HOST = linux ]; then
 	file=shorewallrc.default
     else
 	file=shorewallrc.${HOST}
@@ -260,7 +260,8 @@ if [ -z "$file" ]; then
     echo "" >&2
     echo "Example:" >&2
     echo "" >&2
-    echo "   ./install.sh $file" &>2
+    echo "   ./install.sh $file" >&2
+    exit 1
 fi
 
 if [ -n "$DESTDIR" ]; then

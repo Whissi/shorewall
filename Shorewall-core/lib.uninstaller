@@ -1,0 +1,80 @@
+#
+#
+# Shorewall 5.0 -- /usr/share/shorewall/lib.installer.
+#
+#     (c) 2017 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2017 - Matt Darfeuille (matdarf@gmail.com)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#       This program is part of Shorewall.
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of the GNU General Public License as published by the
+#       Free Software Foundation, either version 2 of the license or, at your
+#       option, any later version.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, see <http://www.gnu.org/licenses/>.
+#
+# The purpose of this library is to hold those functions used by the products uninstaller.
+#
+#########################################################################################
+
+fatal_error()
+{
+    echo "   ERROR: $@" >&2
+    exit 1
+}
+
+split() {
+    local ifs
+    ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
+
+qt()
+{
+    "$@" >/dev/null 2>&1
+}
+
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    echo $dir/$1
+	    return 0
+	fi
+    done
+
+    return 2
+}
+
+remove_file() # $1 = file to remove
+{
+    if [ -f $1 -o -L $1 ] ; then
+	rm -f $1
+	echo "$1 Removed"
+    fi
+}
+
+restore_file() # $1 = file to restore
+{
+    if [ -f ${1}-shorewall.bkout ]; then
+	if (mv -f ${1}-shorewall.bkout $1); then
+	    echo
+	    echo "$1 restored"
+        else
+	    exit 1
+        fi
+    fi
+}

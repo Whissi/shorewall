@@ -345,7 +345,7 @@ else
     first_install="Yes"
 fi
 
-if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/$PRODUCT/coreversion ]; then
+if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/shorewall/coreversion ]; then
     echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
     exit 1
 fi

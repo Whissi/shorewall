@@ -127,6 +127,11 @@ fi
 
 echo "Uninstalling $Product $VERSION"
 
+if [ -n "${MANDIR}" ]; then
+    remove_file_with_wildcard ${MANDIR}/man5/shorewall\*
+    remove_file_with_wildcard ${MANDIR}/man8/shorewall\*
+fi
+
 remove_directory ${SHAREDIR}/shorewall
 remove_file ~/.shorewallrc
 

@@ -27,8 +27,6 @@
 #       shown below. Simply run this script to remove Shorewall Firewall
 
 VERSION=xxx # The Build script inserts the actual version
-PRODUCT=shorewall-lite
-Product="Shorewall Lite"
 
 usage() # $1 = exit status
 {
@@ -45,6 +43,14 @@ usage() # $1 = exit status
 # Change to the directory containing this script
 #
 cd "$(dirname $0)"
+
+if [ -f shorewall-lite.service ]; then
+    PRODUCT=shorewall-lite
+    Product="Shorewall Lite"
+else
+    PRODUCT=shorewall6-lite
+    Product="Shorewall6 Lite"
+fi
 
 #
 # Source common functions
@@ -137,6 +143,8 @@ echo "Uninstalling $Product $VERSION"
 
 if [ $configure -eq 1 ]; then
     if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall ]; then
+	${SBINDIR}/$PRODUCT clear
+    elif qt ip6tables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall6 ]; then
 	${SBINDIR}/$PRODUCT clear
     fi
 fi

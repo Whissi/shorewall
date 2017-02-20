@@ -141,7 +141,7 @@ if [ $configure -eq 1 ]; then
     fi
 fi
 
-rm -f ${SBINDIR}/$PRODUCT
+remove_file ${SBINDIR}/$PRODUCT
 
 if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
     FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
@@ -167,45 +167,45 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
-    rm -f $SERVICEDIR/${PRODUCT}.service
+    remove_file $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -rf ${SHAREDIR}/$PRODUCT/version
-rm -rf ${CONFDIR}/$PRODUCT
+remove_file ${SHAREDIR}/$PRODUCT/version
+remove_directory ${CONFDIR}/$PRODUCT
 
 if [ -n "$SYSCONFDIR" ]; then
-    [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
+    [ -n "$SYSCONFFILE" ] && remove_file ${SYSCONFDIR}/${PRODUCT}
 fi
 
-rm -rf ${VARDIR}
-rm -rf ${PERLLIBDIR}/$Product/*
-[ ${LIBEXECDIR} = ${SHAREDIR} ] || rm -rf ${LIBEXECDIR}/$PRODUCT
-rm -rf ${SHAREDIR}/$PRODUCT/configfiles
-rm -rf ${SHAREDIR}/$PRODUCT/Samples
-rm -rf ${SHAREDIR}/$PRODUCT/$Product
-rm -f  ${SHAREDIR}/$PRODUCT/lib.cli-std
-rm -f  ${SHAREDIR}/$PRODUCT/lib.runtime
-rm -f  ${SHAREDIR}/$PRODUCT/compiler.pl
-rm -f  ${SHAREDIR}/$PRODUCT/prog.*
-rm -f  ${SHAREDIR}/$PRODUCT/module*
-rm -f  ${SHAREDIR}/$PRODUCT/helpers
-rm -f  ${SHAREDIR}/$PRODUCT/action*
-rm -f  ${SHAREDIR}/$PRODUCT/macro.*
-rm -f  ${SHAREDIR}/$PRODUCT/init
+remove_directory ${VARDIR}
+remove_file_with_wildcard ${PERLLIBDIR}/$Product/\*
+[ ${LIBEXECDIR} = ${SHAREDIR} ] || remove_directory ${LIBEXECDIR}/$PRODUCT
+remove_directory ${SHAREDIR}/$PRODUCT/configfiles
+remove_directory ${SHAREDIR}/$PRODUCT/Samples
+remove_directory ${SHAREDIR}/$PRODUCT/$Product
+remove_file  ${SHAREDIR}/$PRODUCT/lib.cli-std
+remove_file  ${SHAREDIR}/$PRODUCT/lib.runtime
+remove_file  ${SHAREDIR}/$PRODUCT/compiler.pl
+remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/prog.\*
+remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/module\*
+remove_file  ${SHAREDIR}/$PRODUCT/helpers
+remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/action\*
+remove_file_with_wildcard  ${SHAREDIR}/$PRODUCT/macro.\*
+remove_file  ${SHAREDIR}/$PRODUCT/init
 
 for f in ${MANDIR}/man5/${PRODUCT}* ${MANDIR}/man8/${PRODUCT}*; do
     case $f in
 	shorewall6*|shorewall-lite*)
 	    ;;
 	*)
-	    rm -f $f
+	    remove_file $f
 	    ;;
     esac
 done
 
-rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+remove_file  ${CONFDIR}/logrotate.d/$PRODUCT
 
-[ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/${PRODUCT}.service
+[ -n "$SYSTEMD" ] && remove_file ${SYSTEMD}/${PRODUCT}.service
 
 #
 # Report Success

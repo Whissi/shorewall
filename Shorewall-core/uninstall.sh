@@ -127,8 +127,8 @@ fi
 
 echo "Uninstalling $Product $VERSION"
 
-rm -rf ${SHAREDIR}/shorewall
-rm -f ~/.shorewallrc
+remove_directory ${SHAREDIR}/shorewall
+remove_file ~/.shorewallrc
 
 #
 # Report Success

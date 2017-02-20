@@ -141,7 +141,7 @@ if [ $configure -eq 1 ]; then
     fi
 fi
 
-rm -f ${SBINDIR}/$PRODUCT
+remove_file ${SBINDIR}/$PRODUCT
 
 if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
     if [ $HOST = openwrt ]; then
@@ -175,22 +175,22 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
-    rm -f $SERVICEDIR/${PRODUCT}.service
+    remove_file $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -rf ${CONFDIR}/$PRODUCT
-rm -rf ${VARDIR}
-rm -rf ${SHAREDIR}/$PRODUCT
-rm -rf ${LIBEXECDIR}/$PRODUCT
-rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+remove_directory ${CONFDIR}/$PRODUCT
+remove_directory ${VARDIR}
+remove_directory ${SHAREDIR}/$PRODUCT
+remove_directory ${LIBEXECDIR}/$PRODUCT
+remove_file  ${CONFDIR}/logrotate.d/$PRODUCT
 
 if [ -n "$SYSCONFDIR" ]; then
-    [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
+    [ -n "$SYSCONFFILE" ] && remove_file ${SYSCONFDIR}/${PRODUCT}
 fi
 
 if [ -n "${MANDIR}" ]; then
-    rm -f ${MANDIR}/man5/${PRODUCT}*
-    rm -f ${MANDIR}/man8/${PRODUCT}*
+    remove_file_with_wildcard ${MANDIR}/man5/${PRODUCT}\*
+    remove_file_with_wildcard ${MANDIR}/man8/${PRODUCT}\*
 fi
 
 #

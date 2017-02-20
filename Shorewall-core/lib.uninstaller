@@ -61,9 +61,36 @@ mywhich() {
 
 remove_file() # $1 = file to remove
 {
-    if [ -f $1 -o -L $1 ] ; then
-	rm -f $1
-	echo "$1 Removed"
+    if [ -n "$1" ] ; then
+        if [ -f $1 -o -L $1 ] ; then
+            rm -f $1
+            echo "$1 Removed"
+        fi
+    fi
+}
+
+remove_directory() # $1 = directory to remove
+{
+    if [ -n "$1" ] ; then
+        if [ -d $1 ] ; then
+            rm -rf $1
+            echo "$1 Removed"
+        fi
+    fi
+}
+
+remove_file_with_wildcard() # $1 = file with wildcard to remove
+{
+    if [ -n "$1" ] ; then
+        for f in $1; do
+            if [ -d $f ] ; then
+                rm -rf $f
+                echo "$f Removed"
+            elif [ -f $f -o -L $f ] ; then
+                rm -f $f
+                echo "$f Removed"
+            fi
+        done
     fi
 }
 

@@ -137,7 +137,7 @@ echo "Uninstalling $Product $VERSION"
 
 [ -n "${LIBEXEC:=${SHAREDIR}}" ]
 
-rm -f  ${SBINDIR}/$PRODUCT
+remove_file  ${SBINDIR}/$PRODUCT
 
 FIREWALL=${CONFDIR}/init.d/$PRODUCT
 
@@ -163,7 +163,7 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
-    rm -f $SERVICEDIR/${PRODUCT}.service
+    remove_file $SERVICEDIR/${PRODUCT}.service
 fi
 
 if [ $HOST = openwrt ]; then
@@ -200,9 +200,9 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 fi
 
-rm -rf ${SHAREDIR}/$PRODUCT
-rm -rf ${LIBEXECDIR}/$PRODUCT
-rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+remove_directory ${SHAREDIR}/$PRODUCT
+remove_directory ${LIBEXECDIR}/$PRODUCT
+remove_file  ${CONFDIR}/logrotate.d/$PRODUCT
 
 #
 # Report Success

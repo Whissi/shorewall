@@ -39,38 +39,6 @@ usage() # $1 = exit status
     exit $1
 }
 
-fatal_error()
-{
-    echo "   ERROR: $@" >&2
-    exit 1
-}
-
-split() {
-    local ifs
-    ifs=$IFS
-    IFS=:
-    set -- $1
-    echo $*
-    IFS=$ifs
-}
-
-qt()
-{
-    "$@" >/dev/null 2>&1
-}
-
-mywhich() {
-    local dir
-
-    for dir in $(split $PATH); do
-	if [ -x $dir/$1 ]; then
-	    return 0
-	fi
-    done
-
-    return 2
-}
-
 run_install()
 {
     if ! install $*; then
@@ -86,19 +54,9 @@ cant_autostart()
     echo  "WARNING: Unable to configure $PRODUCT to start automatically at boot" >&2
 }
 
-delete_file() # $1 = file to delete
-{
-    rm -f $1
-}
-
 install_file() # $1 = source $2 = target $3 = mode
 {
     run_install $T $OWNERSHIP -m $3 $1 ${2}
-}
-
-require()
-{
-    eval [ -n "\$$1" ] || fatal_error "Required option $1 not set"
 }
 
 cd "$(dirname $0)"
@@ -110,6 +68,11 @@ else
     PRODUCT=shorewall6
     Product=Shorewall6
 fi
+
+#
+# Source common functions
+#
+. ./lib.installer || { echo "ERROR: Can not load common functions." >&2; exit 1; }
 
 #
 # Parse the run line

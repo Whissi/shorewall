@@ -395,8 +395,14 @@ echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/confi
 #
 for f in lib.* ; do
     if [ -f $f ]; then
-	install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+        case $f in
+            *installer)
+                ;;
+            *)
+                install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
+                echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+                ;;
+        esac
     fi
 done
 

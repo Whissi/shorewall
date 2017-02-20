@@ -344,8 +344,14 @@ echo "wait4ifup installed in ${DESTDIR}${LIBEXECDIR}/shorewall/wait4ifup"
 # Install the libraries
 #
 for f in lib.* ; do
-    install_file $f ${DESTDIR}${SHAREDIR}/shorewall/$f 0644
-    echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
+    case $f in
+        *installer)
+            ;;
+        *)
+            install_file $f ${DESTDIR}${SHAREDIR}/shorewall/$f 0644
+            echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/shorewall/$f"
+            ;;
+    esac
 done
 
 if [ $SHAREDIR != /usr/share ]; then
@@ -406,11 +412,17 @@ fi
 
 if [ ${SHAREDIR} != /usr/share ]; then
     for f in lib.*; do
-	if [ $BUILD != apple ]; then
-	    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
-	else
-	    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
-	fi
+        case $f in
+            *installer)
+                ;;
+            *)
+                if [ $BUILD != apple ]; then
+                    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
+                else
+                    eval sed -i \'\' -e \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/$f
+                fi
+                ;;
+        esac
     done
 fi
 #

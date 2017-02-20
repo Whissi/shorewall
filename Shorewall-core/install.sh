@@ -241,8 +241,7 @@ case "$HOST" in
     debian|gentoo|redhat|slackware|archlinux|linux|suse|openwrt)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
-	exit 1;
+	fatal_error "Unknown HOST \"$HOST\""
 	;;
 esac
 

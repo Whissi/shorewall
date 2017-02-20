@@ -254,12 +254,10 @@ case "$HOST" in
 	echo "Installing Openwrt-specific configuration..."
 	;;
     linux)
-	echo "ERROR: Shorewall-init is not supported on this system" >&2
-	exit 1
+	fatal_error "Shorewall-init is not supported on this system"
 	;;
     *)
-	echo "ERROR: Unsupported HOST distribution: \"$HOST\"" >&2
-	exit 1;
+	fatal_error "Unsupported HOST distribution: \"$HOST\""
 	;;
 esac
 

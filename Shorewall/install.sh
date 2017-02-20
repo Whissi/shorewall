@@ -266,8 +266,7 @@ case "$HOST" in
     linux)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
-	exit 1;
+	fatal_error "Unknown HOST \"$HOST\""
 	;;
 esac
 
@@ -278,8 +277,7 @@ if [ $PRODUCT = shorewall ]; then
 	#
 	if [ "$DIGEST" != SHA ]; then
 	    if [ "$BUILD" = "$HOST" ] && ! eval perl -e \'use Digest::$DIGEST\;\' 2> /dev/null ; then
-		echo "ERROR: Perl compilation with Digest::$DIGEST failed" >&2
-		exit 1;
+		fatal_error "Perl compilation with Digest::$DIGEST failed"
 	    fi
 
 	    cp -af Perl/Shorewall/Chains.pm Perl/Shorewall/Chains.pm.bak
@@ -302,8 +300,7 @@ if [ $PRODUCT = shorewall ]; then
 		sed -i 's/Digest::SHA/Digest::SHA1/' Perl/Shorewall/Config.pm
 		DIGEST=SHA1
 	    else
-		echo "ERROR: Shorewall $VERSION requires either Digest::SHA or Digest::SHA1" >&2
-		exit 1
+		fatal_error "Shorewall $VERSION requires either Digest::SHA or Digest::SHA1"
 	    fi
 	fi
     fi
@@ -334,8 +331,7 @@ fi
 run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${SBINDIR}
 [ -n "${INITFILE}" ] && run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${INITDIR}
 if [ -z "$DESTDIR" -a $PRODUCT != shorewall ]; then
-    [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || \
-	{ echo "   ERROR: Shorewall >= 4.5.0 is not installed" >&2; exit 1; }
+    [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || fatal_error "Shorewall >= 4.5.0 is not installed"
 fi
 
 echo "Installing $Product Version $VERSION"

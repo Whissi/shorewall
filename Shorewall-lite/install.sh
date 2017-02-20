@@ -269,8 +269,7 @@ case "$HOST" in
     linux)
 	;;
     *)
-	echo "ERROR: Unknown HOST \"$HOST\"" >&2
-	exit 1;
+	fatal_error "ERROR: Unknown HOST \"$HOST\""
 	;;
 esac
 

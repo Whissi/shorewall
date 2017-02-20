@@ -327,8 +327,8 @@ if [ $BUILD != cygwin ]; then
     fi
 fi
 
-install -d $OWNERSHIP -m 755 ${DESTDIR}${SBINDIR}
-[ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 755 ${DESTDIR}${INITDIR}
+install -d $OWNERSHIP -m 0755 ${DESTDIR}${SBINDIR}
+[ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 0755 ${DESTDIR}${INITDIR}
 if [ -z "$DESTDIR" -a $PRODUCT != shorewall ]; then
     [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.5.0 is not installed" >&2; exit 1; }
@@ -388,7 +388,7 @@ fi
 if [ -n "$SERVICEDIR" ]; then
     make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
+    run_install $OWNERSHIP -m 0644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
 fi
@@ -1120,7 +1120,7 @@ fi
 # Create the version file
 #
 echo "$VERSION" > ${DESTDIR}${SHAREDIR}/$PRODUCT/version
-chmod 644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
+chmod 0644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 #
 # Remove and create the symbolic link to the init script
 #

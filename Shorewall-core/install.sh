@@ -350,7 +350,7 @@ if [ -n "$MANDIR" ]; then
 
     for f in *.8; do
 	gzip -9c $f > $f.gz
-	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
+	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 0644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
     done
 
@@ -367,7 +367,7 @@ ln -sf lib.base ${DESTDIR}${SHAREDIR}/shorewall/functions
 # Create the version file
 #
 echo "$VERSION" > ${DESTDIR}${SHAREDIR}/shorewall/coreversion
-chmod 644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
+chmod 0644 ${DESTDIR}${SHAREDIR}/shorewall/coreversion
 
 if [ -z "${DESTDIR}" ]; then
     if [ $update -ne 0 ]; then

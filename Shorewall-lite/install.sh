@@ -355,7 +355,7 @@ fi
 if [ -n "$SERVICEDIR" ]; then
     make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
     [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 644
+    install_file $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service 0644
     [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
     echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
 fi
@@ -419,12 +419,12 @@ if [ -f modules ]; then
 fi
 
 if [ -f helpers ]; then
-    install_file helpers ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers 600
+    install_file helpers ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers 0600
     echo "Helper modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers"
 fi
 
 for f in modules.*; do
-    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 644
+    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
     echo "Module file $f installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
 done
 
@@ -439,7 +439,7 @@ if [ -d manpages -a -n "$MANDIR" ]; then
 
     for f in *.5; do
 	gzip -c $f > $f.gz
-	install_file $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz 644
+	install_file $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz 0644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
     done
 
@@ -447,7 +447,7 @@ if [ -d manpages -a -n "$MANDIR" ]; then
 
     for f in *.8; do
 	gzip -c $f > $f.gz
-	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 644
+	install_file $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz 0644
 	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
     done
 
@@ -457,7 +457,7 @@ if [ -d manpages -a -n "$MANDIR" ]; then
 fi
 
 if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
-    install_file logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT 644
+    install_file logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT 0644
     echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
 fi
 
@@ -465,7 +465,7 @@ fi
 # Create the version file
 #
 echo "$VERSION" > ${DESTDIR}${SHAREDIR}/$PRODUCT/version
-chmod 644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
+chmod 0644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 #
 # Remove and create the symbolic link to the init script
 #

@@ -146,34 +146,34 @@ else
     usage 1
 fi
 
-if [ -f ${SHAREDIR}/shorewall-init/version ]; then
-    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall-init/version)"
+if [ -f ${SHAREDIR}/$PRODUCT/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/$PRODUCT/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Init Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Init Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
 [ -n "${LIBEXEC:=${SHAREDIR}}" ]
 
-echo "Uninstalling Shorewall Init $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
-INITSCRIPT=${CONFDIR}/init.d/shorewall-init
+INITSCRIPT=${CONFDIR}/init.d/$PRODUCT
 
 if [ -f "$INITSCRIPT" ]; then
     if [ $configure -eq 1 ]; then
 	if [ $HOST = openwrt ]; then
-	    if /etc/init.d/shorewall-init enabled; then
-		/etc/init.d/shorewall-init disable
+	    if /etc/init.d/$PRODUCT enabled; then
+		/etc/init.d/$PRODUCT disable
 	    fi
 	elif mywhich updaterc.d ; then
-	    updaterc.d shorewall-init remove
+	    updaterc.d $PRODUCT remove
 	elif mywhich insserv ; then
             insserv -r $INITSCRIPT
 	elif mywhich chkconfig ; then
@@ -189,20 +189,20 @@ if [ -z "${SERVICEDIR}" ]; then
 fi
 
 if [ -n "$SERVICEDIR" ]; then
-    [ $configure -eq 1 ] && systemctl disable shorewall-init.service
-    rm -f $SERVICEDIR/shorewall-init.service
+    [ $configure -eq 1 ] && systemctl disable ${PRODUCT}.service
+    rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
 if [ $HOST = openwrt ]; then
-    [ "$(readlink -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
-    [ "$(readlink -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
+    [ "$(readlink -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/$PRODUCT ] && remove_file ${SBINDIR}/ifup-local
+    [ "$(readlink -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/$PRODUCT ] && remove_file ${SBINDIR}/ifdown-local
 else
-    [ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifup-local
-    [ "$(readlink -m -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/shorewall-init ] && remove_file ${SBINDIR}/ifdown-local
+    [ "$(readlink -m -q ${SBINDIR}/ifup-local)"   = ${SHAREDIR}/$PRODUCT ] && remove_file ${SBINDIR}/ifup-local
+    [ "$(readlink -m -q ${SBINDIR}/ifdown-local)" = ${SHAREDIR}/$PRODUCT ] && remove_file ${SBINDIR}/ifdown-local
 fi
 
-remove_file ${CONFDIR}/default/shorewall-init
-remove_file ${CONFDIR}/sysconfig/shorewall-init
+remove_file ${CONFDIR}/default/$PRODUCT
+remove_file ${CONFDIR}/sysconfig/$PRODUCT
 
 remove_file ${CONFDIR}/NetworkManager/dispatcher.d/01-shorewall
 
@@ -227,10 +227,10 @@ if [ -d ${CONFDIR}/ppp ]; then
     done
 fi
 
-rm -f  ${SBINDIR}/shorewall-init
-rm -rf ${SHAREDIR}/shorewall-init
-rm -rf ${LIBEXECDIR}/shorewall-init
+rm -f  ${SBINDIR}/$PRODUCT
+rm -rf ${SHAREDIR}/$PRODUCT
+rm -rf ${LIBEXECDIR}/$PRODUCT
 
-echo "Shorewall Init Uninstalled"
+echo "$Product Uninstalled"
 
 

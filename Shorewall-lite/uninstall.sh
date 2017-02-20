@@ -145,37 +145,37 @@ else
     usage 1
 fi
 
-if [ -f ${SHAREDIR}/shorewall-lite/version ]; then
-    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall-lite/version)"
+if [ -f ${SHAREDIR}/$PRODUCT/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/$PRODUCT/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Lite Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Lite Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall Lite $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
     if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall ]; then
-	shorewall-lite clear
+	$PRODUCT clear
     fi
 fi
 
-if [ -L ${SHAREDIR}/shorewall-lite/init ]; then
+if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
     if [ $HOST = openwrt ]; then
-	if [ $configure -eq 1 ] && /etc/init.d/shorewall-lite enabled; then
-	    /etc/init.d/shorewall-lite disable
+	if [ $configure -eq 1 ] && /etc/init.d/$PRODUCT enabled; then
+	    /etc/init.d/$PRODUCT disable
 	fi
 	
-	FIREWALL=$(readlink ${SHAREDIR}/shorewall-lite/init)
+	FIREWALL=$(readlink ${SHAREDIR}/$PRODUCT/init)
     else
-	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall-lite/init)
+	FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
     fi
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
@@ -184,7 +184,7 @@ fi
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
-	    updaterc.d shorewall-lite remove
+	    updaterc.d $PRODUCT remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
@@ -199,22 +199,22 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SERVICEDIR/shorewall-lite.service
+    rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -f ${SBINDIR}/shorewall-lite
+rm -f ${SBINDIR}/$PRODUCT
 
-rm -rf ${CONFDIR}/shorewall-lite
+rm -rf ${CONFDIR}/$PRODUCT
 rm -rf ${VARDIR}
-rm -rf ${SHAREDIR}/shorewall-lite
-rm -rf ${LIBEXECDIR}/shorewall-lite
-rm -f  ${CONFDIR}/logrotate.d/shorewall-lite
-rm -f  ${SYSCONFDIR}/shorewall-lite
+rm -rf ${SHAREDIR}/$PRODUCT
+rm -rf ${LIBEXECDIR}/$PRODUCT
+rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+rm -f  ${SYSCONFDIR}/$PRODUCT
 
 if [ -n "${MANDIR}" ]; then
-    rm -f ${MANDIR}/man5/shorewall-lite*
-    rm -f ${MANDIR}/man8/shorewall-lite*
+    rm -f ${MANDIR}/man5/${PRODUCT}*
+    rm -f ${MANDIR}/man8/${PRODUCT}*
 fi
 
-echo "Shorewall Lite Uninstalled"
+echo "$Product Uninstalled"
 

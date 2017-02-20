@@ -148,33 +148,33 @@ else
     usage 1
 fi
 
-if [ -f ${SHAREDIR}/shorewall/version ]; then
-    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall/version)"
+if [ -f ${SHAREDIR}/$PRODUCT/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/$PRODUCT/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
 
-echo "Uninstalling shorewall $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
     if qt iptables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall-lite ]; then
-	shorewall clear
+	$PRODUCT clear
     fi
 fi
 
-rm -f ${SBINDIR}/shorewall
+rm -f ${SBINDIR}/$PRODUCT
 
-if [ -L ${SHAREDIR}/shorewall/init ]; then
-    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall/init)
+if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
+    FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi
@@ -198,33 +198,33 @@ if [ -z "${SERVICEDIR}" ]; then
 fi
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SERVICEDIR/shorewall.service
+    rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -rf ${SHAREDIR}/shorewall/version
-rm -rf ${CONFDIR}/shorewall
+rm -rf ${SHAREDIR}/$PRODUCT/version
+rm -rf ${CONFDIR}/$PRODUCT
 
 if [ -n "$SYSCONFDIR" ]; then
     [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
-rm -rf ${VARDIR}/shorewall
-rm -rf ${PERLLIBDIR}/Shorewall/*
-[ ${LIBEXECDIR} = ${SHAREDIR} ] || rm -rf ${LIBEXECDIR}/shorewall
-rm -rf ${SHAREDIR}/shorewall/configfiles/
-rm -rf ${SHAREDIR}/shorewall/Samples/
-rm -rf ${SHAREDIR}/shorewall/Shorewall/
-rm -f  ${SHAREDIR}/shorewall/lib.cli-std
-rm -f  ${SHAREDIR}/shorewall/lib.runtime
-rm -f  ${SHAREDIR}/shorewall/compiler.pl
-rm -f  ${SHAREDIR}/shorewall/prog.*
-rm -f  ${SHAREDIR}/shorewall/module*
-rm -f  ${SHAREDIR}/shorewall/helpers
-rm -f  ${SHAREDIR}/shorewall/action*
-rm -f  ${SHAREDIR}/shorewall/macro.*
-rm -f  ${SHAREDIR}/shorewall/init
+rm -rf ${VARDIR}/$PRODUCT
+rm -rf ${PERLLIBDIR}/$Product/*
+[ ${LIBEXECDIR} = ${SHAREDIR} ] || rm -rf ${LIBEXECDIR}/$PRODUCT
+rm -rf ${SHAREDIR}/$PRODUCT/configfiles/
+rm -rf ${SHAREDIR}/$PRODUCT/Samples/
+rm -rf ${SHAREDIR}/$PRODUCT/$Product/
+rm -f  ${SHAREDIR}/$PRODUCT/lib.cli-std
+rm -f  ${SHAREDIR}/$PRODUCT/lib.runtime
+rm -f  ${SHAREDIR}/$PRODUCT/compiler.pl
+rm -f  ${SHAREDIR}/$PRODUCT/prog.*
+rm -f  ${SHAREDIR}/$PRODUCT/module*
+rm -f  ${SHAREDIR}/$PRODUCT/helpers
+rm -f  ${SHAREDIR}/$PRODUCT/action*
+rm -f  ${SHAREDIR}/$PRODUCT/macro.*
+rm -f  ${SHAREDIR}/$PRODUCT/init
 
-for f in ${MANDIR}/man5/shorewall* ${MANDIR}/man8/shorewall*; do
+for f in ${MANDIR}/man5/${PRODUCT}* ${MANDIR}/man8/${PRODUCT}*; do
     case $f in
 	shorewall6*|shorewall-lite*)
 	    ;;
@@ -234,10 +234,10 @@ for f in ${MANDIR}/man5/shorewall* ${MANDIR}/man8/shorewall*; do
     esac
 done
 
-rm -f  ${CONFDIR}/logrotate.d/shorewall
+rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
 
-[ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/shorewall.service
+[ -n "$SYSTEMD" ] && rm -f  ${SYSTEMD}/${PRODUCT}.service
 
-echo "Shorewall Uninstalled"
+echo "$Product Uninstalled"
 
 

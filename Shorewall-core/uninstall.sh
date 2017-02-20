@@ -104,20 +104,20 @@ fi
 if [ -f ${SHAREDIR}/shorewall/coreversion ]; then
     INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall/coreversion)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall Core Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall Core Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall Core $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 rm -rf ${SHAREDIR}/shorewall
 rm -f ~/.shorewallrc
 
-echo "Shorewall Core Uninstalled"
+echo "$Product Uninstalled"
 
 

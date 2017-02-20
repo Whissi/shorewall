@@ -146,37 +146,37 @@ else
     usage 1
 fi
 
-if [ -f ${SHAREDIR}/shorewall6-lite/version ]; then
-    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall6-lite/version)"
+if [ -f ${SHAREDIR}/$PRODUCT/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/$PRODUCT/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall6 Lite Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall6 Lite Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall6 Lite $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
     if qt ip6tables -L shorewall -n && [ ! -f ${SBINDIR}/shorewall6 ]; then
-	${SBINDIR}/shorewall6-lite clear
+	${SBINDIR}/$PRODUCT clear
     fi
 fi
 
-if [ -f ${SHAREDIR}/shorewall6-lite/init ]; then
+if [ -f ${SHAREDIR}/$PRODUCT/init ]; then
     if [ $HOST = openwrt ]; then
-	if [ $configure -eq 1 ] && /etc/init.d/shorewall6-lite enabled; then
-	    /etc/init.d/shorewall6-lite disable
+	if [ $configure -eq 1 ] && /etc/init.d/$PRODUCT enabled; then
+	    /etc/init.d/$PRODUCT disable
 	fi
 	
-	FIREWALL=$(readlink ${SHAREDIR}/shorewall6-lite/init)
+	FIREWALL=$(readlink ${SHAREDIR}/$PRODUCT/init)
     else
-	FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6-lite/init)
+	FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
     fi
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
@@ -185,13 +185,13 @@ fi
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
-	    updaterc.d shorewall6-lite remove
+	    updaterc.d $PRODUCT remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
 	    chkconfig --del $(basename $FIREWALL)
 	elif mywhich systemctl ; then
-	    systemctl disable shorewall6-lite
+	    systemctl disable $PRODUCT
 	fi
     fi
 
@@ -202,20 +202,20 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SERVICEDIR/shorewall6-lite.service
+    rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -f ${SBINDIR}/shorewall6-lite
-rm -rf ${CONFDIR}/shorewall6-lite
+rm -f ${SBINDIR}/$PRODUCT
+rm -rf ${CONFDIR}/$PRODUCT
 rm -rf ${VARDIR}
-rm -rf ${SHAREDIR}/shorewall6-lite
-rm -rf ${LIBEXECDIR}/shorewall6-lite
-rm -f  ${CONFDIR}/logrotate.d/shorewall6-lite
-rm -f  ${SYSCONFDIR}/shorewall6-lite
+rm -rf ${SHAREDIR}/$PRODUCT
+rm -rf ${LIBEXECDIR}/$PRODUCT
+rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+rm -f  ${SYSCONFDIR}/$PRODUCT
 
 if [ -n "${MANDIR}" ]; then
-    rm -f ${MANDIR}/man5/shorewall6-lite*
-    rm -f ${MANDIR}/man8/shorewall6-lite*
+    rm -f ${MANDIR}/man5/${PRODUCT}*
+    rm -f ${MANDIR}/man8/${PRODUCT}*
 fi
 
-echo "Shorewall6 Lite Uninstalled"
+echo "$Product Uninstalled"

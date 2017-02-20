@@ -134,7 +134,7 @@ while [ $finished -eq 0 ] ; do
 			usage 0
 			;;
 		    v)
-			echo "Shorewall-init Firewall Installer Version $VERSION"
+			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
 			;;
 		    n*)
@@ -318,12 +318,12 @@ if [ -n "$DESTDIR" ]; then
     make_directory ${DESTDIR}${INITDIR} 0755
 fi
 
-echo "Installing Shorewall Init Version $VERSION"
+echo "Installing $Product Version $VERSION"
 
 #
 # Check for /usr/share/shorewall-init/version
 #
-if [ -f ${DESTDIR}${SHAREDIR}/shorewall-init/version ]; then
+if [ -f ${DESTDIR}${SHAREDIR}/$PRODUCT/version ]; then
     first_install=""
 else
     first_install="Yes"
@@ -366,16 +366,16 @@ if [ -n "$SERVICEDIR" ]; then
 	mkdir -p ${DESTDIR}${SBINDIR}
         chmod 0755 ${DESTDIR}${SBINDIR}
     fi
-    install_file shorewall-init ${DESTDIR}${SBINDIR}/shorewall-init 0700
-    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/shorewall-init
-    echo "CLI installed as ${DESTDIR}${SBINDIR}/shorewall-init"
+    install_file $PRODUCT ${DESTDIR}${SBINDIR}/$PRODUCT 0700
+    [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SBINDIR}/$PRODUCT
+    echo "CLI installed as ${DESTDIR}${SBINDIR}/$PRODUCT"
 fi
 
 #
 # Create /usr/share/shorewall-init if needed
 #
-mkdir -p ${DESTDIR}${SHAREDIR}/shorewall-init
-chmod 0755 ${DESTDIR}${SHAREDIR}/shorewall-init
+mkdir -p ${DESTDIR}${SHAREDIR}/$PRODUCT
+chmod 0755 ${DESTDIR}${SHAREDIR}/$PRODUCT
 
 #
 # Install logrotate file
@@ -388,15 +388,15 @@ fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}/${SHAREDIR}/shorewall-init/version
-chmod 0644 ${DESTDIR}${SHAREDIR}/shorewall-init/version
+echo "$VERSION" > ${DESTDIR}/${SHAREDIR}/$PRODUCT/version
+chmod 0644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
 
 #
 # Remove and create the symbolic link to the init script
 #
 if [ -z "$DESTDIR" ]; then
-    rm -f ${SHAREDIR}/shorewall-init/init
-    ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/shorewall-init/init
+    rm -f ${SHAREDIR}/$PRODUCT/init
+    ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/$PRODUCT/init
 fi
 
 if [ $HOST = debian ]; then
@@ -410,13 +410,13 @@ if [ $HOST = debian ]; then
 	mkdir -p ${DESTDIR}${CONFDIR}/network/if-post-down.d/
     fi
 
-    if [ ! -f ${DESTDIR}${CONFDIR}/default/shorewall-init ]; then
+    if [ ! -f ${DESTDIR}${CONFDIR}/default/$PRODUCT ]; then
 	if [ -n "${DESTDIR}" ]; then
 	    mkdir -p ${DESTDIR}${ETC}/default
 	fi
 
 	[ $configure -eq 1 ] || mkdir -p ${DESTDIR}${CONFDIR}/default
-	install_file sysconfig ${DESTDIR}${ETC}/default/shorewall-init 0644
+	install_file sysconfig ${DESTDIR}${ETC}/default/$PRODUCT 0644
 	echo "sysconfig file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
     fi
 
@@ -458,9 +458,9 @@ if [ $HOST != openwrt ]; then
 
     [ "${SHAREDIR}" = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ifupdown
 
-    mkdir -p ${DESTDIR}${LIBEXECDIR}/shorewall-init
+    mkdir -p ${DESTDIR}${LIBEXECDIR}/$PRODUCT
 
-    install_file ifupdown ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown 0544
+    install_file ifupdown ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown 0544
 fi
 
 if [ -d ${DESTDIR}/etc/NetworkManager ]; then
@@ -518,17 +518,17 @@ if [ -z "$DESTDIR" ]; then
 	if [ $HOST = debian ]; then
 	    if [ -n "$SERVICEDIR" ]; then
 		if systemctl enable ${PRODUCT}.service; then
-                    echo "Shorewall Init will start automatically at boot"
+                    echo "$Product will start automatically at boot"
 		fi
 	    elif mywhich insserv; then
-		if insserv ${INITDIR}/shorewall-init; then
-		    echo "Shorewall Init will start automatically at boot"
+		if insserv ${INITDIR}/$PRODUCT; then
+                    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi
 	    elif mywhich update-rc.d ; then
 		if update-rc.d $PRODUCT enable; then
-		    echo "$PRODUCT will start automatically at boot"
+                    echo "$Product will start automatically at boot"
 		    echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
 		else
 		    cant_autostart
@@ -549,31 +549,31 @@ if [ -z "$DESTDIR" ]; then
 	    /bin/true
 	else
 	    if [ -n "$SERVICEDIR" ]; then
-		if systemctl enable shorewall-init.service; then
-		    echo "Shorewall Init will start automatically at boot"
+		if systemctl enable ${PRODUCT}.service; then
+		    echo "$Product will start automatically at boot"
 		fi
 	    elif [ -x ${SBINDIR}/insserv -o -x /usr${SBINDIR}/insserv ]; then
-		if insserv ${INITDIR}/shorewall-init ; then
-		    echo "Shorewall Init will start automatically at boot"
+		if insserv ${INITDIR}/$PRODUCT ; then
+		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi
 	    elif [ -x ${SBINDIR}/chkconfig -o -x /usr${SBINDIR}/chkconfig ]; then
-		if chkconfig --add shorewall-init ; then
-		    echo "Shorewall Init will start automatically in run levels as follows:"
-		    chkconfig --list shorewall-init
+		if chkconfig --add $PRODUCT ; then
+		    echo "$Product will start automatically at boot"
+		    chkconfig --list $PRODUCT
 		else
 		    cant_autostart
 		fi
 	    elif [ -x ${SBINDIR}/rc-update ]; then
-		if rc-update add shorewall-init default; then
-		    echo "Shorewall Init will start automatically at boot"
+		if rc-update add $PRODUCT default; then
+		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
 		fi
 	    elif [ $HOST = openwrt -a -f ${CONFDIR}/rc.common ]; then
 		/etc/init.d/$PRODUCT enable
-		if /etc/init.d/shorewall-init enabled; then
+		if /etc/init.d/$PRODUCT enabled; then
 		    echo "$Product will start automatically at boot"
 		else
 		    cant_autostart
@@ -590,8 +590,8 @@ else
 		mkdir -p ${DESTDIR}/etc/rcS.d
 	    fi
 
-	    ln -sf ../init.d/shorewall-init ${DESTDIR}${CONFDIR}/rcS.d/S38shorewall-init
-	    echo "Shorewall Init will start automatically at boot"
+	    ln -sf ../init.d/$PRODUCT ${DESTDIR}${CONFDIR}/rcS.d/S38${PRODUCT}
+	    echo "$Product will start automatically at boot"
 	fi
     fi
 fi
@@ -603,7 +603,7 @@ if [ -d ${DESTDIR}/etc/ppp ]; then
 	debian|suse)
 	    for directory in ip-up.d ip-down.d ipv6-up.d ipv6-down.d; do
 		mkdir -p ${DESTDIR}/etc/ppp/$directory #SuSE doesn't create the IPv6 directories
-		cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown ${DESTDIR}${CONFDIR}/ppp/$directory/shorewall
+		cp -fp ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown ${DESTDIR}${CONFDIR}/ppp/$directory/shorewall
 	    done
 	    ;;
 	redhat)
@@ -614,13 +614,13 @@ if [ -d ${DESTDIR}/etc/ppp ]; then
 		FILE=${DESTDIR}/etc/ppp/$file
 		if [ -f $FILE ]; then
 		    if grep -qF Shorewall-based $FILE ; then
-			cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown $FILE
+			cp -fp ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown $FILE
 		    else
 			echo "$FILE already exists -- ppp devices will not be handled"
 			break
 		    fi
 		else
-		    cp -fp ${DESTDIR}${LIBEXECDIR}/shorewall-init/ifupdown $FILE
+		    cp -fp ${DESTDIR}${LIBEXECDIR}/$PRODUCT/ifupdown $FILE
 		fi
 	    done
 	    ;;

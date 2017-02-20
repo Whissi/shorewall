@@ -126,7 +126,7 @@ while [ $finished -eq 0 ]; do
 			usage 0
 			;;
 		    v)
-			echo "Shorewall Firewall Installer Version $VERSION"
+			echo "$Product Firewall Installer Version $VERSION"
 			exit 0
 			;;
 		    *)
@@ -315,7 +315,7 @@ if [ -n "$DESTDIR" ]; then
     fi
 fi
 
-echo "Installing Shorewall Core Version $VERSION"
+echo "Installing $Product Version $VERSION"
 
 #
 # Create directories
@@ -454,4 +454,4 @@ fi
 #
 #  Report Success
 #
-echo "Shorewall Core Version $VERSION Installed"
+echo "$Product Version $VERSION Installed"

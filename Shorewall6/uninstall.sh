@@ -147,30 +147,30 @@ else
     usage 1
 fi
 
-if [ -f ${SHAREDIR}/shorewall6/version ]; then
-    INSTALLED_VERSION="$(cat ${SHAREDIR}/shorewall6/version)"
+if [ -f ${SHAREDIR}/$PRODUCT/version ]; then
+    INSTALLED_VERSION="$(cat ${SHAREDIR}/$PRODUCT/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shorewall6 Version $INSTALLED_VERSION is installed"
+	echo "WARNING: $Product Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shorewall6 Version $VERSION is not installed"
+    echo "WARNING: $Product Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling shorewall6 $VERSION"
+echo "Uninstalling $Product $VERSION"
 
 [ -n "$SANDBOX" ] && configure=0
 
 if [ $configure -eq 1 ]; then
     if qt ip6tables -L shorewall6 -n && [ ! -f ${SBINDIR}/shorewall6-lite ]; then
-	${SBINDIR}/shorewall6 clear
+	${SBINDIR}/$PRODUCT clear
     fi
 fi
 
-if [ -L ${SHAREDIR}/shorewall6/init ]; then
-    FIREWALL=$(readlink -m -q ${SHAREDIR}/shorewall6/init)
+if [ -L ${SHAREDIR}/$PRODUCT/init ]; then
+    FIREWALL=$(readlink -m -q ${SHAREDIR}/$PRODUCT/init)
 elif [ -n "$INITFILE" ]; then
     FIREWALL=${INITDIR}/${INITFILE}
 fi
@@ -178,7 +178,7 @@ fi
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
 	if mywhich updaterc.d ; then
-	    updaterc.d shorewall6 remove
+	    updaterc.d $PRODUCT remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
 	elif mywhich chkconfig ; then
@@ -193,23 +193,23 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     [ $configure -eq 1 ] && systemctl disable ${PRODUCT}
-    rm -f $SERVICEDIR/shorewall6.service
+    rm -f $SERVICEDIR/${PRODUCT}.service
 fi
 
-rm -rf ${SHAREDIR}/shorewall6/version
-rm -rf ${CONFDIR}/shorewall6
+rm -rf ${SHAREDIR}/$PRODUCT/version
+rm -rf ${CONFDIR}/$PRODUCT
 
 if [ -n "$SYSCONFDIR" ]; then
     [ -n "$SYSCONFFILE" ] && rm -f ${SYSCONFDIR}/${PRODUCT}
 fi
 
-rm -f ${SBINDIR}/shorewall6
-rm -rf ${CONFDIR}/shorewall6
+rm -f ${SBINDIR}/$PRODUCT
+rm -rf ${CONFDIR}/$PRODUCT
 rm -rf ${VARDIR}
-rm -rf ${LIBEXECDIR}/shorewall6
-rm -rf ${SHAREDIR}/shorewall6
+rm -rf ${LIBEXECDIR}/$PRODUCT
+rm -rf ${SHAREDIR}/$PRODUCT
 
-for f in ${MANDIR}/man5/shorewall6* ${SHAREDIR}/man/man8/shorewall6*; do
+for f in ${MANDIR}/man5/${PRODUCT}* ${SHAREDIR}/man/man8/${PRODUCT}*; do
     case $f in
 	shorewall6-lite*)
 	    ;;
@@ -218,9 +218,9 @@ for f in ${MANDIR}/man5/shorewall6* ${SHAREDIR}/man/man8/shorewall6*; do
     esac
 done
 
-rm -f  ${CONFDIR}/logrotate.d/shorewall6
-[ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/shorewall6.service
+rm -f  ${CONFDIR}/logrotate.d/$PRODUCT
+[ -n "$SYSTEMD" ] && rm -f ${SYSTEMD}/${PRODUCT}.service
 
-echo "Shorewall6 Uninstalled"
+echo "$Product Uninstalled"
 
 

@@ -42,6 +42,11 @@ usage() # $1 = exit status
 }
 
 #
+# Change to the directory containing this script
+#
+cd "$(dirname $0)"
+
+#
 # Source common functions
 #
 . ./lib.uninstaller || { echo "ERROR: Can not load common functions." >&2; exit 1; }

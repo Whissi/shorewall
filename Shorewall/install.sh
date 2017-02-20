@@ -331,8 +331,8 @@ if [ $BUILD != cygwin ]; then
     fi
 fi
 
-install -d $OWNERSHIP -m 0755 ${DESTDIR}${SBINDIR}
-[ -n "${INITFILE}" ] && install -d $OWNERSHIP -m 0755 ${DESTDIR}${INITDIR}
+run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${SBINDIR}
+[ -n "${INITFILE}" ] && run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${INITDIR}
 if [ -z "$DESTDIR" -a $PRODUCT != shorewall ]; then
     [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || \
 	{ echo "   ERROR: Shorewall >= 4.5.0 is not installed" >&2; exit 1; }

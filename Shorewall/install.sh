@@ -33,6 +33,7 @@ usage() # $1 = exit status
     echo "  -v"
     echo "  -s"
     echo "  -a"
+    echo "  -p"
     echo "  -n"
     exit $1
 }

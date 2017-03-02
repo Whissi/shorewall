@@ -179,6 +179,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       $debug
 				       $file_format
 				       $comment
+				       $test
 
 				       %config
 				       %origin
@@ -244,6 +245,10 @@ Exporter::export_ok_tags('internal');
 
 our $VERSION = 'MODULEVERSION';
 
+#
+# Compiling for test - this is initialized in the Compiler module.
+#
+our $test;
 #
 # describe the current command, it's present progressive, and it's completion.
 #

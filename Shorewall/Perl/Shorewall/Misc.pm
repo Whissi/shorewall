@@ -2500,8 +2500,8 @@ sub setup_mss( ) {
 #
 # Compile the stop_firewall() function
 #
-sub compile_stop_firewall( $$$$ ) {
-    my ( $test, $export, $have_arptables, $convert ) = @_;
+sub compile_stop_firewall( $$$ ) {
+    my ( $export, $have_arptables, $convert ) = @_;
 
     my $input   = $filter_table->{INPUT};
     my $output  = $filter_table->{OUTPUT};

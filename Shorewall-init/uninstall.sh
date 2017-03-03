@@ -143,14 +143,14 @@ FIREWALL=${CONFDIR}/init.d/$PRODUCT
 
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
-	if [ $HOST = openwrt ]; then
+	if [ $HOST = openwrt ] ; then
 	    if /etc/init.d/$PRODUCT enabled; then
 		/etc/init.d/$PRODUCT disable
 	    fi
-	elif mywhich updaterc.d ; then
-	    updaterc.d ${PRODUCT} remove
 	elif mywhich insserv ; then
             insserv -r $FIREWALL
+	elif mywhich update-rc.d ; then
+	    update-rc.d ${PRODUCT} remove
 	elif mywhich chkconfig ; then
 	    chkconfig --del $(basename $FIREWALL)
 	fi

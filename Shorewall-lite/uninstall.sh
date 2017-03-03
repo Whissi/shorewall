@@ -167,10 +167,10 @@ fi
 
 if [ -f "$FIREWALL" ]; then
     if [ $configure -eq 1 ]; then
-	if mywhich updaterc.d ; then
-	    updaterc.d ${PRODUCT} remove
-	elif mywhich insserv ; then
+	if mywhich insserv ; then
             insserv -r $FIREWALL
+	elif mywhich update-rc.d ; then
+	    update-rc.d ${PRODUCT} remove
 	elif mywhich chkconfig ; then
 	    chkconfig --del $(basename $FIREWALL)
 	fi

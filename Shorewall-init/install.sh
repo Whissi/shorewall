@@ -361,8 +361,8 @@ if [ $HOST = debian ]; then
 	[ -n "${DESTDIR}" ] && make_parent_directory ${DESTDIR}${ETC}/default 0755
 
 	[ $configure -eq 1 ] || make_parent_directory ${DESTDIR}${CONFDIR}/default 0755
-	install_file sysconfig ${DESTDIR}${ETC}/default/$PRODUCT 0644
-	echo "sysconfig file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
+	install_file ${SYSCONFFILE} ${DESTDIR}${ETC}/default/$PRODUCT 0644
+	echo "${SYSCONFFILE} file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
     fi
 
     IFUPDOWN=ifupdown.debian.sh

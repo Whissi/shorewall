@@ -8654,7 +8654,9 @@ sub create_nfobjects() {
 #
 # Generate the netfilter input
 #
-sub create_netfilter_load() {
+sub create_netfilter_load( $ ) {
+    my $test = shift;
+
     $mode = NULL_MODE;
 
     emit ( '#',

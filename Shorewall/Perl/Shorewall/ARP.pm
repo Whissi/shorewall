@@ -226,7 +226,9 @@ sub process_arprules() {
 #
 # Generate the arptables_load() function
 #
-sub create_arptables_load() {
+sub create_arptables_load( $ ) {
+    my $test = shift;
+
     emit ( '#',
 	   '# Create the input to arptables-restore and pass that input to the utility',
 	   '#',

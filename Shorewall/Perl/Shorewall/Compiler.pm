@@ -49,6 +49,8 @@ our $VERSION = 'MODULEVERSION';
 
 our $export;
 
+our $test;
+
 our $family;
 
 our $have_arptables;
@@ -361,8 +363,8 @@ sub generate_script_3($) {
 	progress_message2 "Creating ip6tables-restore input...";
     }
 
-    create_netfilter_load;
-    create_arptables_load if $have_arptables;
+    create_netfilter_load( $test );
+    create_arptables_load( $test ) if $have_arptables;
     create_chainlist_reload( $_[0] );
     create_save_ipsets;
     create_load_ipsets;
@@ -929,7 +931,7 @@ sub compiler {
 	#                           S T O P _ F I R E W A L L
 	#         (Writes the stop_firewall() function to the compiled script)
 	#
-	compile_stop_firewall( $export , $have_arptables, $update );
+	compile_stop_firewall( $test, $export , $have_arptables, $update );
 	#
 	#                               U P D O W N
 	#               (Writes the updown() function to the compiled script)
@@ -998,7 +1000,7 @@ sub compiler {
 	initialize_chain_table(0);
 
 	if ( $debug ) {
-	    compile_stop_firewall( $export, $have_arptables, $update );
+	    compile_stop_firewall( $test, $export, $have_arptables, $update );
 	    disable_script;
 	} else {
 	    #

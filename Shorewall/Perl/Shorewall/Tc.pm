@@ -1924,7 +1924,7 @@ sub process_traffic_shaping() {
 
 			my ( $options, $redopts ) = ( '', $tcref->{redopts} );
 
-			for my $option ( sort keys %validredoptions ) {
+			for my $option ( keys %validredoptions ) {
 			    my $type = $validredoptions{$option};
 
 			    if ( my $value = $redopts->{$option} ) {
@@ -1943,7 +1943,7 @@ sub process_traffic_shaping() {
 
 			my ( $options, $codelopts ) = ( '', $tcref->{codelopts} );
 
-			for my $option ( sort keys %validcodeloptions ) {
+			for my $option ( keys %validcodeloptions ) {
 			    my $type = $validcodeloptions{$option};
 
 			    if ( my $value = $codelopts->{$option} ) {

@@ -127,7 +127,7 @@ sub setup_ecn()
 	}
 
 	if ( @hosts ) {
-	    my @interfaces = ( sort { interface_number($a) <=> interface_number($b) } keys %interfaces );
+	    my @interfaces = ( keys %interfaces );
 
 	    progress_message "$doing ECN control on @interfaces...";
 
@@ -1297,7 +1297,7 @@ sub setup_mac_lists( $ ) {
 	$maclist_interfaces{ $hostref->[0] } = 1;
     }
 
-    my @maclist_interfaces = ( sort keys %maclist_interfaces );
+    my @maclist_interfaces = ( keys %maclist_interfaces );
 
     if ( $phase == 1 ) {
 
@@ -1618,7 +1618,7 @@ sub handle_loopback_traffic() {
 	    # Handle conntrack rules
 	    #
 	    if ( $notrackref->{referenced} ) {
-		for my $hostref ( sort { $a->{type} cmp $b->{type} } @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
+		for my $hostref ( @{defined_zone( $z1 )->{hosts}{ip}{'%vserver%'}} ) {
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $notrackref);
 		    my @ipsec_match = match_ipsec_in $z1 , $hostref;
 
@@ -1639,8 +1639,8 @@ sub handle_loopback_traffic() {
 	    #
 	    my $source_hosts_ref = defined_zone( $z1 )->{hosts};
 
-	    for my $typeref ( sort { $a->{type} cmp $b->{type} } values %{$source_hosts_ref} ) {
-		for my $hostref ( sort { $a->{type} cmp $b->{type} } @{$typeref->{'%vserver%'}} ) {
+	    for my $typeref ( values %{$source_hosts_ref} ) {
+		for my $hostref ( @{$typeref->{'%vserver%'}} ) {
 		    my $exclusion   = source_exclusion( $hostref->{exclusions}, $natref);
 
 		    for my $net ( @{$hostref->{hosts}} ) {
@@ -1662,7 +1662,7 @@ sub add_interface_jumps {
     our %input_jump_added;
     our %output_jump_added;
     our %forward_jump_added;
-    my @interfaces = sort grep $_ ne '%vserver%', @_;
+    my @interfaces = grep $_ ne '%vserver%', @_;
     my $dummy;
     my $lo_jump_added = interface_zone( loopback_interface ) && ! get_interface_option( loopback_interface, 'destonly' );
     #
@@ -1776,7 +1776,7 @@ sub handle_complex_zone( $$ ) {
 	my $type       = $zoneref->{type};
 	my $source_ref = ( $zoneref->{hosts}{ipsec} ) || {};
 
-	for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$source_ref ) {
+	for my $interface ( keys %$source_ref ) {
 	    my $sourcechainref = $filter_table->{forward_chain $interface};
 	    my @interfacematch;
 	    my $interfaceref = find_interface $interface;
@@ -2288,9 +2288,9 @@ sub generate_matrix() {
 	#
 	# Take care of PREROUTING, INPUT and OUTPUT jumps
 	#
-	for my $type ( sort keys %$source_hosts_ref ) {
+	for my $type ( keys %$source_hosts_ref ) {
 	    my $typeref = $source_hosts_ref->{$type};
-	    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
+	    for my $interface ( keys %$typeref ) {
 		if ( get_physical( $interface ) eq '+' ) {
 		    #
 		    # Insert the interface-specific jumps before this one which is not interface-specific
@@ -2375,9 +2375,9 @@ sub generate_matrix() {
 
 		my $chainref = $filter_table->{$chain}; #Will be null if $chain is a Netfilter Built-in target like ACCEPT
 
-		for my $type ( sort keys %{$zone1ref->{hosts}} ) {
+		for my $type ( keys %{$zone1ref->{hosts}} ) {
 		    my $typeref = $zone1ref->{hosts}{$type};
-		    for my $interface ( sort { interface_number( $a ) <=> interface_number( $b ) } keys %$typeref ) {
+		    for my $interface ( keys %$typeref ) {
 			for my $hostref ( @{$typeref->{$interface}} ) {
 			    next if $hostref->{options}{sourceonly};
 			    if ( $zone ne $zone1 || $num_ifaces > 1 || $hostref->{options}{routeback} ) {

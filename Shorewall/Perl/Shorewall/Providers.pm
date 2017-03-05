@@ -1799,7 +1799,7 @@ sub map_provider_to_interface() {
 
     my $haveoptional;
 
-    for my $providerref ( sort { $a->{number} cmp $b->{number} } values %providers ) {
+    for my $providerref ( values %providers ) {
 	if ( $providerref->{optional} ) {
 	    unless ( $haveoptional++ ) {
 		emit( 'if [ -n "$interface" ]; then',
@@ -1963,7 +1963,7 @@ sub compile_updown() {
     }
 
     my @nonshared = ( grep $providers{$_}->{optional},
-		      sort( { $providers{$a}->{number} <=> $providers{$b}->{number} } values %provider_interfaces ) );
+		      values %provider_interfaces );
 
     if ( @nonshared ) {
 	my $interfaces = join( '|', map $providers{$_}->{physical}, @nonshared );
@@ -2158,7 +2158,7 @@ sub handle_optional_interfaces( $ ) {
     # names but they might derive from wildcard interface entries. Optional interfaces which do not have
     # wildcard physical names are also included in the providers table.
     #
-    for my $providerref ( grep $_->{optional} , sort { $a->{number} <=> $b->{number} } values %providers ) {
+    for my $providerref ( grep $_->{optional} , values %providers ) {
 	push @interfaces, $providerref->{interface};
 	$wildcards ||= $providerref->{wildcard};
     }

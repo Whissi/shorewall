@@ -1223,7 +1223,7 @@ sub merge_rules( $$$ ) {
 	}
     }
 
-    for my $option ( grep ! $opttype{$_} || $_ eq 'nfacct' || $_ eq 'recent', sort { $b cmp $a } keys %$fromref ) {
+    for my $option ( grep ! $opttype{$_} || $_ eq 'nfacct' || $_ eq 'recent', keys %$fromref ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
@@ -1239,7 +1239,7 @@ sub merge_rules( $$$ ) {
 
     set_rule_option( $toref, 'policy', $fromref->{policy} ) if exists $fromref->{policy};
 
-    for my $option ( grep( get_opttype( $_, 0 ) == EXPENSIVE, sort keys %$fromref ) ) {
+    for my $option ( grep( get_opttype( $_, 0 ) == EXPENSIVE, keys %$fromref ) ) {
 	set_rule_option( $toref, $option, $fromref->{$option} );
     }
 
@@ -3691,7 +3691,7 @@ sub optimize_level8( $$$ ) {
 	}
 
 	if ( $progress ) {
-	    my @rename = sort keys %rename;
+	    my @rename = keys %rename;
 	    #
 	    # First create aliases for each renamed chain and change the {name} member.
 	    #
@@ -6980,13 +6980,13 @@ sub set_global_variables( $$ ) {
     if ( $conditional ) {
 	my ( $interface, @interfaces );
 
-	@interfaces = sort keys %interfaceaddr;
+	@interfaces = keys %interfaceaddr;
 
 	for $interface ( @interfaces ) {
 	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $interfaceaddr{$interface}) );
 	}
 
-	@interfaces = sort keys %interfacegateways;
+	@interfaces = keys %interfacegateways;
 
 	for $interface ( @interfaces ) {
 	    emit( qq(if [ -z "\$interface" -o "\$interface" = "$interface" ]; then) );
@@ -6996,36 +6996,36 @@ sub set_global_variables( $$ ) {
 	    emit( qq(fi\n) );
 	}
 
-	@interfaces = sort keys %interfacemacs;
+	@interfaces = keys %interfacemacs;
 
 	for $interface ( @interfaces ) {
 	    emit( qq([ -z "\$interface" -o "\$interface" = "$interface" ] && $interfacemacs{$interface}) );
 	}
     } else {
-	emit $_     for sort values %interfaceaddr;
-	emit "$_\n" for sort values %interfacegateways;
-	emit $_     for sort values %interfacemacs;
+	emit $_     for values %interfaceaddr;
+	emit "$_\n" for values %interfacegateways;
+	emit $_     for values %interfacemacs;
     }
 
     if ( $setall ) {
-	emit $_ for sort values %interfaceaddrs;
-	emit $_ for sort values %interfacenets;
+	emit $_ for values %interfaceaddrs;
+	emit $_ for values %interfacenets;
 
 	unless ( have_capability( 'ADDRTYPE' ) ) {
 
 	    if ( $family == F_IPV4 ) {
 		emit 'ALL_BCASTS="$(get_all_bcasts) 255.255.255.255"';
-		emit $_ for sort values %interfacebcasts;
+		emit $_ for values %interfacebcasts;
 	    } else {
 		emit 'ALL_ACASTS="$(get_all_acasts)"';
-		emit $_ for sort values %interfaceacasts;
+		emit $_ for values %interfaceacasts;
 	    }
 	}
     }
 }
 
 sub verify_address_variables() {
-    for my $variable ( sort keys %address_variables ) {
+    for my $variable ( keys %address_variables ) {
 	my $type = $address_variables{$variable};
 	my $address = "\$$variable";
 
@@ -7942,7 +7942,7 @@ sub add_interface_options( $ ) {
 	#
 	# Generate a digest for each chain
 	#
-	for my $chainref ( sort { $a->{name} cmp $b->{name} } values %input_chains, values %forward_chains ) {
+	for my $chainref ( values %input_chains, values %forward_chains ) {
 	    my $digest = '';
 
 	    assert( $chainref );
@@ -7961,7 +7961,7 @@ sub add_interface_options( $ ) {
 	# Insert jumps to the interface chains into the rules chains
 	#
 	for my $zone1 ( off_firewall_zones ) {
-	    my @input_interfaces   = sort keys %{zone_interfaces( $zone1 )};
+	    my @input_interfaces   = keys %{zone_interfaces( $zone1 )};
 	    my @forward_interfaces = @input_interfaces;
 
 	    if ( @input_interfaces > 1 ) {
@@ -8047,7 +8047,7 @@ sub add_interface_options( $ ) {
 	for my $zone1 ( firewall_zone, vserver_zones ) {
 	    for my $zone2 ( off_firewall_zones ) {
 		my $chainref = $filter_table->{rules_chain( $zone1, $zone2 )};
-		my @interfaces = sort keys %{zone_interfaces( $zone2 )};
+		my @interfaces = keys %{zone_interfaces( $zone2 )};
 		my $chain1ref;
 
 		for my $interface ( @interfaces ) {
@@ -8453,7 +8453,7 @@ sub create_save_ipsets() {
 	    #
 	    $ipsets{$_} = 1 for ( @ipsets, @{$globals{SAVED_IPSETS}} );
 
-	    my @sets = sort keys %ipsets;
+	    my @sets = keys %ipsets;
 
 	    emit( '' ,
 		  '    rm -f $file' ,
@@ -8629,7 +8629,7 @@ sub create_load_ipsets() {
 #
 sub create_nfobjects() {
     
-    my @objects = ( sort keys %nfobjects );
+    my @objects = ( keys %nfobjects );
 
     if ( @objects ) {
 	if ( $config{NFACCT} ) {
@@ -8644,7 +8644,7 @@ sub create_nfobjects() {
 	}
     }
 
-    for ( sort keys %nfobjects ) {
+    for ( keys %nfobjects ) {
 	emit( qq(if ! qt \$NFACCT get $_; then),
 	      qq(    \$NFACCT add $_),
 	      qq(fi\n) );
@@ -9120,7 +9120,7 @@ sub initialize_switches() {
     if ( keys %switches ) {
 	emit( 'if [ $COMMAND = start ]; then' );
 	push_indent;
-	for my $switch ( sort keys %switches ) {
+	for my $switch ( keys %switches ) {
 	    my $setting = $switches{$switch};
 	    my $file = "/proc/net/nf_condition/$switch";
 	    emit "[ -f $file ] && echo $setting->{setting} > $file";

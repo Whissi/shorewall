@@ -2995,58 +2995,70 @@ sub process_compiler_directive( $$$$ ) {
 	  } ,
 
 	  ERROR => sub() {
-	      directive_error( evaluate_expression( $expression ,
-						    $filename ,
-						    $linenumber ,
-						    1 ) ,
-			       $actparams{callfile} ,
-			       $actparams{callline} ) unless $omitting;
+	      unless ( $omitting ) {
+		  directive_error( evaluate_expression( $expression ,
+							$filename ,
+							$linenumber ,
+							1 ) ,
+				   $actparams{callfile} ,
+				   $actparams{callline} ) unless $omitting;
+	      }
 	  } ,
 
 	  WARNING => sub() {
-	      directive_warning( $config{VERBOSE_MESSAGES} ,
-		                 evaluate_expression( $expression ,
-						      $filename ,
-						      $linenumber ,
-						      1 ),
-				 $actparams{callfile} ,
-				 $actparams{callline} ) unless $omitting;
+	      unless ( $omitting ) {
+		  directive_warning( $config{VERBOSE_MESSAGES} ,
+				     evaluate_expression( $expression ,
+							  $filename ,
+							  $linenumber ,
+							  1 ),
+				     $actparams{callfile} ,
+				     $actparams{callline} ) unless $omitting;
+	      }
 	  } ,
 
 	  INFO => sub() {
-	      directive_info( $config{VERBOSE_MESSAGES} ,
-			      evaluate_expression( $expression ,
-						   $filename ,
-						   $linenumber ,
-						   1 ),
-			      $actparams{callfile} ,
-			      $actparams{callline} ) unless $omitting;
+	      unless ( $omitting ) {
+		  directive_info( $config{VERBOSE_MESSAGES} ,
+				  evaluate_expression( $expression ,
+						       $filename ,
+						       $linenumber ,
+						       1 ),
+				  $actparams{callfile} ,
+				  $actparams{callline} ) unless $omitting;
+	      }
 	  } ,
 
 	  'WARNING!' => sub() {
-	      directive_warning( ! $config{VERBOSE_MESSAGES} ,
-		                 evaluate_expression( $expression ,
-						      $filename ,
-						      $linenumber ,
-						      1 ),
-				 $actparams{callfile} ,
-				 $actparams{callline} ) unless $omitting;
+	      unless ( $omitting ) {
+		  directive_warning( ! $config{VERBOSE_MESSAGES} ,
+				     evaluate_expression( $expression ,
+							  $filename ,
+							  $linenumber ,
+							  1 ),
+				     $actparams{callfile} ,
+				     $actparams{callline} ) unless $omitting;
+	      }
 	  } ,
 
 	  'INFO!' => sub() {
-	      directive_info( ! $config{VERBOSE_MESSAGES} ,
-			      evaluate_expression( $expression ,
-						   $filename ,
-						   $linenumber ,
-						   1 ),
-			      $actparams{callfile} ,
-			      $actparams{callline} ) unless $omitting;
+	      unless ( $omitting ) {
+		  directive_info( ! $config{VERBOSE_MESSAGES} ,
+				  evaluate_expression( $expression ,
+						       $filename ,
+						       $linenumber ,
+						       1 ),
+				  $actparams{callfile} ,
+				  $actparams{callline} ) unless $omitting;
+	      }
 	  } ,
 
 	  REQUIRE => sub() {
-	      fatal_error "?REQUIRE may only be used within action files" unless $actparams{0};
-	      fatal_error "Unknown capability ($expression}" unless $capabilities{$expression};
-	      require_capability( $expression, "The $actparams{action} action", 's' );
+	      unless ( $omitting ) {
+		  fatal_error "?REQUIRE may only be used within action files" unless $actparams{0};
+		  fatal_error "Unknown capability ($expression)" unless $capdesc{$expression};
+		  require_capability( $expression, "The $actparams{action} action", 's' );
+	      }
 	  } ,
 
 	);

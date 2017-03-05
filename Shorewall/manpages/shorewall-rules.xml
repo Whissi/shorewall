@@ -66,7 +66,7 @@
           this section.</para>
 
           <para>The only ACTIONs allowed in this section are ACCEPT, DROP,
-          REJECT, LOG and QUEUE</para>
+          REJECT, LOG, NFQUEUE and QUEUE</para>
 
           <para>There is an implicit ACCEPT rule inserted at the end of this
           section.</para>
@@ -81,7 +81,7 @@
           section.</para>
 
           <para>The only ACTIONs allowed in this section are ACCEPT, DROP,
-          REJECT, LOG and QUEUE</para>
+          REJECT, LOG, NFQUEUE and QUEUE</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the RELATED_DISPOSITION (<ulink
@@ -97,7 +97,7 @@
           processed by rules in this section.</para>
 
           <para>The only Actions allowed in this section are ACCEPT, DROP,
-          REJECT, LOG and QUEUE.</para>
+          REJECT, LOG, NFQUEUE and QUEUE.</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the INVALID_DISPOSITION (<ulink
@@ -113,7 +113,7 @@
           processed by rules in this section.</para>
 
           <para>The only Actions allowed in this section are ACCEPT, DROP,
-          REJECT, LOG and QUEUE.</para>
+          REJECT, LOG, NFQUEUE and QUEUE.</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the UNTRACKED_DISPOSITION (<ulink
@@ -138,9 +138,8 @@
       comfortable with the differences between the various connection tracking
       states, then it is suggested that you omit the <emphasis
       role="bold">ESTABLISHED</emphasis> and <emphasis
-      role="bold">RELATED</emphasis> sections and place all of your
-      non-blacklisting rules in the NEW section (That's after the line that
-      reads ?SECTION NEW').</para>
+      role="bold">RELATED</emphasis> sections and place all of your rules in
+      the NEW section (That's after the line that reads ?SECTION NEW').</para>
     </note>
 
     <warning>

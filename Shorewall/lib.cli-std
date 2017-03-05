@@ -484,6 +484,9 @@ compiler() {
     #
     [ "$g_debugging" != trace -a -z "$g_preview" ] || [ -n "$g_debug" ] && g_pager=
 
+    PERL_HASH_SEED=0
+    export PERL_HASH_SEED
+
     if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
 	eval $PERL $debugflags $pc $options $@ $g_pager
     else

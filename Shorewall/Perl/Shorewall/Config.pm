@@ -2999,8 +2999,8 @@ sub process_compiler_directive( $$$$ ) {
 						    $filename ,
 						    $linenumber ,
 						    1 ) ,
-			       $filename ,
-			       $linenumber ) unless $omitting;
+			       $actparams{callfile} ,
+			       $actparams{callline} ) unless $omitting;
 	  } ,
 
 	  WARNING => sub() {
@@ -3009,8 +3009,8 @@ sub process_compiler_directive( $$$$ ) {
 						      $filename ,
 						      $linenumber ,
 						      1 ),
-				 $filename ,
-				 $linenumber ) unless $omitting;
+				 $actparams{callfile} ,
+				 $actparams{callline} ) unless $omitting;
 	  } ,
 
 	  INFO => sub() {
@@ -3019,8 +3019,8 @@ sub process_compiler_directive( $$$$ ) {
 						   $filename ,
 						   $linenumber ,
 						   1 ),
-			      $filename ,
-			      $linenumber ) unless $omitting;
+			      $actparams{callfile} ,
+			      $actparams{callline} ) unless $omitting;
 	  } ,
 
 	  'WARNING!' => sub() {
@@ -3029,8 +3029,8 @@ sub process_compiler_directive( $$$$ ) {
 						      $filename ,
 						      $linenumber ,
 						      1 ),
-				 $filename ,
-				 $linenumber ) unless $omitting;
+				 $actparams{callfile} ,
+				 $actparams{callline} ) unless $omitting;
 	  } ,
 
 	  'INFO!' => sub() {
@@ -3039,8 +3039,8 @@ sub process_compiler_directive( $$$$ ) {
 						   $filename ,
 						   $linenumber ,
 						   1 ),
-			      $filename ,
-			      $linenumber ) unless $omitting;
+			      $actparams{callfile} ,
+			      $actparams{callline} ) unless $omitting;
 	  } ,
 
 	  REQUIRE => sub() {
@@ -3548,6 +3548,8 @@ sub push_action_params( $$$$$$ ) {
     $actparams{logtag}      = $logtag;
     $actparams{caller}      = $caller;
     $actparams{disposition} = '' if $chainref->{action};
+    $actparams{callfile}    = $currentfilename;
+    $actparams{callline}    = $currentlinenumber;
     #
     # The Shorewall variable '@chain' has non-word characters other than hyphen removed
     #

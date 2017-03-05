@@ -22,6 +22,49 @@
 #
 # Limit(<recent-set>,<num-connections>,<timeout>)
 #
-# This is a built-in action.
-#
 ###############################################################################
+
+DEFAULTS -,-,-
+
+?begin perl
+
+use strict;
+use Shorewall::Config;
+use Shorewall::Chains;
+
+my $chainref        = get_action_chain;
+my @param           = get_action_params(3);
+my ( $level, $tag ) = get_action_logging;
+
+@param = split /,/, $tag unless supplied( join '', @param );
+
+fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag or as parameters' unless @param == 3;
+
+my $set   = $param[0];
+
+for ( @param[1,2] ) {
+    fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
+}
+
+my $count = $param[1] + 1;
+
+require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
+
+warning_message "The Limit action is deprecated in favor of per-IP rate limiting using the RATE LIMIT column";
+
+add_irule $chainref, recent => "--name $set --set";
+
+if ( $level ne '' ) {
+    my $xchainref = new_chain 'filter' , "$chainref->{name}%";
+    log_irule_limit( $level, $xchainref, $param[0], 'DROP', [], $tag, 'add' , '' );
+    add_ijump $xchainref, j => 'DROP';
+    add_ijump $chainref,  j => $xchainref, recent => "--name $set --update --seconds $param[2] --hitcount $count";
+} else {
+    add_ijump $chainref, j => 'DROP', recent => "--update --name $set --seconds $param[2] --hitcount $count";
+}
+
+add_ijump $chainref, j => 'ACCEPT';
+
+1;
+
+?end perl

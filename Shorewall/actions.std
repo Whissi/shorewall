@@ -6,44 +6,40 @@
 #	Please see http://shorewall.net/Actions.html for additional
 #	information.
 #
-# Builtin Actions are:
-#
-?if 0
-allowBcast			# Silently Allow Broadcast
-allowMcast			# Silently Allow Multicast
-dropBcast			# Silently Drop Broadcast
-dropMcast			# Silently Drop Multicast
-dropNotSyn			# Silently Drop Non-syn TCP packets
-rejNotSyn			# Silently Reject Non-syn TCP packets
-allowinUPnP			# Allow UPnP inbound (to firewall) traffic
-forwardUPnP			# Allow traffic that upnpd has redirected from 'upnp' interfaces.
-Limit				# Limit the rate of connections from each individual IP address
-?endif
 ###############################################################################
 #ACTION
 A_Drop				# Audited Default Action for DROP policy
 A_REJECT     noinline,logjump	# Audits then rejects a connection request
 A_REJECT!    inline		# Audits then rejects a connection request
 A_Reject			# Audited Default action for REJECT policy
+allowBcast   inline		# Silently Allow Broadcast
+allowinUPnP  inline		# Allow UPnP inbound (to firewall) traffic
 allowInvalid inline		# Accepts packets in the INVALID conntrack state
+allowMcast   inline		# Silently Allow Multicast
 AutoBL	     noinline		# Auto-blacklist IPs that exceed thesholds
 AutoBLL	     noinline		# Helper for AutoBL
 BLACKLIST    logjump,section	# Add sender to the dynamic blacklist
 Broadcast    noinline,audit	# Handles Broadcast/Anycast
 DNSAmp				# Matches one-question recursive DNS queries
 Drop				# Default Action for DROP policy (deprecated)
+dropBcast    inline		# Silently Drop Broadcast
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
+dropMcast    inline		# Silently Drop Multicast
+dropNotSyn   noinline		# Silently Drop Non-syn TCP packets
 DropDNSrep   inline		# Drops DNS replies
 DropSmurfs   noinline		# Drop smurf packets
 Established  inline,\		# Handles packets in the ESTABLISHED state
 	     state=ESTABLISHED	#
+forwardUPnP  noinline		# Allow traffic that upnpd has redirected from 'upnp' interfaces.
 GlusterFS    inline		# Handles GlusterFS
 IfEvent	     noinline		# Perform an action based on an event
 Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
 	     state=INVALID	#
+Limit	     noinline		# Limit the rate of connections from each individual IP address
 Multicast    noinline,audit	# Handles Multicast
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
+rejNotSyn    noinline		# Silently Reject Non-syn TCP packets
 Reject				# Default Action for REJECT policy (deprecated)
 Related	     inline,\		# Handles packets in the RELATED conntrack state
 	     state=RELATED	#

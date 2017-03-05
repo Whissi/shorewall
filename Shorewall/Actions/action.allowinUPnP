@@ -22,6 +22,19 @@
 #
 # allowinUPnP[([audit])]
 #
-# This is a built-in action.
-#
 ###############################################################################
+
+DEFAULTS -
+
+?if passed(@1)
+    ?if @1 eq 'audit'
+        ?require AUDIT_TARGET
+	A_ACCEPT - - 17 1900
+	A_ACCEPT - -  6 49152
+    ?else
+        ?error "Invalid argument (@1) to allowinUPnP"
+    ?endif
+?else
+    ACCEPT - - 17 1900
+    ACCEPT - -  6 49152
+?endif

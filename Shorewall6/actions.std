@@ -6,28 +6,23 @@
 #	Please see http://shorewall.net/Actions.html for additional
 #	information.
 #
-# Builtin Actions are:
-#
-?if 0
-allowBcasts                     # Accept anycast packets
-allowMcasts                     # Accept multicast packets
-dropBcasts                      # Silently Drop anycast packets
-dropMcasts                      # Silently Drop multicast packets
-dropNotSyn		        # Silently Drop Non-syn TCP packets
-rejNotSyn		        # Silently Reject Non-syn TCP packets
-?endif
 ###############################################################################
 #ACTION
 A_Drop	                        # Audited Default Action for DROP policy
 A_Reject	                # Audited Default Action for REJECT policy
 A_AllowICMPs	                # Audited Accept needed ICMP6 types
 AllowICMPs   	                # Accept needed ICMP6 types
+allowBcast   inline		# Silently Allow Broadcast
 allowInvalid inline		# Accepts packets in the INVALID conntrack state
+allowMcast   inline		# Silently Allow Multicast
 AutoBL       noinline           # Auto-blacklist IPs that exceed thesholds
 AutoBLL      noinline           # Helper for AutoBL
 Broadcast    noinline      	# Handles Broadcast/Anycast
 Drop		        	# Default Action for DROP policy (deprecated)
+dropBcast    inline		# Silently Drop Broadcast
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
+dropMcast    inline		# Silently Drop Multicast
+dropNotSyn   noinline		# Silently Drop Non-syn TCP packets
 DropDNSrep   inline		# Drops DNS replies
 DropSmurfs   noinline     	# Handles packets with a broadcast source address
 Established  inline,\		# Handles packets in the ESTABLISHED state
@@ -39,6 +34,7 @@ Multicast    noinline      	# Handles Multicast
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		        	# Default Action for REJECT policy (deprecated)
+rejNotSyn    noinline		# Silently Reject Non-syn TCP packets
 Related      inline,\		# Handles packets in the RELATED conntrack state
              state=RELATED
 ResetEvent   inline		# Reset an Event

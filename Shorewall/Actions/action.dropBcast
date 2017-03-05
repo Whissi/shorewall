@@ -22,6 +22,18 @@
 #
 # dropBcast[([audit])]
 #
-# This is a built-in action.
-#
 ###############################################################################
+
+DEFAULTS -
+
+?if passed(@1)
+    ?if @1 eq 'audit'
+        ?require AUDIT_TARGET
+	Broadcast(A_DROP)
+    ?else
+        ?error "Invalid argument (@1) to dropBcast"
+    ?endif
+?else
+    Broadcast(DROP)
+?endif
+

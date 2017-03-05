@@ -144,8 +144,6 @@ our %macros;
 
 our $family;
 
-our @builtins;
-
 #
 # Commands that can be embedded in a basic rule and how many total tokens on the line (0 => unlimited).
 #
@@ -352,7 +350,7 @@ sub initialize( $ ) {
     #
     $macro_nest_level  = 0;
     #
-    # All builtin actions plus those mentioned in /etc/shorewall[6]/actions and /usr/share/shorewall[6]/actions.std
+    # All actions mentioned in /etc/shorewall[6]/actions and /usr/share/shorewall[6]/actions.std
     #
     %actions           = ();
     #
@@ -363,7 +361,6 @@ sub initialize( $ ) {
     @columns           = ( ( '-' ) x LAST_COLUMN, 0 );
 
     if ( $family == F_IPV4 ) {
-	@builtins = qw/dropBcast dropMcast allowBcast allowMcast dropNotSyn rejNotSyn allowinUPnP forwardUPnP Limit/;
 	%reject_options = ( 'icmp-net-unreachable'   => 1,
 			    'icmp-host-unreachable'  => 1,
 			    'icmp-port-unreachable'  => 1,
@@ -375,7 +372,6 @@ sub initialize( $ ) {
 	                  );
 			    
     } else {
-	@builtins = qw/dropBcast dropMcast allowBcast allowMcast dropNotSyn rejNotSyn/;
 	%reject_options = ( 'icmp6-no-route'         => 1,
 			    'no-route'               => 1,
 			    'icmp6-adm-prohibited'   => 1,
@@ -1708,191 +1704,6 @@ sub map_old_actions( $ ) {
     }
 }
 
-#
-# The following small functions generate rules for the builtin actions of the same name
-#
-sub dropBcast( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit ( 'DROP', $audit );
-
-    if ( have_capability( 'ADDRTYPE' ) ) {
-	if ( $level ne '' ) {
-	    log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', addrtype => '--dst-type BROADCAST' );
-	    if ( $family == F_IPV4 ) {
-		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' );
-	    } else {
-		log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST );
-	    }
-	}
-
-	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';
-    } else {
-	if ( $family == F_IPV4 ) {
-	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
-	} else {
-	    add_commands $chainref, 'for address in $ALL_ACASTS; do';
-	}
-
-	incr_cmd_level $chainref;
-	log_irule_limit( $level, $chainref, 'dropBcast' , 'DROP', [], $tag, 'add', '', d => '$address' ) if $level ne '';
-	add_ijump $chainref, j => $target, d => '$address';
-	decr_cmd_level $chainref;
-	add_commands $chainref, 'done';
-    }
-}
-
-sub dropMcast( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit ( 'DROP', $audit );
-
-    if ( $family == F_IPV4 ) {
-	log_irule_limit $level, $chainref, 'dropMcast' , 'DROP', [], $tag, 'add', '', d => '224.0.0.0/4' if $level ne '';
-	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
-    } else {
-	log_irule_limit( $level, $chainref, 'dropMcast' , 'DROP', [], $tag, 'add', '', d => IPv6_MULTICAST ) if $level ne '';
-	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
-    }
-}
-    
-sub allowBcast( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit( 'ACCEPT', $audit );
-
-    if ( $family == F_IPV4 && have_capability( 'ADDRTYPE' ) ) {
-	if ( $level ne '' ) {
-	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', addrtype => '--dst-type BROADCAST' );
-	    log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' );
-	}
-
-	add_ijump $chainref, j => $target, addrtype => '--dst-type BROADCAST';
-    } else {
-	if ( $family == F_IPV4 ) {
-	    add_commands $chainref, 'for address in $ALL_BCASTS; do';
-	} else {
-	    add_commands $chainref, 'for address in $ALL_MACASTS; do';
-	}
-
-	incr_cmd_level $chainref;
-	log_irule_limit( $level, $chainref, 'allowBcast' , 'ACCEPT', [], $tag, 'add', '', d => '$address' ) if $level ne '';
-	add_ijump $chainref, j => $target, d => '$address';
-	decr_cmd_level $chainref;
-	add_commands $chainref, 'done';
-    }
-}
-
-sub allowMcast( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit( 'ACCEPT', $audit );
-
-    if ( $family == F_IPV4 ) {
-	log_irule_limit( $level, $chainref, 'allowMcast' , 'ACCEPT', [], $tag, 'add', '', d => '224.0.0.0/4' ) if $level ne '';
-	add_ijump $chainref, j => $target, d => '224.0.0.0/4';
-    } else {
-	log_irule_limit( $level, $chainref, 'allowMcast' , 'ACCEPT', '', $tag, 'add',  '', d => IPv6_MULTICAST ) if $level ne '';
-	add_ijump $chainref, j => $target, d => IPv6_MULTICAST;
-    }
-}
-
-sub dropNotSyn ( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit( 'DROP', $audit );
-
-    log_irule_limit( $level, $chainref, 'dropNotSyn' , 'DROP', [], $tag, 'add', '', p => '6 ! --syn' ) if $level ne '';
-    add_ijump $chainref , j => $target, p => '6 ! --syn';
-}
-
-sub rejNotSyn ( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    warning_message "rejNotSyn is deprecated in favor of NotSyn(REJECT)";
-
-    my $target = 'REJECT --reject-with tcp-reset';
-
-    if ( supplied $audit ) {
-	$target = require_audit( 'REJECT' , $audit );
-    }
-
-    log_irule_limit( $level, $chainref, 'rejNotSyn' , 'REJECT', [], $tag, 'add', '', p => '6 ! --syn' ) if $level ne '';
-    add_ijump $chainref , j => $target, p => '6 ! --syn';
-}
-
-sub forwardUPnP ( $$$$ ) {
-    my $chainref = set_optflags( 'forwardUPnP', DONT_OPTIMIZE );
-
-    add_commands( $chainref , '[ -f ${VARDIR}/.forwardUPnP ] && cat ${VARDIR}/.forwardUPnP >&3' );
-}
-
-sub allowinUPnP ( $$$$ ) {
-    my ($chainref, $level, $tag, $audit) = @_;
-
-    my $target = require_audit( 'ACCEPT', $audit );
-
-    if ( $level ne '' ) {
-	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', '', p => '17 --dport 1900' );
-	log_irule_limit( $level, $chainref, 'allowinUPnP' , 'ACCEPT', [], $tag, 'add', '', p => '6 --dport 49152' );
-    }
-
-    add_ijump $chainref, j => $target, p => '17 --dport 1900';
-    add_ijump $chainref, j => $target, p => '6 --dport 49152';
-}
-
-sub Limit( $$$$ ) {
-    my ($chainref, $level, $tag, $param ) = @_;
-
-    my @param;
-
-    if ( $param ) {
-	@param = split /,/, $param;
-    } else {
-	@param = split /,/, $tag;
-	$tag = '';
-    }
-
-    fatal_error 'Limit rules must include <set name>,<max connections>,<interval> as the log tag or as parameters' unless @param == 3;
-
-    my $set   = $param[0];
-
-    for ( @param[1,2] ) {
-	fatal_error 'Max connections and interval in Limit rules must be numeric (' . join( ':', 'Limit', $level eq '' ? 'none' : $level, $tag ) . ')' unless /^\d+$/
-    }
-
-    my $count = $param[1] + 1;
-
-    require_capability( 'RECENT_MATCH' , 'Limit rules' , '' );
-
-    warning_message "The Limit action is deprecated in favor of per-IP rate limiting using the RATE LIMIT column";
-
-    add_irule $chainref, recent => "--name $set --set";
-
-    if ( $level ne '' ) {
-	my $xchainref = new_chain 'filter' , "$chainref->{name}%";
-	log_irule_limit( $level, $xchainref, $param[0], 'DROP', [], $tag, 'add' , '' );
-	add_ijump $xchainref, j => 'DROP';
-	add_ijump $chainref,  j => $xchainref, recent => "--name $set --update --seconds $param[2] --hitcount $count";
-    } else {
-	add_ijump $chainref, j => 'DROP', recent => "--update --name $set --seconds $param[2] --hitcount $count";
-    }
-
-    add_ijump $chainref, j => 'ACCEPT';
-}
-
-my %builtinops = ( 'dropBcast'      => \&dropBcast,
-		   'dropMcast'      => \&dropMcast,
-		   'allowBcast'     => \&allowBcast,
-		   'allowMcast'     => \&allowMcast,
-		   'dropNotSyn'     => \&dropNotSyn,
-		   'rejNotSyn'      => \&rejNotSyn,
-		   'allowinUPnP'    => \&allowinUPnP,
-		   'forwardUPnP'    => \&forwardUPnP,
-		   'Limit'          => \&Limit,
-		 );
-
-
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ );
 sub process_snat1( $$$$$$$$$$$$ );
@@ -1913,12 +1724,6 @@ sub process_action(\$\$$) {
     my $type = $targets{$action};
     my $actionref = $actions{$action};
     my $matches   = fetch_inline_matches;
-
-    if ( $type & BUILTIN ) {
-	$level = '' if $level =~ /none!?/;
-	$builtinops{$action}->( $chainref, $level, $tag, $param );
-	return 0;
-    }
 
     if ( $type & MANGLE_TABLE ) {
 	fatal_error "Action $action may only be used in the mangle file" unless $chainref->{table} eq 'mangle';
@@ -2192,7 +1997,6 @@ sub process_action(\$\$$) {
 #
 # This function is called prior to processing of the policy file. It:
 #
-# - Adds the builtin actions to the target table
 # - Reads actions.std and actions (in that order) and for each entry:
 #   o Adds the action to the target table
 #   o Verifies that the corresponding action file exists
@@ -2201,10 +2005,6 @@ sub process_action(\$\$$) {
 sub process_actions() {
 
     progress_message2 "Locating Action Files...";
-    #
-    # Add built-in actions to the target table and create those actions
-    #
-    $targets{$_} = new_action( $_ , ACTION + BUILTIN, NOINLINE_OPT, '' , '' ) for @builtins;
 
     for my $file ( qw/actions.std actions/ ) {
 	open_file( $file, 2 );

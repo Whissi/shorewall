@@ -3000,8 +3000,8 @@ sub process_compiler_directive( $$$$ ) {
 							$filename ,
 							$linenumber ,
 							1 ) ,
-				   $actparams{callfile} ,
-				   $actparams{callline} ) unless $omitting;
+				   $filename ,
+				   $linenumber ) unless $omitting;
 	      }
 	  } ,
 
@@ -3012,8 +3012,8 @@ sub process_compiler_directive( $$$$ ) {
 							  $filename ,
 							  $linenumber ,
 							  1 ),
-				     $actparams{callfile} ,
-				     $actparams{callline} ) unless $omitting;
+				     $filename ,
+				     $linenumber ) unless $omitting;
 	      }
 	  } ,
 
@@ -3024,8 +3024,8 @@ sub process_compiler_directive( $$$$ ) {
 						       $filename ,
 						       $linenumber ,
 						       1 ),
-				  $actparams{callfile} ,
-				  $actparams{callline} ) unless $omitting;
+				  $filename ,
+				  $linenumber ) unless $omitting;
 	      }
 	  } ,
 
@@ -3036,8 +3036,8 @@ sub process_compiler_directive( $$$$ ) {
 							  $filename ,
 							  $linenumber ,
 							  1 ),
-				     $actparams{callfile} ,
-				     $actparams{callline} ) unless $omitting;
+				     $filename ,
+				     $linenumber ) unless $omitting;
 	      }
 	  } ,
 
@@ -3048,8 +3048,8 @@ sub process_compiler_directive( $$$$ ) {
 						       $filename ,
 						       $linenumber ,
 						       1 ),
-				  $actparams{callfile} ,
-				  $actparams{callline} ) unless $omitting;
+				  $filename ,
+				  $linenumber ) unless $omitting;
 	      }
 	  } ,
 
@@ -3560,8 +3560,6 @@ sub push_action_params( $$$$$$ ) {
     $actparams{logtag}      = $logtag;
     $actparams{caller}      = $caller;
     $actparams{disposition} = '' if $chainref->{action};
-    $actparams{callfile}    = $currentfilename;
-    $actparams{callline}    = $currentlinenumber;
     #
     # The Shorewall variable '@chain' has non-word characters other than hyphen removed
     #
@@ -3773,6 +3771,8 @@ sub read_a_line($) {
 
 	while ( <$currentfile> ) {
 	    chomp;
+
+	    $currentlinenumber = $. unless $currentlinenumber;
 	    #
 	    # Handle directives
 	    #
@@ -3786,8 +3786,6 @@ sub read_a_line($) {
 		$directive_callback->( 'OMITTED', $_ ) if ( $directive_callback );
 		next;
 	    }
-
-	    $currentlinenumber = $. unless $currentlinenumber;
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #

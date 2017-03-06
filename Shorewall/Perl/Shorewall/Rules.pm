@@ -1735,11 +1735,11 @@ sub process_action(\$\$$) {
 
     progress_message2 "$doing $actionfile for chain $chainref->{name}...";
 
-    push_open $actionfile, 2, 1, undef, 2;
-
     my $oldparms = push_action_params( $action, $chainref, $param, $level, $tag, $caller );
     my $options = $actionref->{options};
     my $nolog = $options & ( NOLOG_OPT | LOGJUMP_OPT );
+
+    push_open $actionfile, 2, 1, undef, 2;
 
     setup_audit_action( $action ) if $options & AUDIT_OPT;
 

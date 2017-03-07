@@ -2312,9 +2312,10 @@ EOF
 EOF
 
 	}
-
-	return ( $mangle, $fn1 );
     }
+
+    return ( $mangle, $fn1 );
+
 }
 
 #

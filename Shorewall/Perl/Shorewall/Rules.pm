@@ -944,13 +944,14 @@ sub add_policy_rules( $$$$$ ) {
 		#
 		# Default action is an inline 
 		#
+		( undef, my $level )   = split /:/, $paction, 2;
 		( $action, my $param ) = get_target_param( $action );
 
 		process_inline( $action,      #Inline
 				$chainref,    #Chain
 				'',           #Matches
 				'',           #Matches1
-				$loglevel,    #Log Level and Tag
+				$level || '', #Log Level and Tag
 				$paction,     #Target
 				$param || '', #Param
 				'-',          #Source

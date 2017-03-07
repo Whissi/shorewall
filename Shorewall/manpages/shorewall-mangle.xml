@@ -864,7 +864,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 on the firewall and whose source IP address matches one of the
                 listed addresses and does not match any address listed in the
                 <replaceable>exclusion</replaceable>. May not be used with a
-                chain qualifier (:P, :F, etc.) in the ACTION column. </para>
+                chain qualifier (:P, :F, etc.) in the ACTION column.</para>
               </listitem>
             </varlistentry>
 
@@ -1028,15 +1028,16 @@ Normal-Service       =&gt; 0x00</programlisting>
       <varlistentry>
         <term><emphasis role="bold">PROTO</emphasis> - {<emphasis
         role="bold">-</emphasis>|<emphasis
-        role="bold">{tcp:syn</emphasis>|<emphasis
+        role="bold">{tcp:[!]syn</emphasis>|<emphasis
         role="bold">ipp2p</emphasis>|<emphasis
         role="bold">ipp2p:udp</emphasis>|<emphasis
         role="bold">ipp2p:all</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis
         role="bold">all}[,...]}</emphasis></term>
 
         <listitem>
-          <para>Protocol - <emphasis role="bold">ipp2p</emphasis> requires
-          ipp2p match support in your kernel and iptables.</para>
+          <para>See <ulink
+          url="shorewall-rules.html">shorewall-rules(5)</ulink> for
+          details.</para>
 
           <para>Beginning with Shorewall 4.5.12, this column can accept a
           comma-separated list of protocols.</para>

@@ -372,6 +372,7 @@ sub initialize( $ ) {
 			    'icmp-host-prohibited'   => 1,
 			    'icmp-admin-prohibited'  => 1,
 			    'icmp-tcp-reset'         => 2,
+			    'tcp-reset'              => 2,
 	                  );
 			    
     } else {
@@ -2917,6 +2918,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 			  # tcp-reset
 			  #
 			  fatal_error "tcp-reset may only be used with PROTO tcp" unless ( resolve_proto( $proto ) || 0 ) == TCP;
+			  $exceptionrule = '-p 6 ';
+			  $param = 'tcp-reset';
 		      }
 
 		      $action = "REJECT --reject-with $param";

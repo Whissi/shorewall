@@ -34,6 +34,6 @@ DEFAULTS -
         ?error "Invalid argument (@1) to rejNotSyn"
     ?endif
 ?else
-    REJECT ;; -p 6 ! --syn
+    REJECT(tcp-reset) {proto=6:!syn}
 ?endif
 

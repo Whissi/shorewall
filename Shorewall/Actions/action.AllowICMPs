@@ -1,0 +1,11 @@
+#
+# Shorewall -- /usr/share/shorewall/action.AllowICMPs
+#
+# This action ACCEPTs needed ICMP types.
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+
+DEFAULTS ACCEPT
+@1	-	-	icmp	fragmentation-needed
+@2	-	-	icmp	time-exceeded

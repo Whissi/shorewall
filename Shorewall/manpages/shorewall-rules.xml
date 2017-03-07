@@ -729,7 +729,9 @@
                   <member><option>icmp-admin-prohibited</option></member>
 
                   <member><option>icmp-tcp-reset</option> (the PROTO column
-                  must specify TCP)</member>
+                  must specify TCP). Beginning with Shorewall 5.1.3, this
+                  option may also be specified as
+                  <option>tcp-reset</option>.</member>
                 </simplelist>
               </listitem>
             </varlistentry>
@@ -1592,7 +1594,7 @@
       <varlistentry>
         <term><emphasis role="bold">PROTO</emphasis>- {<emphasis
         role="bold">-</emphasis>|<emphasis
-        role="bold">tcp:syn</emphasis>|<emphasis
+        role="bold">tcp:[!]syn</emphasis>|<emphasis
         role="bold">ipp2p</emphasis>|<emphasis
         role="bold">ipp2p:udp</emphasis>|<emphasis
         role="bold">ipp2p:all</emphasis>|<emphasis>protocol-number</emphasis>|<emphasis>protocol-name</emphasis>|<emphasis
@@ -1603,7 +1605,10 @@
           requires ipp2p match support in your kernel and iptables. <emphasis
           role="bold">tcp:syn</emphasis> implies <emphasis
           role="bold">tcp</emphasis> plus the SYN flag must be set and the
-          RST,ACK and FIN flags must be reset.</para>
+          RST, ACK and FIN flags must be reset. Beginning with Shorewall
+          5.1.3, you may also specify <emphasis
+          role="bold">tcp:!syn</emphasis>, which matches if SYN is not set or
+          if RST, ACK or FIN is set.</para>
 
           <para>Beginning with Shorewall 4.4.19, this column can contain a
           comma-separated list of protocol-numbers and/or protocol

@@ -29,7 +29,7 @@ DEFAULTS -
 ?if passed(@1)
     ?if @1 eq 'audit'
         ?require AUDIT_TARGET
-	A_REJECT ;; -p 6 ! --syn
+	A_REJECT {proto=6:!syn}
     ?else
         ?error "Invalid argument (@1) to rejNotSyn"
     ?endif

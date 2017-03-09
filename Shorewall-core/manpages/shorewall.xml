@@ -433,6 +433,33 @@
     </cmdsynopsis>
 
     <cmdsynopsis>
+      <command>shorewall[6][-lite]</command>
+
+      <arg
+      choice="opt"><option>trace</option>|<option>debug</option><arg><option>nolock</option></arg></arg>
+
+      <arg>options</arg>
+
+      <arg choice="plain"><option>reload</option></arg>
+
+      <arg><option>-n</option></arg>
+
+      <arg><option>-p</option><arg><option>-d</option></arg></arg>
+
+      <arg><option>-f</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-i</option></arg>
+
+      <arg><option>-C</option></arg>
+
+      <arg><replaceable>directory</replaceable></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
       <command>shorewall[6]</command>
 
       <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
@@ -1916,10 +1943,11 @@
 
       <varlistentry>
         <term><emphasis role="bold">remote-start</emphasis>
-        [-<option>s</option>] [-<option>c</option>] [-<option>r</option>
-        <replaceable>root-user-name</replaceable>] [-<option>T</option>]
-        [-<option>i</option>] [ [ -D ] <replaceable>directory</replaceable> ]
-        [ <replaceable>system</replaceable> ]</term>
+        [-<option>n</option>] [-<option>s</option>] [-<option>c</option>]
+        [-<option>r</option> <replaceable>root-user-name</replaceable>]
+        [-<option>T</option>] [-<option>i</option>] [ [ -D ]
+        <replaceable>directory</replaceable> ] [
+        <replaceable>system</replaceable> ]</term>
 
         <listitem>
           <para>This command was renamed from <command>load</command> in
@@ -1955,6 +1983,9 @@
           <replaceable>directory</replaceable>, then the <option>-D</option>
           option must be given.</para>
 
+          <para>The <option>-n</option> option causes Shorewall to avoid
+          updating the routing table(s).</para>
+
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">start</emphasis> command succeeds, then the
           remote Shorewall-lite configuration is saved by executing <emphasis
@@ -1985,7 +2016,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">remote-reload
+        <term><emphasis role="bold">remote-reload [-<option>n</option>]
         </emphasis>[-<option>s</option>] [-<option>c</option>]
         [-<option>r</option> <replaceable>root-user-name</replaceable>]
         [-<option>T</option>] [-<option>i</option>] [ [ -D ]
@@ -2024,6 +2055,9 @@
           assumed. In that case, if you want to specify a
           <replaceable>directory</replaceable>, then the <option>-D</option>
           option must be given.</para>
+
+          <para>The <option>-n</option> option causes Shorewall to avoid
+          updating the routing table(s).</para>
 
           <para>If <emphasis role="bold">-s</emphasis> is specified and the
           <emphasis role="bold">restart</emphasis> command succeeds, then the

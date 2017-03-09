@@ -4264,12 +4264,17 @@ usage() # $1 = exit status
     echo "   reenable <interface>"
     ecko "   refresh [ -d ] [ -n ] [ -T ] [ -D <directory> ] [ <chain>... ]"
     echo "   reject <address> ..."
-    ecko "   reload [ -s ] [ -c ] [ -r <root user> ] [ -T ] [ -i ] [ <directory> ] <system>"
+
+    if [ -n "$g_lite" ]; then
+	echo "   reload [ -n ] [ -p ] [ -f ] [ -C ] [ <directory> ]"
+    else
+	echo "   reload [ -n ] [ -p ] [-d] [ -f ] [ -c ] [ -T ] [ -i ] [ -C ] [ <directory> ]"
+    fi
 
     if [ -z "$g_lite" ]; then
-	echo "   remote-reload [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
-	echo "   remote-restart [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
-	echo "   remote-start [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+	echo "   remote-reload [ -n ] [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+	echo "   remote-restart [ -n ] [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
+	echo "   remote-start [ -n ] [ -s ] [ -c ] [ -r <root-name> ] [ -T ] [ -i ] [ <directory> ] <system>"
     fi
 
     echo "   reset [ <chain> ... ]"

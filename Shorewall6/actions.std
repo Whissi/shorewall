@@ -35,6 +35,7 @@ Established  inline,\		# Handles packets in the ESTABLISHED state
 IfEvent      noinline           # Perform an action based on an event
 Invalid      inline,audit,\     # Handles packets in the INVALID conntrack state
              state=INVALID
+Multicast    noinline      	# Handles Multicast
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
 Reject		        	# Default Action for REJECT policy (deprecated)

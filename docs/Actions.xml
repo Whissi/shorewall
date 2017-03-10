@@ -351,8 +351,8 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
       </varlistentry>
     </variablelist>
 
-    <para>The recommended settings for the 6 policy actions for IPv4 are:
-    </para>
+    <para>The recommended settings for the 6 policy actions for IPv4
+    are:</para>
 
     <programlisting>        ACCEPT_DEFAULT=none
         BLACKLIST_DEFAULT="Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,dropInvalid:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
@@ -365,7 +365,7 @@ ACCEPT   -              -               tcp     135,139,445</programlisting>
     <para>The recommended settings for IPv6 are:</para>
 
     <programlisting>        ACCEPT_DEFAULT=none
-        BLACKLIST_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
+        BLACKLIST_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,dropInvalid:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
         DROP_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP)"
         NFQUEUE_DEFAULT=none
         QUEUE_DEFAULT=none

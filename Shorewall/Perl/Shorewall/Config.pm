@@ -5493,6 +5493,8 @@ sub process_shorewall_conf( $$ ) {
     # the values are processed below is not the order in which they appear
     # in the config file.
     #
+    $config{LOG_LEVEL} = '' unless defined $config{LOG_LEVEL};
+
     my %log_level = ( LOG_LEVEL => $config{LOG_LEVEL} );
 
     add_variables( %log_level );

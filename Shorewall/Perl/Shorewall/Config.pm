@@ -5489,6 +5489,14 @@ sub process_shorewall_conf( $$ ) {
     # Config file update requires that the option values not have
     # Shell variables expanded. We do that now.
     #
+    # We must first make LOG_LEVEL a variable because the order in which
+    # the values are processed below is not the order in which they appear
+    # in the config file.
+    #
+    my %log_level = ( LOG_LEVEL => $config{LOG_LEVEL} );
+
+    add_variables( %log_level );
+
     for ( values  %config ) {
 	if ( supplied $_ ) {
 	    expand_variables( $_ ) unless /^'(.+)'$/;

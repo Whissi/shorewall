@@ -5445,8 +5445,10 @@ sub process_shorewall_conf( $$ ) {
 	    # Don't expand shell variables or allow embedded scripting
 	    #
 	    while ( read_a_line( STRIP_COMMENTS | SUPPRESS_WHITESPACE  | CHECK_GUNK ) ) {
-		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*?)\s*$/ ) {
+		if ( $currentline =~ /^\s*([a-zA-Z]\w*)=(.*)$/ ) {
 		    my ($var, $val) = ($1, $2);
+
+		    expand_variables( $val ) unless $update || $val =~ /^'.*'$/;
 
 		    if ( exists $config{$var} ) {
 			if ( $eliminated{$var} && ! $update ) {
@@ -5463,6 +5465,7 @@ sub process_shorewall_conf( $$ ) {
 
 			next;
 		    }
+
 
 		    $config{$var} = ( $val =~ /\"([^\"]*)\"$/ ? $1 : $val );
 
@@ -5484,24 +5487,26 @@ sub process_shorewall_conf( $$ ) {
     #
     # Now update the config file if asked
     #
-    update_config_file( $annotate ) if $update;
-    #
-    # Config file update requires that the option values not have
-    # Shell variables expanded. We do that now.
-    #
-    # We must first make LOG_LEVEL a variable because the order in which
-    # the values are processed below is not the order in which they appear
-    # in the config file.
-    #
-    $config{LOG_LEVEL} = '' unless defined $config{LOG_LEVEL};
+    if ( $update ) {
+	update_config_file( $annotate ); 
+	#
+	# Config file update requires that the option values not have
+	# Shell variables expanded. We do that now.
+	#
+	# We must first make LOG_LEVEL a variable because the order in which
+	# the values are processed below is not the order in which they appear
+	# in the config file.
+	#
+	$config{LOG_LEVEL} = '' unless defined $config{LOG_LEVEL};
 
-    my %log_level = ( LOG_LEVEL => $config{LOG_LEVEL} );
+	my %log_level = ( LOG_LEVEL => $config{LOG_LEVEL} );
 
-    add_variables( %log_level );
+	add_variables( %log_level );
 
-    for ( values  %config ) {
-	if ( supplied $_ ) {
-	    expand_variables( $_ ) unless /^'(.+)'$/;
+	for ( values  %config ) {
+	    if ( supplied $_ ) {
+		expand_variables( $_ ) unless /^'.*'$/;
+	    }
 	}
     }
 }

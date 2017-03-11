@@ -4575,7 +4575,7 @@ sub do_proto( $$$;$ )
 		$output  = "${invert}-p ${proto} ";
 	    } else {
 		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
-		$output = $notsyn ? "-p $proto ! --syn" : "-p $proto --syn ";
+		$output = $notsyn ? "-p $proto ! --syn " : "-p $proto --syn ";
 	    }
 
 	    fatal_error "SOURCE/DEST PORT(S) not allowed with PROTO !$pname" if $invert && ($ports ne '' || $sports ne '');

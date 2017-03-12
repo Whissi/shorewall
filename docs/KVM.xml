@@ -50,7 +50,7 @@
     Linux Distributions. The following diagram shows the entire
     network.</para>
 
-    <graphic align="center" fileref="images/Network2008a.png" />
+    <graphic align="center" fileref="images/Network2008a.png"/>
 
     <para>My personal laptop (Ursa) hosts the virtual machines. As shown in
     the diagram, Ursa has routes to the Internet through both the
@@ -66,12 +66,12 @@
   <section>
     <title>Networking Configuration</title>
 
-    <para>I use a network configuration where each VM has its own VNET and
-    tap device and the tap devices are all configured as ports on a Linux
-    Bridge. For clarity, I've only shown four of the virtual machines
-    available on the system.</para>
+    <para>I use a network configuration where each VM has its own VNET and tap
+    device and the tap devices are all configured as ports on a Linux Bridge.
+    For clarity, I've only shown four of the virtual machines available on the
+    system.</para>
 
-    <graphic align="center" fileref="images/KVM1.png" />
+    <graphic align="center" fileref="images/KVM1.png"/>
 
     <para>I run <ulink url="???">dmsmasq</ulink> to act as a DHCP server and
     name server for the VMs.</para>
@@ -82,11 +82,10 @@
 
     <para>With this configuration, and with only a single network interface on
     the laptop, this is just a simple <ulink
-    url="two-interface.html">two-interface masquerading setup</ulink> where
-    the local network interface is <filename
-    class="devicefile">br0</filename>. As with all bridges, <filename
-    class="devicefile">br0</filename> must be configured with the
-    <option>routeback</option> option in <ulink
+    url="two-interface.htm">two-interface masquerading setup</ulink> where the
+    local network interface is <filename class="devicefile">br0</filename>. As
+    with all bridges, <filename class="devicefile">br0</filename> must be
+    configured with the <option>routeback</option> option in <ulink
     url="manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5).</para>
 
     <para>For additional information about this setup, including the Shorewall

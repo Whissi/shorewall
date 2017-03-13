@@ -25,10 +25,11 @@ COUNT
 #
 A_AllowICMPs	-	-	icmp
 #
-# Drop Broadcasts so they don't clutter up the log
-# (broadcasts must *not* be rejected).
+# Drop Broadcasts and multicasts so they don't clutter up the log
+# (these must *not* be rejected).
 #
 dropBcast(audit)
+dropMcast(audit)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be

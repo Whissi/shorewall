@@ -31,9 +31,10 @@ Auth(A_DROP)
 #
 A_AllowICMPs	-	-	icmp
 #
-# Don't log broadcasts
+# Don't log broadcasts and multicasts
 #
 dropBcast(audit)
+dropMcast(audit)
 #
 # Drop packets that are in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log.

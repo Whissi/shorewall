@@ -29,22 +29,31 @@
 DEFAULTS DROP,-
 
 ?if __ADDRTYPE
-@1	-	-	-	;; -m addrtype --dst-type MULTICAST
+    @1	-	-	-	;; -m addrtype --dst-type MULTICAST
 ?else
-?begin perl;
+    ?begin perl;
 
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
+    use Shorewall::IPAddrs;
+    use Shorewall::Config;
+    use Shorewall::Chains;
 
-my ( $action )         = get_action_params( 1 );
-my $chainref           = get_action_chain;
-my ( $level, $tag )    = get_action_logging;
+    my ( $action )         = get_action_params( 1 );
+    my $chainref           = get_action_chain;
+    my ( $level, $tag )    = get_action_logging;
 
-log_rule_limit $level, $chainref, 'Multicast' , $action, '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
-add_jump $chainref, $action, 0, '-d 224.0.0.0/4 ';
+    fatal_error "Invalid parameter to action Broadcast"	  if supplied $audit && $audit ne 'audit';
 
-1;
+    my $target		   = require_audit ( $action , $audit );
 
-?end perl;
+    if ( $family == F_IPv4 ) {
+        log_rule_limit $level, $chainref, 'Multicast' , $action, '', $tag, 'add', ' -d 224.0.0.0/4 ' if $level ne '';
+        add_jump $chainref, $action, 0, '-d 224.0.0.0/4 ';
+    } else {
+        log_rule_limit( $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', join( ' ', '-d', IPv6_MULTICAST . ' ' ) )  if $level ne '';
+        add_jump $chainref, $target, 0, join( ' ', '-d', IPv6_MULTICAST . ' ' );
+    }
+
+    1;
+
+    ?end perl;
 ?endif

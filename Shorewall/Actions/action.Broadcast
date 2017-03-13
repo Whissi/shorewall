@@ -20,7 +20,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Broadcast[([<action>|-[,{audit|-}])]
+# Broadcast[([<action>|[,{audit|-}])]
 #
 # Default action is DROP
 #
@@ -29,27 +29,33 @@
 DEFAULTS DROP,-
 
 ?if __ADDRTYPE
-@1	-	-	-	;; -m addrtype --dst-type BROADCAST
-@1	-	-	-	;; -m addrtype --dst-type ANYCAST
-?else
-?begin perl;
+    @1	-	-	-	;; -m addrtype --dst-type BROADCAST
+    @1	-	-	-	;; -m addrtype --dst-type ANYCAST
+?elseif __IPV4
+    ?begin perl;
 
-use Shorewall::IPAddrs;
-use Shorewall::Config;
-use Shorewall::Chains;
+    use Shorewall::IPAddrs;
+    use Shorewall::Config;
+    use Shorewall::Chains;
 
-my ( $action )         = get_action_params( 1 );
-my $chainref           = get_action_chain;
-my ( $level, $tag )    = get_action_logging;
+    my ( $action )         = get_action_params( 1 );
+    my $chainref           = get_action_chain;
+    my ( $level, $tag )    = get_action_logging;
+    my $target             = require_audit ( $action , $audit );
 
-add_commands $chainref, 'for address in $ALL_BCASTS; do';
-incr_cmd_level $chainref;
-log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d $address ' if $level ne '';
-add_jump $chainref, $action, 0, "-d \$address ";
-decr_cmd_level $chainref;
-add_commands $chainref, 'done';
+    if ( $family == F_IPv4 ) {
+        add_commands $chainref, 'for address in $ALL_BCASTS; do';
+    } else {
+        add_commands $chainref, 'for address in $ALL_ACASTS; do';
+    }
 
-1;
+    incr_cmd_level $chainref;
+    log_rule_limit $level, $chainref, 'Broadcast' , $action, '', $tag, 'add', ' -d $address ' if $level ne '';
+    add_jump $chainref, $target, 0, "-d \$address ";
+    decr_cmd_level $chainref;
+    add_commands $chainref, 'done';
 
-?end perl;
+    1;
+
+    ?end perl;
 ?endif

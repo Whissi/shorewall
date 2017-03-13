@@ -28,10 +28,10 @@ DEFAULTS -
 
 ?if passed(@1)
     ?if @1 eq 'audit'
-        ?require AUDIT_TARGET
+	?require AUDIT_TARGET
 	Multicast(A_DROP)
     ?else
-        ?error "Invalid argument (@1) to dropMcast"
+	?error "Invalid argument (@1) to dropMcast"
     ?endif
 ?else
     Multicast(DROP)

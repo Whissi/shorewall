@@ -28,10 +28,10 @@ DEFAULTS -
 
 ?if passed(@1)
     ?if @1 eq 'audit'
-        ?require AUDIT_TARGET
+	?require AUDIT_TARGET
 	Multicast(A_ACCEPT)
     ?else
-        ?error "Invalid argument (@1) to allowMcast"
+	?error "Invalid argument (@1) to allowMcast"
     ?endif
 ?else
     Multicast(ACCEPT)

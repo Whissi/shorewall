@@ -28,10 +28,10 @@ DEFAULTS -
 
 ?if passed(@1)
     ?if @1 eq 'audit'
-        ?require AUDIT_TARGET
+	?require AUDIT_TARGET
 	A_DROP {proto=6:!syn}
     ?else
-        ?error "Invalid argument (@1) to dropNotSyn"
+	?error "Invalid argument (@1) to dropNotSyn"
     ?endif
 ?else
     DROP {proto=6:!syn}

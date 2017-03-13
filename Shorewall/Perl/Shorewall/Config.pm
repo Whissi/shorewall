@@ -5368,8 +5368,12 @@ sub update_config_file( $ ) {
 		    }
 
 		}
-
-		$val = conditional_quote $val;
+		if ( supplied $val ) {
+		    #
+		    # Log LEVEL and DEFAULT settings often contain parens
+		    #
+		    $val = ($var =~ /(?:LEVEL|DEFAULT)$/) ? qq("$val") : conditional_quote $val;
+		}
 
 		$_ = "$var=$val\n";
 	    }

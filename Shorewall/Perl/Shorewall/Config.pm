@@ -3689,6 +3689,7 @@ sub expand_variables( \$ ) {
 	    $usedcaller = USEDCALLER if $var eq 'caller';
 	} else {
 	    fatal_error "Undefined shell variable (\$$var)" unless $config{IGNOREUNKNOWNVARIABLES} || exists $config{$var};
+	    $val = $config{$var};
 	}
 
 	$val = '' unless defined $val;

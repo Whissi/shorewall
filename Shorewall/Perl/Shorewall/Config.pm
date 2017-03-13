@@ -86,6 +86,9 @@ our @EXPORT = qw(
 		 kernel_version
 
                  compiletime
+				       
+		 F_IPV4
+		 F_IPV6
                 );
 
 our @EXPORT_OK = qw( $shorewall_dir initialize shorewall);
@@ -196,9 +199,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 
                                        PARMSMODIFIED
                                        USEDCALLER
-				       
-		                       F_IPV4
-		                       F_IPV6
 
 				       TCP
 				       UDP
@@ -748,7 +748,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.1-RC1",
+		    VERSION                 => "5.1.4-Beta1",
 		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',

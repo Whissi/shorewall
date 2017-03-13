@@ -31,22 +31,28 @@ DEFAULTS DROP,-
 ?if __ADDRTYPE
     @1	-	-	-	;; -m addrtype --dst-type BROADCAST
     @1	-	-	-	;; -m addrtype --dst-type ANYCAST
-?elseif __IPV4
+?else
     ?begin perl;
 
+    use strict;
     use Shorewall::IPAddrs;
     use Shorewall::Config;
     use Shorewall::Chains;
 
-    my ( $action )         = get_action_params( 1 );
+    my ( $action, $audit ) = get_action_params( 2 );
     my $chainref           = get_action_chain;
     my ( $level, $tag )    = get_action_logging;
+
+    fatal_error "Invalid parameter to action Broadcast" if supplied $audit && $audit ne 'audit';
+
     my $target             = require_audit ( $action , $audit );
 
-    if ( $family == F_IPv4 ) {
+    if ( $family == F_IPV4 ) {
         add_commands $chainref, 'for address in $ALL_BCASTS; do';
-    } else {
+    } elsif ($family == F_IPV6 ) {
         add_commands $chainref, 'for address in $ALL_ACASTS; do';
+    } else {
+        fatal_error "Internal error - \$family == $family";
     }
 
     incr_cmd_level $chainref;

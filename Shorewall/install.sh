@@ -446,10 +446,10 @@ if [ -z "$first_install" ]; then
 	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_Reject
 	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_AllowICMPs
     else
-	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_AllowICMPs
-	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.AllowICMPs
-	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Broadcast
-	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Multicast
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall6/action.A_AllowICMPs
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall6/action.AllowICMPs
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall6/action.Broadcast
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall6/action.Multicast
     fi
 fi
 

@@ -51,8 +51,6 @@ DEFAULTS DROP,-
         add_commands $chainref, 'for address in $ALL_BCASTS; do';
     } elsif ($family == F_IPV6 ) {
         add_commands $chainref, 'for address in $ALL_ACASTS; do';
-    } else {
-        fatal_error "Internal error - \$family == $family";
     }
 
     incr_cmd_level $chainref;

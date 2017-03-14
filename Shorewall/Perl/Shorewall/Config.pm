@@ -748,7 +748,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.1-RC1",
+		    VERSION                 => "5.1.3",
 		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -3772,8 +3772,6 @@ sub read_a_line($) {
 
 	while ( <$currentfile> ) {
 	    chomp;
-
-	    $currentlinenumber = $. unless $currentlinenumber;
 	    #
 	    # Handle directives
 	    #
@@ -3787,6 +3785,8 @@ sub read_a_line($) {
 		$directive_callback->( 'OMITTED', $_ ) if ( $directive_callback );
 		next;
 	    }
+
+	    $currentlinenumber = $. unless $currentlinenumber;
 	    #
 	    # Suppress leading whitespace in certain continuation lines
 	    #

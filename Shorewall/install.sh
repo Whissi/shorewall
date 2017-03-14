@@ -442,6 +442,8 @@ if [ -z "$first_install" ]; then
 	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_REJECT
 	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Drop
 	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.Reject
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_Drop
+	delete_file ${DESTDIR}${SHAREDIR}/shorewall/action.A_Reject
     fi
 fi
 

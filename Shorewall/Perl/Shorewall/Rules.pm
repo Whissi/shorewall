@@ -731,22 +731,21 @@ sub process_a_policy1($$$$$$$) {
 	if ( $serverwild ) {
 	    for my $zone ( @zonelist ) {
 		for my $zone1 ( @zonelist ) {
-		    set_policy_chain rules_chain( ${zone}, ${zone1} ), $client, $server, $chainref, $policy, $intrazone;
+		    set_policy_chain rules_chain( ${zone}, ${zone1} ), $zone, $zone1, $chainref, $policy, $intrazone;
 		    print_policy $zone, $zone1, $originalpolicy, $chain;
 		}
 	    }
 	} else {
 	    for my $zone ( all_zones ) {
-		set_policy_chain rules_chain( ${zone}, ${server} ), $client, $server, $chainref, $policy, $intrazone;
+		set_policy_chain rules_chain( ${zone}, ${server} ), $zone, $server, $chainref, $policy, $intrazone;
 		print_policy $zone, $server, $originalpolicy, $chain;
 	    }
 	}
     } elsif ( $serverwild ) {
 	for my $zone ( @zonelist ) {
-	    set_policy_chain rules_chain( ${client}, ${zone} ), $client, $server, $chainref, $policy, $intrazone;
+	    set_policy_chain rules_chain( ${client}, ${zone} ), $client, $zone, $chainref, $policy, $intrazone;
 	    print_policy $client, $zone, $originalpolicy, $chain;
 	}
-
     } else {
 	print_policy $client, $server, $originalpolicy, $chain;
     }

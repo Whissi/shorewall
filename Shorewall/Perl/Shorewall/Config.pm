@@ -2818,7 +2818,6 @@ sub evaluate_expression( $$$$ ) {
 	#
 	# Not a simple one-term expression -- compile it
 	#
-
 	declare_passed unless $evals++;
 
 	$val = eval qq(package Shorewall::User;

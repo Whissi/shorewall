@@ -2782,7 +2782,7 @@ sub evaluate_expression( $$$$ ) {
 	    my ( $first, $var, $rest ) = ( $1, $3, $4);
 	    $var = numeric_value( $var ) if $var =~ /^\d/;
 	    $val = $var ? $actparams{$var} : $chain;
-	    $usedcaller = USEDCALLER if $var eq 'caller';
+	    $usedcaller = USEDCALLER if $var =~ /^(?:caller|callfile|callline)$/;
 	    $expression = join_parts( $first, $val, $rest , $just_expand );
 	    directive_error( "Variable Expansion Loop" , $filename, $linenumber ) if ++$count > 100;
 	}
@@ -2840,6 +2840,40 @@ sub pop_open();
 #
 sub directive_callback( $ ) {
     $directive_callback = shift;
+}
+
+sub directive_message( \&$$$$ ) {
+    my ( $functptr, $verbose, $expression, $filename, $linenumber ) = @_;
+
+    unless ( $omitting ) {
+	if ( $actparams{0} ) {
+	    #
+	    # When issuing a message from an action, report the action invocation
+	    # site rather than the action file and line number.
+	    #
+	    # Avoid double-reporting by temporarily removing the invocation site
+	    # from the open stack.
+	    #
+	    my $saveopens = pop @openstack;
+
+	    $functptr->( $verbose ,
+			 evaluate_expression( $expression ,
+					      $filename ,
+					      $linenumber ,
+					      1 ),
+			 $actparams{callfile} ,
+			 $actparams{callline} );
+	    push @openstack, $saveopens;
+	} else {
+	    $functptr->( $verbose ,
+			 evaluate_expression( $expression ,
+					      $filename ,
+					      $linenumber ,
+					      1 ),
+			 $filename ,
+			 $linenumber );
+	}
+    }
 }
 
 #
@@ -2958,15 +2992,16 @@ sub process_compiler_directive( $$$$ ) {
 		      $var = $2 || 'chain';
 		      directive_error( "Shorewall variables may only be RESET in the body of an action", $filename, $linenumber ) unless $actparams{0};
 		      if ( exists $actparams{$var} ) {
-			  if ( $var =~ /^loglevel|logtag|chain|disposition|caller$/ ) {
+			  if ( $var =~ /^(?:loglevel|logtag|chain|disposition|caller|callfile|callline)$/ ) {
 			      $actparams{$var} = '';
 			  } else {
 			      delete $actparams{$var}
 			  }
+
+			  $parmsmodified = PARMSMODIFIED if @ifstack > $ifstack;
 		      } else {
 			  directive_warning( 'Yes', "Shorewall variable $2 does not exist", $filename, $linenumber );
 		      }
-
 		  } else {
 		      if ( exists $variables{$2} ) {
 			  delete $variables{$2};
@@ -3004,7 +3039,7 @@ sub process_compiler_directive( $$$$ ) {
 		      #
 		      @ifstack = ();
 		      #
-		      # Avoid double-reporting the action call site
+		      # Avoid double-reporting the action invocation site
 		      #
 		      pop_open;
 
@@ -3026,115 +3061,35 @@ sub process_compiler_directive( $$$$ ) {
 	  } ,
 
 	  WARNING => sub() {
-	      unless ( $omitting ) {
-		  if ( $actparams{0} ) {
-		      #
-		      # Avoid double-reporting the action call site
-		      #
-		      my $saveopens = pop @openstack;
-
-		      directive_warning( $config{VERBOSE_MESSAGES} ,
-					 evaluate_expression( $expression ,
-							      $filename ,
-							      $linenumber ,
-							      1 ),
-					 $actparams{callfile} ,
-					 $actparams{callline} );
-		      push @openstack, $saveopens;
-		  } else {
-		      directive_warning( $config{VERBOSE_MESSAGES} ,
-					 evaluate_expression( $expression ,
-							      $filename ,
-							      $linenumber ,
-							      1 ),
-					 $filename ,
-					 $linenumber );
-		  }
-	      }
+	      directive_message( &directive_warning ,
+				 $config{VERBOSE_MESSAGES},
+				 $expression ,
+				 $filename ,
+				 $linenumber );
 	  } ,
 
 	  INFO => sub() {
-	      unless ( $omitting ) {
-		  if ( $actparams{0} ) {
-		      #
-		      # Avoid double-reporting the action call site
-		      #
-		      my $saveopens = pop @openstack;
-
-		      directive_info( $config{VERBOSE_MESSAGES} ,
-				      evaluate_expression( $expression ,
-							   $filename ,
-							   $linenumber ,
-							   1 ),
-				      $actparams{callfile} ,
-				      $actparams{callline} );
-		      push @openstack, $saveopens;
-		  } else {
-		      directive_info( $config{VERBOSE_MESSAGES} ,
-				      evaluate_expression( $expression ,
-							   $filename ,
-							   $linenumber ,
-							   1 ),
-				      $filename ,
-				      $linenumber );
-		  }
-	      }
+	      directive_message( &directive_info,
+				 $config{VERBOSE_MESSAGES} ,
+				 $expression ,
+				 $filename ,
+				 $linenumber );
 	  } ,
 
 	  'WARNING!' => sub() {
-	      unless ( $omitting ) {
-		  if ( $actparams{0} ) {
-		      #
-		      # Avoid double-reporting the action call site
-		      #
-		      my $saveopens = pop @openstack;
-
-		      directive_warning( ! $config{VERBOSE_MESSAGES} ,
-					 evaluate_expression( $expression ,
-							      $filename ,
-							      $linenumber ,
-							      1 ),
-					 $actparams{callfile} ,
-					 $actparams{callline} );
-		      push @openstack, $saveopens;
-		  } else {
-		      directive_warning( ! $config{VERBOSE_MESSAGES} ,
-					 evaluate_expression( $expression ,
-							      $filename ,
-							      $linenumber ,
-							      1 ),
-					 $filename ,
-					 $linenumber );
-		  }
-	      }
+	      directive_message( &directive_warning ,
+				 ! $config{VERBOSE_MESSAGES} ,
+				 $expression ,
+				 $filename ,
+				 $linenumber );
 	  } ,
 
 	  'INFO!' => sub() {
-	      unless ( $omitting ) {
-		  if ( $actparams{0} ) {
-		      #
-		      # Avoid double-reporting the action call site
-		      #
-		      my $saveopens = pop @openstack;
-
-		      directive_info( ! $config{VERBOSE_MESSAGES} ,
-				      evaluate_expression( $expression ,
-							   $filename ,
-							   $linenumber ,
-							   1 ),
-				      $actparams{callfile} ,
-				      $actparams{callline} );
-		      push @openstack, $saveopens;
-		  } else {
-		      directive_info( ! $config{VERBOSE_MESSAGES} ,
-				      evaluate_expression( $expression ,
-							   $filename ,
-							   $linenumber ,
-							   1 ),
-				      $filename ,
-				      $linenumber );
-		  }
-	      }
+	      directive_message( &directive_info ,
+				 ! $config{VERBOSE_MESSAGES} ,
+				 $expression ,
+				 $filename ,
+				 $linenumber );
 	  } ,
 
 	  REQUIRE => sub() {

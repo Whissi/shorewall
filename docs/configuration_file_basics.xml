@@ -446,40 +446,42 @@ br0                -                    routeback</programlisting></para>
     backslash (<quote>\</quote>) followed immediately by a new line character
     (Enter key).</para>
 
-    <example id="continuation">
-      <title>Line Continuation</title>
-
-      <programlisting>ACCEPT  net     $FW      tcp \↵
+    <programlisting>ACCEPT  net     $FW      tcp \↵
 smtp,www,pop3,imap  #Services running on the firewall</programlisting>
 
-      <para>In certain cases, leading white space is ignored in continuation
-      lines:</para>
+    <para>In certain cases, leading white space is ignored in continuation
+    lines:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>The continued line ends with a colon (":")</para>
-        </listitem>
+    <orderedlist>
+      <listitem>
+        <para>The continued line ends with a colon (":")</para>
+      </listitem>
 
-        <listitem>
-          <para>The continued line ends with a comma (",")</para>
-        </listitem>
-      </itemizedlist>
+      <listitem>
+        <para>The continued line ends with a comma (",")</para>
+      </listitem>
+    </orderedlist>
 
-      <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
+    <important>
+      <para>What follows does NOT apply to <ulink
+      url="manpages/shorewall-params.html">shorewall-params(5)</ulink> and
+      <ulink url="shorewall.conf.html">shorewall.conf(5)</ulink>.</para>
+    </important>
 
-      <programlisting>#ACTION     SOURCE          DEST            PROTO           DPORT
+    <para>Example (<filename>/etc/shorewall/rules</filename>):</para>
+
+    <programlisting>#ACTION     SOURCE          DEST            PROTO           DPORT
 ACCEPT      net:\
             206.124.146.177,\
             206.124.146.178,\
             206.124.146.180\
                             dmz             tcp             873</programlisting>
 
-      <para>The leading white space on the first through third continuation
-      lines is ignored so the SOURCE column effectively contains
-      "net:206.124.146.177,206.124.147.178,206.124.146.180". Because the third
-      continuation line does not end with a comma or colon, the leading white
-      space in the last line is not ignored.</para>
-    </example>
+    <para>The leading white space on the first through third continuation
+    lines is ignored so the SOURCE column effectively contains
+    "net:206.124.146.177,206.124.147.178,206.124.146.180". Because the third
+    continuation line does not end with a comma or colon, the leading white
+    space in the last line is not ignored.</para>
 
     <important>
       <para>A trailing backslash is not ignored in a comment. So the continued

@@ -2962,10 +2962,11 @@ sub process_compiler_directive( $$$$ ) {
 			  } else {
 			      delete $actparams{$var}
 			  }
+
+			  $parmsmodified = PARMSMODIFIED;
 		      } else {
 			  directive_warning( 'Yes', "Shorewall variable $2 does not exist", $filename, $linenumber );
 		      }
-
 		  } else {
 		      if ( exists $variables{$2} ) {
 			  delete $variables{$2};

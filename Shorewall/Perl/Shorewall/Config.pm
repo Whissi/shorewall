@@ -748,7 +748,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.3",
+		    VERSION                 => "5.1.4-Beta1",
 		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -1092,7 +1092,7 @@ sub initialize( $;$$) {
 
     %compiler_params = ();
 
-    %actparams = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => ''  );
+    %actparams = ( 0 => 0, loglevel => '', logtag => '', chain => '', disposition => '', caller => '', callfile => '', callline => ''  );
     $parmsmodified = 0;
     $usedcaller    = 0;
     %ipsets = ();
@@ -1218,7 +1218,7 @@ sub compiletime() {
 sub currentlineinfo() {
     my $linenumber = $currentlinenumber || 1;
 
-    if ( $currentfile ) {
+    if ( $currentfilename ) {
 	my $lineinfo = " $currentfilename ";
 	
 	if ( $linenumber eq 'EOF' ) {
@@ -2834,6 +2834,7 @@ sub evaluate_expression( $$$$ ) {
     $val;
 }
 
+sub pop_open();
 #
 # Set callback
 #
@@ -2854,7 +2855,8 @@ sub process_compiler_directive( $$$$ ) {
 
     print "CD===> $line\n" if $debug;
 
-    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber ) unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+|WARNING!\s+|INFO!\s+|REQUIRE\s+)(.*)$/i;
+    directive_error( "Invalid compiler directive ($line)" , $filename, $linenumber )
+	unless $line =~ /^\s*\?(IF\s+|ELSE|ELSIF\s+|ENDIF|SET\s+|RESET\s+|FORMAT\s+|COMMENT\s*|ERROR\s+|WARNING\s+|INFO\s+|WARNING!\s+|INFO!\s+|REQUIRE\s+)(.*)$/i;
 
     my ($keyword, $expression) = ( uc $1, $2 );
 
@@ -2995,68 +2997,165 @@ sub process_compiler_directive( $$$$ ) {
 
 	  ERROR => sub() {
 	      unless ( $omitting ) {
-		  directive_error( evaluate_expression( $expression ,
-							$filename ,
-							$linenumber ,
-							1 ) ,
-				   $filename ,
-				   $linenumber ) unless $omitting;
+		  if ( $actparams{0} ) {
+		      close $currentfile;
+		      #
+		      # Avoid 'missing ?ENDIF' error in pop_open'
+		      #
+		      @ifstack = ();
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      pop_open;
+
+		      directive_error( evaluate_expression( $expression ,
+							    $filename ,
+							    $linenumber ,
+							    1 ) ,
+				       $actparams{callfile} ,
+				       $actparams{callline} );
+		  } else {
+		      directive_error( evaluate_expression( $expression ,
+							    $filename ,
+							    $linenumber ,
+							    1 ) ,
+				       $filename ,
+				       $linenumber ) unless $omitting;
+		  }
 	      }
 	  } ,
 
 	  WARNING => sub() {
 	      unless ( $omitting ) {
-		  directive_warning( $config{VERBOSE_MESSAGES} ,
-				     evaluate_expression( $expression ,
-							  $filename ,
-							  $linenumber ,
-							  1 ),
-				     $filename ,
-				     $linenumber ) unless $omitting;
+		  if ( $actparams{0} ) {
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      my $saveopens = pop @openstack;
+
+		      directive_warning( $config{VERBOSE_MESSAGES} ,
+					 evaluate_expression( $expression ,
+							      $filename ,
+							      $linenumber ,
+							      1 ),
+					 $actparams{callfile} ,
+					 $actparams{callline} );
+		      push @openstack, $saveopens;
+		  } else {
+		      directive_warning( $config{VERBOSE_MESSAGES} ,
+					 evaluate_expression( $expression ,
+							      $filename ,
+							      $linenumber ,
+							      1 ),
+					 $filename ,
+					 $linenumber );
+		  }
 	      }
 	  } ,
 
 	  INFO => sub() {
 	      unless ( $omitting ) {
-		  directive_info( $config{VERBOSE_MESSAGES} ,
-				  evaluate_expression( $expression ,
-						       $filename ,
-						       $linenumber ,
-						       1 ),
-				  $filename ,
-				  $linenumber ) unless $omitting;
+		  if ( $actparams{0} ) {
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      my $saveopens = pop @openstack;
+
+		      directive_info( $config{VERBOSE_MESSAGES} ,
+				      evaluate_expression( $expression ,
+							   $filename ,
+							   $linenumber ,
+							   1 ),
+				      $actparams{callfile} ,
+				      $actparams{callline} );
+		      push @openstack, $saveopens;
+		  } else {
+		      directive_info( $config{VERBOSE_MESSAGES} ,
+				      evaluate_expression( $expression ,
+							   $filename ,
+							   $linenumber ,
+							   1 ),
+				      $filename ,
+				      $linenumber );
+		  }
 	      }
 	  } ,
 
 	  'WARNING!' => sub() {
 	      unless ( $omitting ) {
-		  directive_warning( ! $config{VERBOSE_MESSAGES} ,
-				     evaluate_expression( $expression ,
-							  $filename ,
-							  $linenumber ,
-							  1 ),
-				     $filename ,
-				     $linenumber ) unless $omitting;
+		  if ( $actparams{0} ) {
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      my $saveopens = pop @openstack;
+
+		      directive_warning( ! $config{VERBOSE_MESSAGES} ,
+					 evaluate_expression( $expression ,
+							      $filename ,
+							      $linenumber ,
+							      1 ),
+					 $actparams{callfile} ,
+					 $actparams{callline} );
+		      push @openstack, $saveopens;
+		  } else {
+		      directive_warning( ! $config{VERBOSE_MESSAGES} ,
+					 evaluate_expression( $expression ,
+							      $filename ,
+							      $linenumber ,
+							      1 ),
+					 $filename ,
+					 $linenumber );
+		  }
 	      }
 	  } ,
 
 	  'INFO!' => sub() {
 	      unless ( $omitting ) {
-		  directive_info( ! $config{VERBOSE_MESSAGES} ,
-				  evaluate_expression( $expression ,
-						       $filename ,
-						       $linenumber ,
-						       1 ),
-				  $filename ,
-				  $linenumber ) unless $omitting;
+		  if ( $actparams{0} ) {
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      my $saveopens = pop @openstack;
+
+		      directive_info( ! $config{VERBOSE_MESSAGES} ,
+				      evaluate_expression( $expression ,
+							   $filename ,
+							   $linenumber ,
+							   1 ),
+				      $actparams{callfile} ,
+				      $actparams{callline} );
+		      push @openstack, $saveopens;
+		  } else {
+		      directive_info( ! $config{VERBOSE_MESSAGES} ,
+				      evaluate_expression( $expression ,
+							   $filename ,
+							   $linenumber ,
+							   1 ),
+				      $filename ,
+				      $linenumber );
+		  }
 	      }
 	  } ,
 
 	  REQUIRE => sub() {
 	      unless ( $omitting ) {
 		  fatal_error "?REQUIRE may only be used within action files" unless $actparams{0};
-		  fatal_error "Unknown capability ($expression)" unless $capdesc{$expression};
-		  require_capability( $expression, "The $actparams{action} action", 's' );
+		  fatal_error "Unknown capability ($expression)" unless ( my $capdesc = $capdesc{$expression} );
+		  unless ( have_capability( $expression ) ) {
+		      close $currentfile;
+		      #
+		      # Avoid 'missing ?ENDIF' error in pop_open'
+		      #
+		      @ifstack = ();
+		      #
+		      # Avoid double-reporting the action call site
+		      #
+		      pop_open;
+
+		      directive_error( "The $actparams{action} action requires the $capdesc capability",
+				       $actparams{callfile} ,
+				       $actparams{callline} );
+		  }
 	      }
 	  } ,
 
@@ -3558,6 +3657,8 @@ sub push_action_params( $$$$$$ ) {
     $actparams{loglevel}    = $loglevel;
     $actparams{logtag}      = $logtag;
     $actparams{caller}      = $caller;
+    $actparams{callfile}    = $currentfilename;
+    $actparams{callline}    = $currentlinenumber;
     $actparams{disposition} = '' if $chainref->{action};
     #
     # The Shorewall variable '@chain' has non-word characters other than hyphen removed

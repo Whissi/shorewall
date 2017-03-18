@@ -2275,6 +2275,18 @@ SSH(ACCEPT)    net:$MYIP      $FW
     <command>restart</command>, <command>reload</command>,
     <command>refresh</command>, or one of the <command>safe</command>-*
     commands.</para>
+
+    <para>See the VERBOSE_MESSAGES option in <ulink
+    url="manpages/shorewall.conf.html">shorewall.conf(5)</ulink> for
+    additional information.</para>
+
+    <para>In Shorewall 5.1.4, the behavior of ?ERROR, ?WARNING and ?INFO was
+    changed when they appear in an action file. Rather than reporting the
+    action filename and line number, the generated message reports where the
+    action was invoked. For example, the GlusterFS message above was changed
+    to:</para>
+
+    <programlisting>   ERROR: Invalid value (2000) for the GlusterFS Bricks argument /etc/shorewall/rules (line 45)</programlisting>
   </section>
 
   <section id="Embedded">

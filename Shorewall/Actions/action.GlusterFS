@@ -13,9 +13,9 @@
 DEFAULTS 2,0
 
 ?if @1 !~ /^\d+/ || ! @1 || @1 > 1024
-    ?error Invalid value for Bricks (@1)
+    ?error Invalid value (@1) for the GlusterFS Bricks argument
 ?elsif @2 !~ /^[01]$/
-    ?error Invalid value for IB (@2)
+    ?error Invalid value (@2) for the GlusterFS IB argument
 ?endif
 
 #ACTION		SOURCE		DEST		PROTO	DPORT

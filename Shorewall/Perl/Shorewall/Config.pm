@@ -2437,12 +2437,12 @@ sub split_line2( $$;$$$ ) {
 		}
 	    } else {
 		fatal_error "Unknown column ($1)" unless exists $columnsref->{$column};
-		$column = $columnsref->{$column};
-		fatal_error "Non-ASCII gunk in file" if $columns =~ /[^\s[:print:]]/;
 		$value = $1 if $value =~ /^"([^"]+)"$/;
 		$value =~ s/\\"/"/g;
-		fatal_error "Non-ASCII gunk in the value of the $column column" if $columns =~ /[^\s[:print:]]/;
-		$line[$column] = $value;
+		fatal_error "Non-ASCII gunk in the value of the $column column" if $value =~ /[^\s[:print:]]/;
+		my $colnum = $columnsref->{$column};
+		warning_message qq(Replacing "$line[$colnum]" with "$value" in the ) . uc( $column ) . ' column' if $line[$colnum] ne '-';
+		$line[$colnum] = $value;
 	    }
 	}
     }

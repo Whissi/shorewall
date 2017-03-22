@@ -2177,7 +2177,7 @@ sub split_list3( $$ ) {
 	    $element = join ',', $element , $_;
 	}
     }
-    
+
     unless ( $opencount == 0 ) {
 	fatal_error "Invalid $type ($list)";
     }
@@ -2286,7 +2286,7 @@ sub clear_comment();
 #    ensure that it has an appropriate number of columns.
 #    supply '-' in omitted trailing columns.
 #    Handles all of the supported forms of column/pair specification
-#    Handles segragating raw iptables input in INLINE rules
+#    Handles segragating raw iptables input in rules
 #
 sub split_line2( $$;$$$ ) {
     my ( $description, $columnsref, $nopad, $maxcolumns, $inline ) = @_;

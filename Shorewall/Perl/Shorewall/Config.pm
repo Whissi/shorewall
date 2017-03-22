@@ -2232,7 +2232,7 @@ sub split_list4( $ ) {
 sub split_columns( $ ) {
     my ($list) = @_;
 
-    return split ' ', $list unless $list =~ /\(/;
+    return split ' ', $list unless $list =~ /[()]/;
 
     my @list1 = split ' ', $list;
     my @list2;
@@ -2273,9 +2273,7 @@ sub split_columns( $ ) {
 	}
     }
 
-    unless ( $opencount == 0 ) {
-	fatal_error "Mismatched parentheses ($list)";
-    }
+    fatal_error "Mismatched parentheses ($list)" unless $opencount == 0;
 
     @list2;
 }

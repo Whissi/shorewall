@@ -407,6 +407,8 @@ sub initialize( $$ ) {
 				    forward     => BINARY_IF_OPTION,
 				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
 				    unmanaged   => SIMPLE_IF_OPTION,
+				    upnp        => SIMPLE_IF_OPTION,
+				    upnpclient  => SIMPLE_IF_OPTION,
 				    wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				 );
 	%validhostoptions = (

@@ -1556,6 +1556,28 @@ LOG:info:,bar                        net                    fw</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">MINIUPNPD=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.1.4. If set to Yes, Shorewall will create
+          a chain in the nat table named MINIUPNPD-POSTROUTING and will add
+          jumps from POSTROUTING to that chain for each interface with the
+          <option>upnpd</option> option specified. Default is No.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis
+        role="bold">MARK_IN_FORWARD_CHAIN=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para/>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">MODULE_SUFFIX=</emphasis>[<emphasis
         role="bold">"</emphasis><emphasis>extension</emphasis> ...<emphasis
         role="bold">"</emphasis>]</term>

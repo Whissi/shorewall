@@ -1213,55 +1213,53 @@ sub add_common_rules ( $ ) {
 	}
     }
 
-    if ( $family == F_IPV4 ) {
-	my $announced = 0;
+    my $announced = 0;
 
-	$list = find_interfaces_by_option 'upnp';
+    $list = find_interfaces_by_option 'upnp';
 
-	if ( @$list ) {
-	    progress_message2 "$doing UPnP";
+    if ( @$list ) {
+	progress_message2 "$doing UPnP";
 
-	    $chainref = set_optflags( new_nat_chain( 'UPnP' ), DONT_OPTIMIZE );
+	$chainref = set_optflags( new_nat_chain( 'UPnP' ), DONT_OPTIMIZE );
 
-	    add_commands( $chainref, '[ -s /${VARDIR}/.UPnP ] && cat ${VARDIR}/.UPnP >&3' );
+	add_commands( $chainref, '[ -s /${VARDIR}/.UPnP ] && cat ${VARDIR}/.UPnP >&3' );
 
-	    my $chainref1;
+	my $chainref1;
 
-	    if ( $config{MINIUPNPD} ) {
-		$chainref1 = set_optflags( new_nat_chain( 'MINIUPNPD-POSTROUTING' ), DONT_OPTIMIZE ); 
-		add_commands( $chainref, '[ -s /${VARDIR}/.MINIUPNPD-POSTROUTING ] && cat ${VARDIR}/.MINIUPNPD-POSTROUTING >&3' );
-	    }
-
-	    $announced = 1;
-
-	    for $interface ( @$list ) {
-		add_ijump_extended $nat_table->{PREROUTING} ,            j => 'UPnP',                   get_interface_origin($interface), imatch_source_dev ( $interface );
-		add_ijump_extended $nat_table->{$globals{POSTROUTING}} , j => 'MINIUPNPD-POSTROUTING' , $origin{MINIUPNPD}              , imatch_dest_dev   ( $interface ) if $chainref1;
-	    }
+	if ( $config{MINIUPNPD} ) {
+	    $chainref1 = set_optflags( new_nat_chain( 'MINIUPNPD-POSTROUTING' ), DONT_OPTIMIZE ); 
+	    add_commands( $chainref, '[ -s /${VARDIR}/.MINIUPNPD-POSTROUTING ] && cat ${VARDIR}/.MINIUPNPD-POSTROUTING >&3' );
 	}
 
-	$list = find_interfaces_by_option 'upnpclient';
+	$announced = 1;
 
-	if ( @$list ) {
-	    progress_message2 "$doing UPnP" unless $announced;
+	for $interface ( @$list ) {
+	    add_ijump_extended $nat_table->{PREROUTING} ,            j => 'UPnP',                   get_interface_origin($interface), imatch_source_dev ( $interface );
+	    add_ijump_extended $nat_table->{$globals{POSTROUTING}} , j => 'MINIUPNPD-POSTROUTING' , $origin{MINIUPNPD}              , imatch_dest_dev   ( $interface ) if $chainref1;
+	}
+    }
 
-	    for $interface ( @$list ) {
-		my $chainref = $filter_table->{input_option_chain $interface};
-		my $base     = uc var_base get_physical $interface;
-		my $optional = interface_is_optional( $interface );
-		my $variable = get_interface_gateway( $interface, ! $optional );
-		my $origin   = get_interface_origin( $interface );
+    $list = find_interfaces_by_option 'upnpclient';
 
-		if ( $optional ) {
-		    add_commands( $chainref,
-				  qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) );
-		    incr_cmd_level( $chainref );
-		    add_ijump_extended( $chainref, j => 'ACCEPT', $origin, imatch_source_dev( $interface ), s => $variable, p => 'udp' );
-		    decr_cmd_level( $chainref );
-		    add_commands( $chainref, 'fi' );
-		} else {
-		    add_ijump_extended( $chainref, j => 'ACCEPT', $origin, imatch_source_dev( $interface ), s => $variable, p => 'udp' );
-		}
+    if ( @$list ) {
+	progress_message2 "$doing UPnP" unless $announced;
+
+	for $interface ( @$list ) {
+	    my $chainref = $filter_table->{input_option_chain $interface};
+	    my $base     = uc var_base get_physical $interface;
+	    my $optional = interface_is_optional( $interface );
+	    my $variable = get_interface_gateway( $interface, ! $optional );
+	    my $origin   = get_interface_origin( $interface );
+
+	    if ( $optional ) {
+		add_commands( $chainref,
+			      qq(if [ -n "SW_\$${base}_IS_USABLE" -a -n "$variable" ]; then) );
+		incr_cmd_level( $chainref );
+		add_ijump_extended( $chainref, j => 'ACCEPT', $origin, imatch_source_dev( $interface ), s => $variable, p => 'udp' );
+		decr_cmd_level( $chainref );
+		add_commands( $chainref, 'fi' );
+	    } else {
+		add_ijump_extended( $chainref, j => 'ACCEPT', $origin, imatch_source_dev( $interface ), s => $variable, p => 'udp' );
 	    }
 	}
     }

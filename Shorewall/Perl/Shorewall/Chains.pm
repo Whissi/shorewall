@@ -405,14 +405,14 @@ our $VERSION = 'MODULEVERSION';
 #   Provider Chains for provider <p>
 #      Load Balance    - ~<p>
 #
-#   Zone-pair chains for rules chain <z12z2>
+#   Zone-pair chains for rules chain <z1-z2>
 #
-#      Syn Flood       - @<z12z2>
-#      Blacklist       - <z12z2>~
-#      Established     - ^<z12z2>
-#      Related         - +<z12z2>
-#      Invalid         - _<z12z2>
-#      Untracked       - &<z12z2>
+#      Syn Flood       - @<z1-z2>
+#      Blacklist       - <z1-z2>~
+#      Established     - ^<z1-z2>
+#      Related         - +<z1-z2>
+#      Invalid         - _<z1-z2>
+#      Untracked       - &<z1-z2>
 #
 our %chain_table;
 our $raw_table;
@@ -434,7 +434,7 @@ use constant { STANDARD     =>      0x1,       #defined by Netfilter
 	       REDIRECT     =>     0x20,       #'REDIRECT'
 	       ACTION       =>     0x40,       #An action (may be built-in)
 	       MACRO        =>     0x80,       #A Macro
-	       LOGRULE      =>    0x100,       #'LOG','NFLOG'
+	       LOGRULE      =>    0x100,       #'LOG','ULOG','NFLOG'
 	       NFQ          =>    0x200,       #'NFQUEUE'
 	       CHAIN        =>    0x400,       #Manual Chain
 	       SET          =>    0x800,       #SET
@@ -1081,11 +1081,11 @@ sub format_option( $$ ) {
 
     assert( ! reftype $value );
 
-    my $rule = '';
+    my $rule;
 
     $value =~ s/\s*$//;
 
-    $rule .= join( ' ' , ' -m', $option, $value );
+    $rule = join( ' ' , ' -m', $option, $value );
 
     $rule;
 }

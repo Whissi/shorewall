@@ -1315,7 +1315,7 @@ sub process_interface( $$ ) {
 		    assert(0);
 		}
 	    } elsif ( $type == STRING_IF_OPTION ) {
-		fatal_error "The '$option' option requires a value" unless defined $value;
+		fatal_error "The '$option' option requires a value" unless supplied $value;
 
 		if ( $option eq 'physical' ) {
 		    fatal_error "Invalid interface name ($interface)" if $interface =~ /[()\[\]\*\?%]/;

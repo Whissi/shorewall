@@ -43,6 +43,8 @@
 #         --inline                    # Update alternative column specifications
 #         --update                    # Update configuration to current release
 #
+#    If the <filename> is omitted, then a 'check' operation is performed.
+#
 use strict;
 use FindBin;
 use lib "$FindBin::Bin";

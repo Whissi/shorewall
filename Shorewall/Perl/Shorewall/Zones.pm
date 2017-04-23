@@ -108,24 +108,6 @@ our @EXPORT = ( qw( NOTHING
 
 our @EXPORT_OK = qw( initialize );
 our $VERSION = 'MODULEVERSION';
-
-#
-# IPSEC Option types
-#
-use constant { NOTHING    => 'NOTHING',
-	       NUMERIC    => '0x[\da-fA-F]+|\d+',
-	       NETWORK    => '\d+.\d+.\d+.\d+(\/\d+)?',
-	       IPSECPROTO => 'ah|esp|ipcomp',
-	       IPSECMODE  => 'tunnel|transport'
-	       };
-
-#
-# Option columns
-#
-use constant { IN_OUT     => 1,
-	       IN         => 2,
-	       OUT        => 3 };
-
 #
 # Zone Table.
 #
@@ -221,6 +203,26 @@ our $zonemarkincr;
 our $zonemarklimit;
 our $loopback_interface;
 
+#
+# IPSEC Option types
+#
+use constant { NOTHING    => 'NOTHING',
+	       NUMERIC    => '0x[\da-fA-F]+|\d+',
+	       IPSECPROTO => 'ah|esp|ipcomp',
+	       IPSECMODE  => 'tunnel|transport'
+	     };
+
+sub NETWORK() {
+    $family == F_IPV4 ? '\d+.\d+.\d+.\d+(\/\d+)?' : '(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}(?:\/d+)?';
+}
+
+#
+# Option columns
+#
+use constant { IN_OUT     => 1,
+	       IN         => 2,
+	       OUT        => 3 };
+
 use constant { FIREWALL => 1,
 	       IP       => 2,
 	       BPORT    => 4,
@@ -276,19 +278,7 @@ our %maxoptionvalue = ( routefilter => 2, mss => 100000 , wait => 120 , ignore =
 
 our %validhostoptions;
 
-our %validzoneoptions = ( mss            => NUMERIC,
-			  nomark         => NOTHING,
-			  blacklist      => NOTHING,
-			  dynamic_shared => NOTHING,
-			  strict         => NOTHING,
-			  next           => NOTHING,
-			  reqid          => NUMERIC,
-			  spi            => NUMERIC,
-			  proto          => IPSECPROTO,
-			  mode           => IPSECMODE,
-			 "tunnel-src"   => NETWORK,
-			 "tunnel-dst"   => NETWORK,
-		       );
+our %validzoneoptions;
 
 use constant { UNRESTRICTED => 1, NOFW => 2 , COMPLEX => 8, IN_OUT_ONLY => 16 };
 #
@@ -329,6 +319,20 @@ sub initialize( $$ ) {
     $baseseq = 0;
     $minroot = 0;
     $loopback_interface = '';
+
+    %validzoneoptions = ( mss            => NUMERIC,
+			  nomark         => NOTHING,
+			  blacklist      => NOTHING,
+			  dynamic_shared => NOTHING,
+			  strict         => NOTHING,
+			  next           => NOTHING,
+			  reqid          => NUMERIC,
+			  spi            => NUMERIC,
+			  proto          => IPSECPROTO,
+			  mode           => IPSECMODE,
+			 "tunnel-src"   => NETWORK,
+			 "tunnel-dst"   => NETWORK,
+		       );
 
     if ( $family == F_IPV4 ) {
 	%validinterfaceoptions = (arp_filter  => BINARY_IF_OPTION,

@@ -513,28 +513,6 @@ start_command() {
     local rc
     rc=0
 
-    do_it() {
-	if [ -n "$AUTOMAKE" ]; then
-	    [ -n "$nolock" ] || mutex_on
-	    run_it ${VARDIR}/firewall $g_debugging start
-	    rc=$?
-	    [ -n "$nolock" ] || mutex_off
-	else
-	    g_file="${VARDIR}/.start"
-	    if compiler $g_debugging $nolock compile "$g_file"; then
-		[ -n "$nolock" ] || mutex_on
-		run_it ${VARDIR}/.start $g_debugging start
-		rc=$?
-		[ -n "$nolock" ] || mutex_off
-	    else
-		rc=$?
-		mylogger kern.err "ERROR:$g_product start failed"
-	    fi
-	fi
-
-	exit $rc
-    }
-
     if product_is_started; then
 	error_message "Shorewall is already running"
 	exit 0
@@ -626,7 +604,25 @@ start_command() {
 	fi
     fi
 
-    do_it
+    if [ -n "$AUTOMAKE" ]; then
+	[ -n "$nolock" ] || mutex_on
+	run_it ${VARDIR}/firewall $g_debugging start
+	rc=$?
+	[ -n "$nolock" ] || mutex_off
+    else
+	g_file="${VARDIR}/.start"
+	if compiler $g_debugging $nolock compile "$g_file"; then
+	    [ -n "$nolock" ] || mutex_on
+	    run_it ${VARDIR}/.start $g_debugging start
+	    rc=$?
+	    [ -n "$nolock" ] || mutex_off
+	else
+	    rc=$?
+	    mylogger kern.err "ERROR:$g_product start failed"
+	fi
+    fi
+
+    exit $rc
 }
 
 #

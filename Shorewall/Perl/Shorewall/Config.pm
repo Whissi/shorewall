@@ -907,6 +907,7 @@ sub initialize( $;$$) {
 	  ZERO_MARKS => undef ,
 	  FIREWALL => undef ,
 	  BALANCE_PROVIDERS => undef ,
+	  PERL_HASH_SEED => undef ,
 	  #
 	  # Packet Disposition
 	  #

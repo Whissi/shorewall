@@ -341,6 +341,18 @@ get_config() {
 	setup_dbl
     fi
 
+    if [ -z "$PERL_HASH_SEED" ]; then
+	PERL_HASH_SEED=0
+    else
+	case $PERL_HASH_SEED in
+	    [0-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-9][0-9][0-9][0-9]|[1-9][0-9][0-9][0-9][0-9]|random)
+	        ;;
+	    *)
+		fatal_error "Invalid setting ($PERL_HASH_SEED) for PERL_HASH_SEED"
+		;;
+	esac
+    fi
+
     lib=$(find_file lib.cli-user)
 
     [ -f $lib ] && . $lib
@@ -484,8 +496,17 @@ compiler() {
     #
     [ "$g_debugging" != trace -a -z "$g_preview" ] || [ -n "$g_debug" ] && g_pager=
 
-    PERL_HASH_SEED=0
-    export PERL_HASH_SEED
+    case $PERL_HASH_SEED in
+	random)
+	    unset PERL_HASH_SEED
+	    unset PERL_PERTURB_KEYS
+	    ;;
+	*)
+	    export PERL_HASH_SEED
+	    PERL_PERTURB_KEYS=0
+	    export PERL_PERTURB_KEYS
+	    ;;
+    esac
 
     if [ ${PERLLIBDIR} = ${LIBEXECDIR}/shorewall ]; then
 	eval $PERL $debugflags $pc $options $@ $g_pager

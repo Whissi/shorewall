@@ -536,7 +536,7 @@ our %config_files = ( #accounting      => 1,
 		      tunnels	       => 1,
 		      zones	       => 1 );
 #
-# Options that involve the the AUDIT target
+# Options that involve the AUDIT target
 #
 our @auditoptions = qw( BLACKLIST_DISPOSITION MACLIST_DISPOSITION TCP_FLAGS_DISPOSITION );
 #
@@ -1168,7 +1168,7 @@ sub initialize( $;$$) {
     #
     # Process the global shorewallrc file
     #
-    #   Note: The build file executes this function passing only the protocol family
+    #   Note: The build script calls this function passing only the protocol family
     #
     process_shorewallrc( $shorewallrc,
 			 $family == F_IPV4 ? 'shorewall' : 'shorewall6'
@@ -1219,10 +1219,9 @@ sub compiletime() {
 # Create 'currentlineinfo'
 #
 sub currentlineinfo() {
-    my $linenumber = $currentlinenumber || 1;
-
     if ( $currentfilename ) {
-	my $lineinfo = " $currentfilename ";
+	my $linenumber = $currentlinenumber || 1;
+	my $lineinfo   = " $currentfilename ";
 	
 	if ( $linenumber eq 'EOF' ) {
 	    $lineinfo .= '(EOF)'

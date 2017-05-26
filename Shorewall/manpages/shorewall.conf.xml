@@ -1443,13 +1443,18 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
             </listitem>
           </itemizedlist>
 
-          <para/>
-
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
-            logging from the nat table's PREROUTING chain is:</para>
+            logging from the nat table's PREROUTING chain is as follows in
+            versions prior to 5.1.0:</para>
 
             <programlisting>    Shorewall:nat:PREROUTING
+ </programlisting>
+
+            <para>In Shorewall 5.1.0 and later releases, the log prefix
+            is:</para>
+
+            <programlisting>    nat:PREROUTING
  </programlisting>
 
             <important>
@@ -1515,6 +1520,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
             url="/manpages/shorewall-zones.html">shorewall-zones</ulink>
             (5).</para>
           </note>
+
+          <caution>
+            <para>Beginning with Shorewall 5.1.0, the default and sample
+            shorewall.conf files set LOGFORMAT="%s %s ". Shorewall log
+            messages that use this LOGFORMAT can be uniquely identified using
+            the following regular expression:</para>
+
+            <simplelist>
+              <member>'IN=.* OUT=.* SRC=.*\..* DST='</member>
+            </simplelist>
+
+            <para>To match all Netfilter log messages (Both IPv4 and IPv6),
+            use:</para>
+
+            <simplelist>
+              <member>'IN=.* OUT=.* SRC=.* DST='</member>
+            </simplelist>
+          </caution>
         </listitem>
       </varlistentry>
 
@@ -1551,8 +1574,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Using the default LOGFORMAT, chain names may not exceed 11
-          characters or truncation of the log prefix may occur. Longer chain
+          <para>Using LOGFORMAT=“Shorewall:%s:%s:”, chain names may not exceed
+          5 characters or truncation of the log prefix may occur. Longer chain
           names may be used with log tags if you set LOGTAGONLY=Yes. With
           LOGTAGONLY=Yes, if a log tag is specified then the tag is included
           in the log prefix in place of the chain name.</para>
@@ -1564,10 +1587,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           separated by a comma. So this rule:</para>
 
           <programlisting>#ACTION                                SOURCE         DEST
-LOG:info:foo,bar                 net                   fw</programlisting>
+LOG:info:foo,bar                       net            fw</programlisting>
 
-          <para>would generate the following log prefix when using the default
-          LOGFORMAT setting:</para>
+          <para>would generate the following log prefix when using
+          LOGFORMAT=“Shorewall:%s:%s:”:</para>
 
           <simplelist>
             <member>Shorewall:foo:bar:</member>

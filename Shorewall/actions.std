@@ -32,6 +32,7 @@ DropDNSrep   inline		# Drops DNS replies
 DropSmurfs   noinline		# Drop smurf packets
 Established  inline,\		# Handles packets in the ESTABLISHED state
 	     state=ESTABLISHED	#
+FIN	     inline,audit	# Handles ACK,FIN,PSH packets
 forwardUPnP  noinline		# Allow traffic that upnpd has redirected from 'upnp' interfaces.
 GlusterFS    inline		# Handles GlusterFS
 IfEvent	     noinline		# Perform an action based on an event

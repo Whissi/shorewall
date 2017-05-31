@@ -1229,7 +1229,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
         <listitem>
           <para>This option is intended for use as a debugging aid. When set
-          to a log level, this option causes Shorewall6 to generate a logging
+          to a log level, this option causes Shorewall to generate a logging
           rule as the first rule in each builtin chain.</para>
 
           <itemizedlist>
@@ -1244,14 +1244,19 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
             </listitem>
           </itemizedlist>
 
-          <para/>
-
           <blockquote>
             <para>For example, using the default LOGFORMAT, the log prefix for
-            logging from the nat table's PREROUTING chain is:</para>
+            logging from the nat table's PREROUTING chain is as follows in
+            versions prior to 5.1.0:</para>
 
             <programlisting>    Shorewall:nat:PREROUTING
-</programlisting>
+ </programlisting>
+
+            <para>In Shorewall 5.1.0 and later releases, the log prefix
+            is:</para>
+
+            <programlisting>    nat:PREROUTING
+ </programlisting>
 
             <important>
               <para>To help insure that all packets in the NEW state are
@@ -1295,7 +1300,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
         <listitem>
           <para>The value of this variable generate the --log-prefix setting
-          for Shorewall6 logging rules. It contains a “printf” formatting
+          for Shorewall logging rules. It contains a “printf” formatting
           template which accepts three arguments (the chain name, logging rule
           number (optional) and the disposition). To use LOGFORMAT with
           fireparse, set it as:</para>
@@ -1306,14 +1311,31 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           logging rule number is calculated and formatted in that position; if
           that substring is not included then the rule number is not included.
           If not supplied or supplied as empty (LOGFORMAT="") then
-          “Shorewall6:%s:%s:” is assumed.</para>
+          “Shorewall:%s:%s:” is assumed.</para>
 
           <note>
             <para>The setting of LOGFORMAT has an effect of the permitted
             length of zone names. See <ulink
-            url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>
+            url="/manpages/shorewall-zones.html">shorewall6-zones</ulink>
             (5).</para>
           </note>
+
+          <caution>
+            <para>Beginning with Shorewall 5.1.0, the default and sample
+            shorewall.conf files set LOGFORMAT="%s %s ". Shorewall6 log
+            messages that use this LOGFORMAT can be uniquely identified using
+            the following regular expression:</para>
+
+            <simplelist>
+              <member>'IN=.* OUT=.* SRC=.*:.* DST='</member>
+            </simplelist>
+
+            <para>To match all Netfilter log messages, use:</para>
+
+            <simplelist>
+              <member>'IN=.* OUT=.* SRC=.* DST='</member>
+            </simplelist>
+          </caution>
         </listitem>
       </varlistentry>
 
@@ -1350,8 +1372,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
-          <para>Using the default LOGFORMAT, chain names may not exceed 11
-          characters or truncation of the log prefix may occur. Longer chain
+          <para>Using LOGFORMAT=“Shorewall:%s:%s:”, chain names may not exceed
+          5 characters or truncation of the log prefix may occur. Longer chain
           names may be used with log tags if you set LOGTAGONLY=Yes. With
           LOGTAGONLY=Yes, if a log tag is specified then the tag is included
           in the log prefix in place of the chain name.</para>
@@ -1363,10 +1385,10 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           separated by a comma. So this rule:</para>
 
           <programlisting>#ACTION                                SOURCE         DEST
-LOG:info:foo,bar                 net                   fw</programlisting>
+LOG:info:foo,bar                       net            fw</programlisting>
 
-          <para>would generate the following log prefix when using the default
-          LOGFORMAT setting:</para>
+          <para>would generate the following log prefix when using
+          LOGFORMAT=“Shorewall:%s:%s:”:</para>
 
           <simplelist>
             <member>Shorewall:foo:bar:</member>
@@ -1375,7 +1397,7 @@ LOG:info:foo,bar                 net                   fw</programlisting>
           <para>Similarly,</para>
 
           <programlisting>#ACTION                               SOURCE            DEST
-LOG:info:,bar                        net                    fw</programlisting>
+LOG:info:,bar                         net               fw</programlisting>
 
           <para>would generate</para>
 
@@ -2236,7 +2258,7 @@ INLINE          -       -       -       ;; -j REJECT
           the <option>routeback</option> option.<footnote>
               <para>Hairpin packets are packets that are routed out of the
               same interface that they arrived on.</para>
-            </footnote> interfaces without the routeback option.</para>
+            </footnote></para>
         </listitem>
       </varlistentry>
 
@@ -2252,9 +2274,8 @@ INLINE          -       -       -       ;; -j REJECT
           the <option>routeback</option> option.<footnote>
               <para>Hairpin packets are packets that are routed out of the
               same interface that they arrived on.</para>
-            </footnote> interfaces without the routeback option. The default
-          is <option>info</option>. If you don't wish for these packets to be
-          logged, use SFILTER_LOG_LEVEL=none.</para>
+            </footnote>The default is <option>info</option>. If you don't wish
+          for these packets to be logged, use SFILTER_LOG_LEVEL=none.</para>
         </listitem>
       </varlistentry>
 

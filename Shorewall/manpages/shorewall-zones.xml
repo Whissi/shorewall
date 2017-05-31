@@ -55,14 +55,14 @@
             <para>The maximum length of an iptables log prefix is 29 bytes. As
             explained in <ulink
             url="/manpages/shorewall.conf.html">shorewall.conf</ulink> (5),
-            the default LOGPREFIX formatting string is “Shorewall:%s:%s:”
-            where the first %s is replaced by the chain name and the second is
-            replaced by the disposition.</para>
+            the legacy default LOGPREFIX formatting string is
+            “Shorewall:%s:%s:” where the first %s is replaced by the chain
+            name and the second is replaced by the disposition.</para>
 
             <itemizedlist>
               <listitem>
-                <para>The default formatting string has 12 fixed characters
-                ("Shorewall" and three colons).</para>
+                <para>The "Shorewall:%s:%s:" formatting string has 12 fixed
+                characters ("Shorewall" and three colons).</para>
               </listitem>
 
               <listitem>
@@ -87,6 +87,29 @@
                   <member>2*M = 29 - 12 - 6 - 1 = 10 or</member>
 
                   <member>M = 5</member>
+                </simplelist>
+              </listitem>
+            </itemizedlist>
+
+            <para>In Shorewall 5.1.0, the LOGFORMAT in the default and sample
+            shorewall.conf files was changed to "%s:%s ".</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>That formatting string has 2 fixed characters (":" and a
+                space).</para>
+              </listitem>
+
+              <listitem>
+                <para>So the maximum zone name length M is calculated
+                as:</para>
+
+                <simplelist>
+                  <member>2 + 6 + 2*M + 1 = 29</member>
+
+                  <member>2M = 29 - 2 + 6 + 1 = 20</member>
+
+                  <member>M = 10</member>
                 </simplelist>
               </listitem>
             </itemizedlist>

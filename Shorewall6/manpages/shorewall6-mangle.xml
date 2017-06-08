@@ -120,7 +120,7 @@
           Additionally, a <replaceable>chain-designator</replaceable> may not
           be specified in an action body unless the action is declared as
           <option>inline</option> in <ulink
-          url="shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
+          url="/manpages6/shorewall6-actions.html">shorewall6-actions</ulink>(5).</para>
 
           <para>Where a command takes parameters, those parameters are
           enclosed in parentheses ("(....)") and separated by commas.</para>
@@ -137,7 +137,7 @@
                 <para>Added in Shorewall 5.0.7.
                 <replaceable>action</replaceable> must be an action declared
                 with the <option>mangle</option> option in <ulink
-                url="manpages6/shorewall6-actions.html">shorewall6-actions(5)</ulink>.
+                url="/manpages6/shorewall6-actions.html">shorewall6-actions(5)</ulink>.
                 If the action accepts parameters, they are specified as a
                 comma-separated list within parentheses following the
                 <replaceable>action</replaceable> name.</para>
@@ -300,7 +300,7 @@
                 configuration described at <ulink
                 url="http://www.loadbalancer.org/blog/setting-up-haproxy-with-transparent-mode-on-centos-6-x">http://www.loadbalancer.org/blog/setting-up-haproxy-with-transparent-mode-on-centos-6-x</ulink>,
                 place this entry in <ulink
-                url="manpages6/shorewall6-providers.html">shorewall6-providers(5)</ulink>:</para>
+                url="/manpages6/shorewall6-providers.html">shorewall6-providers(5)</ulink>:</para>
 
                 <programlisting>#NAME    NUMBER   MARK    DUPLICATE  INTERFACE GATEWAY         OPTIONS               COPY
 TProxy   1        -       -          lo        -               tproxy</programlisting>
@@ -410,7 +410,7 @@ DIVERTHA        -               -               tcp</programlisting>
                 specified at the end of the rule. If the target is not one
                 known to Shorewall, then it must be defined as a builtin
                 action in <ulink
-                url="/manpages/shorewall-actions.html">shorewall-actions</ulink>
+                url="/manpages6/shorewall6-actions.html">shorewall6-actions</ulink>
                 (5).</para>
 
                 <para>The following rules are equivalent:</para>
@@ -423,7 +423,7 @@ INLINE                eth0              -                 ; -p tcp -j MARK --set
 </programlisting>
 
                 <para>If INLINE_MATCHES=Yes in <ulink
-                url="/manpages/shorewall.conf.html">shorewall6.conf(5)</ulink>
+                url="/manpages6/shorewall6.conf.html">shorewall6.conf(5)</ulink>
                 then the third rule above can be specified as follows:</para>
 
                 <programlisting>MARK(2):P             eth0              -                 ; -p tcp</programlisting>
@@ -780,7 +780,7 @@ Normal-Service       =&gt; 0x00</programlisting>
               <listitem>
                 <para>where <replaceable>interface</replaceable> is the
                 logical name of an interface defined in <ulink
-                url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
+                url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
                 Matches packets entering the firewall from the named
                 interface. May not be used in CLASSIFY rules or in rules using
                 the :T chain qualifier.</para>
@@ -807,7 +807,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 <para>Matches traffic whose source IP address matches one of
                 the listed addresses and that does not match an address listed
                 in the <replaceable>exclusion</replaceable> (see <ulink
-                url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+                url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
 
                 <para><emphasis role="bold">This form will not match traffic
                 that originates on the firewall itself unless either
@@ -903,11 +903,11 @@ Normal-Service       =&gt; 0x00</programlisting>
               <listitem>
                 <para>where <replaceable>interface</replaceable> is the
                 logical name of an interface defined in <ulink
-                url="shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
+                url="/manpages6/shorewall6-interfaces.html">shorewall6-interfaces</ulink>(5).
                 Matches packets leaving the firewall through the named
                 interface. May not be used in the PREROUTING chain (:P in the
                 mark column or no chain qualifier and MARK_IN_FORWARD_CHAIN=No
-                in <ulink url="shorewall6.conf">shorewall6.conf</ulink>
+                in <ulink url="/manpages6/shorewall6.conf">shorewall6.conf</ulink>
                 (5)).</para>
               </listitem>
             </varlistentry>
@@ -932,7 +932,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 <para>Matches traffic whose destination IP address matches one
                 of the listed addresses and that does not match an address
                 listed in the <replaceable>exclusion</replaceable> (see <ulink
-                url="shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
+                url="/manpages6/shorewall6-exclusion.html">shorewall6-exclusion</ulink>(5)).</para>
               </listitem>
             </varlistentry>
 
@@ -944,7 +944,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 when both the outgoing interface and destination IP address
                 match. May not be used in the PREROUTING chain (:P in the mark
                 column or no chain qualifier and MARK_IN_FORWARD_CHAIN=No in
-                <ulink url="shorewall6.conf">shorewall6.conf</ulink>
+                <ulink url="/manpages6/shorewall6.conf">shorewall6.conf</ulink>
                 (5)).</para>
               </listitem>
             </varlistentry>
@@ -959,7 +959,7 @@ Normal-Service       =&gt; 0x00</programlisting>
                 <replaceable>exclusion</replaceable>. May not be used in the
                 PREROUTING chain (:P in the mark column or no chain qualifier
                 and MARK_IN_FORWARD_CHAIN=No in <ulink
-                url="shorewall6.conf">shorewall6.conf</ulink> (5)).</para>
+                url="/manpages6/shorewall6.conf">shorewall6.conf</ulink> (5)).</para>
               </listitem>
             </varlistentry>
 
@@ -1027,7 +1027,7 @@ Normal-Service       =&gt; 0x00</programlisting>
 
         <listitem>
           <para>See <ulink
-          url="shorewall-rules.html">shorewall6-rules(5)</ulink> for
+          url="/manpages6/shorewall6-rules.html">shorewall6-rules(5)</ulink> for
           details.</para>
 
           <para>Beginning with Shorewall 4.5.12, this column can accept a

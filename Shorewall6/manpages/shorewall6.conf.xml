@@ -243,9 +243,9 @@
         <listitem>
           <para>The value of this variable affects Shorewall's stopped state.
           The behavior differs depending on whether <ulink
-          url="shorewall-routestopped.html">shorewall-routestopped</ulink>(5)
+          url="/manpages6/shorewall6-routestopped.html">shorewall6-routestopped</ulink>(5)
           or <ulink
-          url="shorewall-stoppedrules.html">shorewall-stoppedrules</ulink>(5)
+          url="/manpages6/shorewall6-stoppedrules.html">shorewall6-stoppedrules</ulink>(5)
           is used:</para>
 
           <variablelist>
@@ -404,7 +404,7 @@
           <para>Added in Shorewall 5.1.1. When USE_DEFAULT_RT=Yes, this option
           determines whether the <option>balance</option> provider option (see
           <ulink
-          url="shorewall6-providers.html">shorewall6-providers(5)</ulink>) is
+          url="/manpages6/shorewall6-providers.html">shorewall6-providers(5)</ulink>) is
           the default. When BALANCE_PROVIDERS=Yes, then the
           <option>balance</option> option is assumed unless the
           <option>fallback</option>, <option>loose</option>,
@@ -421,7 +421,7 @@
         <listitem>
           <para>Added in Shorewall-4.6.0. When set to <emphasis
           role="bold">Yes</emphasis>, causes entries in <ulink
-          url="shorewall6-tcfilters.html">shorewall6-tcfilters(5)</ulink> to
+          url="/manpages6/shorewall6-tcfilters.html">shorewall6-tcfilters(5)</ulink> to
           generate a basic filter rather than a u32 filter. This setting
           requires the <firstterm>Basic Ematch</firstterm> capability in your
           kernel and iptables.</para>
@@ -950,8 +950,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           specificaitons</ulink> on the right.. When INLINE_MATCHES=Yes is
           specified, the specifications on the right are interpreted as if
           INLINE had been specified in the ACTION column. This also applies to
-          <ulink url="shorewall-masq.html">shorewall6-masq(5)</ulink> and
-          <ulink url="shorewall6-mangle.html">shorewall6-mangle(5</ulink>)
+          <ulink url="/manpages6/shorewall6-masq.html">shorewall6-masq(5)</ulink> and
+          <ulink url="/manpages6/shorewall6-mangle.html">shorewall6-mangle(5</ulink>)
           which also support INLINE. If not specified or if specified as the
           empty value, the value 'No' is assumed for backward
           compatibility.</para>
@@ -1194,7 +1194,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           sample configurations use this as the default log level and changing
           it will change all packet logging done by the configuration. In any
           configuration file (except <ulink
-          url="shorewall6-params.html">shorewall6-params(5)</ulink>),
+          url="/manpages6/shorewall6-params.html">shorewall6-params(5)</ulink>),
           $LOG_LEVEL will expand to this value.</para>
         </listitem>
       </varlistentry>
@@ -1316,7 +1316,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           <note>
             <para>The setting of LOGFORMAT has an effect of the permitted
             length of zone names. See <ulink
-            url="/manpages/shorewall-zones.html">shorewall6-zones</ulink>
+            url="/manpages6/shorewall6-zones.html">shorewall6-zones</ulink>
             (5).</para>
           </note>
 
@@ -1679,10 +1679,9 @@ LOG:info:,bar                         net               fw</programlisting>
           <itemizedlist>
             <listitem>
               <para>Optimization category 1 - Traditionally, Shorewall has
-              created rules for <ulink
-              url="/ScalabilityAndPerformance.html">the complete matrix of
+              created rules for the complete matrix of
               host groups defined by the zones, interfaces and hosts
-              files</ulink>. Any traffic that didn't correspond to an element
+              files. Any traffic that didn't correspond to an element
               of that matrix was rejected in one of the built-in chains. When
               the matrix is sparse, this results in lots of largely useless
               rules.</para>
@@ -2104,7 +2103,7 @@ INLINE          -       -       -       ;; -j REJECT
           <para>Added in Shorewall 4.4.10. The default is No. If set to Yes,
           at least one optional interface must be up in order for the firewall
           to be in the started state. Intended to be used with the <ulink
-          url="/manpages/shorewall-init.html">Shorewall Init
+          url="/shorewall-init.html">Shorewall Init
           Package</ulink>.</para>
         </listitem>
       </varlistentry>
@@ -2381,9 +2380,9 @@ INLINE          -       -       -       ;; -j REJECT
 
           <para>If you set TC_ENABLED=Simple (Shorewall 4.4.6 and later),
           simple traffic shaping using <ulink
-          url="/manpages/shorewall-tcinterfaces.html">shorewall-tcinterfaces</ulink>(5)
+          url="/manpages6/shorewall6-tcinterfaces.html">shorewall6-tcinterfaces</ulink>(5)
           and <ulink
-          url="/manpages/shorewall-tcpri.html">shorewall-tcpri</ulink>(5) is
+          url="/manpages6/shorewall6-tcpri.html">shorewall6-tcpri</ulink>(5) is
           enabled.</para>
 
           <para>Beginning with Shorewall 4.4.15, if you set TC_ENABLED=Shared
@@ -2598,7 +2597,7 @@ INLINE          -       -       -       ;; -j REJECT
             <listitem>
               <para>Packets are sent through the main routing table by a rule
               with priority 999. In <ulink
-              url="/manpages6/shorewall6-routing_rules.html">shorewall6-routing_rules</ulink>(5),
+              url="/manpages6/shorewall6-rtrules.html">shorewall6-routing_rules</ulink>(5),
               the range 1-998 may be used for inserting rules that bypass the
               main table.</para>
             </listitem>

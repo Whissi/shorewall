@@ -32,6 +32,7 @@ require Exporter;
 use Scalar::Util 'reftype';
 use Digest::SHA qw(sha1_hex);
 use File::Basename;
+use Socket;
 use Shorewall::Config qw(:DEFAULT :internal);
 use Shorewall::Zones;
 use Shorewall::IPAddrs;
@@ -136,6 +137,12 @@ our %EXPORT_TAGS = (
 				       ALL_RESTRICT
 				       ALL_COMMANDS
 				       NOT_RESTORE
+
+				       validate_port
+				       validate_portpair
+				       validate_portpair1
+				       validate_port_list
+				       expand_port_range
 
 				       PREROUTING
 				       INPUT
@@ -509,6 +516,7 @@ our $idiotcount1;
 our $hashlimitset;
 our $global_variables;
 our %address_variables;
+our %port_variables;
 our $ipset_rules;
 
 #
@@ -784,6 +792,7 @@ sub initialize( $$$ ) {
     %interfaceacasts    = ();
     %interfacegateways  = ();
     %address_variables  = ();
+    %port_variables     = ();
 
     $global_variables   = 0;
     $idiotcount         = 0;
@@ -817,6 +826,190 @@ sub initialize( $$$ ) {
     #
     # The chain table is initialized via a call to initialize_chain_table() after the configuration and capabilities have been determined.
     #
+}
+
+sub record_runtime_port( $ ) {
+    my ( $variable ) = @_;
+
+    if ( $variable =~ /^{([a-zA-Z_]\w*)}$/ ) {
+	fatal_error "Variable %variable is already used as an address variable" if $address_variables{$1};
+	$port_variables{$1} = 1;
+    } else {
+	fatal_error( "Invalid port variable (%$variable)" );
+    }
+
+    "\$$variable";
+}
+
+sub validate_port( $$ ) {
+    my ($proto, $port) = @_;
+
+    my $value;
+
+    if ( $port =~ /^(\d+)$/ || $port =~ /^0x/ ) {
+	$port = numeric_value $port;
+	return $port if defined $port && $port && $port <= 65535;
+    } elsif ( $port =~ /^%(.*)/ ) {
+	$value = record_runtime_port( $1 );
+    } else {
+	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
+	$value = getservbyname( $port, $proto );
+    }
+
+    return $value if defined $value;
+
+    fatal_error "The separator for a port range is ':', not '-' ($port)" if $port =~ /^\d+-\d+$/;
+
+    fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
+}
+
+sub validate_portpair( $$ ) {
+    my ($proto, $portpair) = @_;
+    my $what;
+    my $pair = $portpair;
+    #
+    # Accept '-' as a port-range separator
+    #
+    $pair =~ tr/-/:/ if $pair =~ /^[-0-9]+$/;
+
+    fatal_error "Invalid port range ($portpair)" if $pair =~ tr/:/:/ > 1;
+
+    $pair = "0$pair"       if substr( $pair,  0, 1 ) eq ':';
+    $pair = "${pair}65535" if substr( $pair, -1, 1 ) eq ':';
+
+    my @ports = split /:/, $pair, 2;
+
+    my $protonum = resolve_proto( $proto ) || 0;
+
+    $_ = validate_port( $protonum, $_) for grep $_, @ports;
+
+    if ( @ports == 2 ) {
+	$what = 'port range';
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+    } else {
+	$what = 'port';
+    }
+
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, UDPLITE, SCTP or DCCP" unless
+	defined $protonum && ( $protonum == TCP     ||
+			       $protonum == UDP     ||
+			       $protonum == UDPLITE ||
+			       $protonum == SCTP    ||
+			       $protonum == DCCP );
+    join ':', @ports;
+
+}
+
+sub validate_portpair1( $$ ) {
+    my ($proto, $portpair) = @_;
+    my $what;
+
+    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/-/-/ > 1;
+
+    $portpair = "1$portpair"       if substr( $portpair,  0, 1 ) eq ':';
+    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
+
+    my @ports = split /-/, $portpair, 2;
+
+    my $protonum = resolve_proto( $proto ) || 0;
+
+    $_ = validate_port( $protonum, $_) for grep $_, @ports;
+
+    if ( @ports == 2 ) {
+	$what = 'port range';
+	fatal_error "Invalid port range ($portpair)" unless $ports[0] && $ports[0] < $ports[1];
+    } else {
+	$what = 'port';
+	fatal_error 'Invalid port number (0)' unless $portpair;
+    }
+
+    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless
+	defined $protonum && ( $protonum == TCP  ||
+			       $protonum == UDP  ||
+			       $protonum == SCTP ||
+			       $protonum == DCCP );
+    join '-', @ports;
+
+}
+
+sub validate_port_list( $$ ) {
+    my $result = '';
+    my ( $proto, $list ) = @_;
+    my @list   = split_list( $list, 'port' );
+
+    if ( @list > 1 && $list =~ /[:-]/ ) {
+	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
+    }
+
+    $proto = proto_name $proto;
+
+    for ( @list ) {
+	my $value = validate_portpair( $proto , $_ );
+	$result = $result ? join ',', $result, $value : $value;
+    }
+
+    $result;
+}
+
+#
+# Expands a port range into a minimal list of ( port, mask ) pairs.
+# Each port and mask are expressed as 4 hex nibbles without a leading '0x'.
+#
+# Example:
+#
+#       DB<3> @foo = Shorewall::IPAddrs::expand_port_range( 6, '110:' ); print "@foo\n"
+#       006e fffe 0070 fff0 0080 ff80 0100 ff00 0200 fe00 0400 fc00 0800 f800 1000 f000 2000 e000 4000 c000 8000 8000
+#
+sub expand_port_range( $$ ) {
+    my ( $proto, $range ) = @_;
+
+    if ( $range =~ /^(.*):(.*)$/ ) {
+	my ( $first, $last ) = ( $1, $2);
+	my @result;
+
+	fatal_error "Invalid port range ($range)" unless $first ne '' or $last ne '';
+	#
+	# Supply missing first/last port number
+	#
+	$first = 0     if $first eq '';
+	$last  = 65535 if $last eq '';
+	#
+	# Validate the ports
+	#
+	( $first , $last ) = ( validate_port( $proto, $first || 1 ) , validate_port( $proto, $last ) );
+
+	$last++; #Increment last address for limit testing.
+	#
+	# Break the range into groups:
+	#
+	#      - If the first port in the remaining range is odd, then the next group is ( <first>, ffff ).
+	#      - Otherwise, find the largest power of two P that divides the first address such that
+	#        the remaining range has less than or equal to P ports. The next group is
+	#        ( <first> , ~( P-1 ) ).
+	#
+	while ( ( my $ports = ( $last - $first ) ) > 0 ) {
+	    my $mask = 0xffff;         #Mask for current ports in group.
+	    my $y    = 2;              #Next power of two to test
+	    my $z    = 1;              #Number of ports in current group (Previous value of $y).
+
+	    while ( ( ! ( $first % $y ) ) && ( $y <= $ports ) ) {
+		$mask <<= 1;
+		$z  = $y;
+		$y <<= 1;
+	    }
+	    #
+	    #
+	    push @result, sprintf( '%04x', $first ) , sprintf( '%04x' , $mask & 0xffff );
+	    $first += $z;
+	}
+
+	fatal_error "Invalid port range ($range)" unless @result; # first port > last port
+
+	@result;
+
+    } else {
+	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
+    }
 }
 
 #
@@ -5758,6 +5951,7 @@ sub record_runtime_address( $$;$$ ) {
 
     if ( $interface =~ /^{([a-zA-Z_]\w*)}$/ ) {
 	fatal_error "Mixed required/optional usage of address variable $1" if ( $address_variables{$1} || $addrtype ) ne $addrtype;
+	fatal_error "Variable %variable is already used as a port variable" if $port_variables{$1};
 	$address_variables{$1} = $addrtype;
 	return '$' . "$1 ";
     }
@@ -7043,6 +7237,19 @@ sub verify_address_variables() {
 	emit( qq(    qt \$g_tool -D INPUT -s $address),
 	      q(else),
 	      qq(    startup_error "Invalid value ($address) for address variable $variable"),
+	      qq(fi\n) );
+    }
+
+    for my $variable( keys %port_variables ) {
+	my $port = "\$$variable";
+	my $type = $port_variables{$variable};
+
+	emit( qq(if [ -z "$port" ]; then) ,
+	      qq(    $variable=255) ,
+	      qq(elif qt \$g_tool -A INPUT -p 6 --dport $port; then) ,
+	      qq(    qt \$g_tool -D INPUT -p 6 --dport $variable) ,
+	      qq(else) ,
+	      qq(    startup_error "Invalid valid ($port) for port variable $variable") ,
 	      qq(fi\n) );
     }
 }

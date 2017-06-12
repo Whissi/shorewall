@@ -63,7 +63,6 @@ our @EXPORT = ( qw( ALLIPv4
 		  validate_host
 		  validate_range
 		  ip_range_explicit
-		  expand_port_range
 		  allipv4
 		  allipv6
 		  allip
@@ -74,10 +73,6 @@ our @EXPORT = ( qw( ALLIPv4
 		  resolve_proto
 		  resolve_dnsname
 		  proto_name
-		  validate_port
-		  validate_portpair
-		  validate_portpair1
-		  validate_port_list
 		  validate_icmp
 		  validate_icmp6
 		 ) );
@@ -411,114 +406,6 @@ sub proto_name( $ ) {
     $proto =~ /^(\d+)$/ ? $prototoname[ $proto ] || scalar getprotobynumber $proto : $proto
 }
 
-sub validate_port( $$ ) {
-    my ($proto, $port) = @_;
-
-    my $value;
-
-    if ( $port =~ /^(\d+)$/ || $port =~ /^0x/ ) {
-	$port = numeric_value $port;
-	return $port if defined $port && $port && $port <= 65535;
-    } else {
-	$proto = proto_name $proto if $proto =~ /^(\d+)$/;
-	$value = getservbyname( $port, $proto );
-    }
-
-    return $value if defined $value;
-
-    fatal_error "The separator for a port range is ':', not '-' ($port)" if $port =~ /^\d+-\d+$/;
-
-    fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
-}
-
-sub validate_portpair( $$ ) {
-    my ($proto, $portpair) = @_;
-    my $what;
-    my $pair = $portpair;
-    #
-    # Accept '-' as a port-range separator
-    #
-    $pair =~ tr/-/:/ if $pair =~ /^[-0-9]+$/;
-
-    fatal_error "Invalid port range ($portpair)" if $pair =~ tr/:/:/ > 1;
-
-    $pair = "0$pair"       if substr( $pair,  0, 1 ) eq ':';
-    $pair = "${pair}65535" if substr( $pair, -1, 1 ) eq ':';
-
-    my @ports = split /:/, $pair, 2;
-
-    my $protonum = resolve_proto( $proto ) || 0;
-
-    $_ = validate_port( $protonum, $_) for grep $_, @ports;
-
-    if ( @ports == 2 ) {
-	$what = 'port range';
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
-    } else {
-	$what = 'port';
-    }
-
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, UDPLITE, SCTP or DCCP" unless
-	defined $protonum && ( $protonum == TCP     ||
-			       $protonum == UDP     ||
-			       $protonum == UDPLITE ||
-			       $protonum == SCTP    ||
-			       $protonum == DCCP );
-    join ':', @ports;
-
-}
-
-sub validate_portpair1( $$ ) {
-    my ($proto, $portpair) = @_;
-    my $what;
-
-    fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/-/-/ > 1;
-
-    $portpair = "1$portpair"       if substr( $portpair,  0, 1 ) eq ':';
-    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
-
-    my @ports = split /-/, $portpair, 2;
-
-    my $protonum = resolve_proto( $proto ) || 0;
-
-    $_ = validate_port( $protonum, $_) for grep $_, @ports;
-
-    if ( @ports == 2 ) {
-	$what = 'port range';
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] && $ports[0] < $ports[1];
-    } else {
-	$what = 'port';
-	fatal_error 'Invalid port number (0)' unless $portpair;
-    }
-
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, SCTP or DCCP" unless
-	defined $protonum && ( $protonum == TCP  ||
-			       $protonum == UDP  ||
-			       $protonum == SCTP ||
-			       $protonum == DCCP );
-    join '-', @ports;
-
-}
-
-sub validate_port_list( $$ ) {
-    my $result = '';
-    my ( $proto, $list ) = @_;
-    my @list   = split_list( $list, 'port' );
-
-    if ( @list > 1 && $list =~ /[:-]/ ) {
-	require_capability( 'XMULTIPORT' , 'Port ranges in a port list', '' );
-    }
-
-    $proto = proto_name $proto;
-
-    for ( @list ) {
-	my $value = validate_portpair( $proto , $_ );
-	$result = $result ? join ',', $result, $value : $value;
-    }
-
-    $result;
-}
-
 my %icmp_types = ( any                          => 'any',
 		   'echo-reply'                 => 0,
 		   'destination-unreachable'    => 3,
@@ -570,67 +457,6 @@ sub validate_icmp( $ ) {
     }
 
     fatal_error "Invalid ICMP Type ($type)"
-}
-
-#
-# Expands a port range into a minimal list of ( port, mask ) pairs.
-# Each port and mask are expressed as 4 hex nibbles without a leading '0x'.
-#
-# Example:
-#
-#       DB<3> @foo = Shorewall::IPAddrs::expand_port_range( 6, '110:' ); print "@foo\n"
-#       006e fffe 0070 fff0 0080 ff80 0100 ff00 0200 fe00 0400 fc00 0800 f800 1000 f000 2000 e000 4000 c000 8000 8000
-#
-sub expand_port_range( $$ ) {
-    my ( $proto, $range ) = @_;
-
-    if ( $range =~ /^(.*):(.*)$/ ) {
-	my ( $first, $last ) = ( $1, $2);
-	my @result;
-
-	fatal_error "Invalid port range ($range)" unless $first ne '' or $last ne '';
-	#
-	# Supply missing first/last port number
-	#
-	$first = 0     if $first eq '';
-	$last  = 65535 if $last eq '';
-	#
-	# Validate the ports
-	#
-	( $first , $last ) = ( validate_port( $proto, $first || 1 ) , validate_port( $proto, $last ) );
-
-	$last++; #Increment last address for limit testing.
-	#
-	# Break the range into groups:
-	#
-	#      - If the first port in the remaining range is odd, then the next group is ( <first>, ffff ).
-	#      - Otherwise, find the largest power of two P that divides the first address such that
-	#        the remaining range has less than or equal to P ports. The next group is
-	#        ( <first> , ~( P-1 ) ).
-	#
-	while ( ( my $ports = ( $last - $first ) ) > 0 ) {
-	    my $mask = 0xffff;         #Mask for current ports in group.
-	    my $y    = 2;              #Next power of two to test
-	    my $z    = 1;              #Number of ports in current group (Previous value of $y).
-
-	    while ( ( ! ( $first % $y ) ) && ( $y <= $ports ) ) {
-		$mask <<= 1;
-		$z  = $y;
-		$y <<= 1;
-	    }
-	    #
-	    #
-	    push @result, sprintf( '%04x', $first ) , sprintf( '%04x' , $mask & 0xffff );
-	    $first += $z;
-	}
-
-	fatal_error "Invalid port range ($range)" unless @result; # first port > last port
-
-	@result;
-
-    } else {
-	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
-    }
 }
 
 sub valid_6address( $ ) {

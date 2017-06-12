@@ -617,7 +617,7 @@ sub handle_nfqueue( $$ ) {
 	    fatal_error "Invalid NFQUEUE queue number ($queue1)" unless defined( $queuenum1) && $queuenum1 >= 0 && $queuenum1 <= 65535;
 
 	    if ( supplied $queue2 ) {
-		$fanout    = ' --queue-cpu-fanout' if $queue2 =~ s/c$//;
+		$fanout    = $queue2 =~ s/c$// ? ' --queue-cpu-fanout' : '';
 		$queuenum2 = numeric_value( $queue2 );
 
 		fatal_error "Invalid NFQUEUE queue number ($queue2)" unless defined( $queuenum2) && $queuenum2 >= 0 && $queuenum2 <= 65535 && $queuenum1 < $queuenum2;

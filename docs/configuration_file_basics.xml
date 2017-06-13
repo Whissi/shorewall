@@ -1903,6 +1903,39 @@ SSH(ACCEPT)    net:$MYIP      $FW
     the intefaces's run-time gateway variable are omitted.</para>
   </section>
 
+  <section id="Port_Variables">
+    <title>Port Variables</title>
+
+    <para>Beginning with Shorewall 5.1.5, <firstterm>Run-time Port
+    Variables</firstterm> are supported. These variables have the format
+    %{<replaceable>variable</replaceable>} and may appear any place that a
+    port number or service name may appear. Like their address-variable
+    counterparts above, Run-time Port Variables are most useful when
+    Shorewall[6]-lite is being used.</para>
+
+    <para>Example using both Run-time Address and Run-time Port
+    Variables:</para>
+
+    <para>/etc/shorewall/init:</para>
+
+    <programlisting>     SERVER_PORT=4126
+     SERVER_ADDRESS=192.0.44.12</programlisting>
+
+    <para>/etc/shorewall/rules:</para>
+
+    <programlisting>     ACCEPT         net            dmz:%{SERVER_ADDRESS}           tcp          %{SERVER_PORT}</programlisting>
+
+    <para>Rather than assigning a numerical literal to SERVER_PORT in the
+    <filename>init</filename> extension script as shown above, the variable
+    could be assigned a dynamic value based on a database lookup.</para>
+
+    <important>
+      <para>If no value is assigned to a Run-time Port Variable in the
+      <filename>init</filename> extension script, then the value 255 is
+      assumed.</para>
+    </important>
+  </section>
+
   <section id="ActionVariables">
     <title>Action Variables</title>
 

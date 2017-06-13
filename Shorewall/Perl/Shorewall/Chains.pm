@@ -885,7 +885,10 @@ sub validate_portpair( $$ ) {
 
     if ( @ports == 2 ) {
 	$what = 'port range';
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+
+	unless ($ports[0] =~ /^\$/ || $ports[1] =~ /^\$/ ) {
+	    fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+	}
     } else {
 	$what = 'port';
     }
@@ -917,7 +920,10 @@ sub validate_portpair1( $$ ) {
 
     if ( @ports == 2 ) {
 	$what = 'port range';
-	fatal_error "Invalid port range ($portpair)" unless $ports[0] && $ports[0] < $ports[1];
+
+	unless ($ports[0] =~ /^\$/ || $ports[1] =~ /^\$/ ) {
+	    fatal_error "Invalid port range ($portpair)" unless $ports[0] && $ports[0] < $ports[1];
+	}
     } else {
 	$what = 'port';
 	fatal_error 'Invalid port number (0)' unless $portpair;

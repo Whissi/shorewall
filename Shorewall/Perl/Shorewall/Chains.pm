@@ -841,6 +841,10 @@ sub record_runtime_port( $ ) {
     "\$$variable";
 }
 
+################################################################################
+# Functions moved from IPAddrs.pm in 5.1.5				       #
+################################################################################
+
 sub validate_port( $$ ) {
     my ($proto, $port) = @_;
 
@@ -1017,6 +1021,10 @@ sub expand_port_range( $$ ) {
 	( sprintf( '%04x' , validate_port( $proto, $range ) ) , 'ffff' );
     }
 }
+
+################################################################################
+# End functions moved from IPAddrs.pm in 5.1.5				       #
+################################################################################
 
 #
 # Functions to manipulate cmdlevel

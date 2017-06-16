@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/masq</command>
+      <command>/etc/shorewall[6]/masq</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -579,7 +579,7 @@
 
     <variablelist>
       <varlistentry>
-        <term>Example 1:</term>
+        <term>IPv4 Example 1:</term>
 
         <listitem>
           <para>You have a simple masquerading setup where eth0 connects to a
@@ -594,7 +594,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 2:</term>
+        <term>IPv4 Example 2:</term>
 
         <listitem>
           <para>You add a router to your local network to connect subnet
@@ -607,7 +607,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 3:</term>
+        <term>IPv4 Example 3:</term>
 
         <listitem>
           <para>You have an IPSEC tunnel through ipsec0 and you want to
@@ -620,7 +620,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 4:</term>
+        <term>IPv4 Example 4:</term>
 
         <listitem>
           <para>You want all outgoing traffic from 192.168.1.0/24 through eth0
@@ -634,7 +634,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 5:</term>
+        <term>IPv4 Example 5:</term>
 
         <listitem>
           <para>You want all outgoing SMTP traffic entering the firewall from
@@ -654,7 +654,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 6:</term>
+        <term>IPv4 Example 6:</term>
 
         <listitem>
           <para>Connections leaving on eth0 and destined to any host defined
@@ -667,7 +667,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 7:</term>
+        <term>IPv4 Example 7:</term>
 
         <listitem>
           <para>SNAT outgoing connections on eth0 from 192.168.1.0/24 in
@@ -689,7 +689,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 8:</term>
+        <term>IPv4 Example 8:</term>
 
         <listitem>
           <para>Your eth1 has two public IP addresses: 70.90.191.121 and
@@ -716,6 +716,49 @@
 </programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 1:</term>
+
+        <listitem>
+          <para>You have a simple 'masquerading' setup where eth0 connects to
+          a DSL or cable modem and eth1 connects to your local network with
+          subnet 2001:470:b:787::0/64</para>
+
+          <para>Your entry in the file will be:</para>
+
+          <programlisting>        #INTERFACE   SOURCE                  ADDRESS
+        eth0         2001:470:b:787::0/64    -</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 2:</term>
+
+        <listitem>
+          <para>Your sit1 interface has two public IP addresses:
+          2001:470:a:227::1 and 2001:470:b:227::1. You want to use the
+          iptables statistics match to masquerade outgoing connections evenly
+          between these two addresses.</para>
+
+          <programlisting>/etc/shorewall/masq:
+
+       #INTERFACE    SOURCE         ADDRESS 
+       INLINE(sit1)  ::/0           2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
+       sit1          ::/0           2001:470:a:227::2 
+</programlisting>
+
+          <para>If INLINE_MATCHES=Yes in <ulink
+          url="/manpages6/shorewall6.conf.html">shorewall6.conf</ulink>(5),
+          then these rules may be specified as follows:</para>
+
+          <programlisting>/etc/shorewall/masq:
+
+       #INTERFACE    SOURCE         ADDRESS 
+       sit1          ::/0           2001:470:a:227::1 ;  -m statistic --mode random --probability 0.50
+       sit1          ::/0           2001:470:a:227::2</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -723,6 +766,8 @@
     <title>FILES</title>
 
     <para>/etc/shorewall/masq</para>
+
+    <para>/etc/shorewall6/masq</para>
   </refsect1>
 
   <refsect1>

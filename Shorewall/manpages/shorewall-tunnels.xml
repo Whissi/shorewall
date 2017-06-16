@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tunnels</command>
+      <command>/etc/shorewall[6]/tunnels</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -173,7 +173,7 @@
 
     <variablelist>
       <varlistentry>
-        <term>Example 1:</term>
+        <term>IPv4 Example 1:</term>
 
         <listitem>
           <para>IPSec tunnel.</para>
@@ -187,7 +187,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 2:</term>
+        <term>IPv4 Example 2:</term>
 
         <listitem>
           <para>Road Warrior (LapTop that may connect from anywhere) where the
@@ -199,7 +199,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 3:</term>
+        <term>IPv4 Example 3:</term>
 
         <listitem>
           <para>Host 4.33.99.124 is a standalone system connected via an ipsec
@@ -211,7 +211,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 4:</term>
+        <term>IPv4 Example 4:</term>
 
         <listitem>
           <para>Road Warriors that may belong to zones vpn1, vpn2 or vpn3. The
@@ -225,7 +225,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 5:</term>
+        <term>IPv4 Example 5:</term>
 
         <listitem>
           <para>You run the Linux PPTP client on your firewall and connect to
@@ -237,7 +237,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 6:</term>
+        <term>IPv4 Example 6:</term>
 
         <listitem>
           <para>You run a PPTP server on your firewall.</para>
@@ -260,7 +260,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 8:</term>
+        <term>IPv4 Example 8:</term>
 
         <listitem>
           <para>You have a tunnel that is not one of the supported types. Your
@@ -273,7 +273,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 9:</term>
+        <term>IPv4 Example 9:</term>
 
         <listitem>
           <para>TINC tunnel where the remote gateways are not specified. If
@@ -284,6 +284,83 @@
         tinc             net     0.0.0.0/0</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 1:</term>
+
+        <listitem>
+          <para>IPSec tunnel.</para>
+
+          <para>The remote gateway is 2001:cec792b4:1::44. The tunnel does not
+          use the AH protocol</para>
+
+          <programlisting>        #TYPE           ZONE    GATEWAY
+        ipsec:noah      net     2002:cec792b4:1::44</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 2:</term>
+
+        <listitem>
+          <para>Road Warrior (LapTop that may connect from anywhere) where the
+          "gw" zone is used to represent the remote LapTop</para>
+
+          <programlisting>        #TYPE           ZONE    GATEWAY                 GATEWAY ZONES
+        ipsec           net     ::/0                    gw</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 3:</term>
+
+        <listitem>
+          <para>Host 2001:cec792b4:1::44 is a standalone system connected via
+          an ipsec tunnel to the firewall system. The host is in zone
+          gw.</para>
+
+          <programlisting>        #TYPE           ZONE    GATEWAY                 GATEWAY ZONES
+        ipsec           net     2001:cec792b4:1::44     gw</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 4:</term>
+
+        <listitem>
+          <para>OPENVPN tunnel. The remote gateway is 2001:cec792b4:1::44 and
+          openvpn uses port 7777.</para>
+
+          <programlisting>        #TYPE           ZONE    GATEWAY                 GATEWAY ZONES
+        openvpn:7777    net     2001:cec792b4:1::44</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 8:</term>
+
+        <listitem>
+          <para>You have a tunnel that is not one of the supported types. Your
+          tunnel uses UDP port 4444. The other end of the tunnel is
+          2001:cec792b4:1::44.</para>
+
+          <programlisting>        #TYPE            ZONE    GATEWAY                GATEWAY ZONES
+        generic:udp:4444 net     2001:cec792b4:1::44</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 9:</term>
+
+        <listitem>
+          <para>TINC tunnel where the remote gateways are not specified. If
+          you wish to specify a list of gateways, you can do so in the GATEWAY
+          column.</para>
+
+          <programlisting>        #TYPE            ZONE    GATEWAY          GATEWAY ZONES
+        tinc             net     ::/0</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -291,6 +368,8 @@
     <title>FILES</title>
 
     <para>/etc/shorewall/tunnels</para>
+
+    <para>/etc/shorewall6/tunnels</para>
   </refsect1>
 
   <refsect1>

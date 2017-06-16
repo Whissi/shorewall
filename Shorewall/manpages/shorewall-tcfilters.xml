@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/tcfilters</command>
+      <command>/etc/shorewall[6]/tcfilters</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -89,12 +89,12 @@
           Beginning with Shorewall 4.6.0, an ipset name (prefixed with '+')
           may be used if your kernel and ip6tables have the <firstterm>Basic
           Ematch</firstterm> capability and you set BASIC_FILTERS=Yes in
-          <ulink url="/manpages/shorewall.conf.html">shorewall.conf (5)</ulink>. The
-          ipset name may optionally be followed by a number or a comma
-          separated list of src and/or dst enclosed in square brackets
-          ([...]). See <ulink
-          url="/manpages/shorewall-ipsets.html">shorewall-ipsets(5)</ulink> for
-          details.</para>
+          <ulink url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>. The ipset name may optionally be followed by a number
+          or a comma separated list of src and/or dst enclosed in square
+          brackets ([...]). See <ulink
+          url="/manpages/shorewall-ipsets.html">shorewall-ipsets(5)</ulink>
+          for details.</para>
         </listitem>
       </varlistentry>
 
@@ -108,12 +108,12 @@
           Beginning with Shorewall 4.6.0, an ipset name (prefixed with '+')
           may be used if your kernel and ip6tables have the <firstterm>Basic
           Ematch</firstterm> capability and you set BASIC_FILTERS=Yes in
-          <ulink url="/manpages/shorewall.conf.html">shorewall.conf (5)</ulink>. The
-          ipset name may optionally be followed by a number or a comma
-          separated list of src and/or dst enclosed in square brackets
-          ([...]). See <ulink
-          url="/manpages/shorewall-ipsets.html">shorewall-ipsets(5)</ulink> for
-          details.</para>
+          <ulink url="/manpages/shorewall.conf.html">shorewall.conf
+          (5)</ulink>. The ipset name may optionally be followed by a number
+          or a comma separated list of src and/or dst enclosed in square
+          brackets ([...]). See <ulink
+          url="/manpages/shorewall-ipsets.html">shorewall-ipsets(5)</ulink>
+          for details.</para>
 
           <para>You may exclude certain hosts from the set already defined
           through use of an <emphasis>exclusion</emphasis> (see <ulink
@@ -288,7 +288,7 @@
 
     <variablelist>
       <varlistentry>
-        <term>Example 1:</term>
+        <term>IPv4 Example 1:</term>
 
         <listitem>
           <para>Place all 'ping' traffic on interface 1 in class 10. Note that
@@ -310,7 +310,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 2:</term>
+        <term>IPv4 Example 2:</term>
 
         <listitem>
           <para>Add two filters with priority 10 (Shorewall 4.5.8 or
@@ -324,6 +324,22 @@
        1:10      0.0.0.0/0 0.0.0.0/0    icmp    echo-reply      10</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 1:</term>
+
+        <listitem>
+          <para>Add two filters with priority 10 (Shorewall 4.5.8 or
+          later).</para>
+
+          <programlisting>       #CLASS    SOURCE    DEST         PROTO   DPORT           PRIORITY
+
+       IPV6
+
+       1:10      ::/0      ::/0         icmp    echo-request    10
+       1:10      ::/0      ::/0         icmp    echo-reply      10</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -331,6 +347,8 @@
     <title>FILES</title>
 
     <para>/etc/shorewall/tcfilters</para>
+
+    <para>/etc/shorewall6/tcfilters</para>
   </refsect1>
 
   <refsect1>

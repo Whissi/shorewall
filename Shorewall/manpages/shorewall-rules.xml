@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/rules</command>
+      <command>/etc/shorewall[6]/rules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -54,7 +54,8 @@
         <listitem>
           <para>This section was added in Shorewall 4.4.23. Rules in this
           section are applied, regardless of the connection tracking state of
-          the packet.</para>
+          the packet and are applied before rules in the other
+          sections.</para>
         </listitem>
       </varlistentry>
 
@@ -211,7 +212,8 @@
                 role="bold">DNAT</emphasis>[<emphasis
                 role="bold">-</emphasis>] or <emphasis
                 role="bold">REDIRECT</emphasis>[<emphasis
-                role="bold">-</emphasis>] rules.</para>
+                role="bold">-</emphasis>] rules. Use with IPv6 requires
+                Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -232,7 +234,7 @@
                 <para>The name of an <emphasis>action</emphasis> declared in
                 <ulink
                 url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5)
-                or in /usr/share/shorewall/actions.std.</para>
+                or in /usr/share/shorewall[6]/actions.std.</para>
               </listitem>
             </varlistentry>
 
@@ -286,7 +288,8 @@
               <listitem>
                 <para>Added in Shorewall 4.4.20. Audited versions of ACCEPT,
                 ACCEPT+ and ACCEPT! respectively. Require AUDIT_TARGET support
-                in the kernel and iptables.</para>
+                in the kernel and iptables. A_ACCEPT+ with IPv6 requires
+                Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -401,7 +404,8 @@
 
               <listitem>
                 <para>Forward the request to another system (and optionally
-                another port).</para>
+                another port). Use with IPv6 requires Shorewall 4.5.14 or
+                later.</para>
               </listitem>
             </varlistentry>
 
@@ -414,7 +418,8 @@
                 <para>Like <emphasis role="bold">DNAT</emphasis> but only
                 generates the <emphasis role="bold">DNAT</emphasis> iptables
                 rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule.</para>
+                role="bold">ACCEPT</emphasis> rule. Use with IPv6 requires
+                Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -496,11 +501,11 @@
               [<replaceable>option</replaceable> ...])</term>
 
               <listitem>
-                <para>This action allows you to specify an iptables target
-                with options (e.g., 'IPTABLES(MARK --set-xmark 0x01/0xff)'. If
-                the <replaceable>iptables-target</replaceable> is not one
-                recognized by Shorewall, the following error message will be
-                issued:</para>
+                <para>IPv4 only. This action allows you to specify an iptables
+                target with options (e.g., 'IPTABLES(MARK --set-xmark
+                0x01/0xff)'. If the <replaceable>iptables-target</replaceable>
+                is not one recognized by Shorewall, the following error
+                message will be issued:</para>
 
                 <programlisting>    ERROR: Unknown target (<replaceable>iptables-target</replaceable>)</programlisting>
 
@@ -513,6 +518,39 @@
                   <para>If you specify REJECT as the
                   <replaceable>iptables-target</replaceable>, the target of
                   the rule will be the iptables REJECT target and not
+                  Shorewall's builtin 'reject' chain which is used when REJECT
+                  (see below) is specified as the
+                  <replaceable>target</replaceable> in the ACTION
+                  column.</para>
+                </important>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
+              role="bold">IP6TABLES</emphasis>({<replaceable>ip6tables-target</replaceable>
+              [<replaceable>option</replaceable> ...])</term>
+
+              <listitem>
+                <para>IPv6 only. This action allows you to specify an
+                ip6tables target with options (e.g., 'IPTABLES(MARK
+                --set-xmark 0x01/0xff)'. If the
+                <replaceable>ip6tables-target</replaceable> is not one
+                recognized by Shorewall, the following error message will be
+                issued:</para>
+
+                <programlisting>    ERROR: Unknown target (<replaceable>ip6tables-target</replaceable>)</programlisting>
+
+                <para>This error message may be eliminated by adding
+                the<replaceable>
+                ip6tables-</replaceable><replaceable>target</replaceable> as a
+                builtin action in <ulink
+                url="/manpages6/shorewall6-actions.html">shorewall-actions</ulink>(5).</para>
+
+                <important>
+                  <para>If you specify REJECT as the
+                  <replaceable>ip6tables-target</replaceable>, the target of
+                  the rule will be the i6ptables REJECT target and not
                   Shorewall's builtin 'reject' chain which is used when REJECT
                   (see below) is specified as the
                   <replaceable>target</replaceable> in the ACTION
@@ -673,7 +711,8 @@
                 <para>Excludes the connection from any subsequent <emphasis
                 role="bold">DNAT</emphasis>[-] or <emphasis
                 role="bold">REDIRECT</emphasis>[-] rules but doesn't generate
-                a rule to accept the traffic.</para>
+                a rule to accept the traffic. Use with IPv6 requires Shorewall
+                4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -708,7 +747,7 @@
 
                 <para>Beginning with Shorewall 5.0.8, the type of reject may
                 be specified in the <replaceable>option</replaceable>
-                paramater. Valid <replaceable>option</replaceable> values
+                paramater. Valid IPv4 <replaceable>option</replaceable> values
                 are:</para>
 
                 <simplelist>
@@ -731,6 +770,28 @@
                   option may also be specified as
                   <option>tcp-reset</option>.</member>
                 </simplelist>
+
+                <para>Valid IPv6 <replaceable>option</replaceable> values
+                are:</para>
+
+                <simplelist>
+                  <member><option>icmp6-no-route</option></member>
+
+                  <member><option>no-route</option></member>
+
+                  <member><option>i</option><option>cmp6-adm-prohibited</option></member>
+
+                  <member><option>adm-prohibited</option></member>
+
+                  <member><option>icmp6-addr-unreachable</option></member>
+
+                  <member><option>addr-unreach</option></member>
+
+                  <member><option>icmp6-port-unreachable</option></member>
+
+                  <member><option>tcp-reset</option> (the PROTO column must
+                  specify TCP)</member>
+                </simplelist>
               </listitem>
             </varlistentry>
 
@@ -749,7 +810,8 @@
 
               <listitem>
                 <para>Redirect the request to a server running on the
-                firewall.</para>
+                firewall. Use with IPv6 requires Shorewall 4.5.14 or
+                later.</para>
               </listitem>
             </varlistentry>
 
@@ -762,7 +824,8 @@
                 <para>Like <emphasis role="bold">REDIRECT</emphasis> but only
                 generates the <emphasis role="bold">REDIRECT</emphasis>
                 iptables rule and not the companion <emphasis
-                role="bold">ACCEPT</emphasis> rule.</para>
+                role="bold">ACCEPT</emphasis> rule. Use with IPv6 requires
+                Shorewall 4.5.14 or later.</para>
               </listitem>
             </varlistentry>
 
@@ -842,9 +905,9 @@
               role="bold">ULOG</emphasis>[(<replaceable>ulog-parameters</replaceable>)]</term>
 
               <listitem>
-                <para>Added in Shorewall 4.5.10. Queues matching packets to a
-                back end logging daemon via a netlink socket then continues to
-                the next rule. See <ulink
+                <para>IPv4 only. Added in Shorewall 4.5.10. Queues matching
+                packets to a back end logging daemon via a netlink socket then
+                continues to the next rule. See <ulink
                 url="/shorewall_logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
 
                 <para>Similar to<emphasis role="bold">
@@ -889,10 +952,10 @@
             </listitem>
           </itemizedlist>
 
-          <para>You may also specify <emphasis role="bold">ULOG</emphasis> or
-          <emphasis role="bold">NFLOG</emphasis> (must be in upper case) as a
-          log level.This will log to the ULOG or NFLOG target for routing to a
-          separate log through use of ulogd (<ulink
+          <para>You may also specify <emphasis role="bold">ULOG</emphasis>
+          (IPv4 only) or <emphasis role="bold">NFLOG</emphasis> (must be in
+          upper case) as a log level.This will log to the ULOG or NFLOG target
+          for routing to a separate log through use of ulogd (<ulink
           url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
 
           <para>Actions specifying logging may be followed by a log tag (a
@@ -922,9 +985,9 @@
 
               <listitem>
                 <para>The name of a zone defined in <ulink
-                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5). When
-                only the zone name is specified, the packet source may be any
-                host in that zone.</para>
+                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5).
+                When only the zone name is specified, the packet source may be
+                any host in that zone.</para>
 
                 <para>zone may also be one of the following:</para>
 
@@ -991,9 +1054,10 @@
                 <replaceable>zone</replaceable> in either <ulink
                 url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
                 or <ulink
-                url="/manpages/shorewall.hosts.html">shorewall-hosts</ulink>(5). Only
-                packets from hosts in the <replaceable>zone</replaceable> that
-                arrive through the named interface will match the rule.</para>
+                url="/manpages/shorewall.hosts.html">shorewall-hosts</ulink>(5).
+                Only packets from hosts in the <replaceable>zone</replaceable>
+                that arrive through the named interface will match the
+                rule.</para>
               </listitem>
             </varlistentry>
 
@@ -1208,6 +1272,49 @@
                 of the net zone.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>dmz:[2002:ce7c:2b4:1::2]</term>
+
+              <listitem>
+                <para>Host 2002:ce7c:92b4:1::2 in the DMZ</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>net:2001:4d48:ad51:24::/64</term>
+
+              <listitem>
+                <para>Subnet 2001:4d48:ad51:24::/64 on the Internet</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>loc:[2002:cec792b4:1::2],[2002:cec792b4:1::44]</term>
+
+              <listitem>
+                <para>Hosts 2002:cec792b4:1::2 and 2002:cec792b4:1::44 in the
+                local zone.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>loc:~00-A0-C9-15-39-78</term>
+
+              <listitem>
+                <para>Host in the local zone with MAC address
+                00:A0:C9:15:39:78.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>net:[2001:4d48:ad51:24::]/64![2001:4d48:ad51:24:6::]/80</term>
+
+              <listitem>
+                <para>Subnet 2001:4d48:ad51:24::/64 on the Internet except for
+                2001:4d48:ad51:24:6::/80.</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
         </listitem>
       </varlistentry>
@@ -1229,9 +1336,9 @@
 
               <listitem>
                 <para>The name of a zone defined in <ulink
-                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5). When
-                only the zone name is specified, the packet destination may be
-                any host in that zone.</para>
+                url="/manpages/shorewall-zones.html">shorewall-zones</ulink>(5).
+                When only the zone name is specified, the packet destination
+                may be any host in that zone.</para>
 
                 <para>zone may also be one of the following:</para>
 
@@ -1298,9 +1405,9 @@
                 <replaceable>zone</replaceable> in either <ulink
                 url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
                 or <ulink
-                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5). Only
-                packets to hosts in the <replaceable>zone</replaceable> that
-                are sent through the named interface will match the
+                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5).
+                Only packets to hosts in the <replaceable>zone</replaceable>
+                that are sent through the named interface will match the
                 rule.</para>
               </listitem>
             </varlistentry>
@@ -2082,12 +2189,100 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">HEADERS</emphasis></term>
+        <term><emphasis role="bold">HEADERS -
+        [!][any:|exactly:]</emphasis><replaceable>header-list
+        </replaceable>(Optional - Added in Shorewall 4.4.15)</term>
 
         <listitem>
-          <para>Added in Shorewall 4.4.15. Not used in IPv4 configurations. If
-          you with to supply a value for one of the later columns, enter '-'
-          in this column.</para>
+          <para>This column is only used in IPv6. In IPv4, supply "-" in this
+          column if you with to place a value in one of the following
+          columns.</para>
+
+          <para>The <replaceable>header-list</replaceable> consists of a
+          comma-separated list of headers from the following list.</para>
+
+          <variablelist>
+            <varlistentry>
+              <term><emphasis role="bold">auth</emphasis>, <emphasis
+              role="bold">ah</emphasis>, or <emphasis
+              role="bold">51</emphasis></term>
+
+              <listitem>
+                <para><firstterm>Authentication Headers</firstterm> extension
+                header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">esp</emphasis>, or <emphasis
+              role="bold">50</emphasis></term>
+
+              <listitem>
+                <para><firstterm>Encrypted Security Payload</firstterm>
+                extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">hop</emphasis>, <emphasis
+              role="bold">hop-by-hop</emphasis> or <emphasis
+              role="bold">0</emphasis></term>
+
+              <listitem>
+                <para>Hop-by-hop options extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">route</emphasis>, <emphasis
+              role="bold">ipv6-route</emphasis> or <emphasis
+              role="bold">43</emphasis></term>
+
+              <listitem>
+                <para>IPv6 Route extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">frag</emphasis>, <emphasis
+              role="bold">ipv6-frag</emphasis> or <emphasis
+              role="bold">44</emphasis></term>
+
+              <listitem>
+                <para>IPv6 fragmentation extension header.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">none</emphasis>, <emphasis
+              role="bold">ipv6-nonxt</emphasis> or <emphasis
+              role="bold">59</emphasis></term>
+
+              <listitem>
+                <para>No next header</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proto</emphasis>, <emphasis
+              role="bold">protocol</emphasis> or <emphasis
+              role="bold">255</emphasis></term>
+
+              <listitem>
+                <para>Any protocol header.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
+          <para>If <emphasis role="bold">any:</emphasis> is specified, the
+          rule will match if any of the listed headers are present. If
+          <emphasis role="bold">exactly:</emphasis> is specified, the will
+          match packets that exactly include all specified headers. If neither
+          is given, <emphasis role="bold">any:</emphasis> is assumed.</para>
+
+          <para>If <emphasis role="bold">!</emphasis> is entered, the rule
+          will match those packets which would not be matched when <emphasis
+          role="bold">!</emphasis> is omitted.</para>
         </listitem>
       </varlistentry>
 
@@ -2413,6 +2608,20 @@
         SECCTX             builtin</programlisting>
         </listitem>
       </varlistentry>
+
+      <varlistentry>
+        <term>Example 15:</term>
+
+        <listitem>
+          <para>You want to accept SSH connections to your firewall only from
+          internet IP addresses 2002:ce7c::92b4:1::2 and
+          2002:ce7c::92b4:1::22</para>
+
+          <programlisting>        #ACTION  SOURCE DEST            PROTO   DPORT   SPORT   ORIGDEST
+        ACCEPT   net:&lt;2002:ce7c::92b4:1::2,2002:ce7c::92b4:1::22&gt; \
+                        $FW              tcp     22</programlisting>
+        </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
@@ -2420,6 +2629,8 @@
     <title>FILES</title>
 
     <para>/etc/shorewall/rules</para>
+
+    <para>/etc/shorewall6/rules</para>
   </refsect1>
 
   <refsect1>

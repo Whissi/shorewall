@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/params</command>
+      <command>/etc/shorewall[6]/params</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -107,7 +107,7 @@
 
     <programlisting>NET_IF=eth0
 NET_BCAST=130.252.100.255
-NET_OPTIONS=routefilter,norfc1918</programlisting>
+NET_OPTIONS=routefilter</programlisting>
 
     <para>Example <ulink
     url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5)
@@ -119,13 +119,15 @@ net     $NET_IF         $NET_BCAST      $NET_OPTIONS</programlisting>
     <para>This is the same as if the interfaces file had contained:</para>
 
     <programlisting>ZONE    INTERFACE       BROADCAST       OPTIONS
-net     eth0            130.252.100.255 routefilter,norfc1918</programlisting>
+net     eth0            130.252.100.255 routefilter</programlisting>
   </refsect1>
 
   <refsect1>
     <title>FILES</title>
 
     <para>/etc/shorewall/params</para>
+
+    <para>/etc/shorewall6/params</para>
   </refsect1>
 
   <refsect1>

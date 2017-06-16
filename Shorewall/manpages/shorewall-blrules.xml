@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/blrules</command>
+      <command>/etc/shorewall[6]/blrules</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -27,12 +27,9 @@
 
     <para>This file is used to perform blacklisting and whitelisting.</para>
 
-    <para>Rules in this file are applied depending on the setting of
-    BLACKLISTNEWONLY in <ulink
-    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5). If
-    BLACKLISTNEWONLY=No, then they are applied regardless of the connection
-    tracking state of the packet. If BLACKLISTNEWONLY=Yes, they are applied to
-    connections in the NEW and INVALID states.</para>
+    <para>Rules in this file are applied depending on the setting of BLACKLIST
+    in <ulink
+    url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
 
     <para>The format of rules in this file is the same as the format of rules
     in <ulink url="/manpages/shorewall-rules.html">shorewall-rules
@@ -118,10 +115,10 @@
             </varlistentry>
 
             <varlistentry>
-              <term>A_DROP and A_DROP!</term>
+              <term>A_DROP</term>
 
               <listitem>
-                <para>Audited versions of DROP. Requires AUDIT_TARGET support
+                <para>Audited version of DROP. Requires AUDIT_TARGET support
                 in the kernel and ip6tables.</para>
               </listitem>
             </varlistentry>
@@ -276,11 +273,11 @@
   </refsect1>
 
   <refsect1>
-    <title>Example</title>
+    <title>Examples</title>
 
     <variablelist>
       <varlistentry>
-        <term>Example 1:</term>
+        <term>IPv4 Example 1:</term>
 
         <listitem>
           <para>Drop Teredo packets from the net.</para>
@@ -290,7 +287,28 @@
       </varlistentry>
 
       <varlistentry>
-        <term>Example 2:</term>
+        <term>IPv4 Example 2:</term>
+
+        <listitem>
+          <para>Don't subject packets from 2001:DB8::/64 to the remaining
+          rules in the file.</para>
+
+          <programlisting>WHITELIST     net:[2001:DB8::/64]        all</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 1:</term>
+
+        <listitem>
+          <para>Drop Teredo packets from the net.</para>
+
+          <programlisting>DROP          net:[2001::/32]            all</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPv6 Example 2:</term>
 
         <listitem>
           <para>Don't subject packets from 2001:DB8::/64 to the remaining
@@ -306,6 +324,8 @@
     <title>FILES</title>
 
     <para>/etc/shorewall/blrules</para>
+
+    <para>/etc/shorewall6/blrules</para>
   </refsect1>
 
   <refsect1>
@@ -319,10 +339,11 @@
 
     <para>shorewall(8), shorewall-accounting(5), shorewall-actions(5),
     shorewall-hosts(5), shorewall-interfaces(5), shorewall-maclist(5),
-    shorewall6-netmap(5),shorewall-params(5), shorewall-policy(5),
-    shorewall-providers(5), shorewall-rtrules(5), shorewall-routestopped(5),
-    shorewall-rules(5), shorewall.conf(5), shorewall-secmarks(5),
-    shorewall-tcclasses(5), shorewall-tcdevices(5), shorewall-mangle(5),
-    shorewall-tos(5), shorewall-tunnels(5), shorewall-zones(5)</para>
+    shorewall-mangle(5) shorewall6-netmap(5),shorewall-params(5),
+    shorewall-policy(5), shorewall-providers(5), shorewall-rtrules(5),
+    shorewall-routestopped(5), shorewall-rules(5), shorewall.conf(5),
+    shorewall-secmarks(5), shorewall-snat(5),shorewall-tcclasses(5),
+    shorewall-tcdevices(5), shorewall-mangle(5), shorewall-tos(5),
+    shorewall-tunnels(5), shorewall-zones(5)</para>
   </refsect1>
 </refentry>

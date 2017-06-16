@@ -18,7 +18,7 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/conntrack</command>
+      <command>/etc/shorewall[6]/conntrack</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
@@ -35,7 +35,7 @@
     <emphasis role="bold">conntrack</emphasis>.</para>
 
     <para>The file supports three different column layouts: FORMAT 1, FORMAT
-    2, and FORMAT 3, FORMAT 1 being the default. The three differ as
+    2, and FORMAT 3 with FORMAT 1 being the default. The three differ as
     follows:</para>
 
     <itemizedlist>
@@ -311,9 +311,9 @@
             <listitem>
               <para><option>ULOG</option></para>
 
-              <para>Added in Shoreawll 4.6.0. Queues the packet to a backend
-              logging daemon using the ULOG netfilter target with the
-              specified <replaceable>ulog-parameters</replaceable>.</para>
+              <para>IPv4 only. Added in Shoreawll 4.6.0. Queues the packet to
+              a backend logging daemon using the ULOG netfilter target with
+              the specified <replaceable>ulog-parameters</replaceable>.</para>
             </listitem>
           </itemizedlist>
 
@@ -689,31 +689,57 @@
   <refsect1>
     <title>EXAMPLE</title>
 
-    <para>Example 1:</para>
+    <para>IPv4 Example 1:</para>
 
     <programlisting>#ACTION                       SOURCE            DEST               PROTO            DPORT             SPORT               USER
 CT:helper:ftp(expevents=new)  fw                -                  tcp              21              </programlisting>
 
-    <para>Example 2 (Shorewall 4.5.10 or later):</para>
+    <para>IPv4 Example 2 (Shorewall 4.5.10 or later):</para>
 
     <para>Drop traffic to/from all zones to IP address 1.2.3.4</para>
 
-    <programlisting>FORMAT 2
+    <programlisting>?FORMAT 2
 #ACTION                       SOURCE             DEST               PROTO           DPORT             SPORT               USER
 DROP                          all-:1.2.3.4       -
 DROP                          all                1.2.3.4</programlisting>
 
-    <para>or<programlisting>FORMAT 3
+    <para>or<programlisting>?FORMAT 3
 #ACTION                       SOURCE             DEST               PROTO           DPORT             SPORT               USER
 DROP:P                        1.2.3.4            -
 DROP:PO                       -                  1.2.3.4
 </programlisting></para>
+
+    <para>IPv6 Example 1:</para>
+
+    <para>Use the FTP helper for TCP port 21 connections from the firewall
+    itself.</para>
+
+    <programlisting>FORMAT 2
+#ACTION                       SOURCE            DEST               PROTO            DPORT             SPORT               USER
+CT:helper:ftp(expevents=new)  fw                -                  tcp              21              </programlisting>
+
+    <para>IPv6 Example 2 (Shorewall 4.5.10 or later):</para>
+
+    <para>Drop traffic to/from all zones to IP address 2001:1.2.3::4</para>
+
+    <programlisting>FORMAT 2
+#ACTION                       SOURCE             DEST               PROTO            DPORT             SPORT               USER
+DROP                          all-:2001:1.2.3::4 -
+DROP                          all                2001:1.2.3::4
+</programlisting>
+
+    <para>or<programlisting>FORMAT 3
+#ACTION                       SOURCE             DEST               PROTO            DPORT             SPORT               USER
+DROP:P                        2001:1.2.3::4      -
+DROP:PO                       -                  2001:1.2.3::4</programlisting></para>
   </refsect1>
 
   <refsect1>
     <title>FILES</title>
 
     <para>/etc/shorewall/conntrack</para>
+
+    <para>/etc/shorewall6/conntrack</para>
   </refsect1>
 
   <refsect1>

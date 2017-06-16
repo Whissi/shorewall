@@ -18,14 +18,15 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/shorewall.conf</command>
+      <command>/etc/shorewall/shorewall.conf and
+      /etc/shorewall6/shorewall6.conf</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file sets options that apply to Shorewall as a whole.</para>
+    <para>This file sets options that apply to Shorewall[6] as a whole.</para>
 
     <para>The file consists of Shell comments (lines beginning with '#'),
     blank lines and assignment statements
@@ -65,16 +66,13 @@
     level to choose, 6 (info) is a safe bet. You may specify levels by name or
     by number.</para>
 
-    <para>If you have built your kernel with ULOG and/or NFLOG target support,
-    you may also specify a log level of ULOG and/or NFLOG (must be all caps).
-    Rather than log its messages to syslogd, Shorewall will direct netfilter
-    to log the messages via the ULOG or NFLOG target which will send them to a
-    process called 'ulogd'. ulogd is available with most Linux distributions
-    (although it probably isn't installed by default). Ulogd is also available
-    from <ulink
-    url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>
-    and can be configured to log all Shorewall messages to their own log
-    file.</para>
+    <para>If you have built your kernel with ULOG (IPv4 only) and/or NFLOG
+    target support, you may also specify a log level of ULOG and/or NFLOG
+    (must be all caps). Rather than log its messages to syslogd, Shorewall
+    will direct netfilter to log the messages via the ULOG or NFLOG target
+    which will send them to a process called 'ulogd'. ulogd is available with
+    most Linux distributions (although it probably isn't installed by
+    default).</para>
 
     <note>
       <para>If you want to specify parameters to ULOG or NFLOG (e.g.,
@@ -82,7 +80,7 @@
 
       <para>Example:</para>
 
-      <programlisting>MACLIST_LOG_LEVEL="NFLOG(1,0,1)"</programlisting>
+      <programlisting>LOG_LEVEL="NFLOG(1,0,1)"</programlisting>
     </note>
 
     <para>Beginning with Shorewall 5.0.0, the log level may be followed by a
@@ -265,8 +263,9 @@
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
           the external address(es) in <ulink
-          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5). If the
-          variable is set to <emphasis role="bold">Yes</emphasis> or <emphasis
+          url="/manpages/shorewall-nat.html">shorewall-nat</ulink>(5), and is
+          only available in IPv4 configurations. If the variable is set to
+          <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis> then Shorewall automatically adds these
           aliases. If it is set to <emphasis role="bold">No</emphasis> or
           <emphasis role="bold">no</emphasis>, you must add these aliases
@@ -293,13 +292,14 @@
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
           the SNAT ADDRESS in <ulink
-          url="/manpages/shorewall-masq.html">shorewall-masq</ulink>(5). If
-          the variable is set to <emphasis role="bold">Yes</emphasis> or
-          <emphasis role="bold">yes</emphasis> then Shorewall automatically
-          adds these addresses. If it is set to <emphasis
-          role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
-          you must add these addresses yourself using your distribution's
-          network configuration tools.</para>
+          url="/manpages/shorewall-masq.html">shorewall-masq</ulink>(5), and
+          is only available in IPv4 configurations. If the variable is set to
+          <emphasis role="bold">Yes</emphasis> or <emphasis
+          role="bold">yes</emphasis> then Shorewall automatically adds these
+          addresses. If it is set to <emphasis role="bold">No</emphasis> or
+          <emphasis role="bold">no</emphasis>, you must add these addresses
+          yourself using your distribution's network configuration
+          tools.</para>
 
           <para>If this variable is not set or is given an empty value
           (ADD_SNAT_ALIASES="") then ADD_SNAT_ALIASES=No is assumed.</para>
@@ -379,10 +379,10 @@
         role="bold">ARPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>Added in Shorewall 4.5.12. This parameter names the arptables
-          executable to be used by Shorewall. If not specified or if specified
-          as a null value, then the arptables executable located using the
-          PATH option is used.</para>
+          <para>Added in Shorewall 4.5.12 and available in IPv4 only. This
+          parameter names the arptables executable to be used by Shorewall. If
+          not specified or if specified as a null value, then the arptables
+          executable located using the PATH option is used.</para>
 
           <para>Regardless of how the arptables utility is located (specified
           via arptables= or located via PATH), Shorewall uses the
@@ -483,8 +483,8 @@
           <para>Added in Shorewall 5.1.1. When USE_DEFAULT_RT=Yes, this option
           determines whether the <option>balance</option> provider option (see
           <ulink
-          url="/manpages/shorewall-providers.html">shorewall-providers(5)</ulink>) is
-          the default. When BALANCE_PROVIDERS=Yes, then the
+          url="/manpages/shorewall-providers.html">shorewall-providers(5)</ulink>)
+          is the default. When BALANCE_PROVIDERS=Yes, then the
           <option>balance</option> option is assumed unless the
           <option>fallback</option>, <option>loose</option>,
           <option>load</option> or <option>tproxy</option> option is
@@ -500,8 +500,8 @@
         <listitem>
           <para>Added in Shorewall-4.6.0. When set to <emphasis
           role="bold">Yes</emphasis>, causes entries in <ulink
-          url="/manpages/shorewall-tcfilters.html">shorewall-tcfilters(5)</ulink> to
-          generate a basic filter rather than a u32 filter. This setting
+          url="/manpages/shorewall-tcfilters.html">shorewall-tcfilters(5)</ulink>
+          to generate a basic filter rather than a u32 filter. This setting
           requires the <firstterm>Basic Ematch</firstterm> capability in your
           kernel and iptables.</para>
 
@@ -624,6 +624,11 @@
           marking defined in <ulink
           url="/manpages/shorewall-tcrules.html">shorewall-tcrules</ulink>(5).
           If not specified, CLEAR_TC=Yes is assumed.</para>
+
+          <warning>
+            <para>When you specify TC_ENABLED=shared (see below), then you
+            should also specify CLEAR_TC=No.</para>
+          </warning>
         </listitem>
       </varlistentry>
 
@@ -662,17 +667,17 @@
         role="bold">CONFIG_PATH</emphasis>=[<emphasis>directory</emphasis>[:<emphasis>directory</emphasis>]...]</term>
 
         <listitem>
-          <para>Specifies where configuration files other than shorewall.conf
-          may be found. CONFIG_PATH is specifies as a list of directory names
-          separated by colons (":"). When looking for a configuration
-          file:</para>
+          <para>Specifies where configuration files other than
+          shorewall[6].conf may be found. CONFIG_PATH is specifies as a list
+          of directory names separated by colons (":"). When looking for a
+          configuration file:</para>
 
           <itemizedlist>
             <listitem>
               <para>If the command is "try" or a "&lt;configuration
               directory&gt;" was specified in the command (e.g.,
-              <command>shorewall check ./gateway</command>) then the directory
-              given in the command is searched first.</para>
+              <command>shorewall [-6] check ./gateway</command>) then the
+              directory given in the command is searched first.</para>
             </listitem>
 
             <listitem>
@@ -697,8 +702,8 @@
         <listitem>
           <para>Added in Shorewall 4.5.12. When set to 'Yes' (the default),
           DNS names are validated in the compiler and then passed on to the
-          generated script where they are resolved by iptables-restore. This
-          is an advantage if you use AUTOMAKE=Yes and the IP address
+          generated script where they are resolved by ip[6]tables-restore.
+          This is an advantage if you use AUTOMAKE=Yes and the IP address
           associated with the DNS name is subject to change. When
           DEFER_DNS_RESOLUTION=No, DNS names are converted into IP addresses
           by the compiler. This has the advantage that when AUTOMAKE=Yes, the
@@ -715,7 +720,7 @@
 
         <listitem>
           <para>If set to Yes (the default value), entries in the
-          /etc/shorewall/rtrules files cause an 'ip rule del' command to be
+          /etc/shorewall[6]/rtrules files cause an 'ip rule del' command to be
           generated in addition to an 'ip rule add' command. Setting this
           option to No, causes the 'ip rule del' command to be omitted.</para>
         </listitem>
@@ -726,6 +731,8 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, Shorewall will detect the first IP
           address of the interface to the source zone and will include this
@@ -742,6 +749,8 @@
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, IPv6 traffic to, from and through the
           firewall system is disabled. If set to <emphasis
@@ -761,7 +770,8 @@
             </listitem>
 
             <listitem>
-              <para>Change DISABLE_IPV6=Yes to DISABLE_IPV6=No</para>
+              <para>Change DISABLE_IPV6=Yes to DISABLE_IPV6=No in
+              <filename>/etc/shorewall/shorewall.conf</filename>.</para>
             </listitem>
 
             <listitem>
@@ -807,20 +817,21 @@
         <listitem>
           <para>Added in Shorewall 4.4.7. When set to <emphasis
           role="bold">No</emphasis> or <emphasis role="bold">no</emphasis>,
-          chain-based dynamic blacklisting using <command>shorewall
-          drop</command>, <command>shorewall reject</command>,
-          <command>shorewall logdrop</command> and <command>shorewall
-          logreject</command> is disabled. Default is <emphasis
+          chain-based dynamic blacklisting using <command>shorewall [-6] [-l]
+          drop</command>, <command>shorewall [-6] [-l] reject</command>,
+          <command>shorewall logdrop</command> and <command>shorewall [-6]
+          [-l] logreject</command> is disabled. Default is <emphasis
           role="bold">Yes</emphasis>. Beginning with Shorewall 5.0.8,
           ipset-based dynamic blacklisting using the <command>shorewall
           blacklist</command> command is also supported. The name of the set
           (<replaceable>setname</replaceable>) and the level
           (<replaceable>log_level</replaceable>), if any, at which blacklisted
-          traffic is to be logged may also be specified. The default set name
-          is SW_DBL4 and the default log level is <option>none</option> (no
-          logging). If <option>ipset-only</option> is given, then chain-based
-          dynamic blacklisting is disabled just as if DYNAMIC_BLACKLISTING=No
-          had been specified.</para>
+          traffic is to be logged may also be specified. The default IPv4 set
+          name is SW_DBL4 and the default IPv6 set name is SW_DBL6. The
+          default log level is <option>none</option> (no logging). If
+          <option>ipset-only</option> is given, then chain-based dynamic
+          blacklisting is disabled just as if DYNAMIC_BLACKLISTING=No had been
+          specified.</para>
 
           <para>Possible <replaceable>option</replaceable>s are:</para>
 
@@ -866,9 +877,9 @@
                 <important>
                   <para>Once the dynamic blacklisting ipset has been created,
                   changing this option setting requires a complete restart of
-                  the firewall; <command>shorewall restart</command> if
-                  RESTART=restart, otherwise <command>shorewall stop
-                  &amp;&amp; shorewall start</command></para>
+                  the firewall; <command>shorewall [-6] restart</command> if
+                  RESTART=restart, otherwise <command>shorewall [-6] [-l] stop
+                  &amp;&amp; shorewall [-6] [-l] start</command></para>
                 </important>
               </listitem>
             </varlistentry>
@@ -910,13 +921,15 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
         <listitem>
           <para>Added in Shorewall 4.4.17. When set to Yes when compiling for
-          use by Shorewall Lite (<command>shorewall load</command>,
-          <command>shorewall reload </command>or <command>shorewall
+          use by Shorewall Lite (<command>shorewall [-6]
+          remote-start</command>, <command>shorewall [-6] remote-reload,
+          shorewall [-6] remote-restart </command>or <command>shorewall [-6]
           export</command> commands), the compiler will copy the modules or
           helpers file from the administrative system into the script. When
           set to No or not specified, the compiler will not copy the modules
-          or helpers file from <filename>/usr/share/shorewall</filename> but
-          will copy those found in another location on the CONFIG_PATH.</para>
+          or helpers file from <filename>/usr/share/shorewall[6]</filename>
+          but will copy those found in another location on the
+          CONFIG_PATH.</para>
 
           <para>When compiling for direct use by Shorewall, causes the
           contents of the local module or helpers file to be copied into the
@@ -1114,10 +1127,12 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           specificaitons</ulink> on the right.. When INLINE_MATCHES=Yes is
           specified, the specifications on the right are interpreted as if
           INLINE had been specified in the ACTION column. This also applies to
-          <ulink url="/manpages/shorewall-masq.html">shorewall-masq(5)</ulink> and
-          <ulink url="/manpages/shorewall-mangle.html">shorewall-mangle(5</ulink>) which
-          also support INLINE. If not specified or if specified as the empty
-          value, the value 'No' is assumed for backward compatibility.</para>
+          <ulink url="/manpages/shorewall-masq.html">shorewall-masq(5)</ulink>
+          and <ulink
+          url="/manpages/shorewall-mangle.html">shorewall-mangle(5</ulink>)
+          which also support INLINE. If not specified or if specified as the
+          empty value, the value 'No' is assumed for backward
+          compatibility.</para>
 
           <para>Beginning with Shorewall 5.0.0, it is no longer necessary to
           set INLINE_MATCHES=Yes in order to be able to specify your own
@@ -1176,9 +1191,13 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">Keep</emphasis>]</term>
 
         <listitem>
-          <para>This parameter determines whether Shorewall enables or
-          disables IPV4 Packet Forwarding (/proc/sys/net/ipv4/ip_forward).
-          Possible values are:</para>
+          <para>This IPv4 parameter determines whether Shorewall enables or
+          disables IPv4 Packet Forwarding
+          (<filename>/proc/sys/net/ipv4/ip_forward</filename>). In an IPv6
+          configuration, this parameter determines the setting of
+          <filename>/proc/sys/net/ipv6/config/all/ip_forwarding</filename>.</para>
+
+          <para>Possible values are:</para>
 
           <variablelist>
             <varlistentry>
@@ -1210,12 +1229,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
             </varlistentry>
           </variablelist>
 
-          <para/>
-
-          <blockquote>
-            <para>If this variable is not set or is given an empty value
-            (IP_FORWARD="") then IP_FORWARD=On is assumed.</para>
-          </blockquote>
+          <para>If this variable is not set or is given an empty value
+          (IP_FORWARD="") then IP_FORWARD=On is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1258,6 +1273,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">IPTABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>This parameter names the iptables executable to be used by
           Shorewall. If not specified or if specified as a null value, then
           the iptables executable located using the PATH option is
@@ -1271,21 +1288,70 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis
+        role="bold">IP6TABLES=</emphasis>[<emphasis>pathname</emphasis>]</term>
+
+        <listitem>
+          <para>IPv6 only.</para>
+
+          <para>This parameter names the ip6tables executable to be used by
+          Shorewall6. If not specified or if specified as a null value, then
+          the ip6tables executable located using the PATH option is
+          used.</para>
+
+          <para>Regardless of how the ip6tables utility is located (specified
+          via IP6TABLES= or located via PATH), Shorewall6 uses the
+          ip6tables-restore and ip6tables-save utilities from that same
+          directory.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">KEEP_RT_TABLES=</emphasis>{<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
-          <para>When set to <option>Yes</option>, this option prevents
-          generated scripts from altering the /etc/iproute2/rt_tables database
-          when there are entries in
-          <filename>/etc/shorewall/providers</filename>. If you set this
-          option to <option>Yes</option> while Shorewall (Shorewall-lite) is
-          running, you should remove the file
-          <filename>/var/lib/shorewall/rt_tables</filename>
-          (<filename>/var/lib/shorewall-lite/rt_tables</filename>) before your
-          next <command>stop</command>, <command>refresh</command>,
-          <command>restore</command>, <emphasis role="bold">reload</emphasis>
-          or <command>restart</command> command.</para>
+          <para>IPv4:</para>
+
+          <blockquote>
+            <para>When set to <option>Yes</option>, this option prevents
+            generated scripts from altering the /etc/iproute2/rt_tables
+            database when there are entries in
+            <filename>/etc/shorewall/providers</filename>. If you set this
+            option to <option>Yes</option> while Shorewall (Shorewall-lite) is
+            running, you should remove the file
+            <filename>/var/lib/shorewall/rt_tables</filename>
+            (<filename>/var/lib/shorewall-lite/rt_tables</filename>) before
+            your next <command>stop</command>, <command>refresh</command>,
+            <command>restore</command>, <emphasis
+            role="bold">reload</emphasis> or <command>restart</command>
+            command.</para>
+          </blockquote>
+
+          <para>IPv6:</para>
+
+          <blockquote>
+            <para>When set to <option>Yes</option>, this option prevents
+            scripts generated by Shorewall6 from altering the
+            /etc/iproute2/rt_tables database when there are entries in
+            <filename>/etc/shorewall6/providers</filename>. If you set this
+            option to <option>Yes</option> while Shorewall6 (Shorewall6-lite)
+            is running, you should remove the file
+            <filename>/var/lib/shorewall6/rt_tables</filename>
+            (<filename>/var/lib/shorewall6-lite/rt_tables</filename>) before
+            your next <command>stop</command>, <command>refresh</command>,
+            <command>restore</command>, <emphasis
+            role="bold">reload</emphasis> or <command>restart</command>
+            command.</para>
+          </blockquote>
+
+          <important>
+            <para>When both IPv4 and IPv6 Shorewall configurations are
+            present, KEEP_RT_TABLES=No should be specified in only one of the
+            two configurations unless the two provider configurations are
+            identical with respect to interface and provider names and
+            numbers.</para>
+          </important>
 
           <para>The default is KEEP_RT_TABLES=No.</para>
         </listitem>
@@ -1298,9 +1364,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         <listitem>
           <para>Added in Shorewall 4.4.7. When set to Yes, restricts the set
           of modules loaded by shorewall to those listed in
-          /var/lib/shorewall/helpers and those that are actually used. When
-          not set, or set to the empty value, LOAD_HELPERS_ONLY=No is
-          assumed.</para>
+          <filename>/var/lib/shorewall[6]/helpers</filename> and those that
+          are actually used. When not set, or set to the empty value,
+          LOAD_HELPERS_ONLY=No is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1309,11 +1375,11 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">LOCKFILE</emphasis>=[<emphasis>pathname</emphasis>]</term>
 
         <listitem>
-          <para>Specifies the name of the Shorewall lock file, used to prevent
-          simultaneous state-changing commands. If not specified,
-          ${VARDIR}/shorewall/lock is assumed (${VARDIR} is normally /var/lib
-          but can be changed when Shorewall-core is installed -- see the
-          output of <command>shorewall show vardir</command>).</para>
+          <para>Specifies the name of the Shorewall[6] lock file, used to
+          prevent simultaneous state-changing commands. If not specified,
+          ${VARDIR}/shorewall[6]/lock is assumed (${VARDIR} is normally
+          /var/lib but can be changed when Shorewall-core is installed -- see
+          the output of <command>shorewall show vardir</command>).</para>
         </listitem>
       </varlistentry>
 
@@ -1341,6 +1407,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
               <term>ULOG</term>
 
               <listitem>
+                <para>IPv4 only.</para>
+
                 <para>Use ULOG logging to ulogd.</para>
               </listitem>
             </varlistentry>
@@ -1365,8 +1433,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
           sample configurations use this as the default log level and changing
           it will change all packet logging done by the configuration. In any
           configuration file (except <ulink
-          url="/manpages/shorewall-params.html">shorewall-params(5)</ulink>), $LOG_LEVEL
-          will expand to this value.</para>
+          url="/manpages/shorewall-params.html">shorewall-params(5)</ulink>),
+          $LOG_LEVEL will expand to this value.</para>
         </listitem>
       </varlistentry>
 
@@ -1376,6 +1444,8 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
         role="bold">No</emphasis>|Keep]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>If set to <emphasis role="bold">Yes</emphasis> or <emphasis
           role="bold">yes</emphasis>, sets
           <filename>/proc/sys/net/ipv4/conf/*/log_martians</filename> to 1
@@ -1523,7 +1593,9 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
           <caution>
             <para>Beginning with Shorewall 5.1.0, the default and sample
-            shorewall.conf files set LOGFORMAT="%s %s ". Shorewall log
+            shorewall[6].conf files set LOGFORMAT="%s %s ". </para>
+
+            <para>Regardless of the LOGFORMAT setting, Shorewall IPv4 log
             messages that use this LOGFORMAT can be uniquely identified using
             the following regular expression:</para>
 
@@ -1531,8 +1603,15 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
               <member>'IN=.* OUT=.* SRC=.*\..* DST='</member>
             </simplelist>
 
-            <para>To match all Netfilter log messages (Both IPv4 and IPv6),
-            use:</para>
+            <para>and Shorewall IPv6 log messages can be uniquely identified
+            using the following regular expression:</para>
+
+            <simplelist>
+              <member>'IN=.* OUT=.* SRC=.*:.* DST='</member>
+            </simplelist>
+
+            <para>To match all Netfilter log messages (Both IPv4 and IPv6 and
+            regardless of the LOGFORMAT setting), use:</para>
 
             <simplelist>
               <member>'IN=.* OUT=.* SRC=.* DST='</member>
@@ -1625,7 +1704,7 @@ LOG:info:,bar                        net                    fw</programlisting>
 
           <para>A_DROP and A_REJECT are audited versions of DROP and REJECT
           respectively and were added in Shorewall 4.4.20. They require
-          AUDIT_TARGET in the kernel and iptables.</para>
+          AUDIT_TARGET in the kernel and ip[6]tables.</para>
         </listitem>
       </varlistentry>
 
@@ -1668,7 +1747,7 @@ LOG:info:,bar                        net                    fw</programlisting>
           entries in <ulink
           url="/manpages/shorewall-maclist.html">shorewall-maclist</ulink>(5)
           can be improved by setting the MACLIST_TTL variable in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
+          url="/manpages/shorewall.conf.html">shorewall[6].conf</ulink>(5).</para>
 
           <para>If your iptables and kernel support the "Recent Match" (see
           the output of "shorewall check" near the top), you can cache the
@@ -1710,6 +1789,8 @@ LOG:info:,bar                        net                    fw</programlisting>
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>This option is included for compatibility with old Shorewall
           configuration. New installs should always have
           MAPOLDACTIONS=No.</para>
@@ -1740,11 +1821,11 @@ LOG:info:,bar                        net                    fw</programlisting>
           PREROUTING chain. This permits you to mark inbound traffic based on
           its destination address when DNAT is in use. To determine if your
           kernel has a FORWARD chain in the mangle table, use the <emphasis
-          role="bold">shorewall show mangle</emphasis> command; if a FORWARD
-          chain is displayed then your kernel will support this option. If
-          this option is not specified or if it is given the empty value
-          (e.g., MARK_IN_FORWARD_CHAIN="") then MARK_IN_FORWARD_CHAIN=No is
-          assumed.</para>
+          role="bold">shorewall [-6] show mangle</emphasis> command; if a
+          FORWARD chain is displayed then your kernel will support this
+          option. If this option is not specified or if it is given the empty
+          value (e.g., MARK_IN_FORWARD_CHAIN="") then MARK_IN_FORWARD_CHAIN=No
+          is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -1826,7 +1907,8 @@ LOG:info:,bar                        net                    fw</programlisting>
           "/lib/modules/$uname/kernel/net/ipv${g_family}/netfilter:/lib/modules/$uname/kernel/net/netfilter:/lib/modules/$uname/kernel/net/sched:/lib/modules/$uname/extra:/lib/modules/$uname/extra/ipset"
           where <emphasis role="bold">uname</emphasis> holds the output of
           '<command>uname -r</command>' and <emphasis
-          role="bold">g_family</emphasis> holds '4'.</para>
+          role="bold">g_family</emphasis> holds '4' in IPv4 configurations and
+          '6' in IPv6 configurations.</para>
 
           <para>The option plus sign ('+') was added in Shorewall 5.0.3 and
           causes the listed pathnames to be appended to the default list
@@ -1839,6 +1921,8 @@ LOG:info:,bar                        net                    fw</programlisting>
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>This option will normally be set to 'No' (the default). It
           should be set to 'Yes' under the following circumstances:</para>
 
@@ -1865,17 +1949,18 @@ LOG:info:,bar                        net                    fw</programlisting>
 
         <listitem>
           <para>The value of this variable determines the number of seconds
-          that programs will wait for exclusive access to the Shorewall lock
-          file. After the number of seconds corresponding to the value of this
-          variable, programs will assume that the last program to hold the
-          lock died without releasing the lock.</para>
+          that programs will wait for exclusive access to the Shorewall[6]
+          lock file. After the number of seconds corresponding to the value of
+          this variable, programs will assume that the last program to hold
+          the lock died without releasing the lock.</para>
 
           <para>If not set or set to the empty value, a value of 60 (60
           seconds) is assumed.</para>
 
           <para>An appropriate value for this parameter would be twice the
           length of time that it takes your firewall system to process a
-          <emphasis role="bold">shorewall restart</emphasis> command.</para>
+          <emphasis role="bold">shorewall [-6] restart</emphasis>
+          command.</para>
         </listitem>
       </varlistentry>
 
@@ -1899,6 +1984,8 @@ LOG:info:,bar                        net                    fw</programlisting>
         role="bold">prohibit</emphasis>]</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>When set to Yes, causes Shorewall to null-route the IPv4
           address ranges reserved by RFC1918. The default value is
           'No'.</para>
@@ -1935,12 +2022,11 @@ LOG:info:,bar                        net                    fw</programlisting>
           <itemizedlist>
             <listitem>
               <para>Optimization category 1 - Traditionally, Shorewall has
-              created rules for the complete matrix of
-              host groups defined by the zones, interfaces and hosts
-              files. Any traffic that didn't correspond to an element
-              of that matrix was rejected in one of the built-in chains. When
-              the matrix is sparse, this results in lots of largely useless
-              rules.</para>
+              created rules for the complete matrix of host groups defined by
+              the zones, interfaces and hosts files. Any traffic that didn't
+              correspond to an element of that matrix was rejected in one of
+              the built-in chains. When the matrix is sparse, this results in
+              lots of largely useless rules.</para>
 
               <para>These extra rules can be eliminated by setting the 1 bit
               in OPTIMIZE.</para>
@@ -2316,12 +2402,17 @@ RCP_COMMAND: scp ${files} ${root}@${system}:${destination}</programlisting>
 
             <listitem>
               <para>if the protocol is UDP (17) then the packet is rejected
-              with an 'port-unreachable' ICMP (ICMP6).</para>
+              with an 'port-unreachable' ICMP.</para>
             </listitem>
 
             <listitem>
               <para>if the protocol is ICMP (1) then the packet is rejected
               with a 'host-unreachable' ICMP.</para>
+            </listitem>
+
+            <listitem>
+              <para>if the protocol is ICMP6 (1) then the packet is rejected
+              with a 'icmp6-addr-unreachable' ICMP6.</para>
             </listitem>
 
             <listitem>
@@ -2333,11 +2424,12 @@ RCP_COMMAND: scp ${files} ${root}@${system}:${destination}</programlisting>
           <para>You can modify this behavior by implementing your own
           <replaceable>action</replaceable> that handles REJECT and specifying
           it's name in this option. The <emphasis role="bold">nolog</emphasis>
-          and <emphasis role="bold">inline</emphasis> options will
+          and <emphasis role="bold">noinline</emphasis> options will
           automatically be assumed for the specified
           <replaceable>action</replaceable>.</para>
 
-          <para>The following action implements the standard behavior:</para>
+          <para>The following action implements the default reject
+          action:</para>
 
           <programlisting>?format 2
 #TARGET         SOURCE  DEST    PROTO
@@ -2437,10 +2529,10 @@ INLINE          -       -       -       ;; -j REJECT
         <listitem>
           <para>Specifies the simple name of a file in /var/lib/shorewall to
           be used as the default restore script in the <emphasis
-          role="bold">shorewall save</emphasis>, <emphasis
-          role="bold">shorewall restore</emphasis>, <emphasis
-          role="bold">shorewall forget </emphasis>and <emphasis
-          role="bold">shorewall -f start</emphasis> commands.</para>
+          role="bold">shorewall [-6] save</emphasis>, <emphasis
+          role="bold">shorewall [-6] restore</emphasis>, <emphasis
+          role="bold">shorewall [-6] forget </emphasis>and <emphasis
+          role="bold">shorewall [6] -f start</emphasis> commands.</para>
         </listitem>
       </varlistentry>
 
@@ -2449,6 +2541,8 @@ INLINE          -       -       -       ;; -j REJECT
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>}</term>
 
         <listitem>
+          <para>IPv4 only.</para>
+
           <para>During <emphasis role="bold">shorewall star</emphasis>t, IP
           addresses to be added as a consequence of ADD_IP_ALIASES=Yes and
           ADD_SNAT_ALIASES=Yes are quietly deleted when <ulink
@@ -2461,7 +2555,7 @@ INLINE          -       -       -       ;; -j REJECT
           not be deleted. Regardless of the setting of RETAIN_ALIASES,
           addresses added during <emphasis role="bold">shorewall
           start</emphasis> are still deleted at a subsequent <emphasis
-          role="bold">shorewall stop</emphasis>, <emphasis
+          role="bold">shorewall [stop</emphasis>, <emphasis
           role="bold">shorewall reload</emphasis> or <emphasis
           role="bold">shorewall restart</emphasis>.</para>
         </listitem>
@@ -3150,6 +3244,8 @@ INLINE          -       -       -       ;; -j REJECT
     <title>FILES</title>
 
     <para>/etc/shorewall/shorewall.conf</para>
+
+    <para>/etc/shorewall6/shorewall6.conf</para>
   </refsect1>
 
   <refsect1>

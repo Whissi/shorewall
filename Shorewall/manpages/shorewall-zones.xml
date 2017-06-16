@@ -128,9 +128,9 @@
           <para>Example:</para>
 
           <programlisting>#ZONE     TYPE     OPTIONS         IN OPTIONS        OUT OPTIONS
-a         ipv4
-b         ipv4
-c:a,b     ipv4</programlisting>
+a         ip
+b         ip
+c:a,b     ip</programlisting>
 
           <para>Currently, Shorewall uses this information to reorder the zone
           list so that parent zones appear after their subzones in the list.
@@ -140,8 +140,8 @@ c:a,b     ipv4</programlisting>
 
           <para>Where an <emphasis role="bold">ipsec</emphasis> zone is
           explicitly included as a child of an <emphasis
-          role="bold">ipv4</emphasis> zone, the ruleset allows CONTINUE
-          policies (explicit or implicit) to work as expected.</para>
+          role="bold">ip</emphasis> zone, the ruleset allows CONTINUE policies
+          (explicit or implicit) to work as expected.</para>
 
           <para>In the future, Shorewall may make additional use of nesting
           information.</para>
@@ -154,7 +154,7 @@ c:a,b     ipv4</programlisting>
         <listitem>
           <variablelist>
             <varlistentry>
-              <term><emphasis role="bold">ipv4</emphasis></term>
+              <term><emphasis role="bold">ip</emphasis></term>
 
               <listitem>
                 <para>This is the standard Shorewall zone type and is the
@@ -162,17 +162,22 @@ c:a,b     ipv4</programlisting>
                 the column. Communication with some zone hosts may be
                 encrypted. Encrypted hosts are designated using the 'ipsec'
                 option in <ulink
-                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5).</para>
+                url="/manpages/shorewall-hosts.html">shorewall-hosts</ulink>(5).
+                For clarity, this zone type may be specified as
+                <option>ipv4</option> in IPv4 configurations and
+                <option>ipv6</option> in IPv6 configurations.</para>
               </listitem>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">ipsec</emphasis> (or <emphasis
-              role="bold">ipsec4</emphasis>)</term>
+              <term><emphasis role="bold">ipsec</emphasis></term>
 
               <listitem>
                 <para>Communication with all zone hosts is encrypted. Your
-                kernel and iptables must include policy match support.</para>
+                kernel and iptables must include policy match support. For
+                clarity, this zone type may be specified as
+                <option>ipsec4</option> in IPv4 configurations and
+                <option>ipsec6</option> in IPv6 configurations.</para>
               </listitem>
             </varlistentry>
 
@@ -190,12 +195,13 @@ c:a,b     ipv4</programlisting>
             </varlistentry>
 
             <varlistentry>
-              <term><emphasis role="bold">bport</emphasis> (or <emphasis
-              role="bold">bport4</emphasis>)</term>
+              <term><emphasis role="bold">bport</emphasis></term>
 
               <listitem>
                 <para>The zone is associated with one or more ports on a
-                single bridge.</para>
+                single bridge. For clarity, this zone type may be specified as
+                <option>bport4</option> in IPv4 configurations and
+                <option>bport6</option> in IPv6 configurations.</para>
               </listitem>
             </varlistentry>
 
@@ -424,6 +430,8 @@ c:a,b     ipv4</programlisting>
     <title>FILES</title>
 
     <para>/etc/shorewall/zones</para>
+
+    <para>/etc/shorewall6/zones</para>
   </refsect1>
 
   <refsect1>

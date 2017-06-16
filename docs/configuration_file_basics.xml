@@ -1934,6 +1934,27 @@ SSH(ACCEPT)    net:$MYIP      $FW
       <filename>init</filename> extension script, then the value 255 is
       assumed.</para>
     </important>
+
+    <caution>
+      <para>Care must be exercised when using port variables in port ranges.
+      At run-time, the generated script will verify that each port variable is
+      either empty or contains a valid port number or service name. It does
+      not ensure that the low port number in a range is strictly less than the
+      high port number, when either of these is specified as a port
+      variable.</para>
+
+      <para>Example: The following definitions will result in an
+      iptables-restore failure during start/restart/reload:</para>
+
+      <para>/etc/shorewall/init:</para>
+
+      <programlisting>      LOW_PORT=100
+      HIGH_PORT=50</programlisting>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <programlisting>      ACCEPT    net     $FW      tcp      ${LOW_PORT}:${HIGH_PORT}</programlisting>
+    </caution>
   </section>
 
   <section id="ActionVariables">

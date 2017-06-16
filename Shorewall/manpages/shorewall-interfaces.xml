@@ -199,11 +199,12 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">arp_filter[={0|1}]</emphasis></term>
 
               <listitem>
-                <para>If specified, this interface will only respond to ARP
-                who-has requests for IP addresses configured on the interface.
-                If not specified, the interface can respond to ARP who-has
-                requests for IP addresses on any of the firewall's interface.
-                The interface must be up when Shorewall is started.</para>
+                <para>IPv4 only. If specified, this interface will only
+                respond to ARP who-has requests for IP addresses configured on
+                the interface. If not specified, the interface can respond to
+                ARP who-has requests for IP addresses on any of the firewall's
+                interface. The interface must be up when Shorewall is
+                started.</para>
 
                 <para>Only those interfaces with the
                 <option>arp_filter</option> option will have their setting
@@ -225,8 +226,8 @@ loc     eth2            -</programlisting>
               role="bold">arp_ignore</emphasis>[=<emphasis>number</emphasis>]</term>
 
               <listitem>
-                <para>If specified, this interface will respond to arp
-                requests based on the value of <emphasis>number</emphasis>
+                <para>IPv4 only. If specified, this interface will respond to
+                arp requests based on the value of <emphasis>number</emphasis>
                 (defaults to 1).</para>
 
                 <para>1 - reply only if the target IP address is local address
@@ -411,8 +412,8 @@ loc     eth2            -</programlisting>
 
                   <listitem>
                     <para>the interface is a <ulink
-                    url="/SimpleBridge.html">simple bridge</ulink> with a
-                    DHCP server on one port and DHCP clients on another
+                    url="/SimpleBridge.html">simple bridge</ulink> with a DHCP
+                    server on one port and DHCP clients on another
                     port.</para>
 
                     <note>
@@ -467,15 +468,15 @@ loc     eth2            -</programlisting>
               role="bold">logmartians[={0|1}]</emphasis></term>
 
               <listitem>
-                <para>Turn on kernel martian logging (logging of packets with
-                impossible source addresses. It is strongly suggested that if
-                you set <emphasis role="bold">routefilter</emphasis> on an
-                interface that you also set <emphasis
-                role="bold">logmartians</emphasis>. Even if you do not specify
-                the <option>routefilter</option> option, it is a good idea to
-                specify <option>logmartians</option> because your distribution
-                may have enabled route filtering without you knowing
-                it.</para>
+                <para>IPv4 only. Turn on kernel martian logging (logging of
+                packets with impossible source addresses. It is strongly
+                suggested that if you set <emphasis
+                role="bold">routefilter</emphasis> on an interface that you
+                also set <emphasis role="bold">logmartians</emphasis>. Even if
+                you do not specify the <option>routefilter</option> option, it
+                is a good idea to specify <option>logmartians</option> because
+                your distribution may have enabled route filtering without you
+                knowing it.</para>
 
                 <para>Only those interfaces with the
                 <option>logmartians</option> option will have their setting
@@ -576,8 +577,8 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">nosmurfs</emphasis></term>
 
               <listitem>
-                <para>Filter packets for smurfs (packets with a broadcast
-                address as the source).</para>
+                <para>IPv4 only. Filter packets for smurfs (packets with a
+                broadcast address as the source).</para>
 
                 <para>Smurfs will be optionally logged based on the setting of
                 SMURF_LOG_LEVEL in <ulink
@@ -596,9 +597,9 @@ loc     eth2            -</programlisting>
                 <itemizedlist>
                   <listitem>
                     <para>a <filename
-                    class="directory">/proc/sys/net/ipv4/conf/</filename>
+                    class="directory">/proc/sys/net/ipv[46]/conf/</filename>
                     entry for the interface cannot be modified (including for
-                    proxy ARP).</para>
+                    proxy ARP or proxy NDP).</para>
                   </listitem>
 
                   <listitem>
@@ -638,7 +639,7 @@ loc     eth2            -</programlisting>
               <term><emphasis role="bold">proxyarp[={0|1}]</emphasis></term>
 
               <listitem>
-                <para>Sets
+                <para>IPv4 only. Sets
                 /proc/sys/net/ipv4/conf/<emphasis>interface</emphasis>/proxy_arp.
                 Do NOT use this option if you are employing Proxy ARP through
                 entries in <ulink
@@ -653,6 +654,24 @@ loc     eth2            -</programlisting>
                 name (e.g., eth0.+) in the INTERFACE column.</para>
 
                 <para>Only those interfaces with the <option>proxyarp</option>
+                option will have their setting changed; the value assigned to
+                the setting will be the value specified (if any) or 1 if no
+                value is given.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">proxyndp</emphasis>[={0|1}]</term>
+
+              <listitem>
+                <para>IPv6 only. Sets
+                /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/proxy_ndp.</para>
+
+                <para><emphasis role="bold">Note</emphasis>: This option does
+                not work with a wild-card <replaceable>interface</replaceable>
+                name (e.g., eth0.+) in the INTERFACE column.</para>
+
+                <para>Only those interfaces with the <option>proxyndp</option>
                 option will have their setting changed; the value assigned to
                 the setting will be the value specified (if any) or 1 if no
                 value is given.</para>
@@ -700,8 +719,8 @@ loc     eth2            -</programlisting>
               role="bold">routefilter[={0|1|2}]</emphasis></term>
 
               <listitem>
-                <para>Turn on kernel route filtering for this interface
-                (anti-spoofing measure).</para>
+                <para>IPv4 only. Turn on kernel route filtering for this
+                interface (anti-spoofing measure).</para>
 
                 <para>Only those interfaces with the
                 <option>routefilter</option> option will have their setting
@@ -886,10 +905,13 @@ loc     eth2            -</programlisting>
                       role="bold">routefilter</emphasis></member>
 
                       <member><emphasis
-                      role="bold">sourceroute</emphasis></member>
+                      role="bold">proxyarp</emphasis></member>
 
                       <member><emphasis
-                      role="bold">proxyndp</emphasis></member>
+                      role="bold">proxyudp</emphasis></member>
+
+                      <member><emphasis
+                      role="bold">sourceroute</emphasis></member>
                     </simplelist>
                   </listitem>
                 </itemizedlist>
@@ -902,7 +924,9 @@ loc     eth2            -</programlisting>
               <listitem>
                 <para>Incoming requests from this interface may be remapped
                 via UPNP (upnpd). See <ulink
-                url="/UPnP.html">http://www.shorewall.net/UPnP.html</ulink>.</para>
+                url="/UPnP.html">http://www.shorewall.net/UPnP.html</ulink>.
+                Supported in IPv4 and in IPv6 in Shorewall 5.1.4 and
+                later.</para>
               </listitem>
             </varlistentry>
 
@@ -916,7 +940,8 @@ loc     eth2            -</programlisting>
                 causes Shorewall to detect the default gateway through the
                 interface and to accept UDP packets from that gateway. Note
                 that, like all aspects of UPnP, this is a security hole so use
-                this option at your own risk.</para>
+                this option at your own risk. Supported in IPv4 and in IPv6 in
+                Shorewall 5.1.4 and later.</para>
               </listitem>
             </varlistentry>
 
@@ -943,7 +968,7 @@ loc     eth2            -</programlisting>
 
     <variablelist>
       <varlistentry>
-        <term>Example 1:</term>
+        <term>IPv4 Example 1:</term>
 
         <listitem>
           <para>Suppose you have eth0 connected to a DSL modem and eth1
@@ -956,7 +981,7 @@ loc     eth2            -</programlisting>
 
           <para>Your entries for this setup would look like:</para>
 
-          <programlisting>FORMAT 1
+          <programlisting>?FORMAT 1
 #ZONE   INTERFACE BROADCAST        OPTIONS
 net     eth0      206.191.149.223  dhcp
 loc     eth1      192.168.1.255
@@ -971,7 +996,7 @@ dmz     eth2      192.168.2.255</programlisting>
           <para>The same configuration without specifying broadcast addresses
           is:</para>
 
-          <programlisting>FORMAT 2
+          <programlisting>?FORMAT 2
 #ZONE   INTERFACE OPTIONS
 net     eth0      dhcp
 loc     eth1      
@@ -986,7 +1011,7 @@ dmz     eth2</programlisting>
           <para>You have a simple dial-in system with no Ethernet
           connections.</para>
 
-          <programlisting>FORMAT 2
+          <programlisting>?FORMAT 2
 #ZONE   INTERFACE OPTIONS
 net     ppp0      -</programlisting>
         </listitem>
@@ -999,7 +1024,7 @@ net     ppp0      -</programlisting>
           <para>You have a bridge with no IP address and you want to allow
           traffic through the bridge.</para>
 
-          <programlisting>FORMAT 2
+          <programlisting>?FORMAT 2
 #ZONE   INTERFACE OPTIONS
 -       br0       bridge</programlisting>
         </listitem>
@@ -1011,6 +1036,8 @@ net     ppp0      -</programlisting>
     <title>FILES</title>
 
     <para>/etc/shorewall/interfaces</para>
+
+    <para>/etc/shorewall6/interfaces</para>
   </refsect1>
 
   <refsect1>

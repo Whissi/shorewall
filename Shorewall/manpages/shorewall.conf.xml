@@ -18,18 +18,26 @@
 
   <refsynopsisdiv>
     <cmdsynopsis>
-      <command>/etc/shorewall/shorewall.conf and
-      /etc/shorewall6/shorewall6.conf</command>
+      <command>/etc/shorewall/shorewall.conf</command>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>/etc/shorewall6/shorewall6.conf</command>
     </cmdsynopsis>
   </refsynopsisdiv>
 
   <refsect1>
     <title>Description</title>
 
-    <para>This file sets options that apply to Shorewall[6] as a whole.</para>
+    <para>The IPv4 and IPv6 environments each have their own configuration.
+    The IPv4 configuration resides in /etc/shorewall/ while the IPv6
+    configuration resides in /etc/shorewall6/.</para>
 
-    <para>The file consists of Shell comments (lines beginning with '#'),
-    blank lines and assignment statements
+    <para>The .conf files set options that apply to Shorewall and Shorewall6
+    as a whole.</para>
+
+    <para>The .conf files consist of Shell comments (lines beginning with
+    '#'), blank lines and assignment statements
     (<emphasis>variable</emphasis>=<emphasis>value</emphasis>). If the
     <emphasis>value</emphasis> contains shell meta characters or white-space,
     then it must be enclosed in quotes. Example:
@@ -1593,7 +1601,7 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
 
           <caution>
             <para>Beginning with Shorewall 5.1.0, the default and sample
-            shorewall[6].conf files set LOGFORMAT="%s %s ". </para>
+            shorewall[6].conf files set LOGFORMAT="%s %s ".</para>
 
             <para>Regardless of the LOGFORMAT setting, Shorewall IPv4 log
             messages that use this LOGFORMAT can be uniquely identified using

@@ -492,8 +492,11 @@ fi
 #
 # Install the config file
 #
-run_install $OWNERSHIP -m 0644 $PRODUCT.conf           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 $PRODUCT.conf.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 $PRODUCT.conf            ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+
+if [ $PRODUCT = shorewall ]; then
+    run_install $OWNERSHIP -m 0644 shorewall.conf.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+fi
 
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
     run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
@@ -1164,6 +1167,23 @@ for f in *.8; do
 done
 
 cd ..
+
+if [ $PRODUCT = shorewall6 ]; then
+    for f in ${DESTDIR}${MANDIR}/man5/shorewall-*; do
+	base=$(basename $f);
+
+	case $base in
+	    shorewall-arprules.*|shorewall-ecn.*|shorewall-proxyarp.*)
+	        ;;
+	    *)
+		base6=shorewall6-${base#*-}
+		ln -sf ${MANDIR}/man5/$(basename $f) ${DESTDIR}${MANDIR}/man5/$base6
+		;;
+	esac
+    done
+
+    ln -sf ${MANDIR}/man5/shorewall.conf ${DESTDIR}${MANDIR}/man5/shorewall6.conf
+fi
 
 echo "Man Pages Installed"
 fi

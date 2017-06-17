@@ -1150,26 +1150,31 @@ if [ -n "$MANDIR" ]; then
 
 cd manpages
 
-[ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
+if [ $PRODUCT = shorewall ]; then
+    [ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
-for f in *.5; do
-    gzip -9c $f > $f.gz
-    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
-    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
-done
-
-[ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man8 0755
-
-for f in *.8; do
-    gzip -9c $f > $f.gz
-    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
-    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
-done
-
-cd ..
+    for f in *.5; do
+	gzip -9c $f > $f.gz
+	run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man5/$f.gz
+	echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man5/$f.gz"
+    done
+fi
 
 if [ $PRODUCT = shorewall6 ]; then
-    for f in ${DESTDIR}${MANDIR}/man5/shorewall-*; do
+    make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
+
+    for f in \
+	shorewall-accounting.5.gz  shorewall-ipsets.5.gz   shorewall-providers.5.gz     shorewall-tcclasses.5.gz     \
+	shorewall-actions.5.gz     shorewall-maclist.5.gz                               shorewall-tcdevices.5.gz     \
+	                           shorewall-mangle.5.gz   shorewall-proxyndp.5.gz      shorewall-tcfilters.5.gz     \
+	shorewall-blacklist.5.gz   shorewall-masq.5.gz     shorewall-routes.5.gz        shorewall-tcinterfaces.5.gz  \
+	shorewall-blrules.5.gz     shorewall-modules.5.gz  shorewall-routestopped.5.gz  shorewall-tcpri.5.gz         \
+	shorewall-conntrack.5.gz   shorewall-nat.5.gz      shorewall-rtrules.5.gz       shorewall-tcrules.5.gz       \
+                                   shorewall-nesting.5.gz  shorewall-rules.5.gz         shorewall-tos.5.gz           \
+	shorewall-exclusion.5.gz   shorewall-netmap.5.gz   shorewall-secmarks.5.gz      shorewall-tunnels.5.gz       \
+	shorewall-hosts.5.gz       shorewall-params.5.gz   shorewall-snat.5.gz          shorewall-vardir.5.gz        \
+	shorewall-interfaces.5.gz  shorewall-policy.5.gz   shorewall-stoppedrules.5.gz  shorewall-zones.5.gz
+    do
 	base=$(basename $f);
 
 	case $base in
@@ -1182,8 +1187,18 @@ if [ $PRODUCT = shorewall6 ]; then
 	esac
     done
 
-    ln -sf ${MANDIR}/man5/shorewall.conf ${DESTDIR}${MANDIR}/man5/shorewall6.conf
+    ln -sf ${MANDIR}/man5/shorewall.conf.5.gz ${DESTDIR}${MANDIR}/man5/shorewall6.conf.5.gz
 fi
+
+[ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man8 0755
+
+for f in *.8; do
+    gzip -9c $f > $f.gz
+    run_install $INSTALLD  -m 0644 $f.gz ${DESTDIR}${MANDIR}/man8/$f.gz
+    echo "Man page $f.gz installed to ${DESTDIR}${MANDIR}/man8/$f.gz"
+done
+
+cd ..
 
 echo "Man Pages Installed"
 fi

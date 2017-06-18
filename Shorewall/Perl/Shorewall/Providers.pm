@@ -64,6 +64,8 @@ our @load_interfaces;
 
 our $balancing;
 our $fallback;
+our $balanced_providers;
+our $fallback_providers;
 our $metrics;
 our $first_default_route;
 our $first_fallback_route;
@@ -99,6 +101,8 @@ sub initialize( $ ) {
     %provider_interfaces    = ();
     @load_interfaces        = ();
     $balancing              = 0;
+    $balanced_providers     = 0;
+    $fallback_providers     = 0;
     $fallback               = 0;
     $metrics                = 0;
     $first_default_route    = 1;
@@ -323,7 +327,13 @@ sub balance_default_route( $$$$ ) {
     emit '';
 
     if ( $first_default_route ) {
-	if ( $gateway ) {
+	if ( $balanced_providers == 1 ) {
+	    if ( $gateway ) {
+		emit "DEFAULT_ROUTE=\"via $gateway dev $interface $realm\"";
+	    } else {
+		emit "DEFAULT_ROUTE=\"dev $interface $realm\"";
+	    }
+	} elsif ( $gateway ) {
 	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
 	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
@@ -347,7 +357,13 @@ sub balance_fallback_route( $$$$ ) {
     emit '';
 
     if ( $first_fallback_route ) {
-	if ( $gateway ) {
+	if ( $balanced_providers == 1 ) {
+	    if ( $gateway ) {
+		emit "FALLBACK_ROUTE=\"via $gateway dev $interface $realm\"";
+	    } else {
+		emit "FALLBACK_ROUTE=\"dev $interface $realm\"";
+	    }
+	} elsif ( $gateway ) {
 	    emit "FALLBACK_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
 	} else {
 	    emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
@@ -593,7 +609,12 @@ sub process_a_provider( $ ) {
 	}
     }
 
-    fatal_error q(The 'balance' and 'fallback' options are mutually exclusive) if $balance && $default;
+    if ( $balance ) {
+	fatal_error q(The 'balance' and 'fallback' options are mutually exclusive) if $default;
+	$balanced_providers++;
+    } elsif ( $default ) {
+	$fallback_providers++;
+    }
 
     if ( $load ) {
 	fatal_error q(The 'balance=<weight>' and 'load=<load-factor>' options are mutually exclusive) if $balance > 1;
@@ -1534,9 +1555,9 @@ sub finish_providers() {
 	} else {
 	    emit  ( "    if echo \$DEFAULT_ROUTE | grep -q 'nexthop.+nexthop'; then",
 		    "        qt \$IP -6 route delete default scope global table $table \$DEFAULT_ROUTE",
-		    "        run_ip -6 route add default scope global table $table \$DEFAULT_ROUTE",
+		    "        run_ip route add default scope global table $table \$DEFAULT_ROUTE",
 		    '    else',
-		    "        run_ip -6 route replace default scope global table $table \$DEFAULT_ROUTE",
+		    "        run_ip route replace default scope global table $table \$DEFAULT_ROUTE",
 		    '    fi',
 		    '' );
 	}

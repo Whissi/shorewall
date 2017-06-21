@@ -2246,14 +2246,6 @@ net      eth1         detect          <emphasis role="bold">optional</emphasis><
             contains the link configurations. That file is included by
             <filename>/etc/foolsm/foolsm.conf</filename>.</para>
           </listitem>
-
-          <listitem>
-            <para>The script run by FOOLSM during state change
-            (<filename>/etc/foolsm/script) </filename>writes a<filename>
-            ${VARDIR}/xxx.status</filename> file when the status of an
-            interface changes. Those files are read by the
-            <filename>isusable</filename> extension script (see below).</para>
-          </listitem>
         </itemizedlist>
 
         <para>Below are my relevant configuration files.</para>
@@ -2277,6 +2269,11 @@ COM_IF=eth1</programlisting>
 [ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
 
 return $status</programlisting>
+
+        <para>Note that the above script overrides the normal behavior of
+        <emphasis>persistent</emphasis> providers, in that it prevents the
+        attempt to enable the provider during <command>start</command>,
+        <command>restart</command> and <command>reload</command>.</para>
 
         <para><filename>/etc/shorewall/lib.private</filename>:</para>
 

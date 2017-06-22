@@ -859,6 +859,15 @@ INLINE               net              $FW ; -m recent --rcheck 10 --hitcount 5 -
 
           <programlisting>COMB_IF                         !70.90.191.120/29       70.90.191.121 ;; -m statistic --mode random --probability 0.50
 COMB_IF                         !70.90.191.120/29       70.90.191.123</programlisting>
+
+          <para>If the first character of the inline matches is a plus sign
+          ("+"), then the matches are processed before the column-oriented
+          input in the rule. That is required when specifying additional TCP
+          protocol parameters.</para>
+
+          <para>Example from action.TCPFlags:</para>
+
+          <programlisting>DROP     -      -      ;;+ -p 6 --tcp-flags ALL FIN,URG,PSH</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

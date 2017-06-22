@@ -1163,31 +1163,25 @@ fi
 if [ $PRODUCT = shorewall6 ]; then
     make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
-    for f in \
-	shorewall-accounting.5.gz  shorewall-ipsets.5.gz   shorewall-providers.5.gz     shorewall-tcclasses.5.gz     \
-	shorewall-actions.5.gz     shorewall-maclist.5.gz                               shorewall-tcdevices.5.gz     \
-	                           shorewall-mangle.5.gz   shorewall-proxyndp.5.gz      shorewall-tcfilters.5.gz     \
-	shorewall-blacklist.5.gz   shorewall-masq.5.gz     shorewall-routes.5.gz        shorewall-tcinterfaces.5.gz  \
-	shorewall-blrules.5.gz     shorewall-modules.5.gz  shorewall-routestopped.5.gz  shorewall-tcpri.5.gz         \
-	shorewall-conntrack.5.gz   shorewall-nat.5.gz      shorewall-rtrules.5.gz       shorewall-tcrules.5.gz       \
-                                   shorewall-nesting.5.gz  shorewall-rules.5.gz         shorewall-tos.5.gz           \
-	shorewall-exclusion.5.gz   shorewall-netmap.5.gz   shorewall-secmarks.5.gz      shorewall-tunnels.5.gz       \
-	shorewall-hosts.5.gz       shorewall-params.5.gz   shorewall-snat.5.gz          shorewall-vardir.5.gz        \
-	shorewall-interfaces.5.gz  shorewall-policy.5.gz   shorewall-stoppedrules.5.gz  shorewall-zones.5.gz
-    do
-	base=$(basename $f);
+    rm -f ${DESTDIR}${MANDIR}/man5/shorewall6*
 
-	case $base in
-	    shorewall-arprules.*|shorewall-ecn.*|shorewall-proxyarp.*)
-	        ;;
-	    *)
-		base6=shorewall6-${base#*-}
-		ln -sf ${MANDIR}/man5/$(basename $f) ${DESTDIR}${MANDIR}/man5/$base6
-		;;
-	esac
+    for f in \
+	shorewall-accounting.5  shorewall-ipsets.5   shorewall-providers.5     shorewall-tcclasses.5     \
+	shorewall-actions.5     shorewall-maclist.5                            shorewall-tcdevices.5     \
+	                        shorewall-mangle.5   shorewall-proxyndp.5      shorewall-tcfilters.5     \
+	shorewall-blacklist.5   shorewall-masq.5     shorewall-routes.5        shorewall-tcinterfaces.5  \
+	shorewall-blrules.5     shorewall-modules.5  shorewall-routestopped.5  shorewall-tcpri.5         \
+	shorewall-conntrack.5   shorewall-nat.5      shorewall-rtrules.5       shorewall-tcrules.5       \
+                                shorewall-nesting.5  shorewall-rules.5         shorewall-tos.5           \
+	shorewall-exclusion.5   shorewall-netmap.5   shorewall-secmarks.5      shorewall-tunnels.5       \
+	shorewall-hosts.5       shorewall-params.5   shorewall-snat.5          shorewall-vardir.5        \
+	shorewall-interfaces.5  shorewall-policy.5   shorewall-stoppedrules.5  shorewall-zones.5
+    do
+	f6=shorewall6-${f#*-}
+	echo ".so man5/$f" > ${DESTDIR}${MANDIR}/man5/$f6
     done
 
-    ln -sf ${MANDIR}/man5/shorewall.conf.5.gz ${DESTDIR}${MANDIR}/man5/shorewall6.conf.5.gz
+    echo ".so man5/shorewall.conf.5" > ${DESTDIR}${MANDIR}/man5/shorewall6.conf.5
 fi
 
 [ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man8 0755

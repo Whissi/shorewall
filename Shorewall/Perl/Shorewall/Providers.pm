@@ -357,7 +357,7 @@ sub balance_fallback_route( $$$$ ) {
     emit '';
 
     if ( $first_fallback_route ) {
-	if ( $balanced_providers == 1 ) {
+	if ( $fallback_providers == 1 ) {
 	    if ( $gateway ) {
 		emit "FALLBACK_ROUTE=\"via $gateway dev $interface $realm\"";
 	    } else {

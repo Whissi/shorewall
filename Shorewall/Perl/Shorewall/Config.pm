@@ -911,6 +911,7 @@ sub initialize( $;$$) {
 	  FIREWALL => undef ,
 	  BALANCE_PROVIDERS => undef ,
 	  PERL_HASH_SEED => undef ,
+	  USE_NFLOG_SIZE => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -4048,7 +4049,7 @@ sub make_mask( $ ) {
     0xffffffff >> ( 32 - $_[0] );
 }
 
-my @suffixes = qw(group size threshold nlgroup cprange qthreshold);
+my @suffixes;
 
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"
@@ -5376,6 +5377,7 @@ sub update_config_file( $ ) {
     update_default( 'PAGER',             $shorewallrc1{DEFAULT_PAGER} );
     update_default( 'LOGFORMAT',         'Shorewall:%s:%s:' );
     update_default( 'LOGLIMIT',          '' );
+    update_default( 'USE_NFLOG_SIZE',    '' );
 
     if ( $family == F_IPV4 ) {
 	update_default( 'BLACKLIST_DEFAULT', 'dropBcasts,dropNotSyn,dropInvalid' );
@@ -6047,12 +6049,6 @@ sub get_configuration( $$$$ ) {
 	$have_capabilities = 1;
     }
 
-    if ( have_capability( 'NFLOG_SIZE' ) ) {
-	@suffixes = qw(group size threshold nlgroup cprange qthreshold);
-    } else {
-	@suffixes = qw(group range threshold nlgroup cprange qthreshold);
-    }
-
     get_params( $export );
 
     process_shorewall_conf( $update, $annotate );
@@ -6407,6 +6403,17 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'AUTOMAKE'                   , '';
     default_yes_no 'TRACK_PROVIDERS'            , '';
     default_yes_no 'BALANCE_PROVIDERS'          , $config{USE_DEFAULT_RT} ? 'Yes' : '';
+    default_yes_no 'USE_NFLOG_SIZE'             , '';
+
+    if ( $config{USE_NFLOG_SIZE} ) {
+	if ( have_capability( 'NFLOG_SIZE' ) ) {
+	    @suffixes = qw(group size threshold nlgroup cprange qthreshold);
+	} else {
+	    fatal_error "USE_NFLOG_SIZE=Yes, but the --nflog-size capabiity is not present";
+	}
+    } else {
+	@suffixes = qw(group range threshold nlgroup cprange qthreshold);
+    }
 
     unless ( ( $config{NULL_ROUTE_RFC1918} || '' ) =~ /^(?:blackhole|unreachable|prohibit)$/ ) {
 	default_yes_no( 'NULL_ROUTE_RFC1918', '' );

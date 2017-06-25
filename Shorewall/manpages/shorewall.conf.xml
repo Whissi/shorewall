@@ -3084,6 +3084,40 @@ INLINE          -       -       -       ;; -j REJECT
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">USE_NFLOG_SIZE=</emphasis>[<emphasis
+        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.1.5. The second parameter to the NFLOG
+          target specifies how many bytes of the packet to copy to the log; if
+          omitted or if supplied as zero, the entire packet is copied. This
+          feature has traditionally been implemented using the --nflog-range
+          option to the NFLOG iptables target. Unfortuntely, the --nflog-range
+          option never worked (the entire packet was always copied). To deal
+          with this issue, the Netfilter team:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Added a warning message when --nflog-range is used</para>
+            </listitem>
+
+            <listitem>
+              <para>Added --nflog-size which works like --nflog-range was
+              intended to work.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>When USE_NFLOG_SIZE=Yes, Shorewall will attempt to use the new
+          --nflog-size feature. If that feature is not available in the
+          running kernel and ip[6]tables, an error is raised.</para>
+
+          <para>When USE_NFLOG_SIZE is not supplied, USE_NFLOG_SIZE=No is
+          assumed. When USE_NFLOG_SIZE is added by shorewall update, it is
+          added with setting No.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">USE_PHYSICAL_NAMES=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
 

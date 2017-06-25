@@ -851,8 +851,15 @@ sub validate_port( $$ ) {
     my $value;
 
     if ( $port =~ /^(\d+)$/ || $port =~ /^0x/ ) {
-	$port = numeric_value $port;
-	return $port if defined $port && $port && $port <= 65535;
+	$value = numeric_value $port;
+
+	if ( defined $value ) {
+	    if ( $value && $value <= 65535 ) {
+		return $value;
+	    } else {
+		$value = undef;
+	    }
+	}
     } elsif ( $port =~ /^%(.*)/ ) {
 	$value = record_runtime_port( $1 );
     } else {
@@ -891,13 +898,13 @@ sub validate_portpair( $$ ) {
 	$what = 'port range';
 
 	unless ($ports[0] =~ /^\$/ || $ports[1] =~ /^\$/ ) {
-	    fatal_error "Invalid port range ($portpair)" unless $ports[0] < $ports[1];
+	    fatal_error "Invalid port range ($_[1])" unless $ports[0] < $ports[1];
 	}
     } else {
 	$what = 'port';
     }
 
-    fatal_error "Using a $what ( $portpair ) requires PROTO TCP, UDP, UDPLITE, SCTP or DCCP" unless
+    fatal_error "Using a $what ( $_[1] ) requires PROTO TCP, UDP, UDPLITE, SCTP or DCCP" unless
 	defined $protonum && ( $protonum == TCP     ||
 			       $protonum == UDP     ||
 			       $protonum == UDPLITE ||

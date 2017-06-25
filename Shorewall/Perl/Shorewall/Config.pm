@@ -750,7 +750,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.4-Beta1",
+		    VERSION                 => "5.1.5-RC1",
 		    CAPVERSION              => 50100 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -4046,7 +4046,7 @@ sub make_mask( $ ) {
     0xffffffff >> ( 32 - $_[0] );
 }
 
-my @suffixes = qw(group range threshold nlgroup cprange qthreshold);
+my @suffixes = qw(group size threshold nlgroup cprange qthreshold);
 
 #
 # Validate a log level -- Drop the trailing '!' and translate to numeric value if appropriate"

@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=50100
+SHOREWALL_CAPVERSION=50105
 
 if [ -z "$g_basedir" ]; then
     #
@@ -2803,6 +2803,7 @@ determine_capabilities() {
     WAIT_OPTION=
     CPU_FANOUT=
     NETMAP_TARGET=
+    NFLOG_SIZE=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -3136,10 +3137,13 @@ determine_capabilities() {
     qt $g_tool -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
     qt $g_tool -A $chain -j LOG || LOG_TARGET=
     qt $g_tool -A $chain -j ULOG && ULOG_TARGET=Yes
-    qt $g_tool -A $chain -j NFLOG && NFLOG_TARGET=Yes
     qt $g_tool -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $g_tool -A $chain -m statistic --mode nth --every 2 --packet 1 && STATISTIC_MATCH=Yes
     qt $g_tool -A $chain -m geoip --src-cc US && GEOIP_MATCH=Yes
+    if qt $g_tool -A $chain -j NFLOG; then
+	NFLOG_TARGET=Yes
+	qt $g_tool -A $chain -j NFLOG --nflog-size 64 && NFLOG_SIZE=Yes
+    fi
 
     if [ $g_family -eq 4 ]; then
 	qt $g_tool -A $chain -j ACCOUNT --addr 192.168.1.0/29 --tname $chain && ACCOUNT_TARGET=Yes
@@ -3305,6 +3309,7 @@ report_capabilities_unsorted() {
     report_capability "CT Target (CT_TARGET)" $CT_TARGET
     report_capability "NFQUEUE CPU Fanout (CPU_FANOUT)" $CPU_FANOUT
     report_capability "NETMAP Target (NETMAP_TARGET)" $NETMAP_TARGET
+    report_capability "--nflog-size support (NFLOG_SIZE)" $NFLOG_SIZE
 
     echo "   Kernel Version (KERNELVERSION): $KERNELVERSION"
     echo "   Capabilities Version (CAPVERSION): $CAPVERSION"
@@ -3411,6 +3416,7 @@ report_capabilities_unsorted1() {
     report_capability1 WAIT_OPTION
     report_capability1 CPU_FANOUT
     report_capability1 NETMAP_TARGET
+    report_capability1 NFLOG_SIZE
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

@@ -413,6 +413,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
                  WAIT_OPTION     => 'iptables --wait option',
                  CPU_FANOUT      => 'NFQUEUE CPU Fanout',
                  NETMAP_TARGET   => 'NETMAP Target',
+                 NFLOG_SIZE      => '--nflog-size support',
 
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
@@ -751,7 +752,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "5.1.5-RC1",
-		    CAPVERSION              => 50100 ,
+		    CAPVERSION              => 50105 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -1043,6 +1044,7 @@ sub initialize( $;$$) {
 	       WAIT_OPTION => undef,
 	       CPU_FANOUT => undef,
 	       NETMAP_TARGET => undef,
+	       NFLOG_SIZE => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4818,6 +4820,10 @@ sub NFLog_Target() {
     qt1( "$iptables $iptablesw -A $sillyname -j NFLOG" );
 }
 
+sub NFLog_Size() {
+    have_capability( 'NFLOG_TARGET' ) && qt1( "$iptables $iptablesw -A $sillyname -j NFLOG --nflog-size 64" );
+}
+
 sub Logmark_Target() {
     qt1( "$iptables $iptablesw -A $sillyname -j LOGMARK" );
 }
@@ -4993,6 +4999,7 @@ our %detect_capability =
       LOG_TARGET => \&Log_Target,
       ULOG_TARGET => \&Ulog_Target,
       NFLOG_TARGET => \&NFLog_Target,
+      NFLOG_SIZE => \&NFLog_Size,
       MANGLE_ENABLED => \&Mangle_Enabled,
       MANGLE_FORWARD => \&Mangle_Forward,
       MARK => \&Mark,
@@ -5186,6 +5193,7 @@ sub determine_capabilities() {
 	$capabilities{TCPMSS_TARGET}   = detect_capability( 'TCPMSS_TARGET' );
 	$capabilities{CPU_FANOUT}      = detect_capability( 'CPU_FANOUT' );
 	$capabilities{NETMAP_TARGET}   = detect_capability( 'NETMAP_TARGET' );
+	$capabilities{NFLOG_SIZE}      = detect_capability( 'NFLOG_SIZE' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';
@@ -6037,6 +6045,12 @@ sub get_configuration( $$$$ ) {
 	read_capabilities;
 
 	$have_capabilities = 1;
+    }
+
+    if ( have_capability( 'NFLOG_SIZE' ) ) {
+	@suffixes = qw(group size threshold nlgroup cprange qthreshold);
+    } else {
+	@suffixes = qw(group range threshold nlgroup cprange qthreshold);
     }
 
     get_params( $export );

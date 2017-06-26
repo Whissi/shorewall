@@ -2344,7 +2344,7 @@ sub split_line2( $$;$$$ ) {
 
 	    $inline_matches = $pairs;
 
-	    if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+	    if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
 		#
 		# Pairs are enclosed in curly brackets.
 		#
@@ -2360,7 +2360,7 @@ sub split_line2( $$;$$$ ) {
 	    if ( $currline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
-		if ( $columns =~ /^(\s*|.*[^&@%]){(.*)}\s*$/ ) {
+		if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
 		    #
 		    # Pairs are enclosed in curly brackets.
 		    #
@@ -2374,7 +2374,7 @@ sub split_line2( $$;$$$ ) {
 	} elsif ( $checkinline ) {
 	    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes";
 	}
-    } elsif ( $currline =~ /^(\s*|.*[^&@%]){(.*)}$/ ) {
+    } elsif ( $currline =~ /^(\s*|.*[^&@%])\{(.*)\}$/ ) {
 	#
 	# Pairs are enclosed in curly brackets.
 	#

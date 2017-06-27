@@ -5372,12 +5372,11 @@ sub update_config_file( $ ) {
 	update_default( 'BALANCE_PROVIDERS', 'Yes' );
     }
 
-    update_default( 'EXPORTMODULES',     'No' );
-    update_default( 'RESTART',           'reload' );
-    update_default( 'PAGER',             $shorewallrc1{DEFAULT_PAGER} );
-    update_default( 'LOGFORMAT',         'Shorewall:%s:%s:' );
-    update_default( 'LOGLIMIT',          '' );
-    update_default( 'USE_NFLOG_SIZE',    'No' );
+    update_default( 'EXPORTMODULES',         'No' );
+    update_default( 'RESTART',               'reload' );
+    update_default( 'PAGER',                 $shorewallrc1{DEFAULT_PAGER} );
+    update_default( 'LOGFORMAT',             'Shorewall:%s:%s:' );
+    update_default( 'LOGLIMIT',              '' );
 
     if ( $family == F_IPV4 ) {
 	update_default( 'BLACKLIST_DEFAULT', 'dropBcasts,dropNotSyn,dropInvalid' );

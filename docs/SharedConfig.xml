@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shared Shorewall and Shorewall6 Configuration</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+
+    <copyright>
+      <year>2017</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Netfilter separates management of IPv4 and IPv6 configurations. Each
+    address family has its own utility (iptables and ip6tables), and changes
+    made to the configuration of one address family do not affect the other.
+    While Shorewall also separates the address families in this way, it is
+    possible for Shorewall and Shorewall6 to share almost all of the
+    configuration files. This article gives an example.</para>
+  </section>
+
+  <section>
+    <title>Environment</title>
+
+    <para>In this example, each address family has two Internet interfaces.
+    Both address families share a fast uplink (eth0) that has a single public
+    IPv4 address, but can delegate IPv6 subnets to the Shorewall-based router.
+    Both address families also have a production uplink. For IPv4, Ethernet is
+    used (eth1) and supports the public IPv4 subnet 70.90.191.120/29. For
+    IPv6, a Hurricane Electric 6in4 tunnel is used (sit1), which provides the
+    public IPv6 subnet 2001:470:b:227::/64. The router also has two bridges. A
+    DMZ bridge (br0) provides access to containers running a web server, a
+    mail exchanger, and an IMAPS mail access server. The second bridge (br1)
+    provides access to a container running irssi under screen, allowing
+    constant access to and monitoring of IRC channels.</para>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>Here are the contents of /etc/shorewall/ and /etc/shorewal6/:</para>
+
+    <programlisting>root@gateway:/etc# ls shorewall shorewall6
+shorewall:
+action.Mirrors	conntrack  interfaces  mangle	params	providers  rtrules  shorewall.conf  started  zones
+actions		hosts	   isusable    mirrors	policy	proxyarp   rules    snat	    tunnels
+
+shorewall6:
+shorewall6.conf
+root@gateway:/etc#</programlisting>
+
+    <para>The various configuration files are described in the sections that
+    follow. Note that in all cases, these files use the <ulink
+    url="/configuration_file_basics.htm#Pairs">alternate format for column
+    specification</ulink>.</para>
+
+    <section>
+      <title>shorewall.conf and shorewall6.conf</title>
+
+      <para>These are the only files that are not shared between the two
+      address families. The key setting is CONFIG_PATH in
+      shorewall6.conf:</para>
+
+      <programlisting>CONFIG_PATH="${CONFDIR}/shorewall6:<emphasis role="bold">${CONFDIR}/shorewall:</emphasis>/usr/share/shorewall6:${SHAREDIR}/shorewall"A</programlisting>
+
+      <para>Any Shorewall6 configuration file not found in
+      /etc/shorewall/shorewall6/ will be searched for in
+      /etc/shorewall/.</para>
+
+      <section>
+        <title>shorewall.conf</title>
+
+        <para>The contents of /etc/shorewall/shorewall.conf are as
+        follows:</para>
+
+        <programlisting>###############################################################################
+#		       S T A R T U P   E N A B L E D
+###############################################################################
+STARTUP_ENABLED=Yes
+###############################################################################
+#			     V E R B O S I T Y
+###############################################################################
+VERBOSITY=1
+###############################################################################
+#			        P A G E R
+###############################################################################
+PAGER=pager
+###############################################################################
+#			     F I R E W A L L
+###############################################################################
+FIREWALL=
+###############################################################################
+#			       L O G G I N G
+###############################################################################
+LOG_LEVEL="NFLOG(0,64,1)"
+BLACKLIST_LOG_LEVEL="none"
+INVALID_LOG_LEVEL=
+LOG_BACKEND=netlink
+LOG_MARTIANS=Yes
+LOG_VERBOSITY=1
+LOGALLNEW=
+LOGFILE=/var/log/ulogd/ulogd.syslogemu.log
+LOGFORMAT=": %s %s"
+LOGTAGONLY=Yes
+LOGLIMIT="s:5/min"
+MACLIST_LOG_LEVEL="$LOG_LEVEL"
+RELATED_LOG_LEVEL="$LOG_LEVEL:,related"
+RPFILTER_LOG_LEVEL="$LOG_LEVEL:,rpfilter"
+SFILTER_LOG_LEVEL="$LOG_LEVEL"
+SMURF_LOG_LEVEL="$LOG_LEVEL"
+STARTUP_LOG=/var/log/shorewall-init.log
+TCP_FLAGS_LOG_LEVEL="$LOG_LEVEL"
+UNTRACKED_LOG_LEVEL=
+###############################################################################
+#	L O C A T I O N	  O F	F I L E S   A N D   D I R E C T O R I E S
+###############################################################################
+ARPTABLES=
+CONFIG_PATH="/etc/shorewall:/usr/share/shorewall:/usr/share/shorewall/Shorewall"
+GEOIPDIR=/usr/share/xt_geoip/LE
+IPTABLES=/sbin/iptables
+IP=/sbin/ip
+IPSET=
+LOCKFILE=/var/lib/shorewall/lock
+MODULESDIR="+extra/RTPENGINE"
+NFACCT=
+PATH="/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin"
+PERL=/usr/bin/perl
+RESTOREFILE=
+SHOREWALL_SHELL=/bin/sh
+SUBSYSLOCK=
+TC=
+###############################################################################
+#		D E F A U L T   A C T I O N S / M A C R O S
+###############################################################################
+ACCEPT_DEFAULT="none"
+BLACKLIST_DEFAULT="NotSyn(DROP):$LOG_LEVEL"
+DROP_DEFAULT="Broadcast(DROP),Multicast(DROP)"
+NFQUEUE_DEFAULT="none"
+QUEUE_DEFAULT="none"
+REJECT_DEFAULT="Broadcast(DROP),Multicast(DROP)"
+###############################################################################
+#			 R S H / R C P	C O M M A N D S
+###############################################################################
+RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
+RSH_COMMAND='ssh ${root}@${system} ${command}'
+###############################################################################
+#			F I R E W A L L	  O P T I O N S
+###############################################################################
+ACCOUNTING=Yes
+ACCOUNTING_TABLE=mangle
+ADD_IP_ALIASES=No
+ADD_SNAT_ALIASES=No
+ADMINISABSENTMINDED=Yes
+AUTOCOMMENT=Yes
+AUTOHELPERS=No
+AUTOMAKE=Yes
+BALANCE_PROVIDERS=No
+BASIC_FILTERS=No
+BLACKLIST="NEW,INVALID,UNTRACKED"
+CLAMPMSS=Yes
+CLEAR_TC=Yes
+COMPLETE=No
+DEFER_DNS_RESOLUTION=No
+DELETE_THEN_ADD=No
+DETECT_DNAT_IPADDRS=No
+DISABLE_IPV6=No
+DOCKER=No
+DONT_LOAD="nf_nat_sip,nf_conntrack_sip,nf_conntrack_h323,nf_nat_h323"
+DYNAMIC_BLACKLIST="ipset-only,disconnect,timeout=7200"
+EXPAND_POLICIES=Yes
+EXPORTMODULES=Yes
+FASTACCEPT=Yes
+FORWARD_CLEAR_MARK=Yes
+HELPERS="ftp,irc"
+IGNOREUNKNOWNVARIABLES=No
+IMPLICIT_CONTINUE=No
+INLINE_MATCHES=Yes
+IPSET_WARNINGS=Yes
+IP_FORWARDING=Yes
+KEEP_RT_TABLES=Yes
+LOAD_HELPERS_ONLY=Yes
+MACLIST_TABLE=filter
+MACLIST_TTL=60
+MANGLE_ENABLED=Yes
+MAPOLDACTIONS=No
+MARK_IN_FORWARD_CHAIN=No
+MINIUPNPD=Yes
+MODULE_SUFFIX="ko ko.xz"
+MULTICAST=No
+MUTEX_TIMEOUT=60
+NULL_ROUTE_RFC1918=unreachable
+OPTIMIZE=All
+OPTIMIZE_ACCOUNTING=No
+PERL_HASH_SEED=12345
+REJECT_ACTION=
+REQUIRE_INTERFACE=No
+RESTART=restart
+RESTORE_DEFAULT_ROUTE=No
+RESTORE_ROUTEMARKS=Yes
+RETAIN_ALIASES=No
+ROUTE_FILTER=No
+SAVE_ARPTABLES=No
+SAVE_IPSETS=ipv4
+TC_ENABLED=No
+TC_EXPERT=No
+TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
+TRACK_PROVIDERS=Yes
+TRACK_RULES=No
+USE_DEFAULT_RT=Yes
+USE_NFLOG_SIZE=No
+USE_PHYSICAL_NAMES=Yes
+USE_RT_NAMES=Yes
+VERBOSE_MESSAGES=No
+WARNOLDCAPVERSION=Yes
+WORKAROUNDS=No
+ZERO_MARKS=Yes
+ZONE2ZONE=-
+###############################################################################
+#			P A C K E T   D I S P O S I T I O N
+###############################################################################
+BLACKLIST_DISPOSITION=DROP
+INVALID_DISPOSITION=CONTINUE
+MACLIST_DISPOSITION=ACCEPT
+RELATED_DISPOSITION=REJECT
+RPFILTER_DISPOSITION=DROP
+SMURF_DISPOSITION=DROP
+SFILTER_DISPOSITION=DROP
+TCP_FLAGS_DISPOSITION=DROP
+UNTRACKED_DISPOSITION=DROP
+################################################################################
+#			P A C K E T  M A R K  L A Y O U T
+################################################################################
+TC_BITS=8
+PROVIDER_BITS=2
+PROVIDER_OFFSET=16
+MASK_BITS=8
+ZONE_BITS=0
+</programlisting>
+      </section>
+
+      <section>
+        <title>shorewall6.conf</title>
+
+        <para>The contents of /etc/shorewall6/shorewall6.conf are:</para>
+
+        <programlisting>###############################################################################
+#		       S T A R T U P   E N A B L E D
+###############################################################################
+STARTUP_ENABLED=Yes
+###############################################################################
+#			     V E R B O S I T Y
+###############################################################################
+VERBOSITY=1
+###############################################################################
+#			        P A G E R
+###############################################################################
+PAGER=pager
+###############################################################################
+#			     F I R E W A L L
+###############################################################################
+FIREWALL=
+###############################################################################
+#			       L O G G I N G
+###############################################################################
+LOG_LEVEL="NFLOG(0,64,1)"
+BLACKLIST_LOG_LEVEL="none"
+INVALID_LOG_LEVEL=
+LOG_BACKEND=netlink
+LOG_VERBOSITY=2
+LOGALLNEW=
+LOGFILE=/var/log/ulogd/ulogd.syslogemu.log
+LOGFORMAT="%s %s "
+LOGLIMIT="s:5/min"
+LOGTAGONLY=Yes
+MACLIST_LOG_LEVEL="$LOG_LEVEL"
+RELATED_LOG_LEVEL=
+RPFILTER_LOG_LEVEL="$LOG_LEVEL"
+SFILTER_LOG_LEVEL="$LOG_LEVEL"
+SMURF_LOG_LEVEL="$LOG_LEVEL"
+STARTUP_LOG=/var/log/shorewall6-init.log
+TCP_FLAGS_LOG_LEVEL="$LOG_LEVEL"
+UNTRACKED_LOG_LEVEL=
+###############################################################################
+#	L O C A T I O N	  O F	F I L E S   A N D   D I R E C T O R I E S
+###############################################################################
+CONFIG_PATH="${CONFDIR}/shorewall6:${CONFDIR}/shorewall:/usr/share/shorewall6:${SHAREDIR}/shorewall"
+GEOIPDIR=/usr/share/xt_geoip/LE
+IP6TABLES=
+IP=
+IPSET=
+LOCKFILE=
+MODULESDIR="+extra/RTPENGINE"
+NFACCT=
+PERL=/usr/bin/perl
+PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin"
+RESTOREFILE=restore
+SHOREWALL_SHELL=/bin/sh
+SUBSYSLOCK=/var/lock/subsys/shorewall6
+TC=
+###############################################################################
+#		D E F A U L T   A C T I O N S / M A C R O S
+###############################################################################
+ACCEPT_DEFAULT="none"
+BLACKLIST_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP),dropNotSyn:$LOG_LEVEL,dropInvalid:$LOG_LEVEL,DropDNSrep:$LOG_LEVEL"
+DROP_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP)"
+NFQUEUE_DEFAULT="none"
+QUEUE_DEFAULT="none"
+REJECT_DEFAULT="AllowICMPs,Broadcast(DROP),Multicast(DROP)"
+###############################################################################
+#			 R S H / R C P	C O M M A N D S
+###############################################################################
+RCP_COMMAND='scp ${files} ${root}@${system}:${destination}'
+RSH_COMMAND='ssh ${root}@${system} ${command}'
+###############################################################################
+#			F I R E W A L L	  O P T I O N S
+###############################################################################
+ACCOUNTING=Yes
+ACCOUNTING_TABLE=mangle
+ADMINISABSENTMINDED=Yes
+AUTOCOMMENT=Yes
+AUTOHELPERS=Yes
+AUTOMAKE=Yes
+BALANCE_PROVIDERS=No
+BASIC_FILTERS=No
+BLACKLIST="NEW,INVALID,UNTRACKED"
+CLAMPMSS=Yes
+CLEAR_TC=No
+COMPLETE=No
+DEFER_DNS_RESOLUTION=Yes
+DELETE_THEN_ADD=No
+DONT_LOAD=
+DYNAMIC_BLACKLIST="ipset-only,disconnect,timeout=7200"
+EXPAND_POLICIES=Yes
+EXPORTMODULES=Yes
+FASTACCEPT=Yes
+FORWARD_CLEAR_MARK=Yes
+HELPERS=
+IGNOREUNKNOWNVARIABLES=No
+IMPLICIT_CONTINUE=No
+INLINE_MATCHES=No
+IPSET_WARNINGS=Yes
+IP_FORWARDING=Keep
+KEEP_RT_TABLES=Yes
+LOAD_HELPERS_ONLY=Yes
+MACLIST_TABLE=filter
+MACLIST_TTL=
+MANGLE_ENABLED=Yes
+MARK_IN_FORWARD_CHAIN=No
+MINIUPNPD=Yes
+MODULE_SUFFIX=ko
+MUTEX_TIMEOUT=60
+OPTIMIZE=All
+OPTIMIZE_ACCOUNTING=No
+PERL_HASH_SEED=0
+REJECT_ACTION=
+REQUIRE_INTERFACE=No
+RESTART=restart
+RESTORE_DEFAULT_ROUTE=Yes
+RESTORE_ROUTEMARKS=Yes
+SAVE_IPSETS=No
+TC_ENABLED=Shared
+TC_EXPERT=No
+TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
+TRACK_PROVIDERS=Yes
+TRACK_RULES=No
+USE_DEFAULT_RT=Yes
+USE_NFLOG_SIZE=No
+USE_PHYSICAL_NAMES=No
+USE_RT_NAMES=No
+VERBOSE_MESSAGES=Yes
+WARNOLDCAPVERSION=Yes
+WORKAROUNDS=No
+ZERO_MARKS=No
+ZONE2ZONE=-
+###############################################################################
+#			P A C K E T   D I S P O S I T I O N
+###############################################################################
+BLACKLIST_DISPOSITION=DROP
+INVALID_DISPOSITION=CONTINUE
+MACLIST_DISPOSITION=REJECT
+RELATED_DISPOSITION=REJECT
+SFILTER_DISPOSITION=DROP
+RPFILTER_DISPOSITION=DROP
+SMURF_DISPOSITION=DROP
+TCP_FLAGS_DISPOSITION=DROP
+UNTRACKED_DISPOSITION=DROP
+################################################################################
+#			P A C K E T  M A R K  L A Y O U T
+################################################################################
+TC_BITS=8
+PROVIDER_BITS=2
+PROVIDER_OFFSET=8
+MASK_BITS=8
+ZONE_BITS=0
+</programlisting>
+      </section>
+    </section>
+
+    <section>
+      <title>params</title>
+
+      <para>Because addresses and interfaces are different between the two
+      address families, they cannot be hard-coded in the configuration files.
+      /etc/shorewall/params is used to set shell variables whose contents will
+      vary between Shorewall and Shorewall6. In the params file and in
+      run-time extension files, the shell variable <emphasis
+      role="bold">g_family</emphasis> can be used to determine which address
+      family to use; if IPv4, then $g_family will expand to 4 and if IPv6,
+      $g_family will expand to 6.</para>
+
+      <para>The contents of /etc/shorewall/params is as follows:</para>
+
+      <programlisting>INCLUDE mirrors #Sets the MIRRORS variable for the Mirrors action
+
+#
+# Set compile-time variables depending on the address family
+#
+if [ $g_family = 4 ]; then
+    #
+    # IPv4 compilation
+    #
+    FALLBACK=Yes	   # Make FAST_IF the primary and PROD_IF the fallback interface
+			   # See /etc/shorewall/providers
+    STATISTICAL=No	   # Don't use statistical load balancing
+    LISTS=70.90.191.124	   # IP address of lists.shorewall.net (MX)
+    MAIL=70.90.191.122	   # IP address of mail.shorewall.net  (IMAPS)
+    SERVER=70.90.191.125   # IP address of www.shorewall.org
+    PROXY=Yes		   # Use TPROXY for local web access
+    ALL=0.0.0.0/0	   # Entire address space
+    LOC_ADDR=172.20.1.253  # IP address of the local LAN interface
+    FAST_GATEWAY=10.2.10.1 # Default gateway through the IF_FAST interface
+    FAST_MARK=0x20000	   # Multi-ISP mark setting for IF_FAST
+    #
+    # Interface Options
+    #
+    LOC_OPTIONS=dhcp,ignore=1,wait=5,routefilter,routeback,tcpflags=0,nodbl,physical=eth2
+    FAST_OPTIONS=optional,dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0,arp_ignore=1,proxyarp=0,upnp,nosmurfs,physical=eth0
+    PROD_OPTIONS=optional,dhcp,tcpflags,logmartians,nosmurfs,sourceroute=0,arp_ignore=1,proxyarp=0,upnp,nosmurfs,physical=eth1
+    DMZ_OPTIONS=routeback,proxyarp=1,required,wait=30,nets=70.90.191.120/29,dhcp,nodbl,physical=br0
+    IRC_OPTIONS=routeback,proxyarp=1,required,wait=30,nets=172.20.2.0/24,dhcp,nodbl,physical=br1
+else
+    #
+    # IPv6 compilation
+    #
+    FALLBACK=Yes			      # Make FAST_IF the primary and PROD_IF the fallback interface
+					      # See /etc/shorewall/providers
+    STATISTICAL=No			      # Don't use statistical load balancing
+    LISTS=[2001:470:b:227::42]		      # IP address of lists.shorewall.net (MX and HTTPS)
+    MAIL=[2001:470:b:227::45]		      # IP address of mail.shorewall.net  (IMAPS and HTTPS)
+    SERVER=[2001:470:b:227::43]		      # IP address of www.shorewall.org   (HTTP, FTP and RSYNC)
+    PROXY=Yes				      # Use TPROXY for local web access
+    ALL=[::]/0				      # Entire address space
+    LOC_ADDR=[2601:601:8b00:bf0::1]	      # IP address of the local LAN interface
+    FAST_GATEWAY=fe80::22e5:2aff:feb7:f2cf    # Default gateway through the IF_FAST interface
+    FAST_MARK=0x100			      # Multi-ISP mark setting for IF_FAST
+    #
+    # Interface Options
+    #
+    PROD_OPTIONS=forward=1,optional,physical=sit1
+    FAST_OPTIONS=forward=1,optional,dhcp,upnp,physical=eth0
+    LOC_OPTIONS=forward=1,nodbl,routeback,physical=eth2
+    DMZ_OPTIONS=routeback,forward=1,required,wait=30,nodbl,physical=br0
+    IRC_OPTIONS=routeback,forward=1,required,wait=30,nodbl,physical=br1
+fi
+</programlisting>
+    </section>
+
+    <section>
+      <title>zones</title>
+
+      <para>Here is the /etc/shorewall/zones file:</para>
+
+      <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
+#					OPTIONS			OPTIONS
+#
+# By using the 'ip' type, both Shorewall and Shorewall6 can share this file
+#
+fw	{ TYPE=firewall }
+net	{ TYPE=ip }
+loc	{ TYPE=ip }
+dmz	{ TYPE=ip }
+apps	{ TYPE=ip }
+vpn1	{ TYPE=ipsec, OPTIONS=mode=tunnel,proto=esp }
+</programlisting>
+    </section>
+
+    <section>
+      <title>interfaces</title>
+
+      <para>/etc/shorewall/interfaces makes heavy use of variables set in
+      /etc/shorewall/params:</para>
+
+      <programlisting>#
+# LOC_IF is the local LAN for both families
+# FAST_IF is a Comcast IPv6 beta uplink which is used for internet access from the local lan for both families
+# PROD_IF is the interface used by shorewall.org servers
+#     For IPv4, it is eth1
+#     For IPv6, it is sit1 (Hurricane Electric 6in4 link)
+# DMZ_IF is a bridge to the production containers
+# IRC_IF is a bridge to a container that currently runs irssi under screen
+
+loc  { INTERFACE=LOC_IF,  OPTIONS=$LOC_OPTIONS }
+net  { INTERFACE=FAST_IF, OPTIONS=$FAST_OPTIONS }
+net  { INTERFACE=PROD_IF, OPTIONS=$PROD_OPTIONS }
+dmz  { INTERFACE=DMZ_IF,  OPTIONS=$DMZ_OPTIONS }
+apps { INTERFACE=IRC_IF,  OPTIONS=$IRC_OPTIONS }</programlisting>
+    </section>
+
+    <section>
+      <title>hosts</title>
+
+      <para>/etc/shorewall/hosts is used to define the vpn zone:</para>
+
+      <programlisting>#ZONE		HOSTS				OPTIONS
+vpn1 { HOSTS=PROD_IF:$ALL }
+vpn1 { HOSTS=FAST_IF:$ALL }
+vpn1 { HOSTS=LOC_IF:$ALL }
+</programlisting>
+    </section>
+
+    <section>
+      <title>policy</title>
+
+      <para>The same set of policies apply to both address families:</para>
+
+      <programlisting>#SOURCE         DEST            POLICY					LOGLEVEL		RATE
+$FW { DEST=dmz,net, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
+$FW { DEST=all, POLICY=ACCEPT }
+loc { DEST=net, POLICY=ACCEPT }
+loc,vpn1,apps { DEST=loc,vpn1,apps POLICY=ACCEPT }
+loc { DEST=fw, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
+net { DEST=net, POLICY=NONE }
+net { DEST=fw, POLICY=BLACKLIST:+Broadcast(DROP),Multicast(DROP),DropDNSrep:$LOG_LEVEL, LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
+net { DEST=all, POLICY=BLACKLIST:+DropDNSrep:$LOG_LEVEL, LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
+dmz { DEST=fw, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
+all { DEST=all, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
+</programlisting>
+    </section>
+
+    <section>
+      <title>providers</title>
+
+      <para>The providers file is set up to allow for three different
+      configurations:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>FALLBACK -- FAST_IF is the primary interface and PROD_IF is
+          the fallback</para>
+        </listitem>
+
+        <listitem>
+          <para>STATISTICAL -- Statistical load balancing between FAST_IF and
+          PROD_IF</para>
+        </listitem>
+
+        <listitem>
+          <para>IPv4 only -- balance between FAST_IF and PROD_IF</para>
+        </listitem>
+      </orderedlist>
+
+      <programlisting>#
+# This could be cleaned up a bit, but I'm leaving it as is for now
+#
+#   - The two address families use different fw mark geometry
+#   - The two address families use different fallback interfaces
+#   - The 'balance' option doesn't work as expected in IPv6 so I have no balance configuration for Shorewall6
+#   - IPv4 uses the 'loose' option on PROD_IF
+#
+?if $FALLBACK
+    # FAST_IF is primary, PROD_IF is fallback
+    #
+    ?info Compiling with FALLBACK
+    IPv6Fast	    { NUMBER=1, MARK=$FAST_MARK, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,primary,persistent }
+    ?if __IPV4
+	ComcastB    { NUMBER=4, MARK=0x10000,	 INTERFACE=PROD_IF, GATEWAY=10.1.10.1, OPTIONS=loose,fallback,persistent }
+    ?else    
+	HE	    { NUMBER=2, MARK=0x200,	 INTERFACE=PROD_IF, OPTIONS=fallback,persistent }
+    ?endif
+?elsif $STATISTICAL
+    # Statistically balance traffic between FAST_IF and PROD_IF
+    ?info Compiling with STATISTICAL
+    ?if __IPV4
+    	IPv6Fast    { NUMBER=1, MARK=0x20000, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,load=0.66666667,primary }
+    ?else
+	HE	    { NUMBER=2, MARK=0x200,   INTERFACE=PROD_IF,                        OPTIONS=track,load=0.33333333,persistent }
+    ?endif
+?else
+    ?INFO Compiling with BALANCE
+    IPv6Fast	 { NUMBER=1, MARK=0x100,   INTERFACE=eth0,    GATEWAY=$FAST_GATEWAY, OPTIONS=track,balance=2,loose,persistent }
+    ?if __IPV4
+	ComcastB { NUMBER=4, MARK=0x10000, INTERFACE=IPV4_IF, GATEWAY=10.1.10.1,     OPTIONS=nohostroute,loose,balance,persistent }
+    ?else
+        ?warning No BALANCE IPv6 configuration - using FALLBACK  
+	HE	 { NUMBER=2, MARK=0x200,   INTERFACE=PROD_IF,			     OPTIONS=fallback,persistent }
+    ?endif
+?endif
+
+Tproxy   { NUMBER=3, INTERFACE=lo, OPTIONS=tproxy }
+</programlisting>
+    </section>
+
+    <section>
+      <title>rtrules</title>
+
+      <para>The routing rules are quite dependent on the address
+      family:</para>
+
+      <programlisting>#SOURCE             DEST             PROVIDER  PRIORITY
+
+#
+# This file ensures that the DMZ is routed out of the IF_PROD interface
+# and that the IPv6 subnets delegated by the Fast router are routed out
+# of the IF_FAST interface.
+#
+?if __IPV4
+    { SOURCE=70.90.191.121,70.90.191.123, PROVIDER=ComcastB, PRIORITY=1000! }
+    { SOURCE=&amp;FAST_IF,	              	  PROVIDER=IPv6Fast, PRIORITY=1000! }
+    { SOURCE=br0,	     		  PROVIDER=ComcastB, PRIORITY=11000 }
+?else
+    { SOURCE=2001:470:A:227::/64,         PROVIDER=HE,	     PRIORITY=1000! }
+    { SOURCE=2001:470:B:227::/64,         PROVIDER=HE,	     PRIORITY=11000 }
+    { SOURCE=2601:601:8b00:bf0::/56	  PROVIDER=IPv6Fast, PRIORITY=11000 }
+?endif
+</programlisting>
+    </section>
+
+    <section>
+      <title>actions</title>
+
+      <para>/etc/shorewall/actions defines one action:</para>
+
+      <programlisting>#ACTION                         COMMENT
+Mirrors	   	                # Accept traffic from Shorewall Mirrors
+</programlisting>
+
+      <para>/etc/shorewall/action.Mirrors:</para>
+
+      <programlisting>#TARGET SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+#                       	        	PORT    PORT(S)    DEST		LIMIT
+?COMMENT Accept traffic from Mirrors
+?FORMAT  2
+DEFAULTS -
+$1	$MIRRORS
+</programlisting>
+    </section>
+
+    <section>
+      <title>conntrack</title>
+
+      <para>In addition to invoking the FTP helper on TCP port 21, this file
+      notracks some IPv4 traffic:</para>
+
+      <programlisting>#ACTION			SOURCE		DEST		PROTO	DPORT		SPORT	USER	SWITCH
+
+CT:helper:ftp:P { PROTO=tcp, DPORT=21 }
+CT:helper:ftp:O { PROTO=tcp, DPORT=21 }
+
+?if __IPV4
+    #
+    # Don't track IPv4 broadcasts
+    #
+    NOTRACK:P       { SOURCE=LOC_IF, DEST=172.20.1.255,   PROTO=udp }
+    NOTRACK:P       { DEST=255.255.255.255, 	          PROTO=udp }
+    NOTRACK:O       { DEST=255.255.255.255, 	          PROTO=udp }
+    NOTRACK:O       { DEST=172.20.1.255,    	          PROTO=udp }
+    NOTRACK:O       { DEST=70.90.191.127,                 PROTO=udp }
+?endif
+</programlisting>
+    </section>
+
+    <section>
+      <title>rules</title>
+
+      <para>/etc/shorewall/rules has only a couple of rules that are
+      conditional based on address family:</para>
+
+      <programlisting>#ACTION		SOURCE		DEST		PROTO	DPORT	SPORT	ORIGDEST	RATE	USER	MARK	CONNLIMIT	TIME	HEADERS	SWITCH	HELPER
+
+?SECTION ALL
+
+Ping(ACCEPT)	{ SOURCE=net, DEST=all, RATE=d:ping:2/sec:10 }
+Trcrt(ACCEPT)	{ SOURCE=net, DEST=all, RATE=d:ping:2/sec:10 }
+
+?SECTION ESTABLISHED
+
+?SECTION RELATED
+
+ACCEPT		{ SOURCE=all, DEST=dmz:$SERVER, PROTO=tcp,  DPORT=61001:62000,  helper=ftp }
+ACCEPT		{ SOURCE=dmz, DEST=all,		PROTO=tcp,  helper=ftp }
+ACCEPT		{ SOURCE=all, DEST=net,		PROTO=tcp,  helper=ftp }
+ACCEPT		{ SOURCE=all, DEST=all,		PROTO=icmp }
+RST(ACCEPT)	{ SOURCE=all, DEST=all }
+ACCEPT		{ SOURCE=dmz, DEST=dmz }
+
+?SECTION INVALID
+
+RST(ACCEPT)	{ SOURCE=all, DEST=all }
+DROP		{ SOURCE=net, DEST=all }
+FIN		{ SOURCE=all, DEST=all }
+
+?SECTION UNTRACKED
+
+?if __IPV4
+Broadcast(ACCEPT) { SOURCE=all, DEST=$FW }
+ACCEPT		  { SOURCE=all, DEST=$FW, PROTO=udp }
+CONTINUE	  { SOURCE=loc, DEST=$FW }
+CONTINUE	  { SOURCE=$FW, DEST=all }
+?endif
+
+?SECTION NEW
+
+######################################################################################################
+# Stop certain outgoing traffic to the net
+#
+REJECT:$LOG_LEVEL { SOURCE=loc,vpn1,apps DEST=net, PROTO=tcp, DPORT=25 }		#Stop direct loc-&gt;net SMTP (Comcast uses submission).
+REJECT:$LOG_LEVEL { SOURCE=loc,vpn1,apps DEST=net, PROTO=udp, DPORT=1025:1031 }	#MS Messaging
+
+REJECT		{ SOURCE=all, DEST=net, PROTO=tcp, DPORT=137,445, comment="Stop NETBIOS Crap" }
+REJECT		{ SOURCE=all, DEST=net, PROTO=udp, DPORT=137:139, comment="Stop NETBIOS Crap" }
+
+REJECT		{ SOURCE=all, DEST=net, PROTO=tcp, DPORT=3333, comment="Disallow port 3333" }
+
+REJECT		{ SOURCE=all, DEST=net, PROTO=udp, DPORT=3544, comment="Stop Teredo" }
+
+?COMMENT
+
+######################################################################################################
+# 6in4
+#
+?if __IPV4
+    ACCEPT		    { SOURCE=net:216.218.226.238, DEST=$FW, PROTO=41 }
+    ACCEPT		    { SOURCE=$FW, DEST=net:216.218.226.238, PROTO=41 }
+?endif
+######################################################################################################
+# Ping
+#
+Ping(ACCEPT)	  { SOURCE=$FW,loc,dmz,vpn1, DEST=$FW,loc,dmz,vpn1 }
+Ping(ACCEPT)	  { SOURCE=all,              DEST=net }
+######################################################################################################
+# SSH
+#
+AutoBL(SSH,60,-,-,-,-,$LOG_LEVEL)\
+		  { SOURCE=net,              DEST=all,         PROTO=tcp, DPORT=22 }
+SSH(ACCEPT)	  { SOURCE=all, DEST=all }
+?if __IPV4
+SSH(DNAT-)	  { SOURCE=net,              DEST=172.20.2.44, PROTO=tcp, DPORT=ssh, ORIGDEST=70.90.191.123 }
+?endif
+######################################################################################################
+# DNS
+#
+DNS(ACCEPT)	  { SOURCE=loc,dmz,vpn1,apps, DEST=$FW }
+DNS(ACCEPT)	  { SOURCE=$FW, DEST=net }
+######################################################################################################
+# Traceroute
+#
+Trcrt(ACCEPT)	  { SOURCE=all, DEST=net }
+Trcrt(ACCEPT)	  { SOURCE=net, DEST=$FW,dmz }
+######################################################################################################
+# Email
+#
+SMTP(ACCEPT)	   { SOURCE=net,$FW, DEST=dmz:$LISTS }
+SMTP(ACCEPT)	   { SOURCE=dmz:$LISTS, DEST=net:PROD_IF }
+SMTP(REJECT)	   { SOURCE=dmz:$LISTS, DEST=net }
+IMAPS(ACCEPT)  	   { SOURCE=all, DEST=dmz:$MAIL }
+Submission(ACCEPT) { SOURCE=all, DEST=dmz:$LISTS }
+SMTPS(ACCEPT) 	   { SOURCE=all, DEST=dmz:$LISTS }
+IMAP(ACCEPT)	   { SOURCE=loc,vpn1, DEST=net }
+######################################################################################################
+# NTP
+#
+NTP(ACCEPT)	   { SOURCE=all, DEST=net }
+NTP(ACCEPT)	   { SOURCE=loc,vpn1,dmz,apps DEST=$FW }
+######################################################################################################
+# HTTP/HTTPS
+#
+Web(ACCEPT)	   { SOURCE=loc,vpn1 DEST=$FW }
+Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=proxy }
+Web(DROP)	   { SOURCE=net, DEST=fw, PROTO=tcp, comment="Do not blacklist web crawlers" }
+HTTP(ACCEPT)	   { SOURCE=net,loc,vpn1,apps,$FW DEST=dmz:$SERVER,$LISTS }
+HTTPS(ACCEPT)	   { SOURCE=net,loc,vpn1,apps,$FW DEST=dmz:$LISTS,$MAIL }
+Web(ACCEPT)	   { SOURCE=dmz,apps DEST=net,$FW }
+Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=root }
+Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=teastep }
+######################################################################################################
+# FTP
+#
+FTP(ACCEPT)	   { SOURCE=loc,vpn1,apps DEST=net }
+FTP(ACCEPT)	   { SOURCE=dmz,          DEST=net }
+FTP(ACCEPT)	   { SOURCE=$FW,          DEST=net, USER=root }
+FTP(ACCEPT)	   { SOURCE=all,          DEST=dmz:$SERVER }
+#
+# Some FTP clients seem prone to sending the PORT command split over two packets.
+# This prevents the FTP connection tracking code from processing the command  and setting
+# up the proper expectation.
+#
+# The following rule allows active FTP to work in these cases
+# but logs the connection so I can keep an eye on this potential security hole.
+#
+ACCEPT:$LOG_LEVEL  { SOURCE=dmz, DEST=net, PROTO=tcp, DPORT=1024:, SPORT=20 }
+######################################################################################################
+# whois
+#
+Whois(ACCEPT)	   { SOURCE=all, DEST=net }
+######################################################################################################
+# SMB
+#
+SMBBI(ACCEPT)	    { SOURCE=loc, DEST=$FW }
+SMBBI(ACCEPT)	    { SOURCE=vpn1, DEST=$FW }
+######################################################################################################
+# IRC
+#
+IRC(ACCEPT)	    { SOURCE=loc,vpn1,apps:IRC_IF, DEST=net }
+######################################################################################################
+# Rsync
+#
+Mirrors(ACCEPT:none) { SOURCE=net, DEST=dmz:$SERVER, PROTO=tcp, DPORT=873 }
+</programlisting>
+    </section>
+
+    <section>
+      <title>mangle</title>
+
+      <para>Note that TPROXY can be enabled/disabled via a shell variable
+      setting in /etc/shorewall/params:</para>
+
+      <programlisting>#ACTION		SOURCE		DEST		PROTO	DPORT	SPORT	USER	TEST	LENGTH	TOS	CONNBYTES	HELPER	PROBABILITY	DSCP
+
+?if __IPV4
+    #
+    # I've had a checksum issue with certain IPv4 UDP packets
+    #
+    CHECKSUM:T { DEST=FAST_IF, PROTO=udp }
+    CHECKSUM:T { DEST=DMZ_IF,  PROTO=udp }
+?endif
+
+?if $PROXY
+    #
+    # Use TPROXY for web access from the local LAN
+    #
+    DIVERT:R { PROTO=tcp, SPORT=80 }
+    DIVERT:R { PROTO=tcp, DPORT=80 }
+    TPROXY(3129,$LOC_ADDR) { SOURCE=LOC_IF, PROTO=tcp, DPORT=80 }
+?endif
+</programlisting>
+    </section>
+
+    <section>
+      <title>snat</title>
+
+      <para>NAT entries are quite dependent on the address family:</para>
+
+      <programlisting>#ACTION         SOURCE			DEST            PROTO   PORT   IPSEC  MARK   USER    SWITCH  ORIGDEST   PROBABILITY
+
+?if __IPV4
+    MASQUERADE		{ SOURCE=172.20.1.0/24,172.20.2.0/24, DEST=FAST_IF }
+    MASQUERADE 		{ SOURCE=70.90.191.120/29, 	      DEST=FAST_IF }
+    SNAT(70.90.191.121) { SOURCE=!70.90.191.120/29,	      DEST=PROD_IF,  PROBABILITY=0.50, COMMENT="Masquerade Local Network" }
+    SNAT(70.90.191.123) { SOURCE=!70.90.191.120/29,	      DEST=PROD_IF,                    COMMENT="Masquerade Local Network" }
+    SNAT(172.20.1.253)  { SOURCE=172.20.3.0/24,	 	      DEST=LOC_IF:172.20.1.100 }
+?else
+    SNAT(&amp;PROD_IF)	{ SOURCE=2601:601:8b00:bf0::56,                 DEST=PROD_IF }
+    SNAT(&amp;FAST_IF)	{ SOURCE=2001:470:b:227::/64,2001:470:a:227::2,	DEST=FAST_IF }
+?endif
+</programlisting>
+    </section>
+
+    <section>
+      <title>tunnels</title>
+
+      <para>Both address families define IPSEC tunnels:</para>
+
+      <programlisting>#TYPE			ZONE		GATEWAY			GATEWAY_ZONE
+ipsecnat {ZONE=net,  GATEWAY=$ALL, GATEWAY_ZONE=vpn1 }
+ipsecnat {ZONE=loc,  GATEWAY=$ALL, GATEWAY_ZONE=vpn1 }
+</programlisting>
+    </section>
+
+    <section>
+      <title>proxyarp</title>
+
+      <para>This file is only used in the IPv4 configuration:</para>
+
+      <programlisting>#ADDRESS	INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+
+70.90.191.122 { INTERFACE=br0, EXTERNAL=eth1, HAVEROUTE=yes, PERSISTENT=no }
+</programlisting>
+    </section>
+
+    <section>
+      <title>isuable</title>
+
+      <para>This is just the standard Shorewall isusable extension
+      script:</para>
+
+      <programlisting>local status
+status=0
+
+[ -f ${VARDIR}/${1}.status ] &amp;&amp; status=$(cat ${VARDIR}/${1}.status)
+
+return $status
+</programlisting>
+    </section>
+
+    <section>
+      <title>started</title>
+
+      <para>/etc/shorewall/started only does something in the IPv4
+      configuration, although it gets compiled into both scripts:</para>
+
+      <programlisting>if [ $g_family = 4 ]; then
+    qt $IP -4 route replace 70.90.191.122 dev br0
+    qt $IP -4 route replace 70.90.191.124 dev br0
+    qt $IP -4 route replace 70.90.191.125 dev br0
+fi
+</programlisting>
+    </section>
+  </section>
+</article>

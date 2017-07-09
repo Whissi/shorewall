@@ -43,6 +43,12 @@
     While Shorewall also separates the address families in this way, it is
     possible for Shorewall and Shorewall6 to share almost all of the
     configuration files. This article gives an example.</para>
+
+    <caution>
+      <para>What is shown here currently works best with Debian and
+      derivatives, or when the tarball installer is used and the SPARSE option
+      is enabled when running configure[.pl].</para>
+    </caution>
   </section>
 
   <section>
@@ -66,14 +72,38 @@
 
     <para>Here are the contents of /etc/shorewall/ and /etc/shorewal6/:</para>
 
-    <programlisting>root@gateway:/etc# ls shorewall shorewall6
+    <programlisting>root@gateway:/etc# ls -l shorewall shorewall6
 shorewall:
-action.Mirrors	conntrack  interfaces  mangle	params	providers  rtrules  shorewall.conf  started  zones
-actions		hosts	   isusable    mirrors	policy	proxyarp   rules    snat	    tunnels
+total 88
+-rw-r--r-- 1 root root  201 Mar 19 08:43 action.Mirrors
+-rw-r--r-- 1 root root  109 Jun 29 15:13 actions
+-rw-r--r-- 1 root root  655 Jun 29 15:13 conntrack
+-rw-r--r-- 1 root root  107 Jul  1 10:40 hosts
+-rw-r--r-- 1 root root  867 Jul  1 10:50 interfaces
+-rw-r--r-- 1 root root  107 Jun 29 15:14 isusable
+-rw-r--r-- 1 root root  497 Jul  1 10:42 mangle
+-rw-r--r-- 1 root root    7 Jul  6 09:24 masq
+-rw-r--r-- 1 root root 1290 Jun 29 15:16 mirrors
+-rw-r--r-- 1 root root 2650 Jul  2 08:05 params
+-rw-r--r-- 1 root root  645 Jun 28 10:04 policy
+-rw-r--r-- 1 root root 1828 Jul  1 15:43 providers
+-rw-r--r-- 1 root root  398 Mar 18 20:18 proxyarp
+-rw-r--r-- 1 root root  702 Jul  1 10:42 rtrules
+-rw-r--r-- 1 root root 6214 Jul  2 08:45 rules
+lrwxrwxrwx 1 root root   29 Jul  6 12:42 shorewall6.conf -&gt; ../shorewall6/shorewall6.conf
+-rw-r--r-- 1 root root 5571 Jun 25 18:09 shorewall.conf
+-rw-r--r-- 1 root root 1084 Jul  1 10:42 snat
+-rw-r--r-- 1 root root  181 Jun 29 15:12 started
+-rw-r--r-- 1 root root  437 Jun 28 10:45 tunnels
+-rw-r--r-- 1 root root  928 Jun 29 08:25 zones
 
 shorewall6:
-shorewall6.conf
-root@gateway:/etc#</programlisting>
+total 12
+-rw------- 1 root root  954 Jul  6 12:48 conntrack
+lrwxrwxrwx 1 root root   20 Jul  6 16:35 mirrors -&gt; ../shorewall/mirrors
+lrwxrwxrwx 1 root root   19 Jul  6 12:48 params -&gt; ../shorewall/params
+-rw-r--r-- 1 root root 5328 Jul  6 12:45 shorewall6.conf
+root@gateway:/etc# </programlisting>
 
     <para>The various configuration files are described in the sections that
     follow. Note that in all cases, these files use the <ulink
@@ -87,11 +117,15 @@ root@gateway:/etc#</programlisting>
       address families. The key setting is CONFIG_PATH in
       shorewall6.conf:</para>
 
-      <programlisting>CONFIG_PATH="${CONFDIR}/shorewall6:<emphasis role="bold">${CONFDIR}/shorewall:</emphasis>/usr/share/shorewall6:${SHAREDIR}/shorewall"A</programlisting>
+      <programlisting>CONFIG_PATH="<emphasis role="bold">${CONFDIR}/shorewall:</emphasis>/usr/share/shorewall6:${SHAREDIR}/shorewall"</programlisting>
 
-      <para>Any Shorewall6 configuration file not found in
-      /etc/shorewall/shorewall6/ will be searched for in
-      /etc/shorewall/.</para>
+      <para><filename>/etc/shorewall6/</filename> is only used for processing
+      the <filename>params</filename> and <filename>shorewall6.conf</filename>
+      files. <filename>/etc/shorewall6/conntrack</filename> is installed when
+      SPARSE=Yes, but is not used.</para>
+
+      <para>The /etc/shorewall/shorewall6.conf symbolic link is required once
+      the above CONFIG_PATH setting is in effect.</para>
 
       <section>
         <title>shorewall.conf</title>
@@ -309,7 +343,7 @@ UNTRACKED_LOG_LEVEL=
 ###############################################################################
 #	L O C A T I O N	  O F	F I L E S   A N D   D I R E C T O R I E S
 ###############################################################################
-CONFIG_PATH="${CONFDIR}/shorewall6:${CONFDIR}/shorewall:/usr/share/shorewall6:${SHAREDIR}/shorewall"
+CONFIG_PATH="${CONFDIR}/shorewall:/usr/share/shorewall6:${SHAREDIR}/shorewall"
 GEOIPDIR=/usr/share/xt_geoip/LE
 IP6TABLES=
 IP=
@@ -427,12 +461,12 @@ ZONE_BITS=0
 
       <para>Because addresses and interfaces are different between the two
       address families, they cannot be hard-coded in the configuration files.
-      /etc/shorewall/params is used to set shell variables whose contents will
-      vary between Shorewall and Shorewall6. In the params file and in
-      run-time extension files, the shell variable <emphasis
-      role="bold">g_family</emphasis> can be used to determine which address
-      family to use; if IPv4, then $g_family will expand to 4 and if IPv6,
-      $g_family will expand to 6.</para>
+      <filename>/etc/shorewall/params</filename> is used to set shell
+      variables whose contents will vary between Shorewall and Shorewall6. In
+      the <filename>params</filename> file and in run-time extension files,
+      the shell variable <emphasis role="bold">g_family</emphasis> can be used
+      to determine which address family to use; if IPv4, then $g_family will
+      expand to 4 and if IPv6, $g_family will expand to 6.</para>
 
       <para>The contents of /etc/shorewall/params is as follows:</para>
 
@@ -474,7 +508,7 @@ else
     LISTS=[2001:470:b:227::42]		      # IP address of lists.shorewall.net (MX and HTTPS)
     MAIL=[2001:470:b:227::45]		      # IP address of mail.shorewall.net  (IMAPS and HTTPS)
     SERVER=[2001:470:b:227::43]		      # IP address of www.shorewall.org   (HTTP, FTP and RSYNC)
-    PROXY=Yes				      # Use TPROXY for local web access
+    PROXY=
     ALL=[::]/0				      # Entire address space
     LOC_ADDR=[2601:601:8b00:bf0::1]	      # IP address of the local LAN interface
     FAST_GATEWAY=fe80::22e5:2aff:feb7:f2cf    # Default gateway through the IF_FAST interface
@@ -646,7 +680,7 @@ Tproxy   { NUMBER=3, INTERFACE=lo, OPTIONS=tproxy }
 ?else
     { SOURCE=2001:470:A:227::/64,         PROVIDER=HE,	     PRIORITY=1000! }
     { SOURCE=2001:470:B:227::/64,         PROVIDER=HE,	     PRIORITY=11000 }
-    { SOURCE=2601:601:8b00:bf0::/56	  PROVIDER=IPv6Fast, PRIORITY=11000 }
+    { SOURCE=2601:601:8b00:bf0::/60	  PROVIDER=IPv6Fast, PRIORITY=11000 }
 ?endif
 </programlisting>
     </section>
@@ -885,7 +919,7 @@ Mirrors(ACCEPT:none) { SOURCE=net, DEST=dmz:$SERVER, PROTO=tcp, DPORT=873 }
     SNAT(70.90.191.123) { SOURCE=!70.90.191.120/29,	      DEST=PROD_IF,                    COMMENT="Masquerade Local Network" }
     SNAT(172.20.1.253)  { SOURCE=172.20.3.0/24,	 	      DEST=LOC_IF:172.20.1.100 }
 ?else
-    SNAT(&amp;PROD_IF)	{ SOURCE=2601:601:8b00:bf0::56,                 DEST=PROD_IF }
+    SNAT(&amp;PROD_IF)	{ SOURCE=2601:601:8b00:bf0::/60,                DEST=PROD_IF }
     SNAT(&amp;FAST_IF)	{ SOURCE=2001:470:b:227::/64,2001:470:a:227::2,	DEST=FAST_IF }
 ?endif
 </programlisting>

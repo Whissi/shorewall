@@ -616,8 +616,14 @@ run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/c
 if [ -f ${DESTDIR}${CONFDIR}/$PRODUCT/params ]; then
     chmod 0644 ${DESTDIR}${CONFDIR}/$PRODUCT/params
 else
-    run_install $OWNERSHIP -m 0600 params${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/params
-    echo "Parameter file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/params"
+    case "$SPARSE" in
+	[Vv]ery)
+	;;
+	*)
+	    run_install $OWNERSHIP -m 0600 params${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/params
+	    echo "Parameter file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/params"
+	    ;;
+    esac
 fi
 
 if [ $PRODUCT = shorewall ]; then
@@ -693,10 +699,16 @@ fi
 run_install $OWNERSHIP -m 0644 conntrack           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 run_install $OWNERSHIP -m 0644 conntrack.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
 
-if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
-    run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack
-    echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack"
-fi
+case "$SPARSE" in
+    [Vv]ery)
+    ;;
+    *)
+	if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
+	    run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack
+	    echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack"
+	fi
+	;;
+esac
 
 #
 # Install the Mangle file

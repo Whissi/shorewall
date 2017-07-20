@@ -190,7 +190,7 @@ for p in ${!params[@]}; do
 done
 
 echo '#'                                                                 > shorewallrc
-echo "# Created by Shorewall Core version $VERSION configure - " `date` >> shorewallrc
+echo "# Created by Shorewall Core version $VERSION configure - " `date --utc --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}"` >> shorewallrc
 echo "# rc file: $rcfile"                                               >> shorewallrc
 echo '#'                                                                >> shorewallrc
 

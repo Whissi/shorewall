@@ -210,8 +210,7 @@ for ( qw/ HOST
 	  ANNOTATED
 	  VARLIB
 	  VARDIR
-          DEFAULT_PAGER
-          SHARED_CONFIG / ) {
+          DEFAULT_PAGER / ) {
 
     my $val = $options{$_} || '';
 

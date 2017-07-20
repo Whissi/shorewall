@@ -173,7 +173,12 @@ my $outfile;
 
 open $outfile, '>', 'shorewallrc' or die "Can't open 'shorewallrc' for output: $!";
 
-printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d %04d %02d:%02d:%02d\n", VERSION, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];
+if ( $ENV{SOURCE_DATE_EPOCH} ) {
+    printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s\n", VERSION, `date  --utc --date=\"\@$ENV{SOURCE_DATE_EPOCH}\"`;
+} else {
+    printf $outfile "#\n# Created by Shorewall Core version %s configure.pl - %s %2d %04d %02d:%02d:%02d\n", VERSION, $abbr[$localtime[4]], $localtime[3], 1900 + $localtime[5] , @localtime[2,1,0];
+}
+
 print $outfile "# rc file: $rcfilename\n#\n";
 
 print  $outfile "# Input: @ARGV\n#\n" if @ARGV;

@@ -1434,7 +1434,7 @@ sub process_tc_filter2( $$$$$$$$$ ) {
 
 	    while ( @sportlist ) {
 		my ( $sport, $smask ) = ( shift @sportlist, shift @sportlist );
-		$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask $smask eq 0x$sport \\)";
+		$rule .= "\\\n   cmp\\( u16 at 0 layer 2 mask 0x$smask eq 0x$sport \\)";
 		$rule .= ' or' if @sportlist;
 	    }
 

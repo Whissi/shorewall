@@ -266,7 +266,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
     if ( $source eq 'any' || $source eq 'all' ) {
         $source = ALLIP;
     } else {
-	fatal_error "MAC addresses only allowed in the INPUT and FORWARD sections" if $source =~ /~/ && ( $asection == OUTPUT || ! $asection );
+	fatal_error "MAC addresses only allowed in the INPUT and FORWARD sections" if $source =~ /~/ && ( $asection == OUTPUT_SECTION || ! $asection );
     }
 
     if ( have_bridges && ! $asection ) {

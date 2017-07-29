@@ -1088,7 +1088,11 @@ CEOF
 	    emit( "setup_${dev}_tc" ) if $tcdevices->{$interface};
 	}
 
-	emit( qq(rm -f \${VARDIR}/${physical}_disabled) );
+	emit( qq(rm -f \${VARDIR}/${physical}_disabled),
+	      '',
+	      'run_enabled_exit'
+	    );
+
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
 	if ( get_interface_option( $interface, 'used_address_variable' ) || get_interface_option( $interface, 'used_gateway_variable' ) ) {
@@ -1233,7 +1237,10 @@ CEOF
 		  "qt \$TC qdisc del dev $physical ingress\n" ) if $tcdevices->{$interface};
 	}
 
-	emit( "echo 1 > \${VARDIR}/${physical}.status" );
+	emit( "echo 1 > \${VARDIR}/${physical}.status",
+	      '',
+	      'run_disabled_exit'
+	    );
 
 	if ( $pseudo ) {
 	    emit( "progress_message2 \"   Optional Interface $table stopped\"" );

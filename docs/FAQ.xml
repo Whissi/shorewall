@@ -776,12 +776,7 @@ SNAT(<emphasis role="bold">130.151.100.69</emphasis>)    192.168.1.0/24  eth1:19
 
           <para>That rule (and the second one in the previous bullet) only
           works of course if you have a static external IP address. If you
-          have a dynamic IP address then include this in
-          <filename>/etc/shorewall/params</filename>.</para>
-
-          <programlisting><command>ETH0_IP=$(find_first_interface_address eth0)</command>        </programlisting>
-
-          <para>and make your DNAT rule:</para>
+          have a dynamic IP address then make your DNAT rule:</para>
 
           <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
 
@@ -793,33 +788,16 @@ SNAT(<emphasis role="bold">130.151.100.69</emphasis>)    192.168.1.0/24  eth1:19
 ?SECTION NEW
 
 DNAT            loc             loc:192.168.1.5 tcp     www     -       <emphasis
-              role="bold">$ETH0_IP</emphasis></programlisting>
+              role="bold">&amp;eth0</emphasis></programlisting>
 
           <para>Using this technique, you will want to configure your
-          DHCP/PPPoE/PPTP/… client to automatically restart Shorewall each
-          time that you get a new IP address.</para>
+          DHCP/PPPoE/PPTP/… client to automatically reload Shorewall each time
+          that you get a new IP address.</para>
 
           <note>
             <para>If your local interface is a bridge, see <link
             linkend="faq2e">FAQ 2e</link> for additional configuration
             steps.</para>
-          </note>
-
-          <note>
-            <para>For optional interfaces, use the function <emphasis
-            role="bold">find_first_interface_address_if_any()</emphasis>
-            rather than <emphasis
-            role="bold">find_first_interface_address()</emphasis>. The former
-            will return 0.0.0.0 if the interface has no configured IP address;
-            the latter terminates the calling program.</para>
-          </note>
-
-          <note id="Call">
-            <para>If you run Shorewall-lite on your firewall, you must use the
-            following in the firewall's configuration directory
-            <filename>params</filename> file:</para>
-
-            <programlisting><command>ETH0_IP=$(ssh root@firewall "/sbin/shorewall-lite call find_first_interface_address eth0")</command></programlisting>
           </note>
         </listitem>
       </itemizedlist>
@@ -928,14 +906,8 @@ MASQUERADE     192.168.1.0/24  eth2:192.168.1.2    tcp     www</programlisting>
 
 <emphasis role="bold">DNAT            loc             dmz:192.168.2.4 tcp     80      -       206.124.146.176</emphasis></programlisting>
 
-        <para>If your external IP address is dynamic, then you must do the
-        following:</para>
-
-        <para>In <filename>/etc/shorewall/params</filename>:</para>
-
-        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command> </programlisting>
-
-        <para>and make your DNAT rule:</para>
+        <para>If your external IP address is dynamic, then you must make your
+        DNAT rule:</para>
 
         <programlisting>#ACTION         SOURCE          DEST            PROTO   DPORT   SPORT   ORIGDEST
 
@@ -947,7 +919,7 @@ MASQUERADE     192.168.1.0/24  eth2:192.168.1.2    tcp     www</programlisting>
 ?SECTION NEW
 
 DNAT            loc             dmz:192.168.2.4 tcp     80      -       <emphasis
-            role="bold">$ETH0_IP</emphasis></programlisting>
+            role="bold">&amp;eth0</emphasis></programlisting>
 
         <warning>
           <para>With dynamic IP addresses, you probably don't want to use
@@ -956,21 +928,6 @@ DNAT            loc             dmz:192.168.2.4 tcp     80      -       <emphasi
           save</command> and <command>shorewall[-lite]
           restore</command></ulink>.</para>
         </warning>
-
-        <note>
-          <para>For optional interfaces, use the function <emphasis
-          role="bold">find_first_interface_address_if_any()</emphasis> rather
-          than <emphasis
-          role="bold">find_first_interface_address()</emphasis>. The former
-          will return 0.0.0.0 if the interface has no configured IP address;
-          the latter terminates the calling program.</para>
-        </note>
-
-        <note>
-          <para>If you use Shorewall-lite, then you need to configure the
-          params file in the firewall's configuration directory as described
-          <link linkend="Call">above</link>.</para>
-        </note>
       </section>
 
       <section id="faq2c">

@@ -234,6 +234,18 @@ cat -</programlisting>
         can be used to augment or replace functions in the standard CLI
         libraries.</para>
       </listitem>
+
+      <listitem>
+        <para><filename>enabled</filename> -- Added in Shorewall 5.1.6.
+        Invoked when an optional interface or provider is successfully enabled
+        using the <command>enable</command> command.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>disabled</filename> -- Added in Shorewall 5.1.6.
+        Invoked when an optional interface or provider is successfully
+        disabled using the <command>disable</command> command.</para>
+      </listitem>
     </itemizedlist>
 
     <para><emphasis role="bold">If your version of Shorewall doesn't have the
@@ -272,6 +284,18 @@ cat -</programlisting>
             <entry>continue</entry>
 
             <entry/>
+          </row>
+
+          <row>
+            <entry>disable</entry>
+
+            <entry>disable</entry>
+          </row>
+
+          <row>
+            <entry>enable</entry>
+
+            <entry>enable</entry>
           </row>
 
           <row>
@@ -508,24 +532,36 @@ cat -</programlisting>
               <row>
                 <entry>initdone</entry>
 
-                <entry>init</entry>
+                <entry>disable</entry>
               </row>
 
               <row>
                 <entry>maclog</entry>
 
-                <entry>isusable</entry>
+                <entry>enable</entry>
               </row>
 
               <row>
                 <entry>Per-chain (including those associated with
                 actions)</entry>
 
-                <entry>start</entry>
+                <entry>init</entry>
               </row>
 
               <row>
                 <entry>postcompile</entry>
+
+                <entry>isusable</entry>
+              </row>
+
+              <row>
+                <entry/>
+
+                <entry>start</entry>
+              </row>
+
+              <row>
+                <entry/>
 
                 <entry>started</entry>
               </row>

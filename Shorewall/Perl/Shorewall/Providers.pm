@@ -1089,7 +1089,6 @@ CEOF
 	}
 
 	emit( qq(rm -f \${VARDIR}/${physical}_disabled),
-	      '',
 	      'run_enabled_exit'
 	    );
 
@@ -1238,7 +1237,6 @@ CEOF
 	}
 
 	emit( "echo 1 > \${VARDIR}/${physical}.status",
-	      '',
 	      'run_disabled_exit'
 	    );
 

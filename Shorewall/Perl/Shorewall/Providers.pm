@@ -1089,7 +1089,7 @@ CEOF
 	}
 
 	emit( qq(rm -f \${VARDIR}/${physical}_disabled),
-	      'run_enabled_exit'
+	      $pseudo ? "run_enabled_exit ${physical} ${interface}" : "run_enabled_exit ${physical} ${interface} ${table}"
 	    );
 
 	emit_started_message( '', 2, $pseudo, $table, $number );
@@ -1237,7 +1237,7 @@ CEOF
 	}
 
 	emit( "echo 1 > \${VARDIR}/${physical}.status",
-	      'run_disabled_exit'
+	      $pseudo ? "run_disabled_exit ${physical} ${interface}" : "run_disabled_exit ${physical} ${interface} ${table}"
 	    );
 
 	if ( $pseudo ) {

@@ -611,6 +611,44 @@ cat -</programlisting>
           </tgroup>
         </informaltable></para>
 
+      <para>The contents of each run-time script is placed in a shell
+      function, so you can declare local variables and can use the
+      <command>return</command> command. The functions generated from the
+      <filename>enable</filename> and <filename>disable</filename> scripts are
+      passed three arguments:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>$1</term>
+
+          <listitem>
+            <para>Physical name of the interface that was enabled or
+            disabled.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$2</term>
+
+          <listitem>
+            <para>Logical name of the interface.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>$3</term>
+
+          <listitem>
+            <para>Name of the Provider, if any, associated with the
+            interface.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>As described above, the function generated from the
+      <filename>isusable</filename> script is passed a single argument that
+      names a network interface.</para>
+
       <para>With the exception of postcompile, compile-time extension scripts
       are executed using the Perl 'eval `cat
       &lt;<emphasis>file</emphasis>&gt;`' mechanism. Be sure that each script

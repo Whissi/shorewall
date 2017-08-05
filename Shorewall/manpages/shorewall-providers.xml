@@ -214,7 +214,14 @@
                 BALANCE_PROVIDERS=Yes, <option>balance=1</option> is assumed
                 unless the <option>fallback</option>, <option>loose</option>,
                 <option>load</option> or <option>tproxy</option> option is
-                specified.</para>
+                specified.I</para>
+
+                <caution>
+                  <para>In IPV6, the <option>balance</option> option does not
+                  cause balanced default routes to be created; it rather
+                  causes a sequence of default routes with different metrics
+                  to be created. </para>
+                </caution>
               </listitem>
             </varlistentry>
 
@@ -337,6 +344,14 @@
                 <para>Prior to Shorewall 4.4.24, the option is ignored with a
                 warning message if USE_DEFAULT_RT=Yes in
                 <filename>shorewall.conf</filename>.</para>
+
+                <caution>
+                  <para>In IPV6, specifying the <option>fallback</option>
+                  option on multiple providers does not cause balanced
+                  fallback routes to be created; it rather causes a sequence
+                  of fallback routes with different metrics to be
+                  created.</para>
+                </caution>
               </listitem>
             </varlistentry>
 

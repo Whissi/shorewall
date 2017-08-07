@@ -3900,6 +3900,12 @@ sub optimize_level8( $$$ ) {
 		    }
 
 		    $combined{ $chainref1->{name} } = $chainref->{name};
+
+		    if ( $chainref->{policychain} ) {
+			$chainref1->{policychain} = $chainref->{policychain}, $chainref1->{policy} = $chainref->{policy} unless $chainref1->{policychain};
+		    } elsif ( $chainref1->{policychain} ) {
+			$chainref->{policychain} = $chainref1->{policychain}, $chainref->{policy} = $chainref1->{policy} unless $chainref->{policychain};
+		    }
 		}
 	    }
 	}

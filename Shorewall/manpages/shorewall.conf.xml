@@ -406,8 +406,9 @@
         <listitem>
           <para>Formerly named AUTO_COMMENT. If set, if there is not a current
           comment when a macro is invoked, the behavior is as if the first
-          line of the macro file was "COMMENT &lt;macro name&gt;". The
-          AUTO_COMMENT option has a default value of 'Yes'.</para>
+          line of the macro file was "COMMENT &lt;macro name&gt;". If not
+          specified, the AUTO_COMMENT option has a default value of
+          'Yes'.</para>
         </listitem>
       </varlistentry>
 
@@ -473,7 +474,7 @@
           command, then the compilation step is skipped and the compiled
           script that executed the last <command>start</command>, <emphasis
           role="bold">reload</emphasis> or <command>restart</command> command
-          is used. The default is AUTOMAKE=No.</para>
+          is used. If not specified, the default is AUTOMAKE=No.</para>
 
           <para>The setting of the AUTOMAKE option is ignored if the
           <command>start</command>, <emphasis role="bold">reload</emphasis> or
@@ -2212,8 +2213,9 @@ LOG:info:,bar                        net                    fw</programlisting>
             </listitem>
           </itemizedlist>
 
-          <para>The default value is zero which disables all
-          optimizations.</para>
+          <para>In versions prior to 5.1.0, the default value is zero which
+          disables all optimizations. Beginning with Shorewall 5.1.0, the
+          default value is All which enables all optimizations.</para>
         </listitem>
       </varlistentry>
 

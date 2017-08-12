@@ -6324,7 +6324,7 @@ sub match_dest_net( $;$ ) {
 	return '-d ' . record_runtime_address $1, $2;
     }
 
-    $net = validate_net $net, 1;
+    $net = validate_net $net, 1 unless $net =~ /^\$/; # Don't validate if runtime address variable
     $net eq ALLIP ? '' : "-d $net ";
 }
 
@@ -6405,7 +6405,7 @@ sub imatch_dest_net( $;$ ) {
 	return ( d => record_runtime_address( $1, $2, 1 ) );
     }
 
-    $net = validate_net $net, 1;
+    $net = validate_net $net, 1 unless $net =~ /^\$/; # Don't validate if runtime address variable
     $net eq ALLIP ? () : ( d =>  $net );
 }
 
@@ -7528,6 +7528,11 @@ sub isolate_dest_interface( $$$$ ) {
 
 	    $rule .= "-d $variable ";
 	}
+    } elsif ( $dest =~ /^\$/ ) {
+	#
+	# Runtime address variable
+	#
+	$dnets  = $dest;
     } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^(.+?):(.+)$/ ) {
 	    $diface = $1;

@@ -941,7 +941,15 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	} else {
 	    $server = $1 if $family == F_IPV6 && $server =~ /^\[(.+)\]$/;
 	    fatal_error "Invalid server IP address ($server)" if $server eq ALLIP || $server eq NILIP;
-	    my @servers = validate_address $server, 1;
+
+	    my @servers;
+
+	    if ( ( $server =~ /^([&%])(.+)/ ) ) {
+		@servers = ( record_runtime_address( $1, $2 ) );
+	    } else {
+		@servers = validate_address $server, 1;
+	    }
+
 	    $server = join ',', @servers;
 	}
 

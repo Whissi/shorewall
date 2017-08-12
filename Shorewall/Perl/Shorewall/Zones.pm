@@ -92,7 +92,7 @@ our @EXPORT = ( qw( NOTHING
 		    find_interfaces_by_option
 		    find_interfaces_by_option1
 		    get_interface_option
-                    get_interface_origin
+		    get_interface_origin
 		    interface_has_option
 		    set_interface_option
 		    interface_zone
@@ -114,31 +114,31 @@ our $VERSION = 'MODULEVERSION';
 #     @zones contains the ordered list of zones with sub-zones appearing before their parents.
 #
 #     %zones{<zone1> => {name =>       <name>,
-#                        type =>       <zone type>       FIREWALL, IP, IPSEC, BPORT;
-#                        complex =>    0|1
-#                        super   =>    0|1
-#                        options =>    { in_out  => < policy match string >
-#                                        in      => < policy match string >
-#                                        out     => < policy match string >
-#                                      }
-#                        parents =>    [ <parents> ]      Parents, Children and interfaces are listed by name
-#                        children =>   [ <children> ]
-#                        interfaces => { <interfaces1> => 1, ... }
-#                        bridge =>     <bridge>
-#                        hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
-#                                                                  options => { <option1> => <value1>
-#                                                                               ...
-#                                                                             }
-#                                                                  hosts   => [ <net1> , <net2> , ... ]
-#                                                                  exclusions => [ <net1>, <net2>, ... ]
-#                                                                  origin   => <where defined>
-#                                                                }
-#                                                <interface2> => ...
-#                                              }
-#                                            ]
-#                       }
-#             <zone2> => ...
-#           }
+#			 type =>       <zone type>	 FIREWALL, IP, IPSEC, BPORT;
+#			 complex =>    0|1
+#			 super	 =>    0|1
+#			 options =>    { in_out	 => < policy match string >
+#					 in	 => < policy match string >
+#					 out	 => < policy match string >
+#				       }
+#			 parents =>    [ <parents> ]	  Parents, Children and interfaces are listed by name
+#			 children =>   [ <children> ]
+#			 interfaces => { <interfaces1> => 1, ... }
+#			 bridge =>     <bridge>
+#			 hosts { <type> } => [ { <interface1> => { ipsec   => 'ipsec'|'none'
+#								   options => { <option1> => <value1>
+#										...
+#									      }
+#								   hosts   => [ <net1> , <net2> , ... ]
+#								   exclusions => [ <net1>, <net2>, ... ]
+#								   origin   => <where defined>
+#								 }
+#						 <interface2> => ...
+#					       }
+#					     ]
+#			}
+#	      <zone2> => ...
+#	    }
 #
 #     $firewall_zone names the firewall zone.
 #
@@ -160,27 +160,27 @@ our %reservedName = ( all => 1,
 #
 #     @interfaces lists the interface names in the order that they appear in the interfaces file.
 #
-#     %interfaces { <interface1> => { name        => <name of interface>
-#                                     root        => <name without trailing '+'>
-#                                     options     => { port => undef|1
-#                                                    { <option1> } => <val1> ,          #See %validinterfaceoptions
-#                                                      ...
-#                                                    }
-#                                     zone        => <zone name>
-#                                     multizone   => undef|1   #More than one zone interfaces through this interface
-#                                     nets        => <number of nets in interface/hosts records referring to this interface>
-#                                     bridge      => <bridge name> # Same as ->{name} if not a bridge port.
-#                                     ports       => <number of port on this bridge>
-#                                     ipsec       => undef|1 # Has an ipsec host group
-#                                     broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
-#                                     number      => <ordinal position in the interfaces file>
-#                                     physical    => <physical interface name>
-#                                     base        => <shell variable base representing this interface>
-#                                     wildcard    => undef|1 # Wildcard Name
-#                                     zones       => { zone1 => 1, ... }
-#                                     origin      => <where defined>
-#                                   }
-#                 }
+#     %interfaces { <interface1> => { name	  => <name of interface>
+#				      root	  => <name without trailing '+'>
+#				      options	  => { port => undef|1
+#						     { <option1> } => <val1> ,		#See %validinterfaceoptions
+#						       ...
+#						     }
+#				      zone	  => <zone name>
+#				      multizone	  => undef|1   #More than one zone interfaces through this interface
+#				      nets	  => <number of nets in interface/hosts records referring to this interface>
+#				      bridge	  => <bridge name> # Same as ->{name} if not a bridge port.
+#				      ports	  => <number of port on this bridge>
+#				      ipsec	  => undef|1 # Has an ipsec host group
+#				      broadcasts  => 'none', 'detect' or [ <addr1>, <addr2>, ... ]
+#				      number	  => <ordinal position in the interfaces file>
+#				      physical	  => <physical interface name>
+#				      base	  => <shell variable base representing this interface>
+#				      wildcard	  => undef|1 # Wildcard Name
+#				      zones	  => { zone1 => 1, ... }
+#				      origin	  => <where defined>
+#				    }
+#		  }
 #
 #    The purpose of the 'base' member is to ensure that the base names associated with the physical interfaces are assigned in
 #    the same order as the interfaces are encountered in the configuration files.

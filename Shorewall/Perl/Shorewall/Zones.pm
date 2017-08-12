@@ -702,6 +702,40 @@ sub haveipseczones() {
 }
 
 #
+# Returns 1 if the two interfaces passed are related
+#
+sub interface_match( $$ ) {
+    my ( $piface, $ciface ) = @_;
+
+    return 1 if $piface eq $ciface;
+
+    my ( $pifaceref, $cifaceref ) = @interfaces{$piface, $ciface};
+
+    return 1 if $piface eq $cifaceref->{bridge};
+    return 1 if $ciface eq $pifaceref->{bridge};
+
+    if ( $minroot ) {
+	if ( $piface =~ /\+$/ ) {
+	    my $root    = $pifaceref->{root};
+	    my $rlength = length( $root );
+	    while ( length( $ciface ) >= $rlength ) {
+		return 1 if $ciface eq $root;
+		chop $ciface;
+	    }
+	} elsif ( $ciface =~ /\+$/ ) {
+	    my $root    = $cifaceref->{root};
+	    my $rlength = length( $root );
+	    while ( length( $piface ) >= $rlength ) {
+		return 1 if $piface eq $root;
+		chop $piface;
+	    }
+	}
+    }
+
+    0;
+}
+
+#
 # Report about zones.
 #
 sub zone_report()
@@ -738,13 +772,24 @@ sub zone_report()
 			    if ( $family == F_IPV4 ) {
 				progress_message_nocompress "      $iref->{physical}:$grouplist";
 			    } else {
-				progress_message_nocompress "      $iref->{physical}:<$grouplist>";
+				progress_message_nocompress "      $iref->{physical}:[$grouplist]";
 			    }
 			    $printed = 1;
 			}
 		    }
 		}
 	    }
+	}
+
+      PARENT:
+	for my $p ( @{$zoneref->{parents}} ) {
+	    for my $pi ( keys ( %{$zones{$p}{interfaces}} ) ) {
+		for my $ci ( keys( %{$zoneref->{interfaces}} ) ) {
+		    next PARENT if interface_match( $pi, $ci );
+		}
+	    }
+
+	    warning_message "Zone $zone is defined as a sub-zone of $p, yet the two zones have no interface in common";
 	}
 
 	unless ( $printed ) {

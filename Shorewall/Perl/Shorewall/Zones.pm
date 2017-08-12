@@ -1575,9 +1575,7 @@ sub known_interface($)
 	#
 	# We have wildcard interfaces -- see if this interface matches one of their roots
 	#
-	while ( length $iface > $minroot ) {
-	    chop $iface;
-
+	while ( length $iface >= $minroot ) {
 	    if ( my $i = $roots{$iface} ) {
 		#
 		# Found one
@@ -1599,6 +1597,8 @@ sub known_interface($)
 		                              };
 		return $interfaceref;
 	    }
+
+	    chop $iface;
 	}
     }
 

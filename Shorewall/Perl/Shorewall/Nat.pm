@@ -945,7 +945,9 @@ sub handle_nat_rule( $$$$$$$$$$$$$ ) {
 	    my @servers;
 
 	    if ( ( $server =~ /^([&%])(.+)/ ) ) {
-		@servers = ( record_runtime_address( $1, $2 ) );
+		$server = record_runtime_address( $1, $2 );
+		$server =~ s/ $//;
+		@servers = ( $server );
 	    } else {
 		@servers = validate_address $server, 1;
 	    }

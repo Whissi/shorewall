@@ -8913,9 +8913,15 @@ sub create_netfilter_load( $ ) {
     my $UTILITY = $family == F_IPV4 ? 'IPTABLES_RESTORE' : 'IP6TABLES_RESTORE';
 
     emit( '',
-	  'if [ "$COMMAND" = reload -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then',
-	  '    option="--counters"',
-	  '',
+	  'if [ "$COMMAND" = reload -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then' );
+
+    if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
+	emit( '    option="--counters --wait"' );
+    } else {
+	emit( '    option="--counters"' );
+    }
+
+    emit( '',
 	  '    progress_message "Reusing existing ruleset..."',
 	  '',
 	  'else'
@@ -8923,7 +8929,11 @@ sub create_netfilter_load( $ ) {
 
     push_indent;
 
-    emit 'option=';
+    if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
+	emit 'option="--wait"';
+    } else {
+	emit 'option=';
+    }
 
     save_progress_message "Preparing $utility input...";
 
@@ -9338,7 +9348,11 @@ sub create_stop_load( $ ) {
 
     enter_cmd_mode;
 
-    emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
+    if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY . ' --wait' );
+    } else {
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
+    }
 
     emit( '',
 	  'progress_message2 "Running $command..."',

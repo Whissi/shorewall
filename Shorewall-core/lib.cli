@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=50105
+SHOREWALL_CAPVERSION=50106
 
 if [ -z "$g_basedir" ]; then
     #
@@ -2804,6 +2804,7 @@ determine_capabilities() {
     CPU_FANOUT=
     NETMAP_TARGET=
     NFLOG_SIZE=
+    RESTORE_WAIT_OPTION=
 
     AMANDA_HELPER=
     FTP_HELPER=
@@ -2827,9 +2828,11 @@ determine_capabilities() {
 	qt $arptables -L OUT && ARPTABLESJF=Yes
     fi
 
+    [ -z "$(${g_tool}-restore --wait < /dev/null 2>&1)" ] && RESTORE_WAIT_OPTION=Yes
+
     if qt $g_tool --wait -t filter -L INPUT -n -v; then
 	WAIT_OPTION=Yes
-	tool="$tool --wait"
+	g_tool="$g_tool --wait"
     fi
 
     chain=fooX$$
@@ -3299,9 +3302,11 @@ report_capabilities_unsorted() {
     if [ $g_family -eq 4 ]; then
 	report_capability "iptables -S (IPTABLES_S)" $IPTABLES_S
 	report_capability "iptables --wait option (WAIT_OPTION)" $WAIT_OPTION
+	report_capability "iptables-restore --wait option (RESTORE_WAIT_OPTION)" $RESTORE_WAIT_OPTION
     else
 	report_capability "ip6tables -S (IPTABLES_S)" $IPTABLES_S
 	report_capability "ip6tables --wait option (WAIT_OPTION)" $WAIT_OPTION
+	report_capability "ip6tables-restore --wait option (RESTORE_WAIT_OPTION)" $RESTORE_WAIT_OPTION
     fi
 
     report_capability "Basic Filter (BASIC_FILTER)" $BASIC_FILTER
@@ -3417,6 +3422,7 @@ report_capabilities_unsorted1() {
     report_capability1 CPU_FANOUT
     report_capability1 NETMAP_TARGET
     report_capability1 NFLOG_SIZE
+    report_capability1 RESTORE_WAIT_OPTION
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

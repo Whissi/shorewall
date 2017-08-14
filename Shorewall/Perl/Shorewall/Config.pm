@@ -414,7 +414,8 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
                  CPU_FANOUT      => 'NFQUEUE CPU Fanout',
                  NETMAP_TARGET   => 'NETMAP Target',
                  NFLOG_SIZE      => '--nflog-size support',
-
+		 RESTORE_WAIT_OPTION
+				 => 'iptables-restore --wait option',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -752,7 +753,7 @@ sub initialize( $;$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "5.1.5-RC1",
-		    CAPVERSION              => 50105 ,
+		    CAPVERSION              => 50106 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -1046,6 +1047,7 @@ sub initialize( $;$$) {
 	       CPU_FANOUT => undef,
 	       NETMAP_TARGET => undef,
 	       NFLOG_SIZE => undef,
+	       RESTORE_WAIT_OPTION => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4948,6 +4950,10 @@ sub Cpu_Fanout() {
     have_capability( 'NFQUEUE_TARGET' ) && qt1( "$iptables -A $sillyname -j NFQUEUE --queue-balance 0:3 --queue-cpu-fanout" );
 }
 
+sub Restore_Wait_Option() {
+    length( `${iptables}-restore --wait < /dev/null 2>&1` ) == 0;
+}
+
 our %detect_capability =
     ( ACCOUNT_TARGET =>\&Account_Target,
       AMANDA_HELPER => \&Amanda_Helper,
@@ -5028,6 +5034,7 @@ our %detect_capability =
       REALM_MATCH => \&Realm_Match,
       REAP_OPTION => \&Reap_Option,
       RECENT_MATCH => \&Recent_Match,
+      RESTORE_WAIT_OPTION => \&Restore_Wait_Option,
       RPFILTER_MATCH => \&RPFilter_Match,
       SANE_HELPER => \&SANE_Helper,
       SANE0_HELPER => \&SANE0_Helper,
@@ -5195,6 +5202,8 @@ sub determine_capabilities() {
 	$capabilities{CPU_FANOUT}      = detect_capability( 'CPU_FANOUT' );
 	$capabilities{NETMAP_TARGET}   = detect_capability( 'NETMAP_TARGET' );
 	$capabilities{NFLOG_SIZE}      = detect_capability( 'NFLOG_SIZE' );
+	$capabilities{RESTORE_WAIT_OPTION}
+				       = detect_capability( 'RESTORE_WAIT_OPTION' );
 
 	unless ( have_capability 'CT_TARGET' ) {
 	    $capabilities{HELPER_MATCH} = detect_capability 'HELPER_MATCH';

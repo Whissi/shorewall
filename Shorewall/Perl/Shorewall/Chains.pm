@@ -8916,7 +8916,7 @@ sub create_netfilter_load( $ ) {
 	  'if [ "$COMMAND" = reload -a -n "$g_counters" ] && chain_exists $g_sha1sum1 && chain_exists $g_sha1sum2 ; then' );
 
     if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
-	emit( '    option="--counters --wait"' );
+	emit( '    option="--counters --wait "' . $config{MUTEX_TIMEOUT} );
     } else {
 	emit( '    option="--counters"' );
     }
@@ -8930,7 +8930,7 @@ sub create_netfilter_load( $ ) {
     push_indent;
 
     if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
-	emit 'option="--wait"';
+	emit 'option="--wait "' . $config{MUTEX_TIMEOUT};
     } else {
 	emit 'option=';
     }
@@ -9349,7 +9349,7 @@ sub create_stop_load( $ ) {
     enter_cmd_mode;
 
     if ( have_capability( 'RESTORE_WAIT_OPTION' ) ) {
-	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY . ' --wait' );
+	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command="$' . $UTILITY . ' --wait ' . $config{MUTEX_TIMEOUT} . '"' );
     } else {
 	emit( '[ -n "$g_debug_iptables" ] && command=debug_restore_input || command=$' . $UTILITY );
     }

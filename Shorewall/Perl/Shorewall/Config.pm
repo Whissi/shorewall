@@ -6842,6 +6842,12 @@ sub get_configuration( $$$$ ) {
 	}
     }
 
+    if ( supplied( $val = $config{MUTEX_TIMEOUT} ) ) {
+	fatal_error "Invalid value ($val) for MUTEX_TIMEOUT" unless $val && $val =~ /^\d+$/;
+    } else {
+	$config{MUTEX_TIMEOUT} = 60;
+    }
+
     add_variables %config;
 
     while ( my ($var, $val ) = each %renamed ) {

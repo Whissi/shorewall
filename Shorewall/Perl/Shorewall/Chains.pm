@@ -4832,7 +4832,7 @@ sub do_proto( $$$;$ )
 				$multiport = 1;
 			    }  else {
 				fatal_error "Missing DEST PORT" unless supplied $ports;
-				$ports   = validate_portpair $pname , $ports;
+				$ports   = validate_portpair $pname , $ports unless $ports =~ /^\$/;
 				$output .= ( $srcndst ? "-m multiport ${invert}--ports ${ports} " : "${invert}--dport ${ports} " );
 			    }
 			}
@@ -5039,7 +5039,7 @@ sub do_iproto( $$$ )
 				$multiport = 1;
 			    }  else {
 				fatal_error "Missing DEST PORT" unless supplied $ports;
-				$ports   = validate_portpair $pname , $ports;
+				$ports   = validate_portpair $pname , $ports unless $ports =~ /^\$/;
 
 				if ( $srcndst ) {
 				    push @output, multiport => "${invert}--ports ${ports}";

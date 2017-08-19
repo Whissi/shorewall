@@ -1927,7 +1927,7 @@ sub delete_reference( $$ ) {
 
     assert( $toref );
 
-    delete $toref->{references}{$fromref->{name}} unless --$toref->{references}{$fromref->{name}} > 0;
+    delete $toref->{references}{$fromref->{name}} if --$toref->{references}{$fromref->{name}} <= 0;
 }
 
 #
@@ -2065,7 +2065,7 @@ sub adjust_reference_counts( $$$ ) {
     my ($toref, $name1, $name2) = @_;
 
     if ( $toref ) {
-	delete $toref->{references}{$name1} unless --$toref->{references}{$name1} > 0;
+	delete $toref->{references}{$name1} if --$toref->{references}{$name1} <= 0;
 	$toref->{references}{$name2}++;
     }
 }

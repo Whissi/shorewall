@@ -3900,7 +3900,10 @@ sub optimize_level8( $$$ ) {
 		    }
 
 		    $combined{ $chainref1->{name} } = $chainref->{name};
-
+		    #
+		    # While rare, it is possible for a policy chain to be combined with a non-policy chain. So we need to preserve
+		    # the policy attributes in the combined chain
+		    #
 		    if ( $chainref->{policychain} ) {
 			@{$chainref1}{qw(policychain policy)} = @{$chainref}{qw(policychain policy)} unless $chainref1->{policychain};
 		    } elsif ( $chainref1->{policychain} ) {

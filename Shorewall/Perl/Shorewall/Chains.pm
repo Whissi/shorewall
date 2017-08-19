@@ -1345,8 +1345,6 @@ sub format_rule( $$;$ ) {
 	    } else {
 		$rule .= join( '' , ' --', $_, ' ', $value );
 	    }
-
-	    next;
 	} elsif ( $type == EXPENSIVE ) {
 	    #
 	    # Only emit expensive matches now if there are '-m nfacct' or '-m recent' matches in the rule

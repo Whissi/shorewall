@@ -274,7 +274,7 @@ loadmodule() # $1 = module name, $2 - * arguments
 
     if [ -d /sys/module/ ]; then
 	if ! list_search $modulename $DONT_LOAD; then
-	    if [ ! -d /sys/module/$modulename ]; then
+	    if [ ! -f /sys/module/$modulename ]; then
 		shift
 
 		for suffix in $MODULE_SUFFIX ; do

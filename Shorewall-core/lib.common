@@ -282,13 +282,15 @@ loadmodule() # $1 = module name, $2 - * arguments
 		    insmod)
 			for directory in $moduledirectories; do
 			    for modulefile in $directory/${modulename}.*; do
-				insmod $modulefile $moduleoptions
-				return
+				if [ -f $modulefile ]; then
+				    insmod $modulefile $moduleoptions
+				    return
+				fi
 			    done
 			done
 			;;
 		    *)
-			modprobe $modulename $moduleoptions 2> /dev/null
+			modprobe -q $modulename $moduleoptions
 			;;
 		esac
 	    fi
@@ -298,13 +300,15 @@ loadmodule() # $1 = module name, $2 - * arguments
 	    insmod)
 		for directory in $moduledirectories; do
 		    for modulefile in $directory/${modulename}.*; do
-			insmod $modulefile $moduleoptions
-			return
+			if [ -f $modulefile ]; then
+			    insmod $modulefile $moduleoptions
+			    return
+			fi
 		    done
 		done
 		;;
 	    *)
-		modprobe $modulename $moduleoptions 2> /dev/null
+		modprobe -q $modulename $moduleoptions
 		;;
 	esac
     fi
@@ -328,8 +332,6 @@ reload_kernel_modules() {
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
     fi
-
-    [ -n "${MODULE_SUFFIX:=ko ko.gz ko.xz o o.gz o.xz gz xz}" ]
 
     if [ -n "$MODULESDIR" ]; then
 	case "$MODULESDIR" in
@@ -384,8 +386,6 @@ load_kernel_modules() # $1 = Yes, if we are to save moduleinfo in $VARDIR
     if ! qt mywhich modprobe; then
 	moduleloader=insmod
     fi
-
-    [ -n "${MODULE_SUFFIX:=o gz xz ko o.gz o.xz ko.gz ko.xz}" ]
 
     if [ -n "$MODULESDIR" ]; then
 	case "$MODULESDIR" in

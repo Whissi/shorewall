@@ -36,6 +36,7 @@ use strict;
 use warnings;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
+use File::Glob ':globally';
 use Cwd qw(abs_path getcwd);
 use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
@@ -315,7 +316,7 @@ our %renamed = ( AUTO_COMMENT => 'AUTOCOMMENT', BLACKLIST_LOGLEVEL => 'BLACKLIST
 #
 # Config options and global settings that are to be copied to output script
 #
-our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR MODULE_SUFFIX LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY RESTART/;
+our @propagateconfig = qw/ DISABLE_IPV6 MODULESDIR LOAD_HELPERS_ONLY LOCKFILE SUBSYSLOCK LOG_VERBOSITY RESTART/;
 #
 # From parsing the capabilities file or detecting capabilities
 #
@@ -648,6 +649,7 @@ our %eliminated = ( LOGRATE          => 1,
 		    HIGH_ROUTE_MARKS => 1,
 		    BLACKLISTNEWONLY => 1,
 		    CHAIN_SCRIPTS    => 1,
+                    MODULE_SUFFIX    => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -848,7 +850,6 @@ sub initialize( $;$$) {
 	  BLACKLIST => undef,
 	  BLACKLISTNEWONLY => undef,
 	  DELAYBLACKLISTLOAD => undef,
-	  MODULE_SUFFIX => undef,
 	  DISABLE_IPV6 => undef,
 	  DYNAMIC_ZONES => undef,
 	  PKTTYPE=> undef,
@@ -4320,25 +4321,20 @@ sub load_kernel_modules( ) {
 
 	close LSMOD;
 
-	$config{MODULE_SUFFIX} = 'ko ko.gz ko.xz o o.gz o.xz gz xz' unless $config{MODULE_SUFFIX};
-
-	my @suffixes = split /\s+/ , $config{MODULE_SUFFIX};
-
+      MODULE:
 	while ( read_a_line( NORMAL_READ ) ) {
 	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
-		for my $directory ( @moduledirectories ) {
-		    for my $suffix ( @suffixes ) {
-			my $modulefile = "$directory/$module.$suffix";
-			if ( -f $modulefile ) {
-			    if ( $moduleloader eq 'insmod' ) {
-				system ("insmod $modulefile $arguments" );
-			    } else {
-				system( "modprobe $module $arguments" );
-			    }
-
+		if ( $moduleloader eq 'modprobe' ) {
+		    system( "modprobe -q $module $arguments" );
+		    $loadedmodules{ $module } = 1;
+		} else {
+		    for my $directory ( @moduledirectories ) {
+			for my $modulefile ( <$directory/$module.*> ) {
+			    system ("insmod $modulefile $arguments" );
 			    $loadedmodules{ $module } = 1;
+			    next MODULE;
 			}
 		    }
 		}
@@ -6070,7 +6066,6 @@ sub get_configuration( $$$$ ) {
     #
     # get_capabilities requires that the true settings of these options be established
     #
-    default 'MODULE_PREFIX', 'ko ko.gz o o.gz gz';
     default_yes_no 'LOAD_HELPERS_ONLY'          , 'Yes';
 
     if ( ! $export && $> == 0 ) {

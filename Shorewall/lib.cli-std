@@ -1556,10 +1556,10 @@ remote_reload_command() # $* = original arguments less the command.
 
 	progress_message "Getting Capabilities on system $system..."
 	if [ $g_family -eq 4 ]; then
-	    if ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_shorewalldir/capabilities; then
+	    if ! rsh_command "MODULESDIR=$MODULESDIR IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_shorewalldir/capabilities; then
 	        fatal_error "Capturing capabilities on system $system failed"
 	    fi
-	elif ! rsh_command "MODULESDIR=$MODULESDIR MODULE_SUFFIX=\"$MODULE_SUFFIX\" IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_shorewalldir/capabilities; then
+	elif ! rsh_command "MODULESDIR=$MODULESDIR IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_shorewalldir/capabilities; then
 	    fatal_error "Capturing capabilities on system $system failed"
 	fi
     fi

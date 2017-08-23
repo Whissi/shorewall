@@ -7065,6 +7065,8 @@ sub interface_gateway( $ ) {
 sub get_interface_gateway ( $;$$ ) {
     my ( $logical, $protect, $provider ) = @_;
 
+    $provider = '' unless defined $provider;
+
     my $interface = get_physical $logical;
     my $variable = interface_gateway( $interface );
     my $gateway  = get_interface_option( $interface, 'gateway' );
@@ -7078,9 +7080,9 @@ sub get_interface_gateway ( $;$$ ) {
     }
 
     if ( interface_is_optional $logical ) {
-	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface));
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface $provider));
     } else {
-	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface)
+	$interfacegateways{$interface} = qq([ -n "\$$variable" ] || $variable=\$(detect_gateway $interface $provider)
 [ -n "\$$variable" ] || startup_error "Unable to detect the gateway through interface $interface");
     }
 

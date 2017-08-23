@@ -502,7 +502,7 @@ sub process_a_provider( $ ) {
 
     if ( ( $gw = lc $gateway ) eq 'detect' ) {
 	fatal_error "Configuring multiple providers through one interface requires an explicit gateway" if $shared;
-	$gateway = get_interface_gateway( $interface, undef, 1 );
+	$gateway = get_interface_gateway( $interface, undef, $number );
 	$gatewaycase = 'detect';
 	set_interface_option( $interface, 'gateway', 'detect' );
     } elsif ( $gw eq 'none' ) {

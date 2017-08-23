@@ -280,18 +280,15 @@ loadmodule() # $1 = module name, $2 - * arguments
 	    if [ ! -d /sys/module/$modulename ]; then
 		case $moduleloader in
 		    insmod)
-			for suffix in $MODULE_SUFFIX ; do
-		    	    for directory in $moduledirectories; do
-			    	modulefile=$directory/${modulename}.${suffix}
-				if [ -f $modulefile ]; then
-				    insmod $modulefile $moduleoptions
-			    	    break 2
-				fi
+			for directory in $moduledirectories; do
+			    for modulefile in $directory/${modulename}.*; do
+				insmod $modulefile $moduleoptions
+				return
 			    done
 			done
 			;;
 		    *)
-			modprobe $modulename $moduleoptions
+			modprobe $modulename $moduleoptions 2> /dev/null
 			;;
 		esac
 	    fi
@@ -299,18 +296,15 @@ loadmodule() # $1 = module name, $2 - * arguments
     elif ! list_search $modulename $DONT_LOAD $MODULES; then
 	case $moduleloader in
 	    insmod)
-		for suffix in $MODULE_SUFFIX ; do
-	    	    for directory in $moduledirectories; do
-		    	modulefile=$directory/${modulename}.${suffix}
-			if [ -f $modulefile ]; then
-			    insmod $modulefile $moduleoptions
-			    break 2
-			fi
+		for directory in $moduledirectories; do
+		    for modulefile in $directory/${modulename}.*; do
+			insmod $modulefile $moduleoptions
+			return
 		    done
 		done
 		;;
 	    *)
-		modprobe $modulename $moduleoptions
+		modprobe $modulename $moduleoptions 2> /dev/null
 		;;
 	esac
     fi

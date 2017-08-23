@@ -269,53 +269,50 @@ loadmodule() # $1 = module name, $2 - * arguments
 {
     local modulename
     modulename=$1
+    shift
+    local moduleoptions
+    moduleoptions=$*
     local modulefile
     local suffix
 
     if [ -d /sys/module/ ]; then
 	if ! list_search $modulename $DONT_LOAD; then
-	    if [ ! -f /sys/module/$modulename ]; then
-		shift
-
+	    if [ ! -d /sys/module/$modulename ]; then
+		case $moduleloader in
+		    insmod)
+			for suffix in $MODULE_SUFFIX ; do
+		    	    for directory in $moduledirectories; do
+			    	modulefile=$directory/${modulename}.${suffix}
+				if [ -f $modulefile ]; then
+				    insmod $modulefile $moduleoptions
+			    	    break 2
+				fi
+			    done
+			done
+			;;
+		    *)
+			modprobe $modulename $moduleoptions
+			;;
+		esac
+	    fi
+	fi
+    elif ! list_search $modulename $DONT_LOAD $MODULES; then
+	case $moduleloader in
+	    insmod)
 		for suffix in $MODULE_SUFFIX ; do
-		    for directory in $moduledirectories; do
-			modulefile=$directory/${modulename}.${suffix}
-
+	    	    for directory in $moduledirectories; do
+		    	modulefile=$directory/${modulename}.${suffix}
 			if [ -f $modulefile ]; then
-			    case $moduleloader in
-				insmod)
-				    insmod $modulefile $*
-				    ;;
-				*)
-				    modprobe $modulename $*
-				    ;;
-			    esac
+			    insmod $modulefile $moduleoptions
 			    break 2
 			fi
 		    done
 		done
-	    fi
-	fi
-    elif ! list_search $modulename $DONT_LOAD $MODULES; then
-	shift
-
-	for suffix in $MODULE_SUFFIX ; do
-	    for directory in $moduledirectories; do
-		modulefile=$directory/${modulename}.${suffix}
-
-		if [ -f $modulefile ]; then
-		    case $moduleloader in
-			insmod)
-			    insmod $modulefile $*
-			    ;;
-			*)
-			    modprobe $modulename $*
-			    ;;
-		    esac
-		    break 2
-		fi
-	    done
-	done
+		;;
+	    *)
+		modprobe $modulename $moduleoptions
+		;;
+	esac
     fi
 }
 

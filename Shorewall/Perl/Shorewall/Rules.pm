@@ -5286,7 +5286,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	    $interfaces = $1;
 	} elsif ( $dest =~ /^([^:]+):([^:]*)$/ ) {
 	    my ( $one, $two ) = ( $1, $2 );
-	    if ( $2 =~ /\./ || $2 =~ /^%/ ) {
+	    if ( $2 =~ /\./ || $2 =~ /^[+%!]/ ) {
 		$interfaces = $one;
 		$destnets = $two;
 	    } else {

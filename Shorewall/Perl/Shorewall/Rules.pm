@@ -216,6 +216,10 @@ our %statetable;
 # Tracks which of the state match actions (action.Invalid, etc.) that is currently being expanded
 #
 our $statematch;
+#
+# Remembers NAT-oriented columns from top-level action invocations
+#
+our %nat_columns;
 
 #
 # Action/Inline options
@@ -384,6 +388,8 @@ sub initialize( $ ) {
 	                  );
     }
 
+    %nat_columns = ( dest => '-', proto => '-', ports => '-' );
+
     ############################################################################
     # Initialize variables moved from the Tc module in Shorewall 5.0.7         #
     ############################################################################
@@ -391,7 +397,7 @@ sub initialize( $ ) {
     %tcdevices = ();
     %tcclasses = ();
     $sticky    = 0;
-    $divertref = 0;    
+    $divertref = 0;
 }
 
 #
@@ -1652,6 +1658,19 @@ sub merge_inline_source_dest( $$ ) {
     $body || '';
 }
 
+#
+# This one is used by perl_action_helper()
+#
+sub merge_action_column( $$ ) {
+    my ( $body, $invocation ) = @_;
+
+    if ( supplied( $body ) && $body ne '-' ) {
+	$body;
+    } else {
+	$invocation;
+    }
+}
+
 sub merge_macro_column( $$ ) {
     my ( $body, $invocation ) = @_;
 
@@ -2510,6 +2529,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $exceptionrule = '';
     my $usergenerated;
     my $prerule = '';
+    my %save_nat_columns = %nat_columns;
+    my $generated = 0;
     #
     # Subroutine for handling MARK and CONNMARK.
     #
@@ -2591,32 +2612,30 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	$current_param = $param unless $param eq '' || $param eq 'PARAM';
 
-	my $generated = process_macro( $basictarget,
-				       $chainref,
-				       $rule . $raw_matches,
-				       $matches1,
-				       $target,
-				       $current_param,
-				       $source,
-				       $dest,
-				       $proto,
-				       $ports,
-				       $sports,
-				       $origdest,
-				       $ratelimit,
-				       $user,
-				       $mark,
-				       $connlimit,
-				       $time,
-				       $headers,
-				       $condition,
-				       $helper,
-				       $wildcard );
+	$generated = process_macro( $basictarget,
+				    $chainref,
+				    $rule . $raw_matches,
+				    $matches1,
+				    $target,
+				    $current_param,
+				    $source,
+				    $dest,
+				    $proto,
+				    $ports,
+				    $sports,
+				    $origdest,
+				    $ratelimit,
+				    $user,
+				    $mark,
+				    $connlimit,
+				    $time,
+				    $headers,
+				    $condition,
+				    $helper,
+				    $wildcard );
 
 	$macro_nest_level--;
-
-	return $generated;
-
+	goto EXIT;
     } elsif ( $actiontype & NFQ ) {
 	$action = handle_nfqueue( $param,
 				  1 # Allow 'bypass'
@@ -2688,6 +2707,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	      REDIRECT => sub () {
 		  my $z = $actiontype & NATONLY ? '' : firewall_zone;
+
 		  if ( $dest eq '-' ) {
 		      if ( $family == F_IPV4 ) {
 			  $dest = ( $inchain ) ? '' : join( '', $z, '::' , $ports =~ /[:,]/ ? '' : $ports );
@@ -2816,6 +2836,24 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    }
 	}
     }
+
+    if ( $actiontype & ACTION ) {
+	my $dst = $dest;
+
+	if ( $dst eq '-' ) {
+	    $dst = $nat_columns{dest};
+	} elsif ( $inchain ) {
+	    #
+	    # Remove zone from destination
+	    #
+	    $dst  =~ s/.*://;
+	}
+
+	@nat_columns{'dest', 'proto', 'ports' } = ( $dst,
+						    $proto eq '-' ? $nat_columns{proto} : $proto,
+						    $ports eq '-' ? $nat_columns{ports} : $ports );
+    }
+
     #
     # Isolate and validate source and destination zones
     #
@@ -2909,7 +2947,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	#
 	if ( $destref->{type} & BPORT ) {
 	    unless ( $sourceref->{bridge} eq $destref->{bridge} || single_interface( $sourcezone ) eq $destref->{bridge} ) {
-		return 0 if $wildcard;
+		goto EXIT if $wildcard;
 		fatal_error "Rules with a DESTINATION Bridge Port zone must have a SOURCE zone on the same bridge";
 	    }
 	}
@@ -2924,7 +2962,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	my $policy = $chainref->{policy};
 
 	if ( $policy eq 'NONE' ) {
-	    return 0 if $wildcard;
+	    goto EXIT if $wildcard;
 	    fatal_error "Rules may not override a NONE policy";
 	}
 	#
@@ -2933,9 +2971,9 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	if ( $optimize == 1 && $section == NEW_SECTION ) {
 	    my $loglevel = $filter_table->{$chainref->{policychain}}{loglevel};
 	    if ( $loglevel ne '' ) {
-		return 0 if $target eq "${policy}:${loglevel}";
+		goto EXIT if $target eq "${policy}:${loglevel}";
 	    } else {
-		return 0 if $basictarget eq $policy;
+		goto EXIT if $basictarget eq $policy;
 	    }
 	}
 	#
@@ -2981,6 +3019,15 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
     if ( $actiontype & ACTION ) {
 	#
+	# Push the current column array onto the column stack
+	#
+        my @savecolumns = @columns;
+	#
+	# And store the (modified) columns into the columns array for use by perl_action[_tcp]_helper. We
+	# only need the NAT-oriented columns
+	#
+	@columns = ( undef , undef, $dest, $proto, $ports);
+	#
 	# Handle 'section' option
 	#
 	$param = supplied $param ? join( ',' , $section_rmap{$section}, $param ) : $section_rmap{$section} if $actions{$basictarget}{options} & SECTION_OPT;
@@ -3023,6 +3070,8 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	}
 
 	$action = $basictarget; # Remove params, if any, from $action.
+
+	@columns = @savecolumns;
     } elsif ( $actiontype & INLINE ) {
 	#
 	# process_inline() will call process_rule() recursively for each rule in the action body
@@ -3039,34 +3088,34 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	$actionresult = 0;
 
-	my $generated = process_inline( $basictarget,
-					$chainref,
-					$prerule . $rule,
-					$matches1 . $raw_matches,
-					$loglevel,
-					$target,
-					$param,
-					$source,
-					$dest,
-					$proto,
-					$ports,
-					$sports,
-					$origdest,
-					$ratelimit,
-					$user,
-					$mark,
-					$connlimit,
-					$time,
-					$headers,
-					$condition,
-					$helper,
-					$wildcard ) || $actionresult;
+	$generated = process_inline( $basictarget,
+				     $chainref,
+				     $prerule . $rule,
+				     $matches1 . $raw_matches,
+				     $loglevel,
+				     $target,
+				     $param,
+				     $source,
+				     $dest,
+				     $proto,
+				     $ports,
+				     $sports,
+				     $origdest,
+				     $ratelimit,
+				     $user,
+				     $mark,
+				     $connlimit,
+				     $time,
+				     $headers,
+				     $condition,
+				     $helper,
+				     $wildcard ) || $actionresult;
 
 	( $actionresult, @columns ) = @$savecolumns;;
 
 	$macro_nest_level--;
 
-	return $generated;
+	goto EXIT;
     }
     #
     # Generate Fixed part of the rule
@@ -3252,7 +3301,14 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
     }
 
-    return 1;
+    $generated = 1;
+
+  EXIT:
+    {
+      %nat_columns = %save_nat_columns;
+    }
+
+    return $generated;
 }
 
 
@@ -3406,27 +3462,60 @@ sub perl_action_helper($$;$$) {
 				 '',                              # CurrentParam
 				 @columns );
     } else {
-	$result = process_rule( $chainref,
-				$matches,
-				$matches1,
-				merge_target( $actions{$action}, $target ),
-				'',                               # Current Param
-				'-',                              # Source
-				'-',                              # Dest
-				'-',                              # Proto
-				'-',                              # Port(s)
-				'-',                              # Source Port(s)
-				'-',                              # Original Dest
-				'-',                              # Rate Limit
-				'-',                              # User
-				'-',                              # Mark
-				'-',                              # Connlimit
-				'-',                              # Time
-				'-',                              # Headers,
-				'-',                              # condition,
-				'-',                              # helper,
-				0,                                # Wildcard
-			      );
+	if ( ( $targets{$target} || 0 ) & NATRULE ) {
+	    $result = process_rule( $chainref,
+				    $matches,
+				    $matches1,
+				    merge_target( $actions{$action}, $target ),
+				    '',                               # Current Param
+				    '-',                              # Source
+				    merge_action_column(              # Dest
+					$columns[2],			      
+					$nat_columns{dest}
+				    ),
+				    merge_action_column(              #Proto
+					$columns[3],
+					$nat_columns{proto}
+				    ),
+				    merge_action_column(              #Ports
+					$columns[4],
+					$nat_columns{ports}),
+				    '-',                              # Source Port(s)
+				    '-',                              # Original Dest
+				    '-',                              # Rate Limit
+				    '-',                              # User
+				    '-',                              # Mark
+				    '-',                              # Connlimit
+				    '-',                              # Time
+				    '-',                              # Headers,
+				    '-',                              # condition,
+				    '-',                              # helper,
+				    0,                                # Wildcard
+		);
+	} else {
+	    $result = process_rule( $chainref,
+				    $matches,
+				    $matches1,
+				    merge_target( $actions{$action}, $target ),
+				    '',                               # Current Param
+				    '-',                              # Source
+				    '-',                              # Dest
+				    '-',                              # Proto
+				    '-',                              # Port(s)
+				    '-',                              # Source Port(s)
+				    '-',                              # Original Dest
+				    '-',                              # Rate Limit
+				    '-',                              # User
+				    '-',                              # Mark
+				    '-',                              # Connlimit
+				    '-',                              # Time
+				    '-',                              # Headers,
+				    '-',                              # condition,
+				    '-',                              # helper,
+				    0,                                # Wildcard
+		);
+	}
+
 	allow_optimize( $chainref );
     }
     #
@@ -3492,7 +3581,8 @@ sub perl_action_tcp_helper($$) {
 				    '-',                              # condition,
 				    '-',                              # helper,
 				    0,                                # Wildcard
-				  );
+		                  );
+
 	    allow_optimize( $chainref );
 	}
 	#

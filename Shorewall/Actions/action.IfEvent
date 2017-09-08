@@ -107,6 +107,11 @@ if ( $command & $REAP_OPT ) {
 
 $duration .= '--rttl ' if $command & $TTL_OPT;
 
+if ( ( $targets{$action} || 0 ) & NATRULE ) {
+    perl_action_helper( "${action}-", "-m recent --rcheck ${duration}--hitcount $hitcount" );
+    $action = 'ACCEPT';
+}
+
 if ( $command & $RESET_CMD ) {
     require_capability 'MARK_ANYWHERE', '"reset"', 's';
 

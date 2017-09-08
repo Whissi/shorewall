@@ -41,6 +41,11 @@ fatal_error "Invalid Src or Dest ($destination)" unless $destination =~ /^(?:src
 set_action_disposition( $disposition) if supplied $disposition;
 set_action_name_to_caller;
 
+if ( ( $targets{$action} || 0 ) & NATRULE ) {
+    perl_action_helper( "${action}-", "" );
+    $action = 'ACCEPT';
+}
+
 if ( $destination eq 'dst' ) {
     perl_action_helper( $action, '', '', "-m recent --name $event --remove --rdest" );
 } else {

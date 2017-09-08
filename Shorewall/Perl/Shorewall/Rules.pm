@@ -2842,7 +2842,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	if ( $dst eq '-' ) {
 	    $dst = $nat_columns{dest};
-	} elsif ( $inchain ) {
+	} elsif ( ! $inchain ) {
 	    #
 	    # Remove zone from destination
 	    #

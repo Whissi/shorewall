@@ -2837,23 +2837,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	}
     }
 
-    if ( $actiontype & ACTION ) {
-	my $dst = $dest;
-
-	if ( $dst eq '-' ) {
-	    $dst = $nat_columns{dest};
-	} elsif ( ! $inchain ) {
-	    #
-	    # Remove zone from destination
-	    #
-	    $dst  =~ s/.*://;
-	}
-
-	@nat_columns{'dest', 'proto', 'ports' } = ( $dst,
-						    $proto eq '-' ? $nat_columns{proto} : $proto,
-						    $ports eq '-' ? $nat_columns{ports} : $ports );
-    }
-
     #
     # Isolate and validate source and destination zones
     #
@@ -3018,6 +3001,12 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $actionchain; # Name of the action chain
 
     if ( $actiontype & ACTION ) {
+	#
+	# Save NAT-oriented column contents
+	#
+	@nat_columns{'dest', 'proto', 'ports' } = ( $dest,
+						    $proto eq '-' ? $nat_columns{proto} : $proto,
+						    $ports eq '-' ? $nat_columns{ports} : $ports );
 	#
 	# Push the current column array onto the column stack
 	#

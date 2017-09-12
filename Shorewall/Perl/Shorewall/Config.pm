@@ -6251,7 +6251,7 @@ sub get_configuration( $$$$ ) {
 	$config{LOG_VERBOSITY} = -1;
     }
 
-    default_yes_no 'ADD_IP_ALIASES'             , 'Yes';
+    default_yes_no 'ADD_IP_ALIASES'             , $family == F_IPV4 ? 'Yes' : '';
     default_yes_no 'ADD_SNAT_ALIASES'           , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';
     default_yes_no 'DETECT_DNAT_IPADDRS'        , '';

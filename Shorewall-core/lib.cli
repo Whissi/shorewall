@@ -3727,7 +3727,7 @@ ipcalc_command() {
 
     valid_address $address || fatal_error "Invalid IP address: $address"
     [ -z "$vlsm" ] && fatal_error "Missing VLSM"
-    [ "x$address" = "x$vlsm" ] && "Invalid VLSM"
+    [ "x$address" = "x$vlsm" ] && fatal_error "Invalid VLSM"
     [ $vlsm -gt 32 ] && fatal_error "Invalid VLSM: /$vlsm"
 
     address=$address/$vlsm

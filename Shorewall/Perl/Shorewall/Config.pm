@@ -4288,7 +4288,7 @@ sub which( $ ) {
 # Load the kernel modules defined in the 'modules' file.
 #
 sub load_kernel_modules( ) {
-    my $moduleloader = which( 'modprobe' ) || ( which 'insmod' );
+    my $moduleloader = which( 'modprobe' ) || which( 'insmod' );
 
     my $modulesdir = $config{MODULESDIR};
 
@@ -4326,7 +4326,7 @@ sub load_kernel_modules( ) {
 	    fatal_error "Invalid modules file entry" unless ( $currentline =~ /^loadmodule\s+([a-zA-Z]\w*)\s*(.*)$/ );
 	    my ( $module, $arguments ) = ( $1, $2 );
 	    unless ( $loadedmodules{ $module } ) {
-		if ( $moduleloader eq 'modprobe' ) {
+		if ( $moduleloader =~ /modprobe$/ ) {
 		    system( "modprobe -q $module $arguments" );
 		    $loadedmodules{ $module } = 1;
 		} else {

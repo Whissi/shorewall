@@ -667,6 +667,7 @@ sub create_docker_rules() {
 
     my $chainref = $filter_table->{FORWARD};
 
+    add_commands( $chainref, '[ -n "$g_dockeringress" ] && echo "-A FORWARD -j DOCKER-INGRESS"   >&3', );
     add_commands( $chainref, '[ -n "$g_dockernetwork" ] && echo "-A FORWARD -j DOCKER-ISOLATION" >&3', );
 
     if ( my $dockerref = known_interface('docker0') ) {

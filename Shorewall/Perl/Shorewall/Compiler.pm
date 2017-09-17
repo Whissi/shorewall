@@ -268,6 +268,7 @@ sub generate_script_2() {
 	emit( '',
 	      'chain_exists DOCKER nat && chain_exists DOCKER && g_docker=Yes',
 	    );
+	emit( 'chain_exists DOCKER-INGRESS   && g_dockeringress=Yes]' );
 	emit( 'chain_exists DOCKER-ISOLATION && g_dockernetwork=Yes]' );
 	emit( '' );
     }

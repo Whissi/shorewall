@@ -66,6 +66,10 @@ start () {
 
     printf "Initializing \"Shorewall-based firewalls\": "
 
+    if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
+	ipset -R < "$SAVE_IPSETS"
+    fi
+
     for PRODUCT in $PRODUCTS; do
 	setstatedir
 	retval=$?
@@ -120,6 +124,15 @@ stop () {
     done
 
     if [ $retval -eq 0 ]; then
+	if [ -n "$SAVE_IPSETS" ]; then
+	    mkdir -p $(dirname "$SAVE_IPSETS")
+	    if ipset -S > "${SAVE_IPSETS}.tmp"; then
+		grep -qE -- '^(-N|create )' "${SAVE_IPSETS}.tmp" && mv -f "${SAVE_IPSETS}.tmp" "$SAVE_IPSETS" || rm -f "${SAVE_IPSETS}.tmp"
+	    else
+		rm -f "${SAVE_IPSETS}.tmp"
+	    fi
+	fi
+
 	rm -f $lockfile
 	success
     else

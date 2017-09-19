@@ -421,9 +421,12 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage 2
 	mutex_on
 	if product_is_started; then
+	    COMMAND=disable
 	    detect_configuration $1
-	    COMMAND=enable  disable_provider $1 Yes
-	    COMMAND=disable enable_provider  $1 Yes
+	    disable_provider $1 Yes
+	    COMMAND=enable
+	    detect_configuration $1
+	    enable_provider  $1 Yes
 	fi
 	mutex_off
 	status=0

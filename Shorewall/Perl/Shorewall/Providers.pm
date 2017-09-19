@@ -1241,9 +1241,9 @@ CEOF
 	    );
 
 	if ( $pseudo ) {
-	    emit( "progress_message2 \"   Optional Interface $table stopped\"" );
+	    emit( "progress_message2 \"Optional Interface $table stopped\"" );
 	} else {
-	    emit( "progress_message2 \"   Provider $table ($number) stopped\"" );
+	    emit( "progress_message2 \"Provider $table ($number) stopped\"" );
 	}
 
 	pop_indent;

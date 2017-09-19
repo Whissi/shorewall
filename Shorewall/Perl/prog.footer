@@ -78,11 +78,13 @@ reload_command() {
     detect_configuration
     define_firewall
     status=$?
-    if [ -n "$SUBSYSLOCK" ]; then
- 	[ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
-    fi
 
-    [ $status -eq 0 ] && progress_message3 "done."
+    if [ $status -eq 0 ]; then
+	[ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+	progress_message3 "done."
+    else
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
+    fi
 }
 
 ################################################################################

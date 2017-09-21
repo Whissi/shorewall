@@ -692,6 +692,7 @@ sub compiler {
     set_timestamp( $timestamp );
     set_debug( $debug , $confess );
     #
+    #                                      S H O R E W A L L R C ,
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
     get_configuration( $export , $update , $annotate , $inline );

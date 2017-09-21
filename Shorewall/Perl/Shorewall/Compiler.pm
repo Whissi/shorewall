@@ -797,12 +797,9 @@ sub compiler {
 	emit '}'; # End of setup_common_rules()
     }
 
-    disable_script;
     #
     #                      R O U T I N G _ A N D _ T R A F F I C _ S H A P I N G
     #         (Writes the setup_routing_and_traffic_shaping() function to the compiled script)
-    #
-    enable_script;
     #
     # Validate the TC files so that the providers will know what interfaces have TC
     #

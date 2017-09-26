@@ -42,6 +42,7 @@ use autouse 'Carp' => qw(longmess confess);
 use Scalar::Util 'reftype';
 use FindBin;
 use Digest::SHA qw(sha1_hex);
+use Errno qw(:POSIX);
 
 our @ISA = qw(Exporter);
 #
@@ -754,7 +755,7 @@ sub initialize( $;$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.5-RC1",
+		    VERSION                 => "5.1.8-Beta1",
 		    CAPVERSION              => 50106 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -2569,17 +2570,21 @@ sub open_file( $;$$$$ ) {
 
     assert( ! defined $currentfile );
 
-    if ( -f $fname && -s _ ) {
-	$first_entry      = 0;
-	$file_format      = supplied $cf ? $cf : 1;
-	$max_format       = supplied $mf ? $mf : 1;
-	$comments_allowed = supplied $ca ? $ca : 0;
-	$nocomment        = $nc;
-	do_open_file $fname;;
+    if ( -f $fname ) {
+	if ( -s _ ) {
+	    $first_entry      = 0;
+	    $file_format      = supplied $cf ? $cf : 1;
+	    $max_format       = supplied $mf ? $mf : 1;
+	    $comments_allowed = supplied $ca ? $ca : 0;
+	    $nocomment        = $nc;
+	    return do_open_file $fname;
+	}
     } else {
-	$ifstack = @ifstack;
-	'';
+	$!{ENOENT} or fatal_error "Unable to open file $fname: " . $!;
     }
+
+    $ifstack = @ifstack;
+    '';
 }
 
 #

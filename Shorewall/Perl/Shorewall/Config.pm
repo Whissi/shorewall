@@ -1994,6 +1994,7 @@ sub find_file($)
     for my $directory ( @config_path ) {
 	my $file = "$directory$filename";
 	return $file if -f $file;
+	$!{ENOENT} || fatal_error "Unable to access $file: " . $!; 
     }
 
     "$config_path[0]$filename";
@@ -2570,21 +2571,17 @@ sub open_file( $;$$$$ ) {
 
     assert( ! defined $currentfile );
 
-    if ( -f $fname ) {
-	if ( -s _ ) {
-	    $first_entry      = 0;
-	    $file_format      = supplied $cf ? $cf : 1;
-	    $max_format       = supplied $mf ? $mf : 1;
-	    $comments_allowed = supplied $ca ? $ca : 0;
-	    $nocomment        = $nc;
-	    return do_open_file $fname;
-	}
+    if ( -f $fname && -s _ ) {
+	$first_entry      = 0;
+	$file_format      = supplied $cf ? $cf : 1;
+	$max_format       = supplied $mf ? $mf : 1;
+	$comments_allowed = supplied $ca ? $ca : 0;
+	$nocomment        = $nc;
+	do_open_file $fname;
     } else {
-	$!{ENOENT} or fatal_error "Unable to open file $fname: " . $!;
+	$ifstack = @ifstack;
+	'';
     }
-
-    $ifstack = @ifstack;
-    '';
 }
 
 #

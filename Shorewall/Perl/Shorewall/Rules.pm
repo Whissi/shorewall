@@ -4142,10 +4142,10 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 		expand_rule( $chainref,
 			     $restriction,
 			     $prerule ,
+			     do_proto( $proto, $ports, $sports ) .
 			     $match .
 			     do_user( $user ) .
-			     do_test( $testval, $globals{TC_MASK} ) .
-			     do_test( $testval, $globals{TC_MASK} ) .
+			     do_test( $testval, $mask ) .
 			     do_length( $length ) .
 			     do_tos( $tos ) .
 			     do_connbytes( $connbytes ) .
@@ -4153,6 +4153,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 			     do_headers( $headers ) .
 			     do_probability( $probability ) .
 			     do_dscp( $dscp ) .
+			     do_time( $time ) .
 			     do_condition( $condition, $chainref->{name} ) .
 			     state_match( $state ) .
 			     $raw_matches ,

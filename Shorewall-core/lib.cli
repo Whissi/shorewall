@@ -1142,11 +1142,11 @@ show_a_macro() {
 spd_filter()
 {
     awk \
-    'BEGIN            { skip=0; }; \
-    /^src/            { skip=0; }; \
-    /^src 0.0.0.0\/0/ { skip=1; }; \
-    /^src ::\/0/      { skip=1; }; \
-                      { if ( skip == 0 ) print; };'
+    'BEGIN                                  { skip=0; }; \
+    /^src/                                  { skip=0; }; \
+    /^src 0.0.0.0\/0 dst 0.0.0.0\/0 uid 0$/ { skip=1; }; \
+    /^src ::\/0 dst ::\/0 uid 0$/           { skip=1; }; \
+                                            { if ( skip == 0 ) print; };'
 }
 #
 # Print a heading with leading and trailing black lines

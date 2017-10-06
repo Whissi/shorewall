@@ -1010,7 +1010,7 @@ sub initialize( $;$$) {
 	       CONNLIMIT_MATCH => undef,
 	       TIME_MATCH => undef,
 	       GOTO_TARGET => undef,
-	       LOG_TARGET => 1,         # Assume that we have it.
+	       LOG_TARGET => undef,
 	       ULOG_TARGET => undef,
 	       NFLOG_TARGET => undef,
 	       LOGMARK_TARGET => undef,

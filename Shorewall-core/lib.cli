@@ -2770,7 +2770,7 @@ determine_capabilities() {
     GOTO_TARGET=
     LOGMARK_TARGET=
     IPMARK_TARGET=
-    LOG_TARGET=Yes
+    LOG_TARGET=
     ULOG_TARGET=
     NFLOG_TARGET=
     PERSISTENT_SNAT=
@@ -3138,7 +3138,7 @@ determine_capabilities() {
     qt $g_tool -A $chain -m time --timestart 23:00 -j DROP && TIME_MATCH=Yes
     qt $g_tool -A $chain -g $chain1 && GOTO_TARGET=Yes
     qt $g_tool -A $chain -j LOGMARK && LOGMARK_TARGET=Yes
-    qt $g_tool -A $chain -j LOG || LOG_TARGET=
+    qt $g_tool -A $chain -j LOG && LOG_TARGET=Yes
     qt $g_tool -A $chain -j ULOG && ULOG_TARGET=Yes
     qt $g_tool -A $chain -j MARK --set-mark 5 && MARK_ANYWHERE=Yes
     qt $g_tool -A $chain -m statistic --mode nth --every 2 --packet 1 && STATISTIC_MATCH=Yes

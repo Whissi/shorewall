@@ -1159,7 +1159,7 @@ heading() {
 
 show_ipsec() {
     heading "PFKEY SPD"
-    $IP -s xfrm policy | spd_filter
+    $IP -s -$g_family xfrm policy | spd_filter
     heading "PFKEY SAD"
     $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys
 }

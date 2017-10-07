@@ -1403,13 +1403,15 @@ sub compatible( $$ ) {
     }
     #
     # Don't combine chains where each specifies
-    #    -m policy
+    #    -m policy and the policies are different
     # or when one specifies
     #    -m multiport
     # and the other specifies
     #    --dport or --sport or -m multiport
     #
-    return ! ( $ref1->{policy} && $ref2->{policy} ||
+    my ( $p1, $p2 );
+
+    return ! ( ( ( $p1 = $ref1->{policy} ) && ( $p2 = $ref2->{policy} ) && $p1 ne $p2 ) ||
 	       ( ( $ref1->{multiport} && ( $ref2->{dport} || $ref2->{sport} || $ref2->{multiport} ) ) ||
 		 ( $ref2->{multiport} && ( $ref1->{dport} || $ref1->{sport} ) ) ) );
 }
@@ -3673,7 +3675,7 @@ sub optimize_level4( $$ ) {
 				#
 				delete_chain_and_references( $chainref );
 				$progress = 1;
-			    } elsif ( $chainref->{builtin} || ! $globals{KLUDGEFREE} || $firstrule->{policy} ) {
+			    } elsif ( $chainref->{builtin} || ! $globals{KLUDGEFREE} ) {
 				#
 				# This case requires a new rule merging algorithm. Ignore this chain from
 				# now on.

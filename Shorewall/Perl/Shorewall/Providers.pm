@@ -847,7 +847,7 @@ sub add_a_provider( $$ ) {
 	    if ( $tproxy ) {
 		emit 'run_ip route add local ' . ALLIP . " dev $physical table $id";
 	    } else {
-		emit "run_ip route add default dev $physical table $id";
+		emit "run_ip route replace default dev $physical table $id";
 	    }
 	}
 
@@ -863,7 +863,7 @@ sub add_a_provider( $$ ) {
 		emit qq(echo "\$IP route del $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 	    }
 
-	    emit( "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm" );
+	    emit( "run_ip route replace default via $gateway src $address dev $physical ${mtu}table $id $realm" );
 	    emit( qq( echo "\$IP route del default via $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1"  >> \${VARDIR}/undo_${table}_routing) );
 	}
 
@@ -923,7 +923,7 @@ sub add_a_provider( $$ ) {
 	    if ( $tproxy ) {
 		emit 'run_ip route add local ' . ALLIP . " dev $physical table $id";
 	    } else {
-		emit "run_ip route add default dev $physical table $id";
+		emit "run_ip route replace default dev $physical table $id";
 	    }
 	}
     }
@@ -984,7 +984,7 @@ CEOF
 	    emit qq(run_ip route replace $gateway src $address dev $physical ${mtu}table $id $realm);
 	}
 
-	emit "run_ip route add default via $gateway src $address dev $physical ${mtu}table $id $realm";
+	emit "run_ip route replace default via $gateway src $address dev $physical ${mtu}table $id $realm";
     }
 
     if ( $balance ) {
@@ -996,11 +996,11 @@ CEOF
 	emit '';
 	if ( $gateway ) {
 	    emit qq(run_ip route replace $gateway/32 dev $physical table $id) if $hostroute;
-	    emit qq(run_ip route add default via $gateway src $address dev $physical table $id metric $number);
+	    emit qq(run_ip route replace default via $gateway src $address dev $physical table $id metric $number);
 	    emit qq(echo "\$IP -$family route del default via $gateway table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 	    emit qq(echo "\$IP -4 route del $gateway/32 dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing) if $family == F_IPV4;
 	} else {
-	    emit qq(run_ip route add default table $id dev $physical metric $number);
+	    emit qq(run_ip route replace default table $id dev $physical metric $number);
 	    emit qq(echo "\$IP -$family route del default dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 	}
 
@@ -1442,22 +1442,22 @@ sub add_a_route( ) {
 
     if ( $gateway ne '-' ) {
 	if ( $device ne '-' ) {
-	    push @$routes,            qq(run_ip route add $dest via $gateway dev $physical table $id);
-	    push @$persistent_routes, qq(run_ip route add $dest via $gateway dev $physical table $id) if $persistent;
+	    push @$routes,            qq(run_ip route replace $dest via $gateway dev $physical table $id);
+	    push @$persistent_routes, qq(run_ip route replace $dest via $gateway dev $physical table $id) if $persistent;
 	    push @$routes,             q(echo "$IP ) . qq(-$family route del $dest via $gateway dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} elsif ( $null ) {
-	    push @$routes,            qq(run_ip route add $null $dest table $id);
-	    push @$persistent_routes, qq(run_ip route add $null $dest table $id) if $persistent;
+	    push @$routes,            qq(run_ip route replace $null $dest table $id);
+	    push @$persistent_routes, qq(run_ip route replace $null $dest table $id) if $persistent;
 	    push @$routes,             q(echo "$IP ) . qq(-$family route del $null $dest table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	} else {
-	    push @$routes,            qq(run_ip route add $dest via $gateway table $id);
-	    push @$persistent_routes, qq(run_ip route add $dest via $gateway table $id) if $persistent;
+	    push @$routes,            qq(run_ip route replace $dest via $gateway table $id);
+	    push @$persistent_routes, qq(run_ip route replace $dest via $gateway table $id) if $persistent;
 	    push @$routes,             q(echo "$IP ) . qq(-$family route del $dest via $gateway table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
 	}
     } else {
 	fatal_error "You must specify a device for this route" unless $physical;
-	push @$routes,            qq(run_ip route add $dest dev $physical table $id);
-	push @$persistent_routes, qq(run_ip route add $dest dev $physical table $id) if $persistent;
+	push @$routes,            qq(run_ip route replace $dest dev $physical table $id);
+	push @$persistent_routes, qq(run_ip route replace $dest dev $physical table $id) if $persistent;
 	push @$routes,             q(echo "$IP ) . qq(-$family route del $dest dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${provider}_routing) if $number >= DEFAULT_TABLE;
     }
 

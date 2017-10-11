@@ -1093,6 +1093,17 @@ CEOF
 	      $pseudo ? "run_enabled_exit ${physical} ${interface}" : "run_enabled_exit ${physical} ${interface} ${table}"
 	    );
 
+	if ( ! $pseudo && $config{USE_DEFAULT_RT} && $config{RESTORE_DEFAULT_ROUTE} ) {
+	    emit  ( '#',
+		    '# We now have a viable default route in the \'default\' table so delete any default routes in the main table',
+		    '#',
+		    'while qt \$IP -$family route del default table ' . MAIN_TABLE . '; do',
+		    '    true',
+		    'done',
+		    ''
+		);
+	}
+
 	emit_started_message( '', 2, $pseudo, $table, $number );
 
 	if ( get_interface_option( $interface, 'used_address_variable' ) || get_interface_option( $interface, 'used_gateway_variable' ) ) {

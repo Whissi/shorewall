@@ -602,6 +602,7 @@ sub process_a_provider( $ ) {
 	    } elsif ( $option eq 'nohostroute' ) {
 		$hostroute = 0;
 	    } elsif ( $option eq 'persistent' ) {
+		warning_message "When RESTOE_DEFAULT_ROUTE=Yes, the 'persistent' option may not work as expected" if $config{RESTORE_DEFAULT_ROUTE};
 		$persistent = 1;
 	    } else {
 		fatal_error "Invalid option ($option)";

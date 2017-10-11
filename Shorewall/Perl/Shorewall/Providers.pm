@@ -1005,6 +1005,8 @@ CEOF
 	    emit qq(echo "\$IP -$family route del default dev $physical table $id > /dev/null 2>&1" >> \${VARDIR}/undo_${table}_routing);
 	}
 
+	emit( 'g_fallback=Yes' ) if $persistent;
+
 	$metrics = 1;
     }
 
@@ -1592,7 +1594,7 @@ sub finish_providers() {
 		'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
 
 	if ( $config{RESTORE_DEFAULT_ROUTE} ) {
-	    emit qq(    [ -z "\$FALLBACK_ROUTE" ] && restore_default_route $config{USE_DEFAULT_RT} && error_message "NOTICE: Default route restored")
+	    emit qq(    [ -z "\${FALLBACK_ROUTE}\${g_fallback}" ] && restore_default_route $config{USE_DEFAULT_RT} && error_message "NOTICE: Default route restored")
 	} else {
 	    emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
 	}

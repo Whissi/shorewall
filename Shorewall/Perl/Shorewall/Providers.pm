@@ -1592,7 +1592,7 @@ sub finish_providers() {
 		'    error_message "WARNING: No Default route added (all \'balance\' providers are down)"' );
 
 	if ( $config{RESTORE_DEFAULT_ROUTE} ) {
-	    emit qq(    restore_default_route $config{USE_DEFAULT_RT} && error_message "NOTICE: Default route restored")
+	    emit qq(    [ -z "\$FALLBACK_ROUTE" ] && restore_default_route $config{USE_DEFAULT_RT} && error_message "NOTICE: Default route restored")
 	} else {
 	    emit qq(    qt \$IP -$family route del default table $table && error_message "WARNING: Default route deleted from table $table");
 	}

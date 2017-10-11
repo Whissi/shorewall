@@ -1619,7 +1619,7 @@ sub finish_providers() {
 	}
 
 	emit ( '#',
-	       '# Delete any routes in the \'balance\' table',
+	       '# Delete any default routes with metric 0 in the \'balance\' table',
 	       '#',
 	       "while qt \$IP -$family route del default table $balance; do",
 	       '    true',
@@ -1647,7 +1647,10 @@ sub finish_providers() {
 	      'fi',
 	      '' );
     } elsif ( $config{USE_DEFAULT_RT} ) {
-	emit( "delete_default_routes $default",
+	emit( '#',
+	      '# No balanced fallback routes - delete any routes with metric 0 from the \'default\' table',
+	      '#',
+	      "delete_default_routes $default",
 	      ''
 	    );
     }

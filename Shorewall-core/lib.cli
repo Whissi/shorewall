@@ -1139,13 +1139,23 @@ show_a_macro() {
 #
 # Don't dump empty SPD entries
 #
-spd_filter()
+spd_filter4()
 {
     awk \
     'BEGIN                                  { skip=0; }; \
     /^src/                                  { skip=0; }; \
     /^src 0.0.0.0\/0 dst 0.0.0.0\/0 uid 0$/ { skip=1; }; \
+    /src .*:/                               { skip=1; }; \
+                                            { if ( skip == 0 ) print; };'
+}
+
+spd_filter6()
+{
+    awk \
+    'BEGIN                                  { skip=0; }; \
+    /^src/                                  { skip=0; }; \
     /^src ::\/0 dst ::\/0 uid 0$/           { skip=1; }; \
+    /src .*\./                              { skip=1; }; \
                                             { if ( skip == 0 ) print; };'
 }
 #
@@ -1159,7 +1169,13 @@ heading() {
 
 show_ipsec() {
     heading "PFKEY SPD"
-    $IP -s -$g_family xfrm policy | spd_filter
+
+    if [ $g_family = 4 ]; then
+	$IP -s -4 xfrm policy | spd_filter4
+    else
+	$IP -s -6 xfrm policy | spd_filter6
+    fi
+
     heading "PFKEY SAD"
     $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys
 }

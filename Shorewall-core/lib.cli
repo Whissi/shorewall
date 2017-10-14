@@ -1137,26 +1137,31 @@ show_a_macro() {
     cat ${directory}/macro.$1
 }
 #
-# Don't dump empty SPD entries
+# Don't dump empty SPD entries or entries from the other address family
 #
-spd_filter4()
-{
-    awk \
-    'BEGIN                                  { skip=0; }; \
-    /^src/                                  { skip=0; }; \
-    /^src 0.0.0.0\/0 dst 0.0.0.0\/0 uid 0$/ { skip=1; }; \
-    /src .*:/                               { skip=1; }; \
-                                            { if ( skip == 0 ) print; };'
-}
-
-spd_filter6()
-{
-    awk \
-    'BEGIN                                  { skip=0; }; \
-    /^src/                                  { skip=0; }; \
-    /^src ::\/0 dst ::\/0 uid 0$/           { skip=1; }; \
-    /src .*\./                              { skip=1; }; \
-                                            { if ( skip == 0 ) print; };'
+spd_filter() {
+    #
+    # af   = Address Family (4 or 6)
+    # afok = Address Family of entry matches af
+    # p    = print the contents of A (entry is not empty)
+    # i    = Number of lines stored in A
+    #
+    awk -v af=$g_family \
+	'function prnt(A,i,    j) { while ( j < i ) print A[j++]; };\
+\
+	 /^src / { if (p) prnt( A, i );\
+		   afok = 1;\
+		   p	= 0;\
+		   i	= 0;\
+		   if ( af == 4 )\
+		       { if ( /:/ )  afok = 0; }\
+		   else\
+		       { if ( /\./ ) afok = 0; }\
+		 };\
+		 { if ( afok ) A[i++] = $0; };\
+	 /tmpl/	 { p = afok; };\
+\
+	 END	 { if (p) prnt( A, i ); }'
 }
 #
 # Print a heading with leading and trailing black lines
@@ -1169,12 +1174,7 @@ heading() {
 
 show_ipsec() {
     heading "PFKEY SPD"
-
-    if [ $g_family = 4 ]; then
-	$IP -s -4 xfrm policy | spd_filter4
-    else
-	$IP -s -6 xfrm policy | spd_filter6
-    fi
+    $IP -s -$g_family xfrm policy | spd_filter
 
     heading "PFKEY SAD"
     $IP -s -$g_family xfrm state | egrep -v '[[:space:]]+(auth-trunc|enc )' # Don't divulge the keys

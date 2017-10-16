@@ -72,43 +72,75 @@
 
     <para>Here are the contents of /etc/shorewall/ and /etc/shorewal6/:</para>
 
-    <programlisting>root@gateway:/etc# ls -l shorewall shorewall6
-shorewall:
-total 88
--rw-r--r-- 1 root root  201 Mar 19 08:43 action.Mirrors
+    <programlisting>oot@gateway:~# ls -l /etc/shorewall/
+total 92
+-rw-r--r-- 1 root root  201 Mar 19  2017 action.Mirrors
 -rw-r--r-- 1 root root  109 Jun 29 15:13 actions
--rw-r--r-- 1 root root  655 Jun 29 15:13 conntrack
--rw-r--r-- 1 root root  107 Jul  1 10:40 hosts
+-rw-r--r-- 1 root root  654 Oct 13 13:46 conntrack
+-rw-r--r-- 1 root root  104 Oct 13 13:21 hosts
 -rw-r--r-- 1 root root  867 Jul  1 10:50 interfaces
 -rw-r--r-- 1 root root  107 Jun 29 15:14 isusable
+-rw-r--r-- 1 root root  240 Oct 13 13:34 macro.FTP
 -rw-r--r-- 1 root root  497 Jul  1 10:42 mangle
--rw-r--r-- 1 root root    7 Jul  6 09:24 masq
 -rw-r--r-- 1 root root 1290 Jun 29 15:16 mirrors
--rw-r--r-- 1 root root 2650 Jul  2 08:05 params
--rw-r--r-- 1 root root  645 Jun 28 10:04 policy
--rw-r--r-- 1 root root 1828 Jul  1 15:43 providers
--rw-r--r-- 1 root root  398 Mar 18 20:18 proxyarp
--rw-r--r-- 1 root root  702 Jul  1 10:42 rtrules
--rw-r--r-- 1 root root 6214 Jul  2 08:45 rules
-lrwxrwxrwx 1 root root   29 Jul  6 12:42 shorewall6.conf -&gt; ../shorewall6/shorewall6.conf
--rw-r--r-- 1 root root 5571 Jun 25 18:09 shorewall.conf
--rw-r--r-- 1 root root 1084 Jul  1 10:42 snat
+-rw-r--r-- 1 root root 2687 Oct 15 14:20 params
+-rw-r--r-- 1 root root 2688 Oct 15 15:10 #params#
+-rw-r--r-- 1 root root  738 Oct 15 12:16 policy
+-rw-r--r-- 1 root root 1838 Oct 11 08:29 providers
+-rw-r--r-- 1 root root  398 Mar 18  2017 proxyarp
+-rw-r--r-- 1 root root  730 Oct 10 12:59 rtrules
+-rw-r--r-- 1 root root 6367 Oct 13 13:21 rules
+-rw-r--r-- 1 root root 5521 Oct 13 13:16 shorewall.conf
+-rw-r--r-- 1 root root 1084 Oct 14 11:48 snat
 -rw-r--r-- 1 root root  181 Jun 29 15:12 started
--rw-r--r-- 1 root root  437 Jun 28 10:45 tunnels
--rw-r--r-- 1 root root  928 Jun 29 08:25 zones
-
-shorewall6:
-total 12
--rw------- 1 root root  954 Jul  6 12:48 conntrack
+-rw-r--r-- 1 root root  435 Oct 13 13:21 tunnels
+-rw-r--r-- 1 root root  941 Oct 15 11:27 zones
+root@gateway:~# ls -l /etc/shorewall6/
+total 8
 lrwxrwxrwx 1 root root   20 Jul  6 16:35 mirrors -&gt; ../shorewall/mirrors
 lrwxrwxrwx 1 root root   19 Jul  6 12:48 params -&gt; ../shorewall/params
--rw-r--r-- 1 root root 5328 Jul  6 12:45 shorewall6.conf
-root@gateway:/etc# </programlisting>
+-rw-r--r-- 1 root root 5332 Oct 14 11:53 shorewall6.conf
+root@gateway:~# 
+</programlisting>
 
     <para>The various configuration files are described in the sections that
     follow. Note that in all cases, these files use the <ulink
     url="/configuration_file_basics.htm#Pairs">alternate format for column
     specification</ulink>.</para>
+
+    <section>
+      <title>/usr/share/shorewall/shorewallrc</title>
+
+      <para>The key setting here is SPARSE=Very</para>
+
+      <programlisting>#
+# Created by Shorewall Core version 5.0.12-RC1 configure.pl - Sep 25 2016 09:30:55
+# rc file: shorewallrc.debian.systemd
+#
+HOST=debian
+PREFIX=/usr
+SHAREDIR=${PREFIX}/share
+LIBEXECDIR=${PREFIX}/share
+PERLLIBDIR=${PREFIX}/share/shorewall
+CONFDIR=/etc
+SBINDIR=/sbin
+MANDIR=${PREFIX}/share/man
+INITDIR=
+INITSOURCE=init.debian.sh
+INITFILE=
+AUXINITSOURCE=
+AUXINITFILE=
+SERVICEDIR=/lib/systemd/system
+SERVICEFILE=$PRODUCT.service.debian
+SYSCONFFILE=default.debian
+SYSCONFDIR=/etc/default
+SPARSE=Very
+ANNOTATED=
+VARLIB=/var/lib
+VARDIR=${VARLIB}/$PRODUCT
+DEFAULT_PAGER=/usr/bin/less
+</programlisting>
+    </section>
 
     <section>
       <title>shorewall.conf and shorewall6.conf</title>
@@ -117,15 +149,11 @@ root@gateway:/etc# </programlisting>
       address families. The key setting is CONFIG_PATH in
       shorewall6.conf:</para>
 
-      <programlisting>CONFIG_PATH="<emphasis role="bold">${CONFDIR}/shorewall:</emphasis>/usr/share/shorewall6:${SHAREDIR}/shorewall"</programlisting>
+      <programlisting>CONFIG_PATH="<emphasis role="bold">${CONFDIR}/shorewall6:${CONFDIR}/shorewall:</emphasis>/usr/share/shorewall6:${SHAREDIR}/shorewall"</programlisting>
 
       <para><filename>/etc/shorewall6/</filename> is only used for processing
       the <filename>params</filename> and <filename>shorewall6.conf</filename>
-      files. <filename>/etc/shorewall6/conntrack</filename> is installed when
-      SPARSE=Yes, but is not used.</para>
-
-      <para>The /etc/shorewall/shorewall6.conf symbolic link is required once
-      the above CONFIG_PATH setting is in effect.</para>
+      files.</para>
 
       <section>
         <title>shorewall.conf</title>
@@ -134,6 +162,13 @@ root@gateway:/etc# </programlisting>
         follows:</para>
 
         <programlisting>###############################################################################
+#
+#  Shorewall Version 5 -- /etc/shorewall/shorewall.conf
+#
+#  For information about the settings in this file, type "man shorewall.conf"
+#
+#  Manpage also online at http://www.shorewall.net/manpages/shorewall.conf.html
+###############################################################################
 #		       S T A R T U P   E N A B L E D
 ###############################################################################
 STARTUP_ENABLED=Yes
@@ -230,7 +265,7 @@ DYNAMIC_BLACKLIST="ipset-only,disconnect,timeout=7200"
 EXPAND_POLICIES=Yes
 EXPORTMODULES=Yes
 FASTACCEPT=Yes
-FORWARD_CLEAR_MARK=Yes
+FORWARD_CLEAR_MARK=No
 HELPERS="ftp,irc"
 IGNOREUNKNOWNVARIABLES=No
 IMPLICIT_CONTINUE=No
@@ -244,8 +279,7 @@ MACLIST_TTL=60
 MANGLE_ENABLED=Yes
 MAPOLDACTIONS=No
 MARK_IN_FORWARD_CHAIN=No
-MINIUPNPD=Yes
-MODULE_SUFFIX="ko ko.xz"
+MINIUPNPD=No
 MULTICAST=No
 MUTEX_TIMEOUT=60
 NULL_ROUTE_RFC1918=unreachable
@@ -267,13 +301,13 @@ TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
 TRACK_PROVIDERS=Yes
 TRACK_RULES=No
 USE_DEFAULT_RT=Yes
-USE_NFLOG_SIZE=No
+USE_NFLOG_SIZE=Yes
 USE_PHYSICAL_NAMES=Yes
 USE_RT_NAMES=Yes
 VERBOSE_MESSAGES=No
 WARNOLDCAPVERSION=Yes
 WORKAROUNDS=No
-ZERO_MARKS=Yes
+ZERO_MARKS=No
 ZONE2ZONE=-
 ###############################################################################
 #			P A C K E T   D I S P O S I T I O N
@@ -304,6 +338,14 @@ ZONE_BITS=0
         <para>The contents of /etc/shorewall6/shorewall6.conf are:</para>
 
         <programlisting>###############################################################################
+#
+#  Shorewall Version 5 -- /etc/shorewall6/shorewall6.conf
+#
+#  For information about the settings in this file, type "man shorewall6.conf"
+#
+#  Manpage also online at
+#  http://www.shorewall.net/manpages6/shorewall6.conf.html
+###############################################################################
 #		       S T A R T U P   E N A B L E D
 ###############################################################################
 STARTUP_ENABLED=Yes
@@ -343,7 +385,7 @@ UNTRACKED_LOG_LEVEL=
 ###############################################################################
 #	L O C A T I O N	  O F	F I L E S   A N D   D I R E C T O R I E S
 ###############################################################################
-CONFIG_PATH="${CONFDIR}/shorewall:/usr/share/shorewall6:${SHAREDIR}/shorewall"
+CONFIG_PATH="${CONFDIR}/shorewall6:${CONFDIR}/shorewall:/usr/share/shorewall6:${SHAREDIR}/shorewall"
 GEOIPDIR=/usr/share/xt_geoip/LE
 IP6TABLES=
 IP=
@@ -378,7 +420,7 @@ ACCOUNTING=Yes
 ACCOUNTING_TABLE=mangle
 ADMINISABSENTMINDED=Yes
 AUTOCOMMENT=Yes
-AUTOHELPERS=Yes
+AUTOHELPERS=No
 AUTOMAKE=Yes
 BALANCE_PROVIDERS=No
 BASIC_FILTERS=No
@@ -393,8 +435,8 @@ DYNAMIC_BLACKLIST="ipset-only,disconnect,timeout=7200"
 EXPAND_POLICIES=Yes
 EXPORTMODULES=Yes
 FASTACCEPT=Yes
-FORWARD_CLEAR_MARK=Yes
-HELPERS=
+FORWARD_CLEAR_MARK=No
+HELPERS=ftp
 IGNOREUNKNOWNVARIABLES=No
 IMPLICIT_CONTINUE=No
 INLINE_MATCHES=No
@@ -406,8 +448,7 @@ MACLIST_TABLE=filter
 MACLIST_TTL=
 MANGLE_ENABLED=Yes
 MARK_IN_FORWARD_CHAIN=No
-MINIUPNPD=Yes
-MODULE_SUFFIX=ko
+MINIUPNPD=No
 MUTEX_TIMEOUT=60
 OPTIMIZE=All
 OPTIMIZE_ACCOUNTING=No
@@ -415,7 +456,7 @@ PERL_HASH_SEED=0
 REJECT_ACTION=
 REQUIRE_INTERFACE=No
 RESTART=restart
-RESTORE_DEFAULT_ROUTE=Yes
+RESTORE_DEFAULT_ROUTE=No
 RESTORE_ROUTEMARKS=Yes
 SAVE_IPSETS=No
 TC_ENABLED=Shared
@@ -424,10 +465,10 @@ TC_PRIOMAP="2 3 3 3 2 3 1 1 2 2 2 2 2 2 2 2"
 TRACK_PROVIDERS=Yes
 TRACK_RULES=No
 USE_DEFAULT_RT=Yes
-USE_NFLOG_SIZE=No
+USE_NFLOG_SIZE=Yes
 USE_PHYSICAL_NAMES=No
 USE_RT_NAMES=No
-VERBOSE_MESSAGES=Yes
+VERBOSE_MESSAGES=No
 WARNOLDCAPVERSION=Yes
 WORKAROUNDS=No
 ZERO_MARKS=No
@@ -485,11 +526,12 @@ if [ $g_family = 4 ]; then
     LISTS=70.90.191.124	   # IP address of lists.shorewall.net (MX)
     MAIL=70.90.191.122	   # IP address of mail.shorewall.net  (IMAPS)
     SERVER=70.90.191.125   # IP address of www.shorewall.org
-    PROXY=Yes		   # Use TPROXY for local web access
+    PROXY=		   # Use TPROXY for local web access
     ALL=0.0.0.0/0	   # Entire address space
     LOC_ADDR=172.20.1.253  # IP address of the local LAN interface
     FAST_GATEWAY=10.2.10.1 # Default gateway through the IF_FAST interface
     FAST_MARK=0x20000	   # Multi-ISP mark setting for IF_FAST
+    IPSECMSS=1460
     #
     # Interface Options
     #
@@ -508,11 +550,12 @@ else
     LISTS=[2001:470:b:227::42]		      # IP address of lists.shorewall.net (MX and HTTPS)
     MAIL=[2001:470:b:227::45]		      # IP address of mail.shorewall.net  (IMAPS and HTTPS)
     SERVER=[2001:470:b:227::43]		      # IP address of www.shorewall.org   (HTTP, FTP and RSYNC)
-    PROXY=
+    PROXY=3				      # Use TPROXY for local web access
     ALL=[::]/0				      # Entire address space
-    LOC_ADDR=[2601:601:8b00:bf0::1]	      # IP address of the local LAN interface
+    LOC_ADDR=[2601:601:a000:16f0::1]	      # IP address of the local LAN interface
     FAST_GATEWAY=fe80::22e5:2aff:feb7:f2cf    # Default gateway through the IF_FAST interface
     FAST_MARK=0x100			      # Multi-ISP mark setting for IF_FAST
+    IPSECMSS=1440
     #
     # Interface Options
     #
@@ -521,8 +564,7 @@ else
     LOC_OPTIONS=forward=1,nodbl,routeback,physical=eth2
     DMZ_OPTIONS=routeback,forward=1,required,wait=30,nodbl,physical=br0
     IRC_OPTIONS=routeback,forward=1,required,wait=30,nodbl,physical=br1
-fi
-</programlisting>
+fi</programlisting>
     </section>
 
     <section>
@@ -530,17 +572,20 @@ fi
 
       <para>Here is the /etc/shorewall/zones file:</para>
 
-      <programlisting>#ZONE	TYPE	OPTIONS			IN			OUT
+      <programlisting>###############################################################################
+#ZONE	TYPE	OPTIONS			IN			OUT
 #					OPTIONS			OPTIONS
+
 #
 # By using the 'ip' type, both Shorewall and Shorewall6 can share this file
 #
+
 fw	{ TYPE=firewall }
 net	{ TYPE=ip }
 loc	{ TYPE=ip }
 dmz	{ TYPE=ip }
 apps	{ TYPE=ip }
-vpn1	{ TYPE=ipsec, OPTIONS=mode=tunnel,proto=esp }
+vpn	{ TYPE=ipsec, OPTIONS=mode=tunnel,proto=esp,mss=$IPSECMSS }
 </programlisting>
     </section>
 
@@ -551,6 +596,8 @@ vpn1	{ TYPE=ipsec, OPTIONS=mode=tunnel,proto=esp }
       /etc/shorewall/params:</para>
 
       <programlisting>#
+# The two address families use different production interfaces and different 
+#
 # LOC_IF is the local LAN for both families
 # FAST_IF is a Comcast IPv6 beta uplink which is used for internet access from the local lan for both families
 # PROD_IF is the interface used by shorewall.org servers
@@ -563,7 +610,8 @@ loc  { INTERFACE=LOC_IF,  OPTIONS=$LOC_OPTIONS }
 net  { INTERFACE=FAST_IF, OPTIONS=$FAST_OPTIONS }
 net  { INTERFACE=PROD_IF, OPTIONS=$PROD_OPTIONS }
 dmz  { INTERFACE=DMZ_IF,  OPTIONS=$DMZ_OPTIONS }
-apps { INTERFACE=IRC_IF,  OPTIONS=$IRC_OPTIONS }</programlisting>
+apps { INTERFACE=IRC_IF,  OPTIONS=$IRC_OPTIONS }
+</programlisting>
     </section>
 
     <section>
@@ -583,17 +631,22 @@ vpn1 { HOSTS=LOC_IF:$ALL }
 
       <para>The same set of policies apply to both address families:</para>
 
-      <programlisting>#SOURCE         DEST            POLICY					LOGLEVEL		RATE
-$FW { DEST=dmz,net, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
-$FW { DEST=all, POLICY=ACCEPT }
-loc { DEST=net, POLICY=ACCEPT }
-loc,vpn1,apps { DEST=loc,vpn1,apps POLICY=ACCEPT }
-loc { DEST=fw, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
-net { DEST=net, POLICY=NONE }
-net { DEST=fw, POLICY=BLACKLIST:+Broadcast(DROP),Multicast(DROP),DropDNSrep:$LOG_LEVEL, LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
-net { DEST=all, POLICY=BLACKLIST:+DropDNSrep:$LOG_LEVEL, LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
-dmz { DEST=fw, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
-all { DEST=all, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
+      <programlisting>#SOURCE	       DEST		 POLICY									  LOGLEVEL	      RATE
+
+$FW	     { DEST=dmz,net,	 POLICY=REJECT,								  LOGLEVEL=$LOG_LEVEL }
+$FW	     { DEST=all,	 POLICY=ACCEPT }
+
+loc	     { DEST=net,	 POLICY=ACCEPT }
+loc,vpn,apps { DEST=loc,vpn,apps POLICY=ACCEPT }
+loc	     { DEST=fw,		 POLICY=REJECT,								  LOGLEVEL=$LOG_LEVEL }
+
+net	     { DEST=net,	 POLICY=NONE }
+net	     { DEST=fw,		 POLICY=BLACKLIST:+Broadcast(DROP),Multicast(DROP),DropDNSrep:$LOG_LEVEL, LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
+net	     { DEST=all,	 POLICY=BLACKLIST:+DropDNSrep:$LOG_LEVEL,				  LOGLEVEL=$LOG_LEVEL, RATE=8/sec:30 }
+
+dmz	     { DEST=fw,		 POLICY=REJECT,								  LOGLEVEL=$LOG_LEVEL }
+
+all	     { DEST=all,	 POLICY=REJECT,								  LOGLEVEL=$LOG_LEVEL }
 </programlisting>
     </section>
 
@@ -631,7 +684,7 @@ all { DEST=all, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
     # FAST_IF is primary, PROD_IF is fallback
     #
     ?info Compiling with FALLBACK
-    IPv6Fast	    { NUMBER=1, MARK=$FAST_MARK, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,primary,persistent }
+    IPv6Beta	    { NUMBER=1, MARK=$FAST_MARK, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,primary,persistent,noautosrc }
     ?if __IPV4
 	ComcastB    { NUMBER=4, MARK=0x10000,	 INTERFACE=PROD_IF, GATEWAY=10.1.10.1, OPTIONS=loose,fallback,persistent }
     ?else    
@@ -641,19 +694,19 @@ all { DEST=all, POLICY=REJECT, LOGLEVEL=$LOG_LEVEL }
     # Statistically balance traffic between FAST_IF and PROD_IF
     ?info Compiling with STATISTICAL
     ?if __IPV4
-    	IPv6Fast    { NUMBER=1, MARK=0x20000, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,load=0.66666667,primary }
+    	IPv6Beta    { NUMBER=1, MARK=0x20000, INTERFACE=FAST_IF, GATEWAY=$FAST_GATEWAY, OPTIONS=loose,load=0.66666667,primary }
     ?else
 	HE	    { NUMBER=2, MARK=0x200,   INTERFACE=PROD_IF,                        OPTIONS=track,load=0.33333333,persistent }
     ?endif
 ?else
     ?INFO Compiling with BALANCE
-    IPv6Fast	 { NUMBER=1, MARK=0x100,   INTERFACE=eth0,    GATEWAY=$FAST_GATEWAY, OPTIONS=track,balance=2,loose,persistent }
+    IPv6Beta	 { NUMBER=1, MARK=0x100,   INTERFACE=eth0,    GATEWAY=$FAST_GATEWAY, OPTIONS=track,balance=2,loose,persistent }
     ?if __IPV4
 	ComcastB { NUMBER=4, MARK=0x10000, INTERFACE=IPV4_IF, GATEWAY=10.1.10.1,     OPTIONS=nohostroute,loose,balance,persistent }
     ?else
-        ?warning No BALANCE IPv6 configuration - using FALLBACK  
+        ?warning No BALANCE IPv6 configuration
 	HE	 { NUMBER=2, MARK=0x200,   INTERFACE=PROD_IF,			     OPTIONS=fallback,persistent }
-    ?endif
+    ?endif    
 ?endif
 
 Tproxy   { NUMBER=3, INTERFACE=lo, OPTIONS=tproxy }
@@ -670,19 +723,18 @@ Tproxy   { NUMBER=3, INTERFACE=lo, OPTIONS=tproxy }
 
 #
 # This file ensures that the DMZ is routed out of the IF_PROD interface
-# and that the IPv6 subnets delegated by the Fast router are routed out
+# and that the IPv6 subnets delegated by the Beta router are routed out
 # of the IF_FAST interface.
 #
 ?if __IPV4
-    { SOURCE=70.90.191.121,70.90.191.123, PROVIDER=ComcastB, PRIORITY=1000! }
-    { SOURCE=&amp;FAST_IF,	              	  PROVIDER=IPv6Fast, PRIORITY=1000! }
-    { SOURCE=br0,	     		  PROVIDER=ComcastB, PRIORITY=11000 }
+    { SOURCE=70.90.191.121,70.90.191.123,10.1.10.1 PROVIDER=ComcastB, PRIORITY=1000! }
+    { SOURCE=&amp;FAST_IF,	              	  	   PROVIDER=IPv6Beta, PRIORITY=1000! }
+    { SOURCE=br0,	     		  	   PROVIDER=ComcastB, PRIORITY=11000 }
 ?else
-    { SOURCE=2001:470:A:227::/64,         PROVIDER=HE,	     PRIORITY=1000! }
-    { SOURCE=2001:470:B:227::/64,         PROVIDER=HE,	     PRIORITY=11000 }
-    { SOURCE=2601:601:8b00:bf0::/60	  PROVIDER=IPv6Fast, PRIORITY=11000 }
-?endif
-</programlisting>
+    { SOURCE=2601:601:a000:1600::/124		   PROVIDER=IPv6Beta, PRIORITY=1000! }
+    { SOURCE=2001:470:B:227::/64,         	   PROVIDER=HE,	      PRIORITY=11000 }
+    { SOURCE=2601:601:a000:16f0::/60	  	   PROVIDER=IPv6Beta, PRIORITY=11000 }
+?endif</programlisting>
     </section>
 
     <section>
@@ -703,6 +755,20 @@ Mirrors	   	                # Accept traffic from Shorewall Mirrors
 DEFAULTS -
 $1	$MIRRORS
 </programlisting>
+    </section>
+
+    <section>
+      <title>Macros</title>
+
+      <para>/etc/shorewall/macro.FTP:</para>
+
+      <programlisting>###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
+PARAM	-	-	tcp	21
+</programlisting>
+
+      <para>This is just the normal Shorewall FTP macro without the helper
+      logic -- we take care of that in the conntrack file below.</para>
     </section>
 
     <section>
@@ -749,6 +815,8 @@ Trcrt(ACCEPT)	{ SOURCE=net, DEST=all, RATE=d:ping:2/sec:10 }
 ACCEPT		{ SOURCE=all, DEST=dmz:$SERVER, PROTO=tcp,  DPORT=61001:62000,  helper=ftp }
 ACCEPT		{ SOURCE=dmz, DEST=all,		PROTO=tcp,  helper=ftp }
 ACCEPT		{ SOURCE=all, DEST=net,		PROTO=tcp,  helper=ftp }
+ACCEPT		{ SOURCE=$FW, DEST=loc,		PROTO=tcp,  helper=ftp }
+ACCEPT		{ SOURCE=loc, DEST=$FW,		PROTO=tcp,  helper=ftp }
 ACCEPT		{ SOURCE=all, DEST=all,		PROTO=icmp }
 RST(ACCEPT)	{ SOURCE=all, DEST=all }
 ACCEPT		{ SOURCE=dmz, DEST=dmz }
@@ -773,8 +841,8 @@ CONTINUE	  { SOURCE=$FW, DEST=all }
 ######################################################################################################
 # Stop certain outgoing traffic to the net
 #
-REJECT:$LOG_LEVEL { SOURCE=loc,vpn1,apps DEST=net, PROTO=tcp, DPORT=25 }		#Stop direct loc-&gt;net SMTP (Comcast uses submission).
-REJECT:$LOG_LEVEL { SOURCE=loc,vpn1,apps DEST=net, PROTO=udp, DPORT=1025:1031 }	#MS Messaging
+REJECT:$LOG_LEVEL { SOURCE=loc,vpn,apps DEST=net, PROTO=tcp, DPORT=25 }		#Stop direct loc-&gt;net SMTP (Comcast uses submission).
+REJECT:$LOG_LEVEL { SOURCE=loc,vpn,apps DEST=net, PROTO=udp, DPORT=1025:1031 }	#MS Messaging
 
 REJECT		{ SOURCE=all, DEST=net, PROTO=tcp, DPORT=137,445, comment="Stop NETBIOS Crap" }
 REJECT		{ SOURCE=all, DEST=net, PROTO=udp, DPORT=137:139, comment="Stop NETBIOS Crap" }
@@ -795,7 +863,7 @@ REJECT		{ SOURCE=all, DEST=net, PROTO=udp, DPORT=3544, comment="Stop Teredo" }
 ######################################################################################################
 # Ping
 #
-Ping(ACCEPT)	  { SOURCE=$FW,loc,dmz,vpn1, DEST=$FW,loc,dmz,vpn1 }
+Ping(ACCEPT)	  { SOURCE=$FW,loc,dmz,vpn, DEST=$FW,loc,dmz,vpn }
 Ping(ACCEPT)	  { SOURCE=all,              DEST=net }
 ######################################################################################################
 # SSH
@@ -809,7 +877,7 @@ SSH(DNAT-)	  { SOURCE=net,              DEST=172.20.2.44, PROTO=tcp, DPORT=ssh, 
 ######################################################################################################
 # DNS
 #
-DNS(ACCEPT)	  { SOURCE=loc,dmz,vpn1,apps, DEST=$FW }
+DNS(ACCEPT)	  { SOURCE=loc,dmz,vpn,apps, DEST=$FW }
 DNS(ACCEPT)	  { SOURCE=$FW, DEST=net }
 ######################################################################################################
 # Traceroute
@@ -825,27 +893,31 @@ SMTP(REJECT)	   { SOURCE=dmz:$LISTS, DEST=net }
 IMAPS(ACCEPT)  	   { SOURCE=all, DEST=dmz:$MAIL }
 Submission(ACCEPT) { SOURCE=all, DEST=dmz:$LISTS }
 SMTPS(ACCEPT) 	   { SOURCE=all, DEST=dmz:$LISTS }
-IMAP(ACCEPT)	   { SOURCE=loc,vpn1, DEST=net }
+IMAP(ACCEPT)	   { SOURCE=loc,vpn, DEST=net }
 ######################################################################################################
 # NTP
 #
 NTP(ACCEPT)	   { SOURCE=all, DEST=net }
-NTP(ACCEPT)	   { SOURCE=loc,vpn1,dmz,apps DEST=$FW }
+NTP(ACCEPT)	   { SOURCE=loc,vpn,dmz,apps DEST=$FW }
+######################################################################################################
+# Squid
+ACCEPT { SOURCE=loc,vpn, DEST=$FW, PROTO=tcp, DPORT=3128 } 
 ######################################################################################################
 # HTTP/HTTPS
 #
-Web(ACCEPT)	   { SOURCE=loc,vpn1 DEST=$FW }
+Web(ACCEPT)	   { SOURCE=loc,vpn DEST=$FW }
 Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=proxy }
 Web(DROP)	   { SOURCE=net, DEST=fw, PROTO=tcp, comment="Do not blacklist web crawlers" }
-HTTP(ACCEPT)	   { SOURCE=net,loc,vpn1,apps,$FW DEST=dmz:$SERVER,$LISTS }
-HTTPS(ACCEPT)	   { SOURCE=net,loc,vpn1,apps,$FW DEST=dmz:$LISTS,$MAIL }
+HTTP(ACCEPT)	   { SOURCE=net,loc,vpn,apps,$FW DEST=dmz:$SERVER,$LISTS,$MAIL }
+HTTPS(ACCEPT)	   { SOURCE=net,loc,vpn,apps,$FW DEST=dmz:$LISTS,$MAIL }
 Web(ACCEPT)	   { SOURCE=dmz,apps DEST=net,$FW }
 Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=root }
 Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=teastep }
+Web(ACCEPT)	   { SOURCE=$FW, DEST=net, USER=_apt }
 ######################################################################################################
 # FTP
 #
-FTP(ACCEPT)	   { SOURCE=loc,vpn1,apps DEST=net }
+FTP(ACCEPT)	   { SOURCE=loc,vpn,apps DEST=net }
 FTP(ACCEPT)	   { SOURCE=dmz,          DEST=net }
 FTP(ACCEPT)	   { SOURCE=$FW,          DEST=net, USER=root }
 FTP(ACCEPT)	   { SOURCE=all,          DEST=dmz:$SERVER }
@@ -866,11 +938,11 @@ Whois(ACCEPT)	   { SOURCE=all, DEST=net }
 # SMB
 #
 SMBBI(ACCEPT)	    { SOURCE=loc, DEST=$FW }
-SMBBI(ACCEPT)	    { SOURCE=vpn1, DEST=$FW }
+SMBBI(ACCEPT)	    { SOURCE=vpn, DEST=$FW }
 ######################################################################################################
 # IRC
 #
-IRC(ACCEPT)	    { SOURCE=loc,vpn1,apps:IRC_IF, DEST=net }
+IRC(ACCEPT)	    { SOURCE=loc,vpn,apps:IRC_IF, DEST=net }
 ######################################################################################################
 # Rsync
 #
@@ -913,7 +985,7 @@ Mirrors(ACCEPT:none) { SOURCE=net, DEST=dmz:$SERVER, PROTO=tcp, DPORT=873 }
       <programlisting>#ACTION         SOURCE			DEST            PROTO   PORT   IPSEC  MARK   USER    SWITCH  ORIGDEST   PROBABILITY
 
 ?if __IPV4
-    MASQUERADE		{ SOURCE=172.20.1.0/24,172.20.2.0/24, DEST=FAST_IF }
+    MASQUERADE		{ SOURCE=172.20.1.0/24,172.20.2.0/23, DEST=FAST_IF }
     MASQUERADE 		{ SOURCE=70.90.191.120/29, 	      DEST=FAST_IF }
     SNAT(70.90.191.121) { SOURCE=!70.90.191.120/29,	      DEST=PROD_IF,  PROBABILITY=0.50, COMMENT="Masquerade Local Network" }
     SNAT(70.90.191.123) { SOURCE=!70.90.191.120/29,	      DEST=PROD_IF,                    COMMENT="Masquerade Local Network" }

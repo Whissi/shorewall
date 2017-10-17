@@ -2,7 +2,7 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
 "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <article>
-  <!--$Id$-->
+  <!--mangle$Id$-->
 
   <articleinfo>
     <title>Shared Shorewall and Shorewall6 Configuration</title>
@@ -620,9 +620,9 @@ apps { INTERFACE=IRC_IF,  OPTIONS=$IRC_OPTIONS }
       <para>/etc/shorewall/hosts is used to define the vpn zone:</para>
 
       <programlisting>#ZONE		HOSTS				OPTIONS
-vpn1 { HOSTS=PROD_IF:$ALL }
-vpn1 { HOSTS=FAST_IF:$ALL }
-vpn1 { HOSTS=LOC_IF:$ALL }
+vpn { HOSTS=PROD_IF:$ALL }
+vpn { HOSTS=FAST_IF:$ALL }
+vpn { HOSTS=LOC_IF:$ALL }
 </programlisting>
     </section>
 
@@ -1003,8 +1003,8 @@ Mirrors(ACCEPT:none) { SOURCE=net, DEST=dmz:$SERVER, PROTO=tcp, DPORT=873 }
       <para>Both address families define IPSEC tunnels:</para>
 
       <programlisting>#TYPE			ZONE		GATEWAY			GATEWAY_ZONE
-ipsecnat {ZONE=net,  GATEWAY=$ALL, GATEWAY_ZONE=vpn1 }
-ipsecnat {ZONE=loc,  GATEWAY=$ALL, GATEWAY_ZONE=vpn1 }
+ipsecnat {ZONE=net,  GATEWAY=$ALL, GATEWAY_ZONE=vpn }
+ipsecnat {ZONE=loc,  GATEWAY=$ALL, GATEWAY_ZONE=vpn }
 </programlisting>
     </section>
 

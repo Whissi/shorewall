@@ -676,6 +676,43 @@ SAME              $FW            0.0.0.0/0    tcp        80,443</programlisting>
 
             <varlistentry>
               <term><emphasis
+              role="bold">TCPMSS</emphasis>([<replaceable>mss</replaceable>][,<replaceable>ipsec</replaceable>])</term>
+
+              <listitem>
+                <para>Added in Shorewall 5.1.9. This target only applies to
+                TCP traffic and alters the MSS value in SYN packets. It may be
+                used in the FOWARD and POSTROUTING chains; the default is
+                FORWARD.</para>
+
+                <para>The <replaceable>mss</replaceable> parameter may be
+                either <option>pmtu</option> or an integer in the range
+                500:65533. The value <option>pmtu</option> automatically
+                clamps the MSS value to (path_MTU - 40 for IPv4; -60 for
+                IPv6). This may not function as desired where asymmetric
+                routes with differing path MTU exist — the kernel uses the
+                path MTU which it would use to send packets from itself to the
+                source and destination IP addresses. Prior to Linux 2.6.25,
+                only the path MTU to the destination IP address was considered
+                by this option; subsequent kernels also consider the path MTU
+                to the source IP address. If an integer is given, the MSS
+                option is set to the specified value. If the MSS of the packet
+                is already lower than <replaceable>mss</replaceable>, it will
+                not be increased (from Linux 2.6.25 onwards) to avoid more
+                problems with hosts relying on a proper MSS. If
+                <replaceable>mss</replaceable> is omitted,
+                <option>pmtu</option> is assumed.</para>
+
+                <para>The <replaceable>ipsec</replaceable> parameter
+                determines whether the rule applies to IPSEC traffic
+                (<option>ipsec</option> is passed), non-IPSEC traffic
+                (<option>none</option> is passed) or both
+                (<option>all</option> is passed). If omitted,
+                <option>all</option> is assumed.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis
               role="bold">TOS</emphasis>(<replaceable>tos</replaceable>[/<replaceable>mask</replaceable>])</term>
 
               <listitem>

@@ -4589,6 +4589,52 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 	    },
 	},
 
+	TCPMSS     => {
+	    defaultchain   => FORWARD,
+	    allowedchains  => FORWARD | POSTROUTING,
+	    minparams      => 0,
+	    maxparams      => 2,
+	    function       => sub () {
+		if ( $proto eq '-' ) {
+		    $proto = TCP;
+		} else {
+		    fatal_error 'TCPMSS only valid with TCP' unless $proto eq '6' || $proto eq 'tcp';
+		}
+
+		$target   = 'TCPMSS ';
+		$matches .= '--tcp-flags SYN,RST SYN ';
+
+		if ( supplied $params ) {
+		    my ( $mss, $ipsec ) = split /,/, $params;
+
+		    if ( supplied $mss ) {
+			if ( $mss eq 'pmtu' ) {
+			    $target .= '--clamp-mss-to-pmtu';
+			} else {
+			    my $num = numeric_value $mss;
+			    fatal_error "Invalid MSS ($mss)" unless defined $num && $num >= 500 && $num < 65534;
+			    $target .= "--set-mss $num";
+			}
+		    } else {
+			$target .= '--clamp-mss-to-pmtu';
+		    }
+		    if ( supplied $ipsec && $ipsec ne 'all' ) {
+			if ( $ipsec eq '-' || $ipsec eq 'none' ) {
+			    $matches .= '-m policy --pol none --dir out ';
+			} elsif ( $ipsec eq 'ipsec' ) {
+			    $matches .= '-m policy --pol ipsec --dir out ';
+			} else {
+			    fatal_error "Invalid ipsec parameter ($ipsec)";
+			}
+
+			require_capability 'POLICY_MATCH', "The $ipsec ipsec option", 's';
+		    }
+		} else {
+		    $target .= '--clamp-mss-to-pmtu';
+		}
+	    },
+	},
+
 	TOS        => {
 	    defaultchain   => 0,
 	    allowedchains  => PREROUTING | FORWARD | OUTPUT | POSTROUTING,

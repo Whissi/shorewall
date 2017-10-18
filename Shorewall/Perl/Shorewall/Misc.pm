@@ -2448,7 +2448,7 @@ sub setup_mss( ) {
     my $clampmss = $config{CLAMPMSS};
     my $option;
     my @match;
-    my $chainref = $filter_table->{FORWARD};
+    my $chainref = $mangle_table->{FORWARD};
 
     if ( $clampmss ) {
 	if ( "\L$clampmss" eq 'yes' ) {

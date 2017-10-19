@@ -4658,8 +4658,7 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 		my ( $port, $ip, $bad );
 
 		if ( $params ) {
-		    ( $port, $ip, $bad ) = split_list $params, 'Parameter';
-		    fatal_error "Invalid TPROXY specification( TPROXY($params) )" if defined $bad;
+		    ( $port, $ip ) = split /,/, $params, 2;
 		}
 
 		my $mark = in_hex( $globals{TPROXY_MARK} ) . '/' . in_hex( $globals{TPROXY_MARK} );

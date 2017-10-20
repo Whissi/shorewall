@@ -2066,9 +2066,9 @@ sub process_actions() {
 		unless ( $type & INLINE ) {
 		    $type = INLINE if $opts & INLINE_OPT;
 		}
-	    }
 
-	    fatal_error "Conflicting OPTIONS ($options)" if ( $opts & NOINLINE_OPT && $type == INLINE ) || ( $opts & INLINE_OPT && $opts & BUILTIN_OPT );
+		fatal_error "Conflicting OPTIONS ($options)" if ( $opts & NOINLINE_OPT && $type == INLINE ) || ( $opts & INLINE_OPT && $opts & BUILTIN_OPT );
+	    }
 
 	    if ( my $actiontype = $targets{$action} ) {
 		if ( ( $actiontype & ACTION ) && ( $type == INLINE ) ) {
@@ -2077,6 +2077,9 @@ sub process_actions() {
 			next;
 		    }
 
+		    delete $actions{$action};
+		    delete $targets{$action};
+		} elsif ( ( $actiontype & INLINE ) && ( $type == ACTION ) && $opts & NOINLINE_OPT ) {
 		    delete $actions{$action};
 		    delete $targets{$action};
 		} else {

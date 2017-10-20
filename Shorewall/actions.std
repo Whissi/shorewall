@@ -21,7 +21,11 @@ allowMcast   inline		# Silently Allow Multicast
 AutoBL	     noinline		# Auto-blacklist IPs that exceed thesholds
 AutoBLL	     noinline		# Helper for AutoBL
 BLACKLIST    logjump,section	# Add sender to the dynamic blacklist
+?if __ADDRTYPE
+Broadcast    inline,audit	# Handles Broadcast/Anycast
+?else
 Broadcast    noinline,audit	# Handles Broadcast/Anycast
+?endif
 DNSAmp				# Matches one-question recursive DNS queries
 Drop				# Default Action for DROP policy (deprecated)
 dropBcast    inline		# Silently Drop Broadcast

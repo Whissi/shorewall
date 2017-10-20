@@ -44,7 +44,11 @@ IfEvent	     noinline		# Perform an action based on an event
 Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
 	     state=INVALID	#
 Limit	     noinline		# Limit the rate of connections from each individual IP address
+?if __ADDRTYPE
+Multicast    inline,audit	# Handles Multicast
+?else
 Multicast    noinline,audit	# Handles Multicast
+?endif
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
 rejNotSyn    noinline		# Silently Reject Non-syn TCP packets

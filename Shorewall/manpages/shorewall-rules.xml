@@ -67,7 +67,7 @@
           this section.</para>
 
           <para>The only ACTIONs allowed in this section are ACCEPT, DROP,
-          REJECT, LOG, NFQUEUE and QUEUE</para>
+          REJECT, LOG, NFLOG, NFQUEUE and QUEUE</para>
 
           <para>There is an implicit ACCEPT rule inserted at the end of this
           section.</para>
@@ -82,7 +82,7 @@
           section.</para>
 
           <para>The only ACTIONs allowed in this section are ACCEPT, DROP,
-          REJECT, LOG, NFQUEUE and QUEUE</para>
+          REJECT, LOG, NFLOG, NFQUEUE and QUEUE</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the RELATED_DISPOSITION (<ulink
@@ -98,7 +98,7 @@
           processed by rules in this section.</para>
 
           <para>The only Actions allowed in this section are ACCEPT, DROP,
-          REJECT, LOG, NFQUEUE and QUEUE.</para>
+          REJECT, LOG, NFLOG, NFQUEUE and QUEUE.</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the INVALID_DISPOSITION (<ulink
@@ -114,7 +114,7 @@
           processed by rules in this section.</para>
 
           <para>The only Actions allowed in this section are ACCEPT, DROP,
-          REJECT, LOG, NFQUEUE and QUEUE.</para>
+          REJECT, LOG, NFLOG, NFQUEUE and QUEUE.</para>
 
           <para>There is an implicit rule added at the end of this section
           that invokes the UNTRACKED_DISPOSITION (<ulink
@@ -908,7 +908,7 @@
                 <para>IPv4 only. Added in Shorewall 4.5.10. Queues matching
                 packets to a back end logging daemon via a netlink socket then
                 continues to the next rule. See <ulink
-                url="/shorewall_logging.html">http://www.shorewall.net/shorewall_logging.html</ulink>.</para>
+                url="shorewall-logging.html">shorewall-logging(5)</ulink>.</para>
 
                 <para>Similar to<emphasis role="bold">
                 LOG:ULOG</emphasis>[(<replaceable>ulog-parameters</replaceable>)],
@@ -956,7 +956,7 @@
           (IPv4 only) or <emphasis role="bold">NFLOG</emphasis> (must be in
           upper case) as a log level.This will log to the ULOG or NFLOG target
           for routing to a separate log through use of ulogd (<ulink
-          url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>).</para>
+          url="shorewall-logging.html">shorewall-logging(5)</ulink>).</para>
 
           <para>Actions specifying logging may be followed by a log tag (a
           string of alphanumeric characters) which is appended to the string
@@ -2637,13 +2637,13 @@
     <title>See ALSO</title>
 
     <para><ulink
+    url="shorewall-logging.html">shorewall-logging(5)</ulink></para>
+
+    <para><ulink
     url="/ipsets.html">http://www.shorewall.net/ipsets.html</ulink></para>
 
     <para><ulink
     url="/configuration_file_basics.htm#Pairs">http://www.shorewall.net/configuration_file_basics.htm#Pairs</ulink></para>
-
-    <para><ulink
-    url="/shorewall_logging.html">http://www.shorewall.net/shorewall_logging.html</ulink></para>
 
     <para>shorewall(8)</para>
   </refsect1>

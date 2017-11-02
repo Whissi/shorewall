@@ -248,7 +248,7 @@
       <para>If your kernel has NFLOG target support (and most vendor-supplied
       kernels do), you may also specify a log level of NFLOG (must be all
       caps). When NFLOG is used, Shorewall will direct Netfilter to log the
-      related messages via the ULOG target which will send them to a process
+      related messages via the NFLOG target which will send them to a process
       called <quote>ulogd</quote>. The ulogd program is included in most
       distributions and is also available from <ulink
       url="http://www.netfilter.org/projects/ulogd/index.html">http://www.netfilter.org/projects/ulogd/index.html</ulink>.
@@ -258,7 +258,7 @@
       <note>
         <para>The NFLOG logging mechanism is <emphasis
         role="underline">completely separate</emphasis> from syslog. Once you
-        switch to ULOG, the settings in <filename>/etc/syslog.conf</filename>
+        switch to NFLOG, the settings in <filename>/etc/syslog.conf</filename>
         have absolutely no effect on your Shorewall logging (except for
         Shorewall status messages which still go to syslog).</para>
       </note>

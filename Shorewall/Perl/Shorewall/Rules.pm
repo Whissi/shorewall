@@ -1751,6 +1751,14 @@ sub process_action(\$\$$) {
 	fatal_error "Action $action may not be used in the mangle file"  if $chainref->{table} eq 'mangle';
     }
 
+    if ( $type & NAT_TABLE ) {
+	fatal_error "Action $action may only be used in the snat file" unless $chainref->{table} eq 'nat';
+    } else {
+	fatal_error "Action $action may not be used in the snat file"  if $chainref->{table} eq 'nat';
+    }
+
+    $param = $1 if $param =~ /^.*\|(.*)$/; #Strip interface name off of the parameters
+
     my $actionfile = $actionref->{file};
 
     progress_message2 "$doing $actionfile for chain $chainref->{name}...";
@@ -1939,7 +1947,7 @@ sub process_action(\$\$$) {
 
 	    for my $proto (split_list( $protos, 'Protocol' ) ) {
 		process_snat1( $chainref,
-			       $action,
+			       $nolog ? $action : merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $action ),
 			       $source,
 			       $dest,
 			       $proto,
@@ -5253,18 +5261,23 @@ sub process_mangle_rule( $ ) {
     }
 }
 
-sub process_snat_inline( $$$$$$$$$$$$$ ) {
-    my ($inline, $chainref, $params, $source, $dest, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+sub process_snat_inline( $$$$$$$$$$$$$$ ) {
+    my ($inline, $chainref, $params, $loglevel, $source, $dest, $protos, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
 
+    my ( $level,
+	 $tag )    = split( ':', $loglevel, 2 );
     my $oldparms   = push_action_params( $inline,
 					 $chainref,
 					 $params,
-					  'none',
-					 '' ,
+					 supplied $level ? $level : 'none',
+					 defined  $tag   ? $tag   : '' ,
 					 $chainref->{name} );
 
-    my $inlinefile = $actions{$inline}{file};
-    my $matches    = fetch_inline_matches;
+    my $actionref    = $actions{$inline};
+    my $inlinefile   = $actionref->{file};
+    my $options      = $actionref->{options};
+    my $nolog        = $options & NOLOG_OPT;
+    my $matches      = fetch_inline_matches;
 
     progress_message "..Expanding inline action $inlinefile...";
 
@@ -5297,6 +5310,8 @@ sub process_snat_inline( $$$$$$$$$$$$$ ) {
 	    default_action_params( $chainref, split_list( $msource, 'defaults' ) );
 	    next;
 	}
+
+	$maction = merge_levels( join(':', @actparams{'chain','loglevel','logtag'}), $maction ) unless $nolog;
 
 	$msource = $source if $msource eq '-';
 
@@ -5342,7 +5357,7 @@ sub process_snat_inline( $$$$$$$$$$$$$ ) {
 # Process a record in the snat file
 #
 sub process_snat1( $$$$$$$$$$$$ ) {
-    my ( $chainref, $action, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
+    my ( $chainref, $origaction, $source, $dest, $proto, $ports, $ipsec, $mark, $user, $condition, $origdest, $probability ) = @_;
 
     my $inchain;
     my $inaction;
@@ -5359,6 +5374,9 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     my $actiontype;
     my $interfaces;
     my $normalized_action;
+    my ( $action, $loglevel ) = split_action( $origaction );
+    my $logaction;
+    my $param;
 
     if ( $action =~ /^MASQUERADE(\+)?(?:\((.+)\))?$/ ) {
 	$target     = 'MASQUERADE';
@@ -5367,6 +5385,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	$addresses  = ( $2 || '' );
 	$options    = 'random' if $addresses =~ s/:?random$//;
 	$add_snat_aliases = '';
+	$logaction  = 'MASQ';
     } elsif ( $action =~ /^SNAT(\+)?\((.+)\)$/ ) {
 	$pre_nat    = $1;
 	$addresses  = $2;
@@ -5375,13 +5394,16 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	$options   .= ':persistent' if $addresses =~ s/:persistent//;
 	$options   .= ':random'     if $addresses =~ s/:random//;
 	$options   =~ s/^://;
+	$logaction = 'SNAT';
     } elsif ( $action =~ /^CONTINUE(\+)?$/ ) {
 	$add_snat_aliases = 0;
 	$actiontype = $builtin_target{$target = 'RETURN'};
 	$pre_nat    = $1;
+	$logaction = 'RETURN';
     } elsif ( $action eq 'MASQUERADE' ) {
 	$actiontype = $builtin_target{$target = 'MASQUERADE'};
 	$add_snat_aliases = '';
+	$logaction  = 'MASQ';
     } else {
 	( $target , $params ) = get_target_param1( $action );
 
@@ -5389,11 +5411,24 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	$actiontype = ( $targets{$target} || 0 );
 
-	fatal_error "Invalid ACTION ($action)" unless $actiontype & ( ACTION | INLINE );
+	if ( $actiontype & LOGRULE ) {
+	    $logaction = 'LOG';
+	    if ( $target eq 'LOG' ) {
+		fatal_error 'LOG requires a log level' unless supplied $loglevel;
+	    } else {
+		$target   = "$target($params)";
+		validate_level( $action );
+		$loglevel = supplied $loglevel ? join( ':', $target, $loglevel ) : $target;
+		$target   = 'LOG';
+	    }
+	} else {
+	    fatal_error "Invalid ACTION ($action)" unless $actiontype & ( ACTION | INLINE );
+	    $logaction = '';
+	}
     }
 
     if ( $inchain = defined $chainref ) {
-	( $inaction, undef, $interfaces, undef, undef ) = split /:/, $normalized_action = $chainref->{action}, 5 if $chainref->{action};
+	( $inaction, undef,undef,undef,$param ) = split( /:/, $normalized_action = $chainref->{action}) if $chainref->{action};
 	fatal_error q('+' is not allowed within an action body) if $pre_nat;
     }
     #
@@ -5401,6 +5436,8 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     #
     if ( $inaction ) {
 	$destnets = $dest;
+	assert( $param =~ /^(.*)|/ );
+	$interfaces=$1;
     } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {
 	    $add_snat_aliases = 0;
@@ -5642,6 +5679,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	    process_snat_inline( $target,
 				 $chainref,
 				 $params,
+				 $loglevel,
 				 $source,
 				 supplied $destnets && $destnets ne '-' ? $inaction ? $destnets : join( ':', $interface, $destnets ) : $inaction ? '-' : $interface,
 				 $proto,
@@ -5659,7 +5697,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		# Create the action:level:tag:param tuple. Since we don't allow logging out of nat POSTROUTING, we store
 		# the interface name in the log tag
 		#
-		my $normalized_target = normalize_action( $target, "none:$interface", $params );
+		my $normalized_target = normalize_action( $target, "$loglevel", "$interface|$params" );
 		fatal_error( "Action $target invoked Recursively (" .  join( '->', map( external_name( $_ ), @actionstack , $normalized_target ) ) . ')' ) if $active{$target};
 
 		my $ref = use_action( 'nat', $normalized_target );
@@ -5669,9 +5707,6 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		    # First reference to this tuple - process_action may modify both $normalized_target and $ref!!!
 		    #
 		    process_action( $normalized_target, $ref, $chainref->{name} );
-		    #
-		    # Capture the name of the action chain
-		    #
 		} else {
 		    #
 		    # We've seen this tuple before
@@ -5680,6 +5715,12 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		}
 
 		$target = $ref->{name};
+
+		if ( $actions{$target}{options} & LOGJUMP_OPT ) {
+		    $logaction = $target;
+		} else {
+		    $loglevel = '';
+		}
 	    } else {
 		for my $option ( split_list2( $options , 'option' ) ) {
 		    if ( $option eq 'random' ) {
@@ -5708,8 +5749,8 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 			 $destnets ,
 			 $origdest ,
 			 $target ,
-			 '' ,
-			 '' ,
+			 $loglevel ,
+			 $logaction ,
 			 $exceptionrule ,
 			 '' )
 		unless unreachable_warning( 0, $chainref );

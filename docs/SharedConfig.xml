@@ -72,26 +72,26 @@
 
     <para>Here are the contents of /etc/shorewall/ and /etc/shorewal6/:</para>
 
-    <programlisting>oot@gateway:~# ls -l /etc/shorewall/
+    <programlisting>root@gateway:~# ls -l /etc/shorewall/
 total 92
 -rw-r--r-- 1 root root  201 Mar 19  2017 action.Mirrors
--rw-r--r-- 1 root root  109 Jun 29 15:13 actions
+-rw-r--r-- 1 root root  109 Oct 20 09:18 actions
 -rw-r--r-- 1 root root  654 Oct 13 13:46 conntrack
 -rw-r--r-- 1 root root  104 Oct 13 13:21 hosts
 -rw-r--r-- 1 root root  867 Jul  1 10:50 interfaces
 -rw-r--r-- 1 root root  107 Jun 29 15:14 isusable
 -rw-r--r-- 1 root root  240 Oct 13 13:34 macro.FTP
--rw-r--r-- 1 root root  497 Jul  1 10:42 mangle
+-rw-r--r-- 1 root root  559 Oct 19 12:56 mangle
 -rw-r--r-- 1 root root 1290 Jun 29 15:16 mirrors
 -rw-r--r-- 1 root root 2687 Oct 15 14:20 params
--rw-r--r-- 1 root root 2688 Oct 15 15:10 #params#
 -rw-r--r-- 1 root root  738 Oct 15 12:16 policy
 -rw-r--r-- 1 root root 1838 Oct 11 08:29 providers
 -rw-r--r-- 1 root root  398 Mar 18  2017 proxyarp
--rw-r--r-- 1 root root  730 Oct 10 12:59 rtrules
+-rw-r--r-- 1 root root  738 Nov  8 09:34 routes
+-rw-r--r-- 1 root root  729 Nov  7 12:52 rtrules
 -rw-r--r-- 1 root root 6367 Oct 13 13:21 rules
--rw-r--r-- 1 root root 5521 Oct 13 13:16 shorewall.conf
--rw-r--r-- 1 root root 1084 Oct 14 11:48 snat
+-rw-r--r-- 1 root root 5520 Oct 19 10:01 shorewall.conf
+-rw-r--r-- 1 root root 1090 Oct 25 15:17 snat
 -rw-r--r-- 1 root root  181 Jun 29 15:12 started
 -rw-r--r-- 1 root root  435 Oct 13 13:21 tunnels
 -rw-r--r-- 1 root root  941 Oct 15 11:27 zones
@@ -731,9 +731,26 @@ Tproxy   { NUMBER=3, INTERFACE=lo, OPTIONS=tproxy }
     { SOURCE=&amp;FAST_IF,	              	  	   PROVIDER=IPv6Beta, PRIORITY=1000! }
     { SOURCE=br0,	     		  	   PROVIDER=ComcastB, PRIORITY=11000 }
 ?else
-    { SOURCE=2601:601:a000:1600::/124		   PROVIDER=IPv6Beta, PRIORITY=1000! }
-    { SOURCE=2001:470:B:227::/64,         	   PROVIDER=HE,	      PRIORITY=11000 }
+    { SOURCE=2601:601:a000:1600::/64		   PROVIDER=IPv6Beta, PRIORITY=1000! }
+    { SOURCE=2001:470:B:227::/64,         	   PROVIDER=HE,	      PRIORITY=1000! }
     { SOURCE=2601:601:a000:16f0::/60	  	   PROVIDER=IPv6Beta, PRIORITY=11000 }
+?endif</programlisting>
+    </section>
+
+    <section>
+      <title>routes</title>
+
+      <para>This file is used only for IPv6:</para>
+
+      <programlisting>#PROVIDER		DEST			GATEWAY		DEVICE	OPTIONS
+?if __IPV6
+    #
+    # In my version of FOOLSM (1.0.10), the 'sourceip' option doesn't work.
+    # As a result, routing rules that specify the source IPv6 address are
+    # not effective in routing the 'ping' request packets out of FAST_IF.
+    # The following route solves that problem.
+    #
+    { PROVIDER=main, DEST=2001:558:4082:d3::1/128, GATEWAY=fe80::22e5:2aff:feb7:f2cf, DEVICE=FAST_IF, OPTIONS=persistent }
 ?endif</programlisting>
     </section>
 

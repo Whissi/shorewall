@@ -56,12 +56,13 @@
     <ulink url="http://xtables-addons.sourceforge.net/">xtables-addons</ulink>
     if they are not available in your current distribution. Instructions for
     installing xtables-addons may be found in the <ulink
-    url="Dynamic.html">Dynamic Zones article</ulink>.
-    Note that xtables-addons might not be required
-    with the 'ipset' package provided by your distribution.
-    See also the section <ulink url="configuration_file_basics.htm#capabilities">capabilities</ulink>
-    in the <ulink url="configuration_file_basics.htm">configuration file basics article</ulink>
-    and the <ulink url="Shorewall-Lite.html#Shorecap">Shorecap program</ulink>.</para>
+    url="Dynamic.html">Dynamic Zones article</ulink>. Note that xtables-addons
+    might not be required with the 'ipset' package provided by your
+    distribution. See also the section <ulink
+    url="configuration_file_basics.htm#capabilities">capabilities</ulink> in
+    the <ulink url="configuration_file_basics.htm">configuration file basics
+    article</ulink> and the <ulink url="Shorewall-Lite.html#Shorecap">Shorecap
+    program</ulink>.</para>
 
     <para>Ipset allows you to create one or more named sets of addresses then
     use those sets to define Netfilter/iptables rules. Possible uses of ipsets
@@ -149,6 +150,11 @@ ACCEPT       net:+sshok       $FW      tcp      22</programlisting></para>
       <listitem>
         <para>You must set SAVE_IPSETS=Yes in <ulink
         url="manpages/shorewall.conf.html">shorewall.conf</ulink> (5).</para>
+      </listitem>
+
+      <listitem>
+        <para>You must have at least one entry in the other configuration
+        files that uses an ipset.</para>
       </listitem>
 
       <listitem>

@@ -882,16 +882,16 @@ sub add_a_provider( $$ ) {
 			'done'
 		      );
 	    }
+	}
 
-	    if ( @{$providerref->{persistent_routes}} ) {
-		emit '';
-		emit $_ for @{$providers{$table}->{persistent_routes}};
-	    }
+	if ( @{$providerref->{persistent_routes}} ) {
+	    emit '';
+	    emit $_ for @{$providers{$table}->{persistent_routes}};
+	}
 
-	    if ( @{$providerref->{persistent_rules}} ) {
-		emit '';
-		emit $_ for @{$providers{$table}->{persistent_rules}};
-	    }
+	if ( @{$providerref->{persistent_rules}} ) {
+	    emit '';
+	    emit $_ for @{$providers{$table}->{persistent_rules}};
 	}
 
 	pop_indent;

@@ -512,6 +512,9 @@ sub process_a_provider( $ ) {
 	set_interface_option( $interface, 'gateway', 'none' );
     } elsif ( $gateway && $gateway ne '-' ) {
 	( $gateway, $mac ) = split_host_list( $gateway, 0 );
+
+	$gateway = $1 if $family == F_IPV6 && $gateway =~ /^\[(.+)\]$/;
+
 	validate_address $gateway, 0;
 
 	if ( defined $mac ) {

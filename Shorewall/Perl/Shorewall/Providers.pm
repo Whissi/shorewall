@@ -125,7 +125,7 @@ sub initialize( $ ) {
 # Set up marking for 'tracked' interfaces.
 #
 sub setup_route_marking() {
-    my $mask = in_hex( $globals{PROVIDER_MASK} );
+    my $mask   = in_hex( $globals{PROVIDER_MASK} );
     my $exmask = have_capability( 'EXMARK' ) ? "/$mask" : '';
 
     require_capability( $_ , q(The provider 'track' option) , 's' ) for qw/CONNMARK_MATCH CONNMARK/;
@@ -692,7 +692,6 @@ sub process_a_provider( $ ) {
 	    
 	    $pref = 10000 + $number - 1;
 	}
-
     }
 
     unless ( $loose || $pseudo ) {
@@ -1700,7 +1699,7 @@ sub process_providers( $ ) {
     }
 
     if ( $providers ) {
-	fatal_error q(Either all 'fallback' providers must specify a weight or non of them can specify a weight) if $fallback && $metrics;
+	fatal_error q(Either all 'fallback' providers must specify a weight or none of them can specify a weight) if $fallback && $metrics;
 
 	my $fn = open_file( 'route_rules' );
 
@@ -1939,7 +1938,6 @@ sub setup_providers() {
 
 	emit "fi\n";
     }
-
 }
 
 #

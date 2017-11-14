@@ -211,30 +211,35 @@ get_config() {
 	LOG_VERBOSITY=-1
     fi
 
-    if [ -n "$SHOREWALL_SHELL" -a -z "$g_export" ]; then
-	if [ ! -x "$SHOREWALL_SHELL" ]; then
-	    echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
-	    SHOREWALL_SHELL=/bin/sh
+    if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
+	if [ -n "$SHOREWALL_SHELL" -a -z "$g_export" ]; then
+	    if [ ! -x "$SHOREWALL_SHELL" ]; then
+		echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
+		SHOREWALL_SHELL=/bin/sh
+	    fi
 	fi
-    fi
 
-    if [ -n "$IP" ]; then
-	case "$IP" in
-	    */*)
-		if [ ! -x "$IP" ] ; then
-		    fatal_error "The program specified in IP ($IP) does not exist or is not executable"
-		fi
-		;;
-	    *)
-		prog="$(mywhich $IP 2> /dev/null)"
-		if [ -z "$prog" ] ; then
-		    fatal_error "Can't find $IP executable"
-		fi
-		IP=$prog
-		;;
-	esac
+	if [ -n "$IP" ]; then
+	    case "$IP" in
+		*/*)
+		    if [ ! -x "$IP" ] ; then
+			fatal_error "The program specified in IP ($IP) does not exist or is not executable"
+		    fi
+		    ;;
+		*)
+		    prog="$(mywhich $IP 2> /dev/null)"
+		    if [ -z "$prog" ] ; then
+			fatal_error "Can't find $IP executable"
+		    fi
+		    IP=$prog
+		    ;;
+	    esac
+	else
+	    IP='ip'
+	fi
     else
-	IP='ip'
+	[ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
+	[ -n "$IP" ]              || IP='ip'
     fi
 
     case $VERBOSITY in

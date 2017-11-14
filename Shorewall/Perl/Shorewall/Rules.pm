@@ -1641,7 +1641,7 @@ sub merge_inline_source_dest( $$ ) {
 		    return join( ':', $invocation, $body );
 		}
 	    } else {
-		fatal_error 'Interface names cannot appear in the DEST column within an action body' if $body =~ /:\[|:\+|/;
+		fatal_error 'Interface names cannot appear in the DEST column within an action body' if $body =~ /:\[|:\+/;
 
 		if ( $invocation =~ /:\[|:\+/ ) {
 		    $invocation =~ s/:.*//;
@@ -5436,7 +5436,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     #
     if ( $inaction ) {
 	$destnets = $dest;
-	assert( $param =~ /^(.*)|/ );
+	assert( $param =~ /^(.*)\|/ );
 	$interfaces=$1;
     } elsif ( $family == F_IPV4 ) {
 	if ( $dest =~ /^([^:]+)::([^:]*)$/ ) {

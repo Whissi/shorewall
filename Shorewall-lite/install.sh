@@ -492,7 +492,7 @@ ln -sf shorewall ${DESTDIR}${SBINDIR}/${PRODUCT}
 if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PRODUCT} ]; then
     [ ${DESTDIR} ] && make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
 
-    install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT}/${SYSCONFFILE} 0640
+    install_file ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT} 0640
     echo "$SYSCONFFILE file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 

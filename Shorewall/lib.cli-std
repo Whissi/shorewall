@@ -211,7 +211,7 @@ get_config() {
 	LOG_VERBOSITY=-1
     fi
 
-    if [ -z "$g_export" -a "$(id -u)" = 0 ]; then
+    if [ -z "${g_export}${g_test}" ]; then
 	if [ -n "$SHOREWALL_SHELL" -a -z "$g_export" ]; then
 	    if [ ! -x "$SHOREWALL_SHELL" ]; then
 		echo "   WARNING: The program specified in SHOREWALL_SHELL does not exist or is not executable; falling back to /bin/sh" >&2
@@ -775,6 +775,10 @@ check_command() {
 			    g_profile=Yes
 			    option=${option#p}
 			    ;;
+			t*)
+			    g_test=Yes
+			    option=${option#t}
+			    ;;
 			d*)
 			    g_debug=Yes;
 			    option=${option#d}
@@ -858,6 +862,10 @@ update_command() {
 			p*)
 			    g_profile=Yes
 			    option=${option#p}
+			    ;;
+			t*)
+			    g_test=Yes
+			    option=${option#t}
 			    ;;
 			d*)
 			    g_debug=Yes;

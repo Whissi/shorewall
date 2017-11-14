@@ -213,6 +213,8 @@ if [ -z "$BUILD" ]; then
 		BUILD=suse
 	    elif [ -f /etc/arch-release ] ; then
 		BUILD=archlinux
+	    elif [ -f ${CONFDIR}/openwrt_release ] ; then
+		BUILD=openwrt
 	    else
 		BUILD=linux
 	    fi
@@ -263,6 +265,9 @@ case "$HOST" in
 	;;
     archlinux)
 	echo "Installing ArchLinux-specific configuration..."
+	;;
+    openwrt)
+	echo "Installing OpenWRT-specific configuration..."
 	;;
     linux)
 	;;

@@ -1540,6 +1540,8 @@ remote_reload_command() # $* = original arguments less the command.
 	litedir="${VARDIR}-lite"
     fi
 
+    g_export=Yes
+
     if [ -f $g_shorewalldir/${PRODUCT}.conf ]; then
 	if [ -f $g_shorewalldir/params ]; then
 	    . $g_shorewalldir/params
@@ -1578,8 +1580,6 @@ remote_reload_command() # $* = original arguments less the command.
     fi
 
     file=$(resolve_file $g_shorewalldir/firewall)
-
-    g_export=Yes
 
     program=$sbindir/${PRODUCT}-lite
     #

@@ -1,6 +1,6 @@
 #
 # Shorewall - Sample Interfaces File for three-interface configuration.
-# Copyright (C) 2006-2015 by the Shorewall Team
+# Copyright (C) 2006-2017 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -14,6 +14,6 @@
 ?FORMAT 2
 ###############################################################################
 #ZONE	INTERFACE	OPTIONS
-net     eth0            tcpflags,dhcp,nosmurfs,routefilter,logmartians,sourceroute=0
-loc     eth1            tcpflags,nosmurfs,routefilter,logmartians
-dmz     eth2            tcpflags,nosmurfs,routefilter,logmartians
+net     NET_IF          tcpflags,dhcp,nosmurfs,routefilter,logmartians,sourceroute=0,physical=eth0
+loc     LOC_IF          tcpflags,nosmurfs,routefilter,logmartians,physical=eth1
+dmz     DMZ_IF          tcpflags,nosmurfs,routefilter,logmartians,physical=eth2

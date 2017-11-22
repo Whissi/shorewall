@@ -488,17 +488,14 @@ root@lists:~# </programlisting>
     <tip>
       <para>If your external interface is <filename
       class="devicefile">ppp0</filename> or <filename
-      class="devicefile">ippp0</filename>, you can replace the
-      <quote>detect</quote> in the second column with <quote>-</quote>
-      (without the quotes).</para>
-    </tip>
-
-    <tip>
-      <para>If your external interface is <filename
-      class="devicefile">ppp0</filename> or <filename
       class="devicefile">ippp0</filename> or if you have a static IP address,
       you can remove <quote>dhcp</quote> from the option list.</para>
     </tip>
+
+    <para>Prior to Shorewall 5.1.9, it is also required to change the snat and
+    stoppedrules file, to replace <filename>eth0</filename> with the name of
+    your external interface and <filename>eth1</filename> with the name of
+    your local interface.</para>
   </section>
 
   <section id="Addresses">

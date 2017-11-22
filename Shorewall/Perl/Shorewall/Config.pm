@@ -30,6 +30,84 @@
 #   into those files (emitters) and finalizing those files (renaming
 #   them to their final name and setting their mode appropriately).
 #
+#   A significant portion of this module is dedicated to the preprocessor:
+#
+#	process_compiler_directive() - processes compiler directives
+#
+#	embedded_shell() - handles embedded shell scripting
+#
+#	embedded_perl() - handles embedded perl scripting
+#
+#	read_a_line() - Reads the next configuration file record to
+#			be passed to the function processing the file.
+#
+#	    - Detects compiler directives and passes then to
+#	      process_compiler_directive() for handling.
+#
+#	    - Handles line continuation
+#
+#	    - Invokes a callback when the first (concatinated) non-directive
+#	      record is read from a file.
+#
+#	    - Conditionally expands variables.
+#
+#	    - Conditionally detects embedded Shell and Perl and passes them
+#	      off to embedded_shell() and embedded_perl() respectively.
+#
+#	    - Conditionally detects and handles [?}INCLUDE directives.
+#
+#	    - Conditionally detects and handles ?SECTION directives.
+#	      File processing functions can supply a callback to be
+#	      called during this processing.
+#
+#   File processing routines may need to open a second (third, fourth, ...)
+#   file while processing the main file (macro and/or action files). Two
+#   functions are provided to make that possible:
+#
+#      push_open() - open a file while leaving the current file open.
+#
+#      pop_open() - close the current file, and make the previous
+#		    file (if any) the current one.
+#
+#   Because this module expands variables, it must be aware of action
+#   parameters.
+#
+#	push_action_params() - populates the %actparams hash and
+#			       returns a reference to the previous
+#			       contents of that hash. The caller is
+#			       expected to store those contents locally.
+#
+#	pop_action_params()  - Restores the %actparams hash from
+#			       the reference returned by
+#			       push_action_params().
+#
+#   The following routines are provided for INLINE PERL within
+#   action bodies:
+#
+#	default_action_params() - called to fill in omitted
+#				  arguments when a DEFAULTS
+#				  line is encountered.
+#
+#	get_action_params() - returns an array of arguments.
+#
+#	setup_audit_action() - helper for A_* actions.
+#
+#	get_action_logging() - returns log level and tag
+#			       from the action's invocation.
+#
+#	get_action_chain_name() - returns chain name.
+#
+#	set_action_name_to_caller() - replace chain name
+#				      with that of invoking
+#				      chain for logging purposes.
+#
+#	set_action_disposition() - set the current action
+#				   disposition for logging purposes.
+#
+#	get_action_disposition() - get the current action disposition.
+#
+#	set_action_param() - set the value of an argument.
+#
 package Shorewall::Config;
 
 use strict;

@@ -673,7 +673,7 @@
 
       <varlistentry>
         <term><emphasis
-        role="bold">CONFIG_PATH</emphasis>=[<emphasis>directory</emphasis>[:<emphasis>directory</emphasis>]...]</term>
+        role="bold">CONFIG_PATH</emphasis>=[[:]<emphasis>directory</emphasis>[:<emphasis>directory</emphasis>]...]</term>
 
         <listitem>
           <para>Specifies where configuration files other than
@@ -701,6 +701,16 @@
           /etc/shorewall:/usr/share/shorewall but your particular distribution
           may set it differently. See the output of shorewall show config for
           the default on your system.</para>
+
+          <para>Beginning with Shorewall 5.1.10, the CONFIG_PATH setting may
+          begin with a colon (":"), to signal that the first
+          <replaceable>directory</replaceable> listed will be skipped if the
+          user performing a compilation is not root or if the configuration is
+          being compiled for export (-e option specified or if running one of
+          the remote-* commands) . This prevents the compiler from looking in
+          <filename>/etc/shorewall[6]</filename>/ when compilation is being
+          done by a non-root user or if the generated script is to be sent to
+          a remote firewall system.</para>
         </listitem>
       </varlistentry>
 

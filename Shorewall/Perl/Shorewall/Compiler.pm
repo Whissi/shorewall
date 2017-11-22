@@ -59,7 +59,7 @@ our $have_arptables;
 # Initilize the package-globals in the other modules
 #
 sub initialize_package_globals( $$$ ) {
-    Shorewall::Config::initialize($family, $_[1], $_[2]);
+    Shorewall::Config::initialize($family, $export, $_[1], $_[2]);
     Shorewall::Chains::initialize ($family, 1, $export );
     Shorewall::Zones::initialize ($family, $_[0]);
     Shorewall::Nat::initialize($family);

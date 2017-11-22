@@ -675,6 +675,7 @@ our $debug;                  # Global debugging flag
 our $confess;                # If true, use Carp to report errors with stack trace.
 
 our $family;                 # Protocol family (4 or 6)
+our $export;                 # True when compiling for export
 our $toolname;               # Name of the tool to use (iptables or iptables6)
 our $toolNAME;               # Tool name in CAPS
 our $product;                # Name of product that will run the generated script
@@ -788,8 +789,8 @@ sub add_variables( \% );
 #   2. The compiler can run multiple times in the same process so it has to be
 #      able to re-initialize its dependent modules' state.
 #
-sub initialize( $;$$) {
-    ( $family, my ( $shorewallrc, $shorewallrc1 ) ) = @_;
+sub initialize( $;$$$) {
+    ( $family, $export, my ( $shorewallrc, $shorewallrc1 ) ) = @_;
 
     if ( $family == F_IPV4 ) {
 	( $product, $Product, $toolname, $toolNAME ) = qw( shorewall  Shorewall iptables  IPTABLES );
@@ -5328,7 +5329,13 @@ sub ensure_config_path() {
 	fatal_error "CONFIG_PATH not found in $f" unless $config{CONFIG_PATH};
     }
 
-    @config_path = split /:/, $config{CONFIG_PATH};
+    my $path = $config{CONFIG_PATH};
+
+    my $chop = ( $path =~ s/^:// );
+
+    @config_path = split /:/, $path;
+
+    shift @config_path if $chop && ( $export || $> != 0 );
 
     #
     # To accomodate Cygwin-based compilation, we have separate directories for files whose names

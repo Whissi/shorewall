@@ -1575,7 +1575,7 @@ sub finish_providers() {
 	    emit  ( "    run_ip route replace default scope global table $table \$DEFAULT_ROUTE" );
 	} else {
 	    emit  ( "    if echo \$DEFAULT_ROUTE | grep -q 'nexthop.+nexthop'; then",
-		    "        qt \$IP -6 route delete default scope global table $table \$DEFAULT_ROUTE",
+		    "        while qt \$IP -6 route delete default table $table; do true; done",
 		    "        run_ip route add default scope global table $table \$DEFAULT_ROUTE",
 		    '    else',
 		    "        run_ip route replace default scope global table $table \$DEFAULT_ROUTE",
@@ -1638,7 +1638,7 @@ sub finish_providers() {
 	if ( $family == F_IPV4 ) {
 	    emit( "    run_ip route replace default scope global table $default \$FALLBACK_ROUTE" );
 	} else {
-	    emit( "    run_ip route delete default scope global table $default \$FALLBACK_ROUTE" );
+	    emit( "    while qt \$IP -6 route delete default table $default; do true; done" );
 	    emit( "    run_ip route add default scope global table $default \$FALLBACK_ROUTE" );
 	}
 

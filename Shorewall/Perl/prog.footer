@@ -268,8 +268,10 @@ case "$COMMAND" in
 	    error_message "$g_product is not running"
 	    status=2
 	elif [ $# -eq 1 ]; then
-	    $g_tool -Z
-	    $g_tool -t mangle -Z
+	    for table in raw mangle nat filter; do
+		qt $g_tool -t $table -Z
+	    done
+
 	    date > ${VARDIR}/restarted
 	    status=0
 	    progress_message3 "$g_product Counters Reset"

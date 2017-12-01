@@ -2498,27 +2498,63 @@ gmail-pop.l.google.com. <emphasis role="bold">300</emphasis>   IN A     209.85.2
     <programlisting>#ACTION        SOURCE               DEST              PROTO             DPORT
 POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
 
-    <para>If your firewall rules include DNS names then:</para>
+    <para>There are two options in <ulink
+    url="manpages/shorewall.conf.html">shorewall[6].conf(5)</ulink> that
+    affect the use of DNS names in Shorewall[6] config files:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>DEFER_DNS_RESOLUTION - When set to No, DNS names are resolved at
+        compile time; when set to Yes, DNS Names are resolved at
+        runtime.</para>
+      </listitem>
+
+      <listitem>
+        <para>AUTOMAKE - When set to Yes, <command>start</command>,
+        <command>restart</command> and <command>reload</command> only result
+        in compilation if one of the files on the CONFIG_PATH has changed
+        since the the last compilation.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>So by setting AUTOMAKE=Yes, and DEFER_DNS_RESOLUTION=No, compilation
+    will only take place at boot time if a change had been make to the config
+    but no <command>restart</command> or <command>reload</command> had taken
+    place. This is clearly spelled out in the shorewall.conf manpage. So with
+    these settings, so long as a 'reload' or 'restart' takes place after the
+    Shorewall configuration is changes, there should be no DNS-related
+    problems at boot time.</para>
+
+    <important>
+      <para>When DEFER_DNS_RESOLUTION=No and AUTOMAKE=Yes and a DNS change
+      makes it necessary to recompile an existing firewall script, the
+      <option>-c</option> option must be used with the
+      <command>reload</command> or <command>restart</command> command to force
+      recompilation.</para>
+    </important>
+
+    <para>If your firewall rules include DNS names then, even if
+    DEFER_DNS_RESOLUTION=No and AUTOMAKE=Yes:</para>
 
     <itemizedlist>
       <listitem>
         <para>If your <filename>/etc/resolv.conf </filename>is wrong then your
-        firewall won't start.</para>
+        firewall may not start.</para>
       </listitem>
 
       <listitem>
         <para>If your <filename>/etc/nsswitch.conf</filename> is wrong then
-        your firewall won't start.</para>
+        your firewall may not start.</para>
       </listitem>
 
       <listitem>
-        <para>If your Name Server(s) is(are) down then your firewall won't
+        <para>If your Name Server(s) is(are) down then your firewall may not
         start.</para>
       </listitem>
 
       <listitem>
         <para>If your startup scripts try to start your firewall before
-        starting your DNS server then your firewall won't start.</para>
+        starting your DNS server then your firewall may not start.</para>
       </listitem>
 
       <listitem>
@@ -2528,7 +2564,7 @@ POP(ACCEPT)     loc                  net:pop.gmail.com</programlisting>
 
       <listitem>
         <para>You must bring up your network interfaces prior to starting your
-        firewall.</para>
+        firewall, or the firewall may not start.</para>
       </listitem>
     </itemizedlist>
 

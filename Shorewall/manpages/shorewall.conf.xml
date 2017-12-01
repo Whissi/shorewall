@@ -730,6 +730,14 @@
           and <command>restart</command> commands will succeed even if no DNS
           server is reachable (assuming that the configuration hasn't changed
           since the compiled script was last generated).</para>
+
+          <important>
+            <para>When DEFER_DNS_RESOLUTION=No and AUTOMAKE=Yes and a DNS
+            change makes it necessary to recompile an existing firewall
+            script, the <option>-c</option> option must be used with the
+            <command>reload</command> or <command>restart</command> command to
+            force recompilation.</para>
+          </important>
         </listitem>
       </varlistentry>
 

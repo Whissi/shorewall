@@ -12,8 +12,8 @@ DEFAULTS ACCEPT
     @1	-	-	icmp	fragmentation-needed	{comment="Needed ICMP types"}
     @1	-	-	icmp	time-exceeded		{comment="Needed ICMP types"}
 ?else
+    CONTINUE -          -      !ipv6-icmp
 ?COMMENT Needed ICMP types (RFC4890)
-
     @1	-		-	ipv6-icmp	destination-unreachable
     @1	-		-	ipv6-icmp	packet-too-big
     @1	-		-	ipv6-icmp	time-exceeded
@@ -38,7 +38,7 @@ DEFAULTS ACCEPT
     @1	-		-	ipv6-icmp	148	# Certificate path solicitation
     @1	-		-	ipv6-icmp	149	# Certificate path advertisement
 
-# The following should have a link local source address and a ttl of 1 and must be allowed to transit abridge
+# The following should have a link local source address and a ttl of 1 and must be allowed to transit a bridge
     @1	fe80::/10	-	ipv6-icmp	151	# Multicast router advertisement
     @1	fe80::/10	-	ipv6-icmp	152	# Multicast router solicitation
     @1	fe80::/10	-	ipv6-icmp	153	# Multicast router termination

@@ -964,7 +964,7 @@ sub add_policy_rules( $$$$$ ) {
 
 	    if ( ( $targets{$action} || 0 ) & ACTION ) {
 		#
-		# Default action is a regular action -- jump to the action chain
+		# Policy action is a regular action -- jump to the action chain
 		#
 		if ( ( my $proto = determine_action_protocol( $action, '-' ) ) ne '-' ) {
 		    add_ijump( $chainref, j => use_policy_action( $paction, $chainref->{name} ), p => $proto );
@@ -973,7 +973,7 @@ sub add_policy_rules( $$$$$ ) {
 		}
 	    } else {
 		#
-		# Default action is an inline 
+		# Policy action is an inline 
 		#
 		( undef, my $level )   = split /:/, $paction, 2;
 		( $action, my $param ) = get_target_param( $action );
@@ -2078,7 +2078,7 @@ sub process_actions() {
 	    my $proto = 0;
 
 	    if ( $action =~ /:/ ) {
-		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
+		warning_message 'Policy Actions are now specified in /etc/shorewall/shorewall.conf';
 		$action =~ s/:.*$//;
 	    }
 
@@ -2532,7 +2532,7 @@ sub verify_audit($;$$) {
 # the target is a macro, the macro is expanded and this function is called recursively for each rule in the expansion.
 # Similarly, if a new action tuple is encountered, this function is called recursively for each rule in the action
 # body. In this latter case, a reference to the tuple's chain is passed in the first ($chainref) argument. A chain
-# reference is also passed when rules are being generated during processing of a macro used as a default action.
+# reference is also passed when rules are being generated during processing of a macro used as a policy action.
 #
 
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {

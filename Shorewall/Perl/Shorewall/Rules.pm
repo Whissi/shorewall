@@ -2094,6 +2094,7 @@ sub process_actions() {
 			}
 		    } elsif ( /^proto=(.+)$/ ) {
 			fatal_error "Unknown Protocol ($1)" unless defined( $proto = resolve_proto( $1 ) );
+			fatal_error "A protocol may not be specified on the REJECT_ACTION ($action)" if $action eq $config{REJECT_ACTION};
 		    } else {
 			fatal_error "Invalid option ($_)" unless $options{$_};
 			$opts |= $options{$_};

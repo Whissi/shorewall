@@ -2115,9 +2115,11 @@ sub process_actions() {
 			next;
 		    }
 
+		    $proto = $actions{$action}{proto} unless $proto;
 		    delete $actions{$action};
 		    delete $targets{$action};
 		} elsif ( ( $actiontype & INLINE ) && ( $type == ACTION ) && $opts & NOINLINE_OPT ) {
+		    $proto = $actions{$action}{proto} unless $proto;
 		    delete $actions{$action};
 		    delete $targets{$action};
 		} else {

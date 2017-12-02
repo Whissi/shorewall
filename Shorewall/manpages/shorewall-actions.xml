@@ -192,6 +192,27 @@
             </varlistentry>
 
             <varlistentry>
+              <term><option>proto</option>=<replaceable>protocol</replaceable></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.1.10. Specifies that the action is
+                only usable with the specified
+                <replaceable>protocol</replaceable> (name or number). When the
+                action is invoked with no protocol specified in the PROTO
+                column, or if the action is used as a Policy Action, the named
+                <replaceable>protocol</replaceable> will be assumed. If a
+                protocol is specified in the PROTO column of an invocation,
+                then it must match the named
+                <replaceable>protocol</replaceable>.</para>
+
+                <para>The <option>proto</option> option has no effect if the
+                <option>inline</option> or <option>builtin</option> option is
+                specified. A warning is issued if <option>proto</option> is
+                specified along with <option>builtin</option>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><option>section</option></term>
 
               <listitem>

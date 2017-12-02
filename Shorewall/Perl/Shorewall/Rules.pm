@@ -927,6 +927,28 @@ sub process_policies()
 #
 sub process_inline ($$$$$$$$$$$$$$$$$$$$$$);
 
+#
+# Determine the protocol to be used in the jump to the passed action
+#
+sub determine_action_protocol( $$ ) {
+    my ( $action, $proto ) = @_;
+
+    if ( my $actionproto = $actions{$action}{proto} ) {
+	if ( $proto eq '-' ) {
+	    $proto = $actionproto;
+	} else {
+	    if ( defined( my $protonum = resolve_proto( $proto ) ) ) {
+		fatal_error( "The $action action is only usable with " . proto_name( $actionproto ) ) unless $actionproto == $protonum;
+		$proto = $protonum;
+	    } else {
+		fatal_error( "Unknown protocol ($proto)" );
+	    }
+	}
+    }
+
+    $proto;
+}
+
 sub add_policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $pactions, $dropmulticast ) = @_;
 
@@ -944,7 +966,11 @@ sub add_policy_rules( $$$$$ ) {
 		#
 		# Default action is a regular action -- jump to the action chain
 		#
-		add_ijump $chainref, j => use_policy_action( $paction, $chainref->{name} );
+		if ( ( my $proto = determine_action_protocol( $action, '-' ) ) ne '-' ) {
+		    add_ijump( $chainref, j => use_policy_action( $paction, $chainref->{name} ), p => $proto );
+		} else {
+		    add_ijump $chainref, j => use_policy_action( $paction, $chainref->{name} );
+		}
 	    } else {
 		#
 		# Default action is an inline 
@@ -1417,13 +1443,13 @@ sub external_name( $ ) {
 #
 # Define an Action
 #
-sub new_action( $$$$$ ) {
+sub new_action( $$$$$$ ) {
 
-    my ( $action , $type, $options , $actionfile , $state ) = @_;
+    my ( $action , $type, $options , $actionfile , $state, $proto ) = @_;
 
     fatal_error "Invalid action name($action)" if reserved_name( $action );
 
-    $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options , state => $state };
+    $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options , state => $state, proto => $proto };
 
     $targets{$action} = $type;
 }
@@ -2049,6 +2075,7 @@ sub process_actions() {
 	    my $opts = $type == INLINE ? NOLOG_OPT : 0;
 
 	    my $state = '';
+	    my $proto = 0;
 
 	    if ( $action =~ /:/ ) {
 		warning_message 'Default Actions are now specified in /etc/shorewall/shorewall.conf';
@@ -2065,6 +2092,8 @@ sub process_actions() {
 			} else {
 			    fatal_error( q(The 'state' option is reserved for use in the actions.std file) );
 			}
+		    } elsif ( /^proto=(.+)$/ ) {
+			fatal_error "Unknown Protocol ($1)" unless defined( $proto = resolve_proto( $1 ) );
 		    } else {
 			fatal_error "Invalid option ($_)" unless $options{$_};
 			$opts |= $options{$_};
@@ -2097,6 +2126,8 @@ sub process_actions() {
 	    }
 
 	    if ( $opts & BUILTIN_OPT ) {
+		warning_message( "The 'proto' option has no effect when specified on a builtin action" ) if $proto;
+
 		my $actiontype = USERBUILTIN | OPTIONS;
 		$actiontype   |= MANGLE_TABLE if $opts & MANGLE_OPT;
 		$actiontype   |= RAW_TABLE    if $opts & RAW_OPT;
@@ -2129,7 +2160,7 @@ sub process_actions() {
 
 		fatal_error "Missing Action File ($actionfile)" unless -f $actionfile;
 
-		new_action ( $action, $type, $opts, $actionfile , $state );
+		new_action ( $action, $type, $opts, $actionfile , $state , $proto );
 	    }
 	}
     }
@@ -3012,6 +3043,10 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     my $actionchain; # Name of the action chain
 
     if ( $actiontype & ACTION ) {
+	#
+	# Verify action 'proto', if any
+	#
+	$proto = determine_action_protocol( $basictarget, $proto );
 	#
 	# Save NAT-oriented column contents
 	#
@@ -4736,6 +4771,10 @@ sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ ) {
 	function          => sub() {
 	    fatal_error( qq(Action $cmd may not be used in the mangle file) ) unless $actiontype & MANGLE_TABLE;
 	    #
+	    # Verify action 'proto', if any
+	    #
+	    $proto = determine_action_protocol( $cmd, $proto );
+	    #
 	    # Create the action:level:tag:param tuple.
 	    #
 	    my $normalized_target = normalize_action( $cmd, '', $params );
@@ -5693,6 +5732,10 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	} else {
 	    if ( $actiontype & ACTION ) {
 		fatal_error( qq(Action $target may not be used in the snat file) ) unless $actiontype & NAT_TABLE;
+		#
+		# Verify action 'proto', if any
+		#
+		$proto = determine_action_protocol( $target, $proto );
 		#
 		# Create the action:level:tag:param tuple. Since we don't allow logging out of nat POSTROUTING, we store
 		# the interface name in the log tag

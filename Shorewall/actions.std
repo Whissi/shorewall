@@ -26,18 +26,19 @@ Broadcast    inline,audit	# Handles Broadcast/Anycast
 ?else
 Broadcast    noinline,audit	# Handles Broadcast/Anycast
 ?endif
-DNSAmp				# Matches one-question recursive DNS queries
+DNSAmp	     proto=17		# Matches one-question recursive DNS queries
 Drop				# Default Action for DROP policy (deprecated)
 dropBcast    inline		# Silently Drop Broadcast
 dropBcasts   inline		# Silently Drop Broadcast
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 dropMcast    inline		# Silently Drop Multicast
-dropNotSyn   noinline		# Silently Drop Non-syn TCP packets
-DropDNSrep   inline		# Drops DNS replies
+dropNotSyn   noinline,proto=6	# Silently Drop Non-syn TCP packets
+DropDNSrep   inline,proto=17	# Drops DNS replies
 DropSmurfs   noinline		# Drop smurf packets
 Established  inline,\		# Handles packets in the ESTABLISHED state
 	     state=ESTABLISHED	#
-FIN	     inline,audit	# Handles ACK,FIN,PSH packets
+FIN	     inline,audit,\	# Handles ACK,FIN,PSH packets
+	     proto=6
 forwardUPnP  noinline		# Allow traffic that upnpd has redirected from 'upnp' interfaces.
 GlusterFS    inline		# Handles GlusterFS
 IfEvent	     noinline		# Perform an action based on an event
@@ -50,14 +51,16 @@ Multicast    inline,audit	# Handles Multicast
 Multicast    noinline,audit	# Handles Multicast
 ?endif
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
-NotSyn	     inline,audit	# Handles TCP packets which do not have SYN=1 and ACK=0
-rejNotSyn    noinline		# Silently Reject Non-syn TCP packets
+NotSyn	     inline,audit,\	# Handles TCP packets which do not have SYN=1 and ACK=0
+	     proto=6
+rejNotSyn    noinline,proto=6	# Silently Reject Non-syn TCP packets
 Reject				# Default Action for REJECT policy (deprecated)
 Related	     inline,\		# Handles packets in the RELATED conntrack state
 	     state=RELATED	#
 ResetEvent   inline		# Reset an Event
-RST	     inline,audit	# Handle packets with RST set
+RST	     inline,audit,\	# Handle packets with RST set
+	     proto=6
 SetEvent     inline		# Initialize an event
-TCPFlags			# Handle bad flag combinations.
+TCPFlags     proto=6		# Handle bad flag combinations.
 Untracked    inline,\		# Handles packets in the UNTRACKED conntrack state
 	     state=UNTRACKED	#

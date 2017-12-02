@@ -12,7 +12,6 @@ DEFAULTS ACCEPT
     @1	-	-	icmp	fragmentation-needed	{comment="Needed ICMP types"}
     @1	-	-	icmp	time-exceeded		{comment="Needed ICMP types"}
 ?else
-    CONTINUE -          -      !ipv6-icmp
 ?COMMENT Needed ICMP types (RFC4890)
     @1	-		-	ipv6-icmp	destination-unreachable
     @1	-		-	ipv6-icmp	packet-too-big

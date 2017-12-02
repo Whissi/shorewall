@@ -8,42 +8,43 @@
 #
 ###############################################################################
 #ACTION
-A_Drop	                        # Audited Default Action for DROP policy
-A_Reject	                # Audited Default Action for REJECT policy
-A_AllowICMPs	                # Audited Accept needed ICMP6 types
-AllowICMPs   	                # Accept needed ICMP6 types
+A_Drop				# Audited Default Action for DROP policy
+A_Reject			# Audited Default Action for REJECT policy
+A_AllowICMPs proto=58		# Audited Accept needed ICMP6 types
+AllowICMPs   proto=58		# Accept needed ICMP6 types
 allowBcast   inline		# Silently Allow Broadcast
 allowInvalid inline		# Accepts packets in the INVALID conntrack state
 allowMcast   inline		# Silently Allow Multicast
-AutoBL       noinline           # Auto-blacklist IPs that exceed thesholds
-AutoBLL      noinline           # Helper for AutoBL
+AutoBL	     noinline		# Auto-blacklist IPs that exceed thesholds
+AutoBLL	     noinline		# Helper for AutoBL
 BLACKLIST    logjump,section	# Add sender to the dynamic blacklist
-Broadcast    noinline      	# Handles Broadcast/Anycast
-Drop		        	# Default Action for DROP policy (deprecated)
+Broadcast    noinline		# Handles Broadcast/Anycast
+Drop				# Default Action for DROP policy (deprecated)
 dropBcast    inline		# Silently Drop Broadcast
 dropBcasts   inline		# Silently Drop Broadcast
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
 dropMcast    inline		# Silently Drop Multicast
-dropNotSyn   noinline		# Silently Drop Non-syn TCP packets
-DropDNSrep   inline		# Drops DNS replies
-DropSmurfs   noinline     	# Handles packets with a broadcast source address
+dropNotSyn   noinline,proto=6	# Silently Drop Non-syn TCP packets
+DropDNSrep   inline,proto=17	# Drops DNS replies
+DropSmurfs   noinline		# Handles packets with a broadcast source address
 Established  inline,\		# Handles packets in the ESTABLISHED state
 	     state=ESTABLISHED
-FIN	     inline,audit	# Handles ACK,FIN,PSH packets
+FIN	     inline,audit,\	# Handles ACK,FIN,PSH packets
+	     proto=6
 forwardUPnP  noinline		# Allow traffic that upnpd has redirected from 'upnp' interfaces.
-IfEvent      noinline           # Perform an action based on an event
-Invalid      inline,audit,\     # Handles packets in the INVALID conntrack state
-             state=INVALID
-Multicast    noinline      	# Handles Multicast
+IfEvent	     noinline		# Perform an action based on an event
+Invalid	     inline,audit,\	# Handles packets in the INVALID conntrack state
+	     state=INVALID
+Multicast    noinline		# Handles Multicast
 New	     inline,state=NEW	# Handles packets in the NEW conntrack state
-NotSyn	     inline 		# Handles TCP packets that do not have SYN=1 and ACK=0
-Reject		        	# Default Action for REJECT policy (deprecated)
-rejNotSyn    noinline		# Silently Reject Non-syn TCP packets
-Related      inline,\		# Handles packets in the RELATED conntrack state
-             state=RELATED
+NotSyn	     inline,proto=6	# Handles TCP packets that do not have SYN=1 and ACK=0
+Reject				# Default Action for REJECT policy (deprecated)
+rejNotSyn    noinline,proto=6	# Silently Reject Non-syn TCP packets
+Related	     inline,\		# Handles packets in the RELATED conntrack state
+	     state=RELATED
 ResetEvent   inline		# Reset an Event
-RST	     inline             # Handle packets with RST set
+RST	     inline,proto=6	# Handle packets with RST set
 SetEvent     inline		# Initialize an event
-TCPFlags    			# Handles bad flags combinations
-Untracked    inline,\           # Handles packets in the UNTRACKED conntrack state
+TCPFlags     proto=6		# Handles bad flags combinations
+Untracked    inline,\		# Handles packets in the UNTRACKED conntrack state
 	     state=UNTRACKED

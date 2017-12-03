@@ -96,7 +96,7 @@ use constant { NULL_SECTION          => 0x00,
 	       INVALID_SECTION       => 0x10,
 	       UNTRACKED_SECTION     => 0x20,
 	       NEW_SECTION           => 0x40,
-	       DEFAULTACTION_SECTION => 0x80 };
+	       POLICYACTION_SECTION  => 0x80 };
 #
 # Number of elements in the action tuple
 #
@@ -1288,7 +1288,7 @@ sub finish_chain_section ($$$) {
 	if ( $chain1ref->{is_policy} ) {
 	    if ( $chain1ref->{synparams} ) {
 		my $synchainref = ensure_chain 'filter', syn_flood_chain $chain1ref;
-		if ( $section == DEFAULTACTION_SECTION ) {
+		if ( $section == POLICYACTION_SECTION ) {
 		    if ( $chain1ref->{policy} =~ /^(ACCEPT|CONTINUE|QUEUE|NFQUEUE)/ ) {
 			add_ijump $chain1ref, j => $synchainref, p => 'tcp --syn';
 		    }
@@ -1324,7 +1324,7 @@ sub ensure_rules_chain( $ )
     $chainref = new_rules_chain( $chain ) unless $chainref;
 
     unless ( $chainref->{referenced} ) {
-	if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+	if ( $section & ( NEW_SECTION | POLICYACTION_SECTION ) ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID,UNTRACKED';
 	} elsif ( $section == UNTRACKED_SECTION ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID';
@@ -2201,7 +2201,7 @@ sub process_reject_action() {
     #
     # This gets called very early in the compilation process so we fake the section
     #
-    $section = DEFAULTACTION_SECTION;
+    $section = POLICYACTION_SECTION;
 
     if ( ( $targets{$action} || 0 ) == ACTION ) {
 	add_ijump $rejectref, j => use_policy_action( $action, $rejectref->{name} );
@@ -3200,7 +3200,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		     );
     }
 
-    unless ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ||
+    unless ( $section & ( NEW_SECTION | POLICYACTION_SECTION ) ||
 	     $inaction ||
 	     $blacklist ||
 	     $basictarget eq 'dropInvalid' ) {
@@ -3336,7 +3336,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 		     $log_action ,
 		     $exceptionrule ,
 		     $usergenerated && ! $loglevel )
-	    unless unreachable_warning( $wildcard || $section == DEFAULTACTION_SECTION, $chainref );
+	    unless unreachable_warning( $wildcard || $section == POLICYACTION_SECTION, $chainref );
     }
 
     $generated = 1;
@@ -3414,7 +3414,7 @@ sub check_state( $ ) {
 	}
     }
 
-    if ( $section & ( NEW_SECTION | DEFAULTACTION_SECTION ) ) {
+    if ( $section & ( NEW_SECTION | POLICYACTION_SECTION ) ) {
 	if ( $state eq 'NEW' ) {
 	    #
 	    # If an INVALID or UNTRACKED rule would be emitted then we must include the state match
@@ -3955,7 +3955,7 @@ sub process_rules() {
     #
     # No need to finish the NEW section since no rules need to be generated
     #
-    $section = $next_section = DEFAULTACTION_SECTION;
+    $section = $next_section = POLICYACTION_SECTION;
 }
 
 sub process_mangle_inline( $$$$$$$$$$$$$$$$$$$$ ) {

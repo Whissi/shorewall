@@ -75,12 +75,14 @@ setstatedir() {
 
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
-    if [ $PRODUCT = shorewall ]; then
+    if [ -x ${STATEDIR}/firewall ]; then
+	return 0
+    elif [ $PRODUCT = shorewall ]; then
 	${SBINDIR}/shorewall compile
     elif [ $PRODUCT = shorewall6 ]; then
 	${SBINDIR}/shorewall -6 compile
     else
-	return 0
+	return 1
     fi
 }
 
@@ -92,10 +94,8 @@ start () {
   printf "Initializing \"Shorewall-based firewalls\": "
   for PRODUCT in $PRODUCTS; do
       if setstatedir; then
-	  if [ -x ${STATEDIR}/firewall ]; then
-	      if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
-		  ${STATEDIR}/firewall ${OPTIONS} stop
-	      fi
+	  if ! ${SBIN}/$PRODUCT status > /dev/null 2>&1; then
+	      ${STATEDIR}/firewall ${OPTIONS} stop
 	  fi
       fi
   done
@@ -103,6 +103,8 @@ start () {
   if [ -n "$SAVE_IPSETS" -a -f "$SAVE_IPSETS" ]; then
       ipset -R < "$SAVE_IPSETS"
   fi
+
+  return 0
 }
 
 boot () {
@@ -117,9 +119,7 @@ stop () {
     printf "Clearing \"Shorewall-based firewalls\": "
     for PRODUCT in $PRODUCTS; do
 	if setstatedir; then
-	    if [ -x ${STATEDIR}/firewall ]; then
-		${STATEDIR}/firewall ${OPTIONS} clear
-	    fi
+	    ${STATEDIR}/firewall ${OPTIONS} clear
 	fi
     done
 
@@ -131,5 +131,7 @@ stop () {
 	    rm -f "${SAVE_IPSETS}.tmp"
 	fi
     fi
+
+    return 0
 }
 

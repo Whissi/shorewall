@@ -44,12 +44,14 @@ setstatedir() {
 
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
-    if [ $PRODUCT = shorewall ]; then
+    if [ -x ${STATEDIR}/firewall ]; then
+	return 0
+    elif [ $PRODUCT = shorewall ]; then
 	${SBINDIR}/shorewall compile
     elif [ $PRODUCT = shorewall6 ]; then
 	${SBINDIR}/shorewall -6 compile
     else
-	return 0
+	return 1;
     fi
 }
 
@@ -75,15 +77,11 @@ start () {
 	retval=$?
 
 	if [ $retval -eq 0 ]; then
-	    if [ -x "${STATEDIR}/firewall" ]; then
-		${STATEDIR}/firewall ${OPTIONS} stop 2>&1 | $logger
-		retval=${PIPESTATUS[0]}
-		[ $retval -ne 0 ] && break
-	    else
-		retval=6 #Product not configured
-		break
-	    fi
+	    ${STATEDIR}/firewall ${OPTIONS} stop 2>&1 | $logger
+	    retval=${PIPESTATUS[0]}
+	    [ $retval -ne 0 ] && break
 	else
+	    retval=6 #Product not configured
 	    break
 	fi
     done
@@ -110,15 +108,11 @@ stop () {
 	retval=$?
 
 	if [ $retval -eq 0 ]; then
-	    if [ -x "${STATEDIR}/firewall" ]; then
-		${STATEDIR}/firewall ${OPTIONS} clear 2>&1 | $logger
-		retval=${PIPESTATUS[0]}
-		[ $retval -ne 0 ] && break
-	    else
-		retval=6 #Product not configured
-		break
-	    fi
+	    ${STATEDIR}/firewall ${OPTIONS} clear 2>&1 | $logger
+	    retval=${PIPESTATUS[0]}
+	    [ $retval -ne 0 ] && break
 	else
+	    retval=6 #Product not configured
 	    break
 	fi
     done

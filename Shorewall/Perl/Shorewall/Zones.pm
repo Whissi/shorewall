@@ -1219,7 +1219,7 @@ sub process_interface( $$ ) {
     my $root;
 
     if ( $interface =~ /\+$/ ) {
-	$wildcard = 1;
+	$wildcard = $physwild = 1; # Default physical name is the logical name
 	$root = substr( $interface, 0, -1 );
 	$roots{$root} = $interface;
 	my $len = length $root;
@@ -1270,8 +1270,6 @@ sub process_interface( $$ ) {
 	my %hostoptions = ( dynamic => 0 );
 
 	for my $option (split_list1 $options, 'option' ) {
-	    next if $option eq '-';
-
 	    ( $option, my $value ) = split /=/, $option;
 
 	    fatal_error "Invalid Interface option ($option)" unless my $type = $validinterfaceoptions{$option};

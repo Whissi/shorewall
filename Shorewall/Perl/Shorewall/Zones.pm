@@ -317,7 +317,7 @@ sub initialize( $$ ) {
     %mapbase = ();
     %mapbase1 = ();
     $baseseq = 0;
-    $minroot = 0;
+    $minroot = undef;
     $loopback_interface = '';
 
     %validzoneoptions = ( mss            => NUMERIC,
@@ -1204,6 +1204,7 @@ sub process_interface( $$ ) {
     }
 
     my $wildcard = 0;
+    my $physwild = 0;
     my $root;
 
     if ( $interface =~ /\+$/ ) {
@@ -1212,7 +1213,7 @@ sub process_interface( $$ ) {
 	$roots{$root} = $interface;
 	my $len = length $root;
 
-	if ( $minroot ) {
+	if ( defined $minroot ) {
 	    $minroot = $len if $minroot > $len;
 	} else {
 	    $minroot = $len;

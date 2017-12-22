@@ -725,7 +725,7 @@ sub interface_match( $$ ) {
     return 1 if $piface eq $cifaceref->{bridge};
     return 1 if $ciface eq $pifaceref->{bridge};
 
-    if ( $minroot ) {
+    if ( defined $minroot ) {
 	if ( $piface =~ /\+$/ ) {
 	    my $root    = $pifaceref->{root};
 	    my $rlength = length( $root );
@@ -1637,7 +1637,7 @@ sub known_interface($)
 
     my $iface = $interface;
 
-    if ( $minroot ) {
+    if ( defined $minroot ) {
 	#
 	# We have wildcard interfaces -- see if this interface matches one of their roots
 	#

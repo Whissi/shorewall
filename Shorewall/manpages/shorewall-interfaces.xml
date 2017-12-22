@@ -112,7 +112,10 @@ loc     eth2            -</programlisting>
           url="/manpages/shorewall-nesting.html">shorewall-nesting</ulink>(5)
           for a discussion of this problem.</para>
 
-          <para>Shorewall allows '+' as an interface name.</para>
+          <para>Shorewall allows '+' as an interface name, but that usage is
+          deprecated. A better approach is to specify
+          '<option>physical</option>=+' in the OPTIONS column (see
+          below).</para>
 
           <para>There is no need to define the loopback interface (lo) in this
           file.</para>
@@ -194,6 +197,54 @@ loc     eth2            -</programlisting>
 
           <variablelist>
             <varlistentry>
+              <term><emphasis
+              role="bold">accept_ra</emphasis>[={0|1|2}]</term>
+
+              <listitem>
+                <para>IPv6 only; added in Shorewall 4.5.16. Values are:</para>
+
+                <variablelist>
+                  <varlistentry>
+                    <term>0</term>
+
+                    <listitem>
+                      <para>Do not accept Router Advertisements.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>1</term>
+
+                    <listitem>
+                      <para>Accept Route Advertisements if forwarding is
+                      disabled.</para>
+                    </listitem>
+                  </varlistentry>
+
+                  <varlistentry>
+                    <term>2</term>
+
+                    <listitem>
+                      <para>Overrule forwarding behavior. Accept Route
+                      Advertisements even if forwarding is enabled.</para>
+                    </listitem>
+                  </varlistentry>
+                </variablelist>
+
+                <para>If the option is specified without a value, then the
+                value 1 is assumed.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
+                </note>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">arp_filter[={0|1}]</emphasis></term>
 
               <listitem>
@@ -209,12 +260,12 @@ loc     eth2            -</programlisting>
                 changed; the value assigned to the setting will be the value
                 specified (if any) or 1 if no value is given.</para>
 
-                <para/>
-
                 <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
                 </note>
               </listitem>
             </varlistentry>
@@ -243,15 +294,13 @@ loc     eth2            -</programlisting>
 
                 <para>8 - do not reply for all local addresses</para>
 
-                <para/>
-
                 <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
                 </note>
-
-                <para/>
 
                 <warning>
                   <para>Do not specify <emphasis
@@ -431,6 +480,25 @@ loc     eth2            -</programlisting>
             </varlistentry>
 
             <varlistentry>
+              <term><emphasis role="bold">forward</emphasis>[={0|1}]</term>
+
+              <listitem>
+                <para>IPv6 only Sets the
+                /proc/sys/net/ipv6/conf/interface/forwarding option to the
+                specified value. If no value is supplied, then 1 is
+                assumed.</para>
+
+                <note>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
+                </note>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
               <term><emphasis role="bold">ignore[=1]</emphasis></term>
 
               <listitem>
@@ -496,9 +564,11 @@ loc     eth2            -</programlisting>
                 <para/>
 
                 <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
                 </note>
 
                 <blockquote>
@@ -625,7 +695,10 @@ loc     eth2            -</programlisting>
 
                 <para>If the <emphasis>interface</emphasis> name is a wildcard
                 name (ends with '+'), then the physical
-                <emphasis>name</emphasis> must also end in '+'.</para>
+                <emphasis>name</emphasis> must also end in '+'. The physical
+                <replaceable>name</replaceable> may end in '+' (or be exactly
+                '+') when the <replaceable>interface</replaceable> name is not
+                a wildcard name.</para>
 
                 <para>If <option>physical</option> is not specified, then it's
                 value defaults to the <emphasis>interface</emphasis>
@@ -647,9 +720,13 @@ loc     eth2            -</programlisting>
                 url="http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html">http://tldp.org/HOWTO/Proxy-ARP-Subnet/index.html.
                 </ulink></para>
 
-                <para><emphasis role="bold">Note</emphasis>: This option does
-                not work with a wild-card <replaceable>interface</replaceable>
-                name (e.g., eth0.+) in the INTERFACE column.</para>
+                <note>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
+                </note>
 
                 <para>Only those interfaces with the <option>proxyarp</option>
                 option will have their setting changed; the value assigned to
@@ -665,9 +742,13 @@ loc     eth2            -</programlisting>
                 <para>IPv6 only. Sets
                 /proc/sys/net/ipv6/conf/<emphasis>interface</emphasis>/proxy_ndp.</para>
 
-                <para><emphasis role="bold">Note</emphasis>: This option does
-                not work with a wild-card <replaceable>interface</replaceable>
-                name (e.g., eth0.+) in the INTERFACE column.</para>
+                <note>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
+                </note>
 
                 <para>Only those interfaces with the <option>proxyndp</option>
                 option will have their setting changed; the value assigned to
@@ -731,9 +812,11 @@ loc     eth2            -</programlisting>
                 filtering.</para>
 
                 <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
                 </note>
 
                 <para>This option can also be enabled globally via the
@@ -842,9 +925,11 @@ loc     eth2            -</programlisting>
                 specified (if any) or 1 if no value is given.</para>
 
                 <note>
-                  <para>This option does not work with a wild-card
-                  <replaceable>interface</replaceable> name (e.g., eth0.+) in
-                  the INTERFACE column.</para>
+                  <para>This option does not work with a wild-card <emphasis
+                  role="bold">physical</emphasis> name (e.g., eth0.+).
+                  Beginning with Shorewall 5.1.10, If this option is
+                  specified, a warning is issued and the option is
+                  ignored.</para>
                 </note>
               </listitem>
             </varlistentry>

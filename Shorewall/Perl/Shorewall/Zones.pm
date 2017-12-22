@@ -253,6 +253,17 @@ use constant { NO_UPDOWN   => 1,
 
 our %validinterfaceoptions;
 
+our %procinterfaceoptions=( accept_ra   => 1,
+			    arp_filter  => 1,
+			    arp_ignore  => 1,
+			    forward     => 1,
+			    logmartians => 1,
+			    proxyarp    => 1,
+			    proxyndp    => 1,
+			    routefilter => 1,
+			    sourceroute => 1,
+			  );
+
 our %prohibitunmanaged = (
 			  blacklist      => 1,
 			  bridge         => 1,
@@ -363,9 +374,9 @@ sub initialize( $$ ) {
 				  upnp        => SIMPLE_IF_OPTION,
 				  upnpclient  => SIMPLE_IF_OPTION,
 				  mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
-				  physical    => STRING_IF_OPTION  + IF_OPTION_HOST,
+				  physical    => STRING_IF_OPTION  + IF_OPTION_HOST + IF_OPTION_WILDOK,
 				  unmanaged   => SIMPLE_IF_OPTION,
-				  wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
+				  wait        => NUMERIC_IF_OPTION,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -402,18 +413,18 @@ sub initialize( $$ ) {
 				    optional    => SIMPLE_IF_OPTION,
 				    proxyndp    => BINARY_IF_OPTION,
 				    required    => SIMPLE_IF_OPTION,
-				    routeback   => BINARY_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER,
+				    routeback   => BINARY_IF_OPTION + IF_OPTION_ZONEONLY + IF_OPTION_HOST + IF_OPTION_VSERVER + IF_OPTION_WILDOK,
 				    rpfilter    => SIMPLE_IF_OPTION,
 				    sfilter     => IPLIST_IF_OPTION,
 				    sourceroute => BINARY_IF_OPTION,
 				    tcpflags    => BINARY_IF_OPTION + IF_OPTION_HOST,
 				    mss         => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
 				    forward     => BINARY_IF_OPTION,
-				    physical    => STRING_IF_OPTION + IF_OPTION_HOST,
+				    physical    => STRING_IF_OPTION + IF_OPTION_HOST + IF_OPTION_WILDOK,
 				    unmanaged   => SIMPLE_IF_OPTION,
 				    upnp        => SIMPLE_IF_OPTION,
 				    upnpclient  => SIMPLE_IF_OPTION,
-				    wait        => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
+				    wait        => NUMERIC_IF_OPTION,
 				 );
 	%validhostoptions = (
 			     blacklist => 1,
@@ -1267,6 +1278,8 @@ sub process_interface( $$ ) {
 
 	    my $hostopt = $type & IF_OPTION_HOST;
 
+	    my $fulltype = $type;
+
 	    $type &= MASK_IF_OPTION;
 
 	    unless ( $type == BINARY_IF_OPTION && defined $value && $value eq '0' ) {
@@ -1297,7 +1310,6 @@ sub process_interface( $$ ) {
 	    } elsif ( $type == BINARY_IF_OPTION ) {
 		$value = 1 unless defined $value;
 		fatal_error "Option value for '$option' must be 0 or 1" unless ( $value eq '0' || $value eq '1' );
-		fatal_error "The '$option' option may not be used with a wild-card interface name" if $wildcard && ! $type && IF_OPTION_WILDOK;
 		$options{$option} = $value;
 		$hostoptions{$option} = $value if $hostopt;
 	    } elsif ( $type == ENUM_IF_OPTION ) {
@@ -1321,7 +1333,6 @@ sub process_interface( $$ ) {
 		    assert( 0 );
 		}
 	    } elsif ( $type == NUMERIC_IF_OPTION ) {
-		fatal_error "The '$option' option may not be specified on a wildcard interface" if $wildcard && ! $type && IF_OPTION_WILDOK;
 		$value = $defaultinterfaceoptions{$option} unless defined $value;
 		fatal_error "The '$option' option requires a value" unless defined $value;
 		my $numval = numeric_value $value;
@@ -1373,13 +1384,21 @@ sub process_interface( $$ ) {
 
 		    fatal_error "Duplicate physical interface name ($value)" if ( $interfaces{$value} && ! $port );
 
-		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" if $wildcard && ! $value =~ /\+$/;
+		    $physwild = ( $value =~ /\+$/ );
+		    fatal_error "The type of 'physical' name ($value) doesn't match the type of interface name ($interface)" if $wildcard && ! $physwild;
+
 		    $physical = $value;
 		} else {
 		    assert(0);
 		}
 	    } else {
 		warning_message "Support for the $option interface option has been removed from Shorewall";
+	    }
+
+	    if ( $root ) {
+		warning_message( "The '$option' option is ignored when used with a wildcard physical name" ), delete $options{$option} if $physwild && $procinterfaceoptions{$option};
+	    } else {
+		warning_message( "The '$option' option is ignored when used with interface name '+'" ), delete $options{$option} unless $fulltype & IF_OPTION_WILDOK;
 	    }
 	}
 
@@ -1459,6 +1478,7 @@ sub process_interface( $$ ) {
 						   zones      => {},
 						   origin     => shortlineinfo( '' ),
 						   wildcard   => $wildcard,
+						   physwild   => $physwild,
 					         };
 
     $interfaces{$physical} = $interfaceref if $physical ne $interface;

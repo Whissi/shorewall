@@ -350,7 +350,7 @@ sub initialize( $$ ) {
 				  arp_ignore  => ENUM_IF_OPTION,
 				  blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  bridge      => SIMPLE_IF_OPTION,
-				  dbl         => ENUM_IF_OPTION,
+				  dbl         => ENUM_IF_OPTION   + IF_OPTION_WILDOK,
 				  destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				  detectnets  => OBSOLETE_IF_OPTION,
 				  dhcp        => SIMPLE_IF_OPTION,
@@ -401,7 +401,7 @@ sub initialize( $$ ) {
 	%validinterfaceoptions = (  accept_ra   => NUMERIC_IF_OPTION,
 				    blacklist   => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    bridge      => SIMPLE_IF_OPTION,
-				    dbl         => ENUM_IF_OPTION,
+				    dbl         => ENUM_IF_OPTION   + IF_OPTION_WILDOK,
 				    destonly    => SIMPLE_IF_OPTION + IF_OPTION_HOST,
 				    dhcp        => SIMPLE_IF_OPTION,
 				    ignore      => NUMERIC_IF_OPTION + IF_OPTION_WILDOK,
@@ -1276,8 +1276,6 @@ sub process_interface( $$ ) {
 
 	    my $hostopt = $type & IF_OPTION_HOST;
 
-	    my $fulltype = $type;
-
 	    $type &= MASK_IF_OPTION;
 
 	    unless ( $type == BINARY_IF_OPTION && defined $value && $value eq '0' ) {
@@ -1392,12 +1390,6 @@ sub process_interface( $$ ) {
 	    } else {
 		warning_message "Support for the $option interface option has been removed from Shorewall";
 	    }
-
-	    if ( $root ) {
-		warning_message( "The '$option' option is ignored when used with a wildcard physical name" ), delete $options{$option} if $physwild && $procinterfaceoptions{$option};
-	    } else {
-		warning_message( "The '$option' option is ignored when used with interface name '+'" ), delete $options{$option} unless $fulltype & IF_OPTION_WILDOK;
-	    }
 	}
 
 	fatal_error q(The 'required', 'optional' and 'ignore' options are mutually exclusive)
@@ -1416,6 +1408,14 @@ sub process_interface( $$ ) {
 	    fatal_error "Invalid value ignore=0" if ! $ignore;
 	} else {
 	    $options{ignore} = 0;
+	}
+
+	for my $option ( keys %options ) {
+	    if ( $root ) {
+		warning_message( "The '$option' option is ignored when used with a wildcard physical name" ), delete $options{$option} if $physwild && $procinterfaceoptions{$option};
+	    } else {
+		warning_message( "The '$option' option is ignored when used with interface name '+'" ), delete $options{$option} unless $validinterfaceoptions{$option} & IF_OPTION_WILDOK;
+	    }
 	}
 
 	if ( $netsref eq 'dynamic' ) {

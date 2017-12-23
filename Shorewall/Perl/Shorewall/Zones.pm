@@ -1412,9 +1412,9 @@ sub process_interface( $$ ) {
 
 	for my $option ( keys %options ) {
 	    if ( $root ) {
-		warning_message( "The '$option' option is ignored when used with a wildcard physical name" ), delete $options{$option} if $physwild && $procinterfaceoptions{$option};
+		warning_message( "The '$option' option is ignored when used with a wildcard physical name" ) if $physwild && $procinterfaceoptions{$option};
 	    } else {
-		warning_message( "The '$option' option is ignored when used with interface name '+'" ), delete $options{$option} unless $validinterfaceoptions{$option} & IF_OPTION_WILDOK;
+		warning_message( "The '$option' option is ignored when used with interface name '+'" ) unless $validinterfaceoptions{$option} & IF_OPTION_WILDOK;
 	    }
 	}
 
@@ -1876,7 +1876,8 @@ sub find_interfaces_by_option( $;$ ) {
     for my $interface ( @interfaces ) {
 	my $interfaceref = $interfaces{$interface};
 
-	next unless $interfaceref->{root};
+	next unless $interfaceref->{root};                                   # Don't return '+' interface
+	next if $procinterfaceoptions{$option} && $interfaceref->{physwild}; # Ignore /proc options on wildcard interface
 
 	my $optionsref = $interfaceref->{options};
 	if ( $nonzero ) {

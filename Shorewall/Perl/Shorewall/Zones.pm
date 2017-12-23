@@ -90,7 +90,6 @@ our @EXPORT = ( qw( NOTHING
 		    interface_is_optional
 		    interface_is_required
 		    find_interfaces_by_option
-		    find_interfaces_by_option1
 		    get_interface_option
 		    get_interface_origin
 		    interface_has_option
@@ -1890,35 +1889,6 @@ sub find_interfaces_by_option( $;$ ) {
     }
 
     \@ints;
-}
-
-#
-# Returns reference to array of interfaces with the passed option. Unlike the preceding function, this one:
-#
-# - All entries in %interfaces are searched.
-# - Returns a two-element list; the second element indicates whether any members of the list have wildcard physical names
-#
-sub find_interfaces_by_option1( $ ) {
-    my $option = $_[0];
-    my @ints = ();
-    my $wild = 0;
-
-    for my $interface ( @interfaces ) {
-	my $interfaceref = $interfaces{$interface};
-
-	next unless defined $interfaceref->{physical};
-
-	my $optionsref = $interfaceref->{options};
-
-	if ( $optionsref && defined $optionsref->{$option} ) {
-	    $wild ||= $interfaceref->{wildcard};
-	    push @ints , $interface
-	}
-    }
-
-    return unless defined wantarray;
-
-    wantarray ? ( \@ints, $wild ) : \@ints;
 }
 
 #

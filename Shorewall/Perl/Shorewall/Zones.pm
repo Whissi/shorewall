@@ -1475,7 +1475,7 @@ sub process_interface( $$ ) {
 						   zones      => {},
 						   origin     => shortlineinfo( '' ),
 						   wildcard   => $wildcard,
-						   physwild   => $physwild,
+						   physwild   => $physwild, # Currently unused
 					         };
 
     $interfaces{$physical} = $interfaceref if $physical ne $interface;

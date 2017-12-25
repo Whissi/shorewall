@@ -51,7 +51,7 @@ setstatedir() {
     elif [ $PRODUCT = shorewall6 ]; then
 	${SBINDIR}/shorewall -6 compile
     else
-	return 1;
+	return 1
     fi
 }
 

@@ -74,13 +74,15 @@ setstatedir() {
     [ -n "$statedir" ] && STATEDIR=${statedir} || STATEDIR=${VARLIB}/${PRODUCT}
 
     if [ -x ${STATEDIR}/firewall ]; then
-	return 0;
-    if [ $PRODUCT = shorewall ]; then
-	${SBINDIR}/shorewall compile
-    elif [ $PRODUCT = shorewall6 ]; then
-	${SBINDIR}/shorewall -6 compile
+        return 0
     else
-	return 1
+        if [ $PRODUCT = shorewall ]; then
+            ${SBINDIR}/shorewall compile
+        elif [ $PRODUCT = shorewall6 ]; then
+            ${SBINDIR}/shorewall -6 compile
+        else
+            return 1
+        fi
     fi
 }
 

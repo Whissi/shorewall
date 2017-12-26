@@ -506,8 +506,6 @@ fi
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
     run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
-    perl -p -w -i -e 's|CONFIG_PATH=:/CONFIG_PATH=/' ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-
     if [ $HOST = archlinux ] ; then
 	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
     elif [ $HOST = debian ]; then

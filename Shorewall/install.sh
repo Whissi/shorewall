@@ -506,13 +506,7 @@ fi
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
     run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
-    if [ "$SHAREDIR" != /usr/share -o "$CONFDIR" != /etc ]; then
-	if [ $PRODUCT = shorewall ]; then
-	    perl -p -w -i -e "s|^CONFIG_PATH=.*|CONFIG_PATH=${CONFDIR}/shorewall:${SHAREDIR}/shorewall|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-	else
-	    perl -p -w -i -e "s|^CONFIG_PATH=.*|CONFIG_PATH=${CONFDIR}/shorewall:${SHAREDIR}/shorewall6:${SHAREDIR}/shorewall|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-	fi
-    fi
+    perl -p -w -i -e 's|CONFIG_PATH=:/CONFIG_PATH=/' ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
     if [ $HOST = archlinux ] ; then
 	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf

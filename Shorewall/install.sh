@@ -508,7 +508,7 @@ fix_config() {
     fi
 }
 
-run_install $OWNERSHIP -m 0644 ${PRODUCT}.conf            ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 $PRODUCT.conf ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
 
 fix_config ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/${PRODUCT}.conf
 

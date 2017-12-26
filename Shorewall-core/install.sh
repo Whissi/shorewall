@@ -336,7 +336,6 @@ done
 
 if [ $SHAREDIR != /usr/share ]; then
     eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.base
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.core
     eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.cli
 fi
 

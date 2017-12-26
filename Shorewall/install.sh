@@ -276,7 +276,7 @@ case "$HOST" in
 	;;
 esac
 
-if [ $PRODUCT = shorewall ]; then
+if [ ${PRODUCT} = shorewall ]; then
     if [ -n "$DIGEST" ]; then
 	#
 	# The user specified which digest to use
@@ -336,22 +336,22 @@ fi
 
 run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${SBINDIR}
 [ -n "${INITFILE}" ] && run_install -d $OWNERSHIP -m 0755 ${DESTDIR}${INITDIR}
-if [ -z "$DESTDIR" -a $PRODUCT != shorewall ]; then
+if [ -z "$DESTDIR" -a ${PRODUCT} != shorewall ]; then
     [ -x ${LIBEXECDIR}/shorewall/compiler.pl ] || fatal_error "Shorewall >= 4.5.0 is not installed"
 fi
 
 echo "Installing $Product Version $VERSION"
 
 #
-# Check for /usr/share/$PRODUCT/version
+# Check for /usr/share/${PRODUCT}/version
 #
-if [ -f ${DESTDIR}${SHAREDIR}/$PRODUCT/version ]; then
+if [ -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/version ]; then
     first_install=""
 else
     first_install="Yes"
 fi
 
-if [ -z "${DESTDIR}" -a $PRODUCT = shorewall -a ! -f ${SHAREDIR}/shorewall/coreversion ]; then
+if [ -z "${DESTDIR}" -a ${PRODUCT} = shorewall -a ! -f ${SHAREDIR}/shorewall/coreversion ]; then
     echo "Shorewall $VERSION requires Shorewall Core which does not appear to be installed"
     exit 1
 fi
@@ -371,16 +371,16 @@ if [ -n "$INITFILE" ]; then
 fi
 
 #
-# Create /etc/$PRODUCT and other directories
+# Create /etc/${PRODUCT} and other directories
 #
-make_parent_directory ${DESTDIR}${CONFDIR}/$PRODUCT 0755
-make_parent_directory ${DESTDIR}${LIBEXECDIR}/$PRODUCT 0755
+make_parent_directory ${DESTDIR}${CONFDIR}/${PRODUCT} 0755
+make_parent_directory ${DESTDIR}${LIBEXECDIR}/${PRODUCT} 0755
 make_parent_directory ${DESTDIR}${PERLLIBDIR}/Shorewall 0755
-make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles 0755
-make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated 0755
+make_parent_directory ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles 0755
+make_parent_directory ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated 0755
 make_parent_directory ${DESTDIR}${VARDIR} 0755
 
-chmod 0755 ${DESTDIR}${SHAREDIR}/$PRODUCT
+chmod 0755 ${DESTDIR}${SHAREDIR}/${PRODUCT}
 
 [ -n "$DESTDIR" ] && make_parent_directory ${DESTDIR}${CONFDIR}/logrotate.d 0755
 
@@ -393,10 +393,10 @@ fi
 
 if [ -n "$SERVICEDIR" ]; then
     make_parent_directory ${DESTDIR}${SERVICEDIR} 0755
-    [ -z "$SERVICEFILE" ] && SERVICEFILE=$PRODUCT.service
-    run_install $OWNERSHIP -m 0644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
-    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/$PRODUCT.service
-    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/$PRODUCT.service"
+    [ -z "$SERVICEFILE" ] && SERVICEFILE=${PRODUCT}.service
+    run_install $OWNERSHIP -m 0644 $SERVICEFILE ${DESTDIR}${SERVICEDIR}/${PRODUCT}.service
+    [ ${SBINDIR} != /sbin ] && eval sed -i \'s\|/sbin/\|${SBINDIR}/\|\' ${DESTDIR}${SERVICEDIR}/${PRODUCT}.service
+    echo "Service file $SERVICEFILE installed as ${DESTDIR}${SERVICEDIR}/${PRODUCT}.service"
 fi
 
 if [ -z "$first_install" ]; then
@@ -404,42 +404,42 @@ if [ -z "$first_install" ]; then
     # These use absolute path names since the files that they are removing existed
     # prior to the use of directory variables
     #
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/compiler
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.accounting
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.actions
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.dynamiczones
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.maclist
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.nat
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.providers
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.proxyarp
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tc
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tcrules
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/lib.tunnels
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/compiler
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.accounting
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.actions
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.dynamiczones
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.maclist
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.nat
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.providers
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.proxyarp
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.tc
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.tcrules
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/lib.tunnels
 
-    if [ $PRODUCT = shorewall6 ]; then
+    if [ ${PRODUCT} = shorewall6 ]; then
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.cli
 	delete_file ${DESTDIR}/usr/share/shorewall6/lib.common
 	delete_file ${DESTDIR}/usr/share/shorewall6/wait4ifup
     fi
 
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.header6
-    delete_file ${DESTDIR}/usr/share/$PRODUCT/prog.footer6
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/prog.header6
+    delete_file ${DESTDIR}/usr/share/${PRODUCT}/prog.footer6
 
     #
     # Delete obsolete config files and manpages
     #
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tos
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/tcrules
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/stoppedrules
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/notrack
-    delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/blacklist
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tos
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-tcrules
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-stoppedrules
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-notrack
-    delete_file ${DESTDIR}${MANDIR}/man5/$PRODUCT/${PRODUCT}-blacklist
+    delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/tos
+    delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/tcrules
+    delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/stoppedrules
+    delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/notrack
+    delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/blacklist
+    delete_file ${DESTDIR}${MANDIR}/man5/${PRODUCT}/${PRODUCT}-tos
+    delete_file ${DESTDIR}${MANDIR}/man5/${PRODUCT}/${PRODUCT}-tcrules
+    delete_file ${DESTDIR}${MANDIR}/man5/${PRODUCT}/${PRODUCT}-stoppedrules
+    delete_file ${DESTDIR}${MANDIR}/man5/${PRODUCT}/${PRODUCT}-notrack
+    delete_file ${DESTDIR}${MANDIR}/man5/${PRODUCT}/${PRODUCT}-blacklist
 
-    if [ $PRODUCT = shorewall ]; then
+    if [ ${PRODUCT} = shorewall ]; then
 	#
 	# Delete deprecated macros and actions
 	#
@@ -461,30 +461,30 @@ fi
 #
 # Install the Modules file
 #
-run_install $OWNERSHIP -m 0644 modules ${DESTDIR}${SHAREDIR}/$PRODUCT/modules
-echo "Modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/modules"
+run_install $OWNERSHIP -m 0644 modules ${DESTDIR}${SHAREDIR}/${PRODUCT}/modules
+echo "Modules file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/modules"
 
 for f in modules.*; do
-    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f
-    echo "Modules file $f installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+    run_install $OWNERSHIP -m 0644 $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f
+    echo "Modules file $f installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f"
 done
 
 #
 # Install the Module Helpers file
 #
-run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers
-echo "Helper modules file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/helpers"
+run_install $OWNERSHIP -m 0644 helpers ${DESTDIR}${SHAREDIR}/${PRODUCT}/helpers
+echo "Helper modules file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/helpers"
 
 #
 # Install the default config path file
 #
-install_file configpath ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath 0644
-echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/configpath"
+install_file configpath ${DESTDIR}${SHAREDIR}/${PRODUCT}/configpath 0644
+echo "Default config path file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/configpath"
 #
 # Install the Standard Actions file
 #
-install_file actions.std ${DESTDIR}${SHAREDIR}/$PRODUCT/actions.std 0644
-echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/actions.std"
+install_file actions.std ${DESTDIR}${SHAREDIR}/${PRODUCT}/actions.std 0644
+echo "Standard actions file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/actions.std"
 
 cd configfiles
 
@@ -504,213 +504,213 @@ fix_config() {
 	perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' $1
     elif [ $HOST = gentoo ]; then
 	# Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
-	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" $1
+	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/${PRODUCT}|;" $1
     fi
 }
 
-run_install $OWNERSHIP -m 0644 $PRODUCT.conf            ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 ${PRODUCT}.conf            ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-fix_config ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/$PRODUCT.conf
+fix_config ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/${PRODUCT}.conf
 
-if [ $PRODUCT = shorewall ]; then
-    run_install $OWNERSHIP -m 0644 shorewall.conf.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+if [ ${PRODUCT} = shorewall ]; then
+    run_install $OWNERSHIP -m 0644 shorewall.conf.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-    fix_config ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/$PRODUCT.conf.annotated
+    fix_config ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/${PRODUCT}.conf.annotated
 fi
 
-if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
-    run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
+if [ ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/${PRODUCT}.conf ]; then
+    run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
 
-    fix_config ${DESTDIR}${CONFDIR}/$PRODUCT/PRODUCT.conf
+    fix_config ${DESTDIR}${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
 
-    echo "Config file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf"
+    echo "Config file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/${PRODUCT}.conf"
 fi
 
 #
 # Install the init file
 #
-run_install $OWNERSHIP -m 0644 init ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/init
+run_install $OWNERSHIP -m 0644 init ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/init
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/init ]; then
-    run_install $OWNERSHIP -m 0600 init ${DESTDIR}${CONFDIR}/$PRODUCT/init
-    echo "Init file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/init"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/init ]; then
+    run_install $OWNERSHIP -m 0600 init ${DESTDIR}${CONFDIR}/${PRODUCT}/init
+    echo "Init file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/init"
 fi
 
 #
 # Install the zones file
 #
-run_install $OWNERSHIP -m 0644 zones           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 zones.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 zones           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 zones.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/zones ]; then
-    run_install $OWNERSHIP -m 0600 zones${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/zones
-    echo "Zones file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/zones"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/zones ]; then
+    run_install $OWNERSHIP -m 0600 zones${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/zones
+    echo "Zones file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/zones"
 fi
 
 #
 # Install the policy file
 #
-run_install $OWNERSHIP -m 0644 policy           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 policy.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 policy           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 policy.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/policy ]; then
-    run_install $OWNERSHIP -m 0600 policy${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/policy
-    echo "Policy file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/policy"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/policy ]; then
+    run_install $OWNERSHIP -m 0600 policy${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/policy
+    echo "Policy file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/policy"
 fi
 #
 # Install the interfaces file
 #
-run_install $OWNERSHIP -m 0644 interfaces           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 interfaces.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 interfaces           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 interfaces.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/interfaces ]; then
-    run_install $OWNERSHIP -m 0600 interfaces${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/interfaces
-    echo "Interfaces file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/interfaces"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/interfaces ]; then
+    run_install $OWNERSHIP -m 0600 interfaces${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/interfaces
+    echo "Interfaces file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/interfaces"
 fi
 
 #
 # Install the hosts file
 #
-run_install $OWNERSHIP -m 0644 hosts           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 hosts.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 hosts           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 hosts.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/hosts ]; then
-    run_install $OWNERSHIP -m 0600 hosts${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/hosts
-    echo "Hosts file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/hosts"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/hosts ]; then
+    run_install $OWNERSHIP -m 0600 hosts${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/hosts
+    echo "Hosts file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/hosts"
 fi
 #
 # Install the rules file
 #
-run_install $OWNERSHIP -m 0644 rules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 rules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rules           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 rules.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/rules ]; then
-    run_install $OWNERSHIP -m 0600 rules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/rules
-    echo "Rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/rules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/rules ]; then
+    run_install $OWNERSHIP -m 0600 rules${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/rules
+    echo "Rules file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/rules"
 fi
 
 if [ -f nat ]; then
     #
     # Install the NAT file
     #
-    run_install $OWNERSHIP -m 0644 nat           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-    run_install $OWNERSHIP -m 0644 nat.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 nat           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+    run_install $OWNERSHIP -m 0644 nat.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/nat ]; then
-	run_install $OWNERSHIP -m 0600 nat${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/nat
-	echo "NAT file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/nat"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/nat ]; then
+	run_install $OWNERSHIP -m 0600 nat${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/nat
+	echo "NAT file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/nat"
     fi
 fi
 
 #
 # Install the NETMAP file
 #
-run_install $OWNERSHIP -m 0644 netmap           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-run_install $OWNERSHIP -m 0644 netmap.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 netmap           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+run_install $OWNERSHIP -m 0644 netmap.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/netmap ]; then
-    run_install $OWNERSHIP -m 0600 netmap${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/netmap
-    echo "NETMAP file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/netmap"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/netmap ]; then
+    run_install $OWNERSHIP -m 0600 netmap${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/netmap
+    echo "NETMAP file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/netmap"
 fi
 #
 # Install the Parameters file
 #
-run_install $OWNERSHIP -m 0644 params          ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 params          ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 params.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -f ${DESTDIR}${CONFDIR}/$PRODUCT/params ]; then
-    chmod 0644 ${DESTDIR}${CONFDIR}/$PRODUCT/params
+if [ -f ${DESTDIR}${CONFDIR}/${PRODUCT}/params ]; then
+    chmod 0644 ${DESTDIR}${CONFDIR}/${PRODUCT}/params
 else
     case "$SPARSE" in
 	[Vv]ery)
 	;;
 	*)
-	    run_install $OWNERSHIP -m 0600 params${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/params
-	    echo "Parameter file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/params"
+	    run_install $OWNERSHIP -m 0600 params${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/params
+	    echo "Parameter file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/params"
 	    ;;
     esac
 fi
 
-if [ $PRODUCT = shorewall ]; then
+if [ ${PRODUCT} = shorewall ]; then
     #
     # Install the proxy ARP file
     #
-    run_install $OWNERSHIP -m 0644 proxyarp           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-    run_install $OWNERSHIP -m 0644 proxyarp.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 proxyarp           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+    run_install $OWNERSHIP -m 0644 proxyarp.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/proxyarp ]; then
-	run_install $OWNERSHIP -m 0600 proxyarp${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/proxyarp
-	echo "Proxy ARP file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/proxyarp"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyarp ]; then
+	run_install $OWNERSHIP -m 0600 proxyarp${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyarp
+	echo "Proxy ARP file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyarp"
     fi
 else
     #
     # Install the Proxyndp file
     #
-    run_install $OWNERSHIP -m 0644 proxyndp           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-    run_install $OWNERSHIP -m 0644 proxyndp.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+    run_install $OWNERSHIP -m 0644 proxyndp           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+    run_install $OWNERSHIP -m 0644 proxyndp.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/proxyndp ]; then
-	run_install $OWNERSHIP -m 0600 proxyndp${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/proxyndp
-	echo "Proxyndp file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/proxyndp"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyndp ]; then
+	run_install $OWNERSHIP -m 0600 proxyndp${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyndp
+	echo "Proxyndp file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/proxyndp"
     fi
 fi
 #
 # Install the Stopped Rules file
 #
-run_install $OWNERSHIP -m 0644 stoppedrules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 stoppedrules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 stoppedrules           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 stoppedrules.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules ]; then
-    run_install $OWNERSHIP -m 0600 stoppedrules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules
-    echo "Stopped Rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/stoppedrules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/stoppedrules ]; then
+    run_install $OWNERSHIP -m 0600 stoppedrules${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/stoppedrules
+    echo "Stopped Rules file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/stoppedrules"
 fi
 #
 # Install the Mac List file
 #
-run_install $OWNERSHIP -m 0644 maclist           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 maclist.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 maclist           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 maclist.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/maclist ]; then
-    run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/maclist
-    echo "mac list file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/maclist"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/maclist ]; then
+    run_install $OWNERSHIP -m 0600 maclist${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/maclist
+    echo "mac list file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/maclist"
 fi
 
 #
 # Install the SNAT file
 #
-run_install $OWNERSHIP -m 0644 snat           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-run_install $OWNERSHIP -m 0644 snat.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 snat           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+run_install $OWNERSHIP -m 0644 snat.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/snat ]; then
-    run_install $OWNERSHIP -m 0600 snat${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/snat
-    echo "SNAT file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/snat"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/snat ]; then
+    run_install $OWNERSHIP -m 0600 snat${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/snat
+    echo "SNAT file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/snat"
 fi
 
 if [ -f arprules ]; then
     #
     # Install the ARP rules file
     #
-    run_install $OWNERSHIP -m 0644 arprules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-    run_install $OWNERSHIP -m 0644 arprules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 arprules           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+    run_install $OWNERSHIP -m 0644 arprules.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/arprules ]; then
-	run_install $OWNERSHIP -m 0600 arprules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/arprules
-	echo "ARP rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/arprules"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/arprules ]; then
+	run_install $OWNERSHIP -m 0600 arprules${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/arprules
+	echo "ARP rules file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/arprules"
     fi
 fi
 #
 # Install the Conntrack file
 #
-run_install $OWNERSHIP -m 0644 conntrack           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-run_install $OWNERSHIP -m 0644 conntrack.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 conntrack           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+run_install $OWNERSHIP -m 0644 conntrack.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
 case "$SPARSE" in
     [Vv]ery)
     ;;
     *)
-	if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack ]; then
-	    run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack
-	    echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/conntrack"
+	if [ ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/conntrack ]; then
+	    run_install $OWNERSHIP -m 0600 conntrack${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/conntrack
+	    echo "Conntrack file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/conntrack"
 	fi
 	;;
 esac
@@ -718,316 +718,316 @@ esac
 #
 # Install the Mangle file
 #
-run_install $OWNERSHIP -m 0644 mangle           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 mangle.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 mangle           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 mangle.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/mangle ]; then
-    run_install $OWNERSHIP -m 0600 mangle${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/mangle
-    echo "Mangle file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/mangle"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/mangle ]; then
+    run_install $OWNERSHIP -m 0600 mangle${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/mangle
+    echo "Mangle file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/mangle"
 fi
 
 #
 # Install the TC Interfaces file
 #
-run_install $OWNERSHIP -m 0644 tcinterfaces           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcinterfaces.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcinterfaces           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tcinterfaces.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcinterfaces ]; then
-    run_install $OWNERSHIP -m 0600 tcinterfaces${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcinterfaces
-    echo "TC Interfaces file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcinterfaces"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcinterfaces ]; then
+    run_install $OWNERSHIP -m 0600 tcinterfaces${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tcinterfaces
+    echo "TC Interfaces file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcinterfaces"
 fi
 
 #
 # Install the TC Priority file
 #
-run_install $OWNERSHIP -m 0644 tcpri           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcpri.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcpri           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tcpri.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcpri ]; then
-    run_install $OWNERSHIP -m 0600 tcpri${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcpri
-    echo "TC Priority file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcpri"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcpri ]; then
+    run_install $OWNERSHIP -m 0600 tcpri${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tcpri
+    echo "TC Priority file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcpri"
 fi
 
 #
 # Install the Tunnels file
 #
-run_install $OWNERSHIP -m 0644 tunnels           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tunnels.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tunnels           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tunnels.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tunnels ]; then
-    run_install $OWNERSHIP -m 0600 tunnels${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tunnels
-    echo "Tunnels file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tunnels"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tunnels ]; then
+    run_install $OWNERSHIP -m 0600 tunnels${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tunnels
+    echo "Tunnels file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tunnels"
 fi
 
 #
 # Install the blacklist rules file
 #
-run_install $OWNERSHIP -m 0644 blrules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 blrules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 blrules           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 blrules.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/blrules ]; then
-    run_install $OWNERSHIP -m 0600 blrules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/blrules
-    echo "Blrules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/blrules"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/blrules ]; then
+    run_install $OWNERSHIP -m 0600 blrules${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/blrules
+    echo "Blrules file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/blrules"
 fi
 
 if [ -f findgw ]; then
     #
     # Install the findgw file
     #
-    run_install $OWNERSHIP -m 0644 findgw ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 findgw ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/findgw ]; then
-	run_install $OWNERSHIP -m 0600 findgw ${DESTDIR}${CONFDIR}/$PRODUCT
-	echo "Find GW file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/findgw"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/findgw ]; then
+	run_install $OWNERSHIP -m 0600 findgw ${DESTDIR}${CONFDIR}/${PRODUCT}
+	echo "Find GW file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/findgw"
     fi
 fi
 
 #
 # Delete the Limits Files
 #
-delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/action.Limit
-delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/Limit
+delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/action.Limit
+delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/Limit
 #
 # Delete the xmodules file
 #
-delete_file ${DESTDIR}${SHAREDIR}/$PRODUCT/xmodules
+delete_file ${DESTDIR}${SHAREDIR}/${PRODUCT}/xmodules
 #
 # Install the Providers file
 #
-run_install $OWNERSHIP -m 0644 providers           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 providers.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 providers           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 providers.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/providers ]; then
-    run_install $OWNERSHIP -m 0600 providers${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/providers
-    echo "Providers file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/providers"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/providers ]; then
+    run_install $OWNERSHIP -m 0600 providers${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/providers
+    echo "Providers file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/providers"
 fi
 
 #
 # Install the Route Rules file
 #
-run_install $OWNERSHIP -m 0644 rtrules           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 rtrules.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 rtrules           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 rtrules.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -f ${DESTDIR}${CONFDIR}/$PRODUCT/route_rules -a ! ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules ]; then
-    mv -f ${DESTDIR}${CONFDIR}/$PRODUCT/route_rules ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules
-    echo "${DESTDIR}${CONFDIR}/$PRODUCT/route_rules has been renamed ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules"
-elif [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules ]; then
-    run_install $OWNERSHIP -m 0600 rtrules${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules
-    echo "Routing rules file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/rtrules"
+if [ -f ${DESTDIR}${CONFDIR}/${PRODUCT}/route_rules -a ! ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules ]; then
+    mv -f ${DESTDIR}${CONFDIR}/${PRODUCT}/route_rules ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules
+    echo "${DESTDIR}${CONFDIR}/${PRODUCT}/route_rules has been renamed ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules"
+elif [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules ]; then
+    run_install $OWNERSHIP -m 0600 rtrules${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules
+    echo "Routing rules file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/rtrules"
 fi
 
 #
 # Install the tcclasses file
 #
-run_install $OWNERSHIP -m 0644 tcclasses           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcclasses.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcclasses           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tcclasses.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcclasses ]; then
-    run_install $OWNERSHIP -m 0600 tcclasses${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcclasses
-    echo "TC Classes file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcclasses"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclasses ]; then
+    run_install $OWNERSHIP -m 0600 tcclasses${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclasses
+    echo "TC Classes file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclasses"
 fi
 
 #
 # Install the tcdevices file
 #
-run_install $OWNERSHIP -m 0644 tcdevices           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcdevices.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcdevices           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tcdevices.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcdevices ]; then
-    run_install $OWNERSHIP -m 0600 tcdevices${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcdevices
-    echo "TC Devices file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcdevices"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcdevices ]; then
+    run_install $OWNERSHIP -m 0600 tcdevices${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tcdevices
+    echo "TC Devices file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcdevices"
 fi
 
 #
 # Install the tcfilters file
 #
-run_install $OWNERSHIP -m 0644 tcfilters           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 tcfilters.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcfilters           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 tcfilters.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcfilters ]; then
-    run_install $OWNERSHIP -m 0600 tcfilters${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/tcfilters
-    echo "TC Filters file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcfilters"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcfilters ]; then
+    run_install $OWNERSHIP -m 0600 tcfilters${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/tcfilters
+    echo "TC Filters file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcfilters"
 fi
 
 #
 # Install the secmarks file
 #
-run_install $OWNERSHIP -m 0644 secmarks           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-run_install $OWNERSHIP -m 0644 secmarks.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 secmarks           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+run_install $OWNERSHIP -m 0644 secmarks.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/secmarks ]; then
-    run_install $OWNERSHIP -m 0600 secmarks${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/secmarks
-    echo "Secmarks file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/secmarks"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/secmarks ]; then
+    run_install $OWNERSHIP -m 0600 secmarks${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/secmarks
+    echo "Secmarks file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/secmarks"
 fi
 
 #
 # Install the init file
 #
-run_install $OWNERSHIP -m 0644 init ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 init ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/init ]; then
-    run_install $OWNERSHIP -m 0600 init ${DESTDIR}${CONFDIR}/$PRODUCT
-    echo "Init file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/init"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/init ]; then
+    run_install $OWNERSHIP -m 0600 init ${DESTDIR}${CONFDIR}/${PRODUCT}
+    echo "Init file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/init"
 fi
 
 if [ -f initdone ]; then
     #
     # Install the initdone file
     #
-    run_install $OWNERSHIP -m 0644 initdone ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 initdone ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/initdone ]; then
-	run_install $OWNERSHIP -m 0600 initdone ${DESTDIR}${CONFDIR}/$PRODUCT
-	echo "Initdone file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/initdone"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/initdone ]; then
+	run_install $OWNERSHIP -m 0600 initdone ${DESTDIR}${CONFDIR}/${PRODUCT}
+	echo "Initdone file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/initdone"
     fi
 fi
 #
 # Install the start file
 #
-run_install $OWNERSHIP -m 0644 start ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/start
+run_install $OWNERSHIP -m 0644 start ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/start
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/start ]; then
-    run_install $OWNERSHIP -m 0600 start ${DESTDIR}${CONFDIR}/$PRODUCT/start
-    echo "Start file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/start"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/start ]; then
+    run_install $OWNERSHIP -m 0600 start ${DESTDIR}${CONFDIR}/${PRODUCT}/start
+    echo "Start file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/start"
 fi
 #
 # Install the stop file
 #
-run_install $OWNERSHIP -m 0644 stop ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/stop
+run_install $OWNERSHIP -m 0644 stop ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/stop
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/stop ]; then
-    run_install $OWNERSHIP -m 0600 stop ${DESTDIR}${CONFDIR}/$PRODUCT/stop
-    echo "Stop file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/stop"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/stop ]; then
+    run_install $OWNERSHIP -m 0600 stop ${DESTDIR}${CONFDIR}/${PRODUCT}/stop
+    echo "Stop file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/stop"
 fi
 #
 # Install the stopped file
 #
-run_install $OWNERSHIP -m 0644 stopped ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/stopped
+run_install $OWNERSHIP -m 0644 stopped ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/stopped
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/stopped ]; then
-    run_install $OWNERSHIP -m 0600 stopped ${DESTDIR}${CONFDIR}/$PRODUCT/stopped
-    echo "Stopped file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/stopped"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/stopped ]; then
+    run_install $OWNERSHIP -m 0600 stopped ${DESTDIR}${CONFDIR}/${PRODUCT}/stopped
+    echo "Stopped file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/stopped"
 fi
 
 if [ -f ecn ]; then
     #
     # Install the ECN file
     #
-    run_install $OWNERSHIP -m 0644 ecn           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
-    run_install $OWNERSHIP -m 0644 ecn.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+    run_install $OWNERSHIP -m 0644 ecn           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
+    run_install $OWNERSHIP -m 0644 ecn.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/ecn ]; then
-	run_install $OWNERSHIP -m 0600 ecn${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/ecn
-	echo "ECN file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/ecn"
+    if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/ecn ]; then
+	run_install $OWNERSHIP -m 0600 ecn${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/ecn
+	echo "ECN file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/ecn"
     fi
 fi
 #
 # Install the Accounting file
 #
-run_install $OWNERSHIP -m 0644 accounting           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 accounting.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 accounting           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 accounting.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/accounting ]; then
-    run_install $OWNERSHIP -m 0600 accounting${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/accounting
-    echo "Accounting file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/accounting"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/accounting ]; then
+    run_install $OWNERSHIP -m 0600 accounting${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/accounting
+    echo "Accounting file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/accounting"
 fi
 #
 # Install the private library file
 #
-run_install $OWNERSHIP -m 0644 lib.private ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles
+run_install $OWNERSHIP -m 0644 lib.private ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/lib.private ]; then
-    run_install $OWNERSHIP -m 0600 lib.private ${DESTDIR}${CONFDIR}/$PRODUCT
-    echo "Private library file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/lib.private"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/lib.private ]; then
+    run_install $OWNERSHIP -m 0600 lib.private ${DESTDIR}${CONFDIR}/${PRODUCT}
+    echo "Private library file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/lib.private"
 fi
 #
 # Install the Started file
 #
-run_install $OWNERSHIP -m 0644 started ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/started
+run_install $OWNERSHIP -m 0644 started ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/started
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/started ]; then
-    run_install $OWNERSHIP -m 0600 started ${DESTDIR}${CONFDIR}/$PRODUCT/started
-    echo "Started file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/started"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/started ]; then
+    run_install $OWNERSHIP -m 0600 started ${DESTDIR}${CONFDIR}/${PRODUCT}/started
+    echo "Started file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/started"
 fi
 #
 # Install the Restored file
 #
-run_install $OWNERSHIP -m 0644 restored ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/restored
+run_install $OWNERSHIP -m 0644 restored ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/restored
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/restored ]; then
-    run_install $OWNERSHIP -m 0600 restored ${DESTDIR}${CONFDIR}/$PRODUCT/restored
-    echo "Restored file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/restored"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/restored ]; then
+    run_install $OWNERSHIP -m 0600 restored ${DESTDIR}${CONFDIR}/${PRODUCT}/restored
+    echo "Restored file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/restored"
 fi
 #
 # Install the Clear file
 #
-run_install $OWNERSHIP -m 0644 clear ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/clear
+run_install $OWNERSHIP -m 0644 clear ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/clear
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/clear ]; then
-    run_install $OWNERSHIP -m 0600 clear ${DESTDIR}${CONFDIR}/$PRODUCT/clear
-    echo "Clear file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/clear"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/clear ]; then
+    run_install $OWNERSHIP -m 0600 clear ${DESTDIR}${CONFDIR}/${PRODUCT}/clear
+    echo "Clear file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/clear"
 fi
 #
 # Install the Isusable file
 #
-run_install $OWNERSHIP -m 0644 isusable ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/isusable
+run_install $OWNERSHIP -m 0644 isusable ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/isusable
 #
 # Install the Refresh file
 #
-run_install $OWNERSHIP -m 0644 refresh ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/refresh
+run_install $OWNERSHIP -m 0644 refresh ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/refresh
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/refresh ]; then
-    run_install $OWNERSHIP -m 0600 refresh ${DESTDIR}${CONFDIR}/$PRODUCT/refresh
-    echo "Refresh file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/refresh"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/refresh ]; then
+    run_install $OWNERSHIP -m 0600 refresh ${DESTDIR}${CONFDIR}/${PRODUCT}/refresh
+    echo "Refresh file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/refresh"
 fi
 #
 # Install the Refreshed file
 #
-run_install $OWNERSHIP -m 0644 refreshed ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/refreshed
+run_install $OWNERSHIP -m 0644 refreshed ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/refreshed
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/refreshed ]; then
-    run_install $OWNERSHIP -m 0600 refreshed ${DESTDIR}${CONFDIR}/$PRODUCT/refreshed
-    echo "Refreshed file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/refreshed"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/refreshed ]; then
+    run_install $OWNERSHIP -m 0600 refreshed ${DESTDIR}${CONFDIR}/${PRODUCT}/refreshed
+    echo "Refreshed file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/refreshed"
 fi
 #
 # Install the Tcclear file
 #
-run_install $OWNERSHIP -m 0644 tcclear           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 tcclear           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/tcclear ]; then
-    run_install $OWNERSHIP -m 0600 tcclear ${DESTDIR}${CONFDIR}/$PRODUCT/tcclear
-    echo "Tcclear file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/tcclear"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclear ]; then
+    run_install $OWNERSHIP -m 0600 tcclear ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclear
+    echo "Tcclear file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/tcclear"
 fi
 #
 # Install the Scfilter file
 #
-run_install $OWNERSHIP -m 0644 scfilter ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/scfilter
+run_install $OWNERSHIP -m 0644 scfilter ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/scfilter
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/scfilter ]; then
-    run_install $OWNERSHIP -m 0600 scfilter ${DESTDIR}${CONFDIR}/$PRODUCT/scfilter
-    echo "Scfilter file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/scfilter"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/scfilter ]; then
+    run_install $OWNERSHIP -m 0600 scfilter ${DESTDIR}${CONFDIR}/${PRODUCT}/scfilter
+    echo "Scfilter file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/scfilter"
 fi
 
 #
 # Install the Actions file
 #
-run_install $OWNERSHIP -m 0644 actions           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 actions           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 actions.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/actions ]; then
-    run_install $OWNERSHIP -m 0600 actions${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/actions
-    echo "Actions file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/actions"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/actions ]; then
+    run_install $OWNERSHIP -m 0600 actions${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/actions
+    echo "Actions file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/actions"
 fi
 
 #
 # Install the Routes file
 #
-run_install $OWNERSHIP -m 0644 routes           ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
-run_install $OWNERSHIP -m 0644 routes.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+run_install $OWNERSHIP -m 0644 routes           ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
+run_install $OWNERSHIP -m 0644 routes.annotated ${DESTDIR}${SHAREDIR}/${PRODUCT}/configfiles/
 
-if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/routes ]; then
-    run_install $OWNERSHIP -m 0600 routes${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/routes
-    echo "Routes file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/routes"
+if [ -z "$SPARSE" -a ! -f ${DESTDIR}${CONFDIR}/${PRODUCT}/routes ]; then
+    run_install $OWNERSHIP -m 0600 routes${suffix} ${DESTDIR}${CONFDIR}/${PRODUCT}/routes
+    echo "Routes file installed as ${DESTDIR}${CONFDIR}/${PRODUCT}/routes"
 fi
 
 cd ..
@@ -1040,12 +1040,12 @@ cd Actions
 for f in action.* ; do
     case $f in
 	*.deprecated)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*} 0644
-	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*}"
+	    install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/${f%.*} 0644
+	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/${f%.*}"
 	    ;;
 	*)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+	    install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f 0644
+	    echo "Action ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f"
 	    ;;
     esac
 done
@@ -1057,12 +1057,12 @@ cd ../Macros
 for f in macro.* ; do
     case $f in
 	*.deprecated)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*} 0644
-	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/deprecated/${f%.*}"
+	    install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/${f%.*} 0644
+	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/${f%.*}"
 	    ;;
 	*)
-	    install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+	    install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f 0644
+	    echo "Macro ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f"
 	    ;;
     esac
 done
@@ -1078,18 +1078,18 @@ for f in lib.* Perl/lib.*; do
             *installer)
                 ;;
             *)
-                install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$(basename $f) 0644
-                echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+                install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/$(basename $f) 0644
+                echo "Library ${f#*.} file installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f"
                 ;;
         esac
     fi
 done
 
-if [ $PRODUCT = shorewall6 ]; then
+if [ ${PRODUCT} = shorewall6 ]; then
     #
     # Symbolically link 'functions' to lib.base
     #
-    ln -sf lib.base ${DESTDIR}${SHAREDIR}/$PRODUCT/functions
+    ln -sf lib.base ${DESTDIR}${SHAREDIR}/${PRODUCT}/functions
     #
     # And create a symbolic link for the CLI
     #
@@ -1098,26 +1098,26 @@ fi
 
 if [ -d Perl ]; then
     #
-    # ${SHAREDIR}/$PRODUCT/$Product if needed
+    # ${SHAREDIR}/${PRODUCT}/$Product if needed
     #
-    make_parent_directory ${DESTDIR}${SHAREDIR}/$PRODUCT/$Product 0755
+    make_parent_directory ${DESTDIR}${SHAREDIR}/${PRODUCT}/$Product 0755
     #
     # Install the Compiler
     #
     cd Perl
 
-    install_file compiler.pl ${DESTDIR}${LIBEXECDIR}/$PRODUCT/compiler.pl 0755
+    install_file compiler.pl ${DESTDIR}${LIBEXECDIR}/${PRODUCT}/compiler.pl 0755
 
     echo
-    echo "Compiler installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/compiler.pl"
+    echo "Compiler installed in ${DESTDIR}${LIBEXECDIR}/${PRODUCT}/compiler.pl"
     #
     # Install the params file helper
     #
-    install_file getparams ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams 0755
-    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams
+    install_file getparams ${DESTDIR}${LIBEXECDIR}/${PRODUCT}/getparams 0755
+    [ $SHAREDIR = /usr/share ] || eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${LIBEXECDIR}/${PRODUCT}/getparams
 
     echo
-    echo "Params file helper installed in ${DESTDIR}${LIBEXECDIR}/$PRODUCT/getparams"
+    echo "Params file helper installed in ${DESTDIR}${LIBEXECDIR}/${PRODUCT}/getparams"
     #
     # Install the Perl modules
     #
@@ -1133,30 +1133,30 @@ if [ -d Perl ]; then
     # Install the program skeleton files
     #
     for f in prog.* ; do
-        install_file $f ${DESTDIR}${SHAREDIR}/$PRODUCT/$f 0644
-        echo "Program skeleton file ${f#*.} installed as ${DESTDIR}${SHAREDIR}/$PRODUCT/$f"
+        install_file $f ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f 0644
+        echo "Program skeleton file ${f#*.} installed as ${DESTDIR}${SHAREDIR}/${PRODUCT}/$f"
     done
 
     cd ..
 
     if [ -z "$DESTDIR" ]; then
-	rm -rf ${SHAREDIR}/$PRODUCT-perl
-	rm -rf ${SHAREDIR}/$PRODUCT-shell
-	[ "$PERLLIBDIR" != ${SHAREDIR}/$PRODUCT ] && rm -rf ${SHAREDIR}/$PRODUCT/$Product
+	rm -rf ${SHAREDIR}/${PRODUCT}-perl
+	rm -rf ${SHAREDIR}/${PRODUCT}-shell
+	[ "$PERLLIBDIR" != ${SHAREDIR}/${PRODUCT} ] && rm -rf ${SHAREDIR}/${PRODUCT}/$Product
     fi
 fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${DESTDIR}${SHAREDIR}/$PRODUCT/version
-chmod 0644 ${DESTDIR}${SHAREDIR}/$PRODUCT/version
+echo "$VERSION" > ${DESTDIR}${SHAREDIR}/${PRODUCT}/version
+chmod 0644 ${DESTDIR}${SHAREDIR}/${PRODUCT}/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "${DESTDIR}" -a -n "${INITFILE}" ]; then
-    rm -f ${SHAREDIR}/$PRODUCT/init
-    ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/$PRODUCT/init
+    rm -f ${SHAREDIR}/${PRODUCT}/init
+    ln -s ${INITDIR}/${INITFILE} ${SHAREDIR}/${PRODUCT}/init
 fi
 
 #
@@ -1167,7 +1167,7 @@ if [ -n "$MANDIR" ]; then
 
 cd manpages
 
-if [ $PRODUCT = shorewall ]; then
+if [ ${PRODUCT} = shorewall ]; then
     [ -n "$INSTALLD" ] || make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
     for f in *.5; do
@@ -1177,7 +1177,7 @@ if [ $PRODUCT = shorewall ]; then
     done
 fi
 
-if [ $PRODUCT = shorewall6 ]; then
+if [ ${PRODUCT} = shorewall6 ]; then
     make_parent_directory ${DESTDIR}${MANDIR}/man5 0755
 
     rm -f ${DESTDIR}${MANDIR}/man5/shorewall6*
@@ -1215,8 +1215,8 @@ echo "Man Pages Installed"
 fi
 
 if [ -d ${DESTDIR}${CONFDIR}/logrotate.d ]; then
-    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT
-    echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/$PRODUCT"
+    run_install $OWNERSHIP -m 0644 logrotate ${DESTDIR}${CONFDIR}/logrotate.d/${PRODUCT}
+    echo "Logrotate file installed as ${DESTDIR}${CONFDIR}/logrotate.d/${PRODUCT}"
 fi
 
 #
@@ -1227,7 +1227,7 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
 	make_parent_directory ${DESTDIR}${SYSCONFDIR} 0755
     fi
 
-    run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/$PRODUCT
+    run_install $OWNERSHIP -m 0644 ${SYSCONFFILE} ${DESTDIR}${SYSCONFDIR}/${PRODUCT}
     echo "$SYSCONFFILE file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 
@@ -1237,41 +1237,41 @@ if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${
 	    echo "$Product will start automatically at boot"
 	fi
     elif mywhich insserv; then
-	if insserv ${CONFDIR}/init.d/$PRODUCT ; then
-	    echo "$PRODUCT will start automatically at boot"
+	if insserv ${CONFDIR}/init.d/${PRODUCT} ; then
+	    echo "${PRODUCT} will start automatically at boot"
 	    if [ $HOST = debian ]; then
-		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
-		touch /var/log/$PRODUCT-init.log
-		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+		echo "Set startup=1 in ${CONFDIR}/default/${PRODUCT} to enable"
+		touch /var/log/${PRODUCT}-init.log
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
 	    else
-		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf to enable"
 	    fi
 	else
 	    cant_autostart
 	fi
     elif mywhich chkconfig; then
-	if chkconfig --add $PRODUCT ; then
-	    echo "$PRODUCT will start automatically in run levels as follows:"
-	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
-	    chkconfig --list $PRODUCT
+	if chkconfig --add ${PRODUCT} ; then
+	    echo "${PRODUCT} will start automatically in run levels as follows:"
+	    echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf to enable"
+	    chkconfig --list ${PRODUCT}
 	else
 	    cant_autostart
 	fi
     elif mywhich update-rc.d ; then
-	echo "$PRODUCT will start automatically at boot"
-	echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
-	touch /var/log/$PRODUCT-init.log
-	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
-	update-rc.d $PRODUCT enable
+	echo "${PRODUCT} will start automatically at boot"
+	echo "Set startup=1 in ${CONFDIR}/default/${PRODUCT} to enable"
+	touch /var/log/${PRODUCT}-init.log
+	perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
+	update-rc.d ${PRODUCT} enable
     elif mywhich rc-update ; then
-	if rc-update add $PRODUCT default; then
-	    echo "$PRODUCT will start automatically at boot"
+	if rc-update add ${PRODUCT} default; then
+	    echo "${PRODUCT} will start automatically at boot"
 	    if [ $HOST = debian ]; then
-		echo "Set startup=1 in ${CONFDIR}/default/$PRODUCT to enable"
-		touch /var/log/$PRODUCT-init.log
-		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/$PRODUCT/$PRODUCT.conf
+		echo "Set startup=1 in ${CONFDIR}/default/${PRODUCT} to enable"
+		touch /var/log/${PRODUCT}-init.log
+		perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf
 	    else
-		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/$PRODUCT/$PRODUCT.conf to enable"
+		echo "Set STARTUP_ENABLED=Yes in ${CONFDIR}/${PRODUCT}/${PRODUCT}.conf to enable"
 	    fi
 	else
 	    cant_autostart

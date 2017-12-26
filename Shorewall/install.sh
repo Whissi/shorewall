@@ -497,31 +497,31 @@ fi
 #
 # Install the config file
 #
-run_install $OWNERSHIP -m 0644 $PRODUCT.conf            ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+fix_config() {
+    if [ $HOST = archlinux ] ; then
+	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i $1
+    elif [ $HOST = debian ]; then
+	perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' $1
+    elif [ $HOST = gentoo ]; then
+	# Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
+	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" $1
+    fi
+}
+
+run_install $OWNERSHIP -m 0644 $PRODUCT.conf ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+
+fix_config ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/$PRODUCT.conf
 
 if [ $PRODUCT = shorewall ]; then
     run_install $OWNERSHIP -m 0644 shorewall.conf.annotated ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/
+
+    fix_config ${DESTDIR}${SHAREDIR}/$PRODUCT/configfiles/$PRODUCT.conf.annotated
 fi
 
 if [ ! -f ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf ]; then
     run_install $OWNERSHIP -m 0600 ${PRODUCT}.conf${suffix} ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
-    if [ "$SHAREDIR" != /usr/share -o "$CONFDIR" != /etc ]; then
-	if [ $PRODUCT = shorewall ]; then
-	    perl -p -w -i -e "s|^CONFIG_PATH=.*|CONFIG_PATH=${CONFDIR}/shorewall:${SHAREDIR}/shorewall|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-	else
-	    perl -p -w -i -e "s|^CONFIG_PATH=.*|CONFIG_PATH=${CONFDIR}/shorewall:${SHAREDIR}/shorewall6:${SHAREDIR}/shorewall|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-	fi
-    fi
-
-    if [ $HOST = archlinux ] ; then
-	sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
-    elif [ $HOST = debian ]; then
-	perl -p -w -i -e 's|^STARTUP_ENABLED=.*|STARTUP_ENABLED=Yes|;' ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
-    elif [ $HOST = gentoo ]; then
-	# Adjust SUBSYSLOCK path (see https://bugs.gentoo.org/show_bug.cgi?id=459316)
-	perl -p -w -i -e "s|^SUBSYSLOCK=.*|SUBSYSLOCK=/run/lock/$PRODUCT|;" ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf${suffix}
-    fi
+    fix_config ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf
 
     echo "Config file installed as ${DESTDIR}${CONFDIR}/$PRODUCT/$PRODUCT.conf"
 fi

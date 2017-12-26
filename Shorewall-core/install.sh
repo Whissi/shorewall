@@ -335,9 +335,9 @@ for f in lib.* ; do
 done
 
 if [ $SHAREDIR != /usr/share ]; then
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.base
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.core
-    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/${PRODUCT}/lib.cli
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.base
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.core
+    eval sed -i \'s\|/usr/share/\|${SHAREDIR}/\|\' ${DESTDIR}${SHAREDIR}/shorewall/lib.cli
 fi
 
 #

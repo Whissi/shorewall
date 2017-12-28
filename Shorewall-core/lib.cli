@@ -42,9 +42,13 @@ fi
 # Issue an error message and die
 #
 startup_error() {
-    echo "   ERROR: $@" >&2
+    echo "   ERROR: $@" >&21
     kill $$
     exit 1
+}
+
+only_root() {
+    [ "$(id -u)" != 0 ] && fatal_error "The '$COMMAND' command may only be run by root"
 }
 
 #
@@ -1203,6 +1207,7 @@ show_command() {
     show_macro() {
 	foo=`grep 'This macro' $macro | sed 's/This macro //'`
 	if [ -n "$foo" ]; then
+	    macro=$(basename $macro)
 	    macro=${macro#*.}
 	    foo=${foo%.*}
 	    if [ ${#macro} -gt 5 ]; then
@@ -1297,37 +1302,47 @@ show_command() {
 
     [ -n "$g_debugging" ] && set -x
 
+    COMMAND="$COMMAND $1"
+
     case "$1" in
 	connections)
+	    only_root
 	    eval show_connections $@ $g_pager
 	    ;;
 	nat)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_nat $g_pager
 	    ;;
 	raw)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_raw $g_pager
 	    ;;
 	tos|mangle)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_mangle $g_pager
 	    ;;
 	log)
 	    [ $# -gt 2 ] && too_many_arguments $2
 
+	    only_root
 	    setup_logread
 	    eval show_log $g_pager
 	    ;;
 	tc)
+	    only_root
 	    [ $# -gt 2 ] && too_many_arguments $2
 	    eval show_tc $@ $g_pager
 	    ;;
 	classifiers|filters)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_classifiers_command $g_pager
 	    ;;
 	zones)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    if [ -f ${VARDIR}/zones ]; then
 		echo "$g_product $SHOREWALL_VERSION Zones at $g_hostname - $(date)"
@@ -1351,6 +1366,7 @@ show_command() {
 	    fi
 	    ;;
 	capabilities)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    determine_capabilities
 	    VERBOSITY=2
@@ -1387,6 +1403,7 @@ show_command() {
 	    fi
 	    ;;
 	chain)
+	    only_root
 	    shift
 	    eval show_chain $@ $g_pager
 	    ;;
@@ -1394,26 +1411,31 @@ show_command() {
 	    echo $VARDIR;
 	    ;;
 	policies)
+	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_policies $g_pager
 	    ;;
 	ipa)
+	    only_root
 	    [ $g_family -eq 4 ] || fatal_error "'show ipa' is now available in $g_product"
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    eval show_ipa $g_pager
 	    ;;
 	marks)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    echo "$g_product $SHOREWALL_VERSION Mark Layout at $g_hostname - $(date)"
 	    echo
 	    [ -f ${VARDIR}/marks ] && cat ${VARDIR}/marks;
 	    ;;
 	nfacct)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    eval show_nfacct_command $g_pager
 	    ;;
 	arptables)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    resolve_arptables
 	    if [ -n "$arptables" -a -x $arptables ]; then
 		eval show_arptables $g_pager
@@ -1423,6 +1445,7 @@ show_command() {
 	    ;;
 	event)
 	    [ $# -gt 1 ] || too_many_arguments $2
+	    only_root
 	    echo "$g_product $SHOREWALL_VERSION events at $g_hostname - $(date)"
 	    echo
 	    shift
@@ -1430,14 +1453,17 @@ show_command() {
 	    ;;
 	events)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    eval show_events_command $g_pager
 	    ;;
 	bl|blacklists)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    eval show_blacklists $g_pager
 	    ;;
 	opens)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    echo "$g_product $SHOREWALL_VERSION Temporarily opened connections at $g_hostname - $(date)"
 
 	    if chain_exists dynamic; then
@@ -1448,6 +1474,7 @@ show_command() {
 	    ;;
 	ipsec)
 	    [ $# -gt 1 ] && too_many_arguments $2
+	    only_root
 	    eval show_ipsec_command $g_pager
 	    ;;
 	*)
@@ -1495,6 +1522,8 @@ show_command() {
 		    esac
 		    ;;
 	    esac
+
+	    only_root
 
 	    if [ $# -gt 0 ]; then
 		if [ $1 = dynamic -a $# -gt 1 ]; then
@@ -4585,12 +4614,14 @@ shorewall_cli() {
 
     case "$COMMAND" in
 	start)
+	    only_root
 	    get_config Yes Yes
 	    shift
 	    start_command $@
 	    ;;
 	stop|clear)
 	    [ $# -ne 1 ] && too_many_arguments $2
+	    only_root
 	    get_config
 	    [ -x $g_firewall ] || fatal_error "$g_product has never been started"
 	    [ -n "$g_nolock" ] || mutex_on
@@ -4598,6 +4629,7 @@ shorewall_cli() {
 	    [ -n "$g_nolock" ] || mutex_off
 	    ;;
 	reset)
+	    only_root
 	    get_config
 	    shift
 	    [ -n "$g_nolock" ] || mutex_on
@@ -4606,11 +4638,13 @@ shorewall_cli() {
 	    [ -n "$g_nolock" ] || mutex_off
 	    ;;
 	reload|restart)
+	    only_root
 	    get_config Yes Yes
 	    shift
 	    restart_command $@
 	    ;;
 	disable|enable|reenable)
+	    only_root
 	    get_config Yes
 	    if product_is_started; then
 		run_it ${VARDIR}/firewall $g_debugging $@
@@ -4619,6 +4653,7 @@ shorewall_cli() {
 	    fi
 	    ;;
 	blacklist)
+	    onlyroot
 	    get_config Yes
 	    shift
 	    [ -n "$g_nolock" ] || mutex_on
@@ -4627,6 +4662,7 @@ shorewall_cli() {
 	    ;;
 	run)
 	    [ $# -gt 1 ] || fatal_error "Missing function name"
+	    only_root
 	    get_config Yes
 	    run_command $@
 	    ;;
@@ -4636,18 +4672,20 @@ shorewall_cli() {
     	    show_command $@
 	    ;;
 	status)
-	    [ "$(id -u)" != 0 ] && fatal_error "The status command may only be run by root"
+	    only_root
 	    get_config
 	    shift
 	    status_command $@
 	    ;;
 	dump)
+	    only_root
 	    get_config Yes No Yes
     	    shift
     	    dump_command $@
 	    ;;
 	hits)
 	    [ $g_family -eq 6 ] && fatal_error "$g_product does not support the hits command"
+	    only_root
 	    get_config Yes No Yes
 	    [ -n "$g_debugging" ] && set -x
 	    shift
@@ -4658,53 +4696,63 @@ shorewall_cli() {
 	    version_command $@
 	    ;;
 	logwatch)
+	    only_root
 	    get_config Yes Yes Yes
 	    banner="${g_product}-$SHOREWALL_VERSION Logwatch at $g_hostname -"
 	    logwatch_command $@
 	    ;;
 	drop)
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    [ $# -eq 1 ] && missing_argument
 	    drop_command $@
 	    ;;
 	logdrop)
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    [ $# -eq 1 ] && missing_argument
 	    logdrop_command $@
 	    ;;
 	reject|logreject)
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    [ $# -eq 1 ] && missing_argument
 	    reject_command $@
 	    ;;
 	open|close)
+	    only_root
 	    get_config
 	    shift
 	    open_close_command $@
 	    ;;
 	allow)
+	    only_root
 	    get_config
 	    allow_command $@
 	    ;;
 	add)
+	    only_root
 	    get_config
 	    shift
 	    add_command $@
 	    ;;
 	delete)
+	    only_root
 	    get_config
 	    shift
 	    delete_command $@
 	    ;;
 	save)
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    save_command $@
 	    ;;
 	forget)
+	    only_root
 	    get_config
 	    forget_command $@
 	    ;;
@@ -4721,11 +4769,13 @@ shorewall_cli() {
 	    ipdecimal_command $@
 	    ;;
 	restore)
+	    only_root
 	    get_config
 	    shift
 	    restore_command $@
             ;;
 	call)
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    #
@@ -4763,17 +4813,20 @@ shorewall_cli() {
 	    usage
 	    ;;
 	iptrace)
+	    only_root
 	    get_config
 	    shift
 	    iptrace_command $@
 	    ;;
 	noiptrace)
+	    only_root
 	    get_config
 	    shift
 	    noiptrace_command $@
 	    ;;
 	savesets)
 	    [ $# -eq 1 ] || too_many_arguments $2
+	    only_root
 	    get_config
 	    [ -n "$g_debugging" ] && set -x
 	    savesets1

@@ -1159,7 +1159,7 @@ sub setup_syn_flood_chains() {
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_irule_limit( $level ,
 			     $synchainref ,
-			     $chainref->{name} ,
+			     $synchainref->{name} ,
 			     'DROP',
 			     @{$globals{LOGILIMIT}} ? $globals{LOGILIMIT} : [ limit => "--limit 5/min --limit-burst 5" ] ,
 			    '' ,

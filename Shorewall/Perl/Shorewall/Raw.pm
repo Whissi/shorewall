@@ -91,7 +91,7 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 
     my $disposition = $action;
     my $exception_rule = '';
-    my $rule = do_proto( $proto, $ports, $sports ) . do_user ( $user ) . do_condition( $switch , $chainref->{name} );
+
     my $level = '';
 
     if ( $action =~ /^(?:NFLOG|ULOG)/ ) {
@@ -137,6 +137,8 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 	validate_level( $level ) if supplied $level;
 
 	require_capability 'CT_TARGET', 'CT entries in the conntrack file', '';
+
+	$proto = TCP . ':syn' if $proto !~ /:syn$/ && resolve_proto( $proto ) == TCP;
 
 	if ( $option eq 'notrack' ) {
 	    fatal_error "Invalid conntrack ACTION ( $action )" if supplied $args;
@@ -199,7 +201,9 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
     expand_rule( $chainref ,
 		 $restriction ,
 		 '',
-		 $rule,
+		 do_proto( $proto, $ports, $sports ) . 
+		 do_user ( $user ) . 
+		 do_condition( $switch , $chainref->{name} ),
 		 $source ,
 		 $dest ,
 		 '' ,

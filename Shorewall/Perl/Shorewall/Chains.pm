@@ -4782,6 +4782,7 @@ sub do_proto( $$$;$ )
     if ( $proto ne '' ) {
 
 	my $synonly  = ( $proto =~ s/:(!)?syn$//i );
+	my $all      = ( $proto =~ s/:all$//i );
 	my $notsyn   = $1;
 	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
 	my $protonum = resolve_proto $proto;
@@ -4797,6 +4798,7 @@ sub do_proto( $$$;$ )
 	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
 	    #
 	    unless ( $synonly ) {
+		fatal_error '":all" is only allowed with tcp' if $all && $proto != TCP;
 		$output  = "${invert}-p ${proto} ";
 	    } else {
 		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;
@@ -4992,6 +4994,7 @@ sub do_iproto( $$$ )
     if ( $proto ne '' ) {
 
 	my $synonly  = ( $proto =~ s/:syn$//i );
+	my $all      = ( $proto =~ s/:all$//i );
 	my $invert   = ( $proto =~ s/^!// ? '! ' : '' );
 	my $protonum = resolve_proto $proto;
 
@@ -5006,6 +5009,7 @@ sub do_iproto( $$$ )
 	    # $proto now contains the protocol number and $pname contains the canonical name of the protocol
 	    #
 	    unless ( $synonly ) {
+		fatal_error '":all" is only allowed with tcp' if $all && $proto != TCP;
 		@output = ( p => "${invert}${proto}" );
 	    } else {
 		fatal_error '":syn" is only allowed with tcp' unless $proto == TCP && ! $invert;

@@ -138,7 +138,11 @@ sub process_conntrack_rule( $$$$$$$$$$ ) {
 
 	require_capability 'CT_TARGET', 'CT entries in the conntrack file', '';
 
-	$proto = TCP . ':syn' if $proto !~ /:syn$/ && resolve_proto( $proto ) == TCP;
+	if ( $proto =~ s/:all$// ) {
+	    fatal_error '":all" may only be used with TCP' unless resolve_proto( $proto ) == TCP;
+	} else {
+	    $proto = TCP . ':syn' if $proto !~ /:syn/ && resolve_proto( $proto ) == TCP;
+	}
 
 	if ( $option eq 'notrack' ) {
 	    fatal_error "Invalid conntrack ACTION ( $action )" if supplied $args;

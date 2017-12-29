@@ -579,14 +579,23 @@
 
         <listitem>
           <para>A protocol name from <filename>/etc/protocols</filename> or a
-          protocol number.</para>
+          protocol number. tcp and 6 may be optionally followed by <emphasis
+          role="bold">:syn </emphasis>to match only the SYN packet (first
+          packet in the three-way handshake).</para>
 
-          <para>Beginning with Shorewall 4.5.12, this column is labeled
-          <emphasis role="bold">PROTOS</emphasis> and can accept a
-          comma-separated list of protocols. Either <emphasis
+          <para>Beginning with Shorewall 4.5.12, this column can accept a
+          comma-separated list of protocols and either <emphasis
           role="bold">proto</emphasis> or <emphasis
           role="bold">protos</emphasis> is accepted in the alternate input
           format.</para>
+
+          <para>Beginning with Shorewall 5.1.11, when <emphasis
+          role="bold">tcp</emphasis> or <emphasis role="bold">6</emphasis> is
+          specified and the ACTION is <emphasis role="bold">CT</emphasis>, the
+          compiler will default to <emphasis role="bold">:syn</emphasis>. If
+          you wish the rule to match packets with any valid combination of TCP
+          flags, you may specify <emphasis role="bold">tcp:all</emphasis> or
+          <emphasis role="bold">6:all</emphasis>.</para>
         </listitem>
       </varlistentry>
 

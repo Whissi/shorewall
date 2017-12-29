@@ -376,7 +376,7 @@ uptodate() {
     IFS=':'
 
     for dir in $g_shorewalldir $CONFIG_PATH; do
-	if [ -n "$(find ${dir} -newer $1)" ]; then
+	if [ -n "$(find ${dir} -mindepth 1 -maxdepth 1 -newer $1)" ]; then
 	    IFS="$ifs"
 	    return 1;
 	fi

@@ -368,7 +368,7 @@ get_config() {
 ensure_root() {
     if [ $(id -u) -ne 0 ]; then
 	if [ -z "$g_shorewalldir" -o "$g_shorewalldir" = $CONFDIR/$PRODUCT ]; then
-	    fatal_error "Ordinary users may not $COMMAND the default $PRODUCT configuration"
+	    startup_error "Ordinary users may not $COMMAND the default $PRODUCT configuration"
 	fi
     fi
 }

@@ -4938,6 +4938,8 @@ sub do_proto( $$$;$ )
 	} else {
 	    fatal_error '":syn" is only allowed with tcp' if $synonly;
 
+	    $proto = $proto . ':all' if $all;
+
 	    if ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
 		my $p = $2 ? lc $3 : 'tcp';
 		require_capability( 'IPP2P_MATCH' , "PROTO = $proto" , 's' );
@@ -5143,6 +5145,8 @@ sub do_iproto( $$$ )
 
 	} else {
 	    fatal_error '":syn" is only allowed with tcp' if $synonly;
+
+	    $proto = $proto . ':all' if $all;
 
 	    if ( $proto =~ /^(ipp2p(:(tcp|udp|all))?)$/i ) {
 		my $p = $2 ? lc $3 : 'tcp';

@@ -380,27 +380,12 @@ uptodate() {
     [ -x $1 ] || return 1
 
     local dir
-    local ifs
 
-    if [ -n "$g_shorewalldir" ]; then
+    for dir in $g_shorewalldir $(split $CONFIG_PATH); do
 	if [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1 -print -quit)" ]; then
 	    return 1;
 	fi
-    fi
-
-    ifs="$IFS"
-    IFS=':'
-
-    for dir in $CONFIG_PATH; do
-	if [ -n "$dir" ]; then
-	    if [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1 -print -quit)" ]; then
-		IFS="$ifs"
-		return 1;
-	    fi
-	fi
     done
-
-    IFS="$ifs"
 
     return 0
 }

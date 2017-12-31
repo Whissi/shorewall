@@ -383,7 +383,7 @@ uptodate() {
     local ifs
 
     if [ -n "$g_shorewalldir" ]; then
-	if [ -n "$(find ${dir} -maxdepth 1 -newer $1)" ]; then
+	if [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1)" ]; then
 	    return 1;
 	fi
     fi
@@ -393,7 +393,7 @@ uptodate() {
 
     for dir in $CONFIG_PATH; do
 	if [ -n "$dir" ]; then
-	    if [ -n "$(find ${dir} -maxdepth 1 -newer $1)" ]; then
+	    if [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1)" ]; then
 		IFS="$ifs"
 		return 1;
 	    fi

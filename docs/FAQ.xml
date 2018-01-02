@@ -2340,6 +2340,15 @@ gateway:~# </programlisting>
           option 8 combines identical chains which can result in a smaller
           ruleset, but it slows down the compilation of large rulesets.</para>
         </listitem>
+
+        <listitem>
+          <para>Rather than <command>restart</command>, use
+          <command>reload</command>. With the default setting of
+          RESTART=restart, <command>restart</command> performs
+          <command>stop</command> then <command>start</command>, while
+          <command>reload</command> avoids the <command>stop</command>
+          part.</para>
+        </listitem>
       </orderedlist>
     </section>
 
@@ -2366,6 +2375,14 @@ gateway:~# </programlisting>
       Shorewall attempts to execute various commands to determine the
       capabiities of your system. If you system doesn't support a command, it
       will generally issue a kernel log message.</para>
+    </section>
+
+    <section>
+      <title id="faq106">(FAQ 106) Shorewall is not starting at boot on Debian
+      with systemd</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> To enable start at boot,
+      run <command>systemctl enable shorewall.service</command></para>
     </section>
   </section>
 

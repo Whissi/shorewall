@@ -341,8 +341,12 @@ get_config() {
 	fi
     fi
 
-    if [ -n "$DYNAMIC_BLACKLIST" ]; then
-	setup_dbl
+    if [ -n "$DYNAMIC_BLACKLIST" -a "$(id -u)" = 0 ]; then
+	case $COMMAND in
+	    reload|restart|start|blacklist|allow)
+		setup_dbl
+		;;
+	esac
     fi
 
     if [ -z "$PERL_HASH_SEED" ]; then

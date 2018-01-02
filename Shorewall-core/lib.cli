@@ -1459,6 +1459,7 @@ show_command() {
 	bl|blacklists)
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    only_root
+	    setup_dbl
 	    eval show_blacklists $g_pager
 	    ;;
 	opens)

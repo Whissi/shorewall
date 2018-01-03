@@ -355,6 +355,7 @@ case "$COMMAND" in
     clear)
 	[ $# -ne 1 ] && usage 2
 	progress_message3 "Clearing $g_product...."
+	detect_configuration
 	clear_firewall
 	status=0
 	if [ -n "$SUBSYSLOCK" ]; then

@@ -1447,7 +1447,7 @@ sub new_action( $$$$$$ ) {
 
     my ( $action , $type, $options , $actionfile , $state, $proto ) = @_;
 
-    fatal_error "Invalid action name($action)" if reserved_name( $action );
+    fatal_error "Reserved action name ($action)" if reserved_name( $action );
 
     $actions{$action} = { file => $actionfile, actchain => '' , type => $type, options => $options , state => $state, proto => $proto };
 

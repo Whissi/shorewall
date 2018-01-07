@@ -1,9 +1,9 @@
 #
-# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/IPAddrs.pm
+# Shorewall 5.1 -- /usr/share/shorewall/Shorewall/IPAddrs.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007-2015 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2017 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #

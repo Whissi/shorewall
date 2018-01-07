@@ -1,9 +1,9 @@
 #
-# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Config.pm
+# Shorewall 5.1 -- /usr/share/shorewall/Shorewall/Config.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #
-#     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2007-2018 - Tom Eastep (teastep@shorewall.net)
 #
 #       Complete documentation is available at http://shorewall.net
 #

@@ -396,7 +396,7 @@ uptodate() {
     for dir in $g_shorewalldir $(split $CONFIG_PATH); do
 	if [ -n "${busybox}" ]; then
 	    #
-	    # Busybox 'find' doesn't support -quiet.
+	    # Busybox 'find' doesn't support -quit.
 	    #
 	    if [ -n "$(${find} ${dir} -maxdepth 1 -type f -newer $1 -print)" ]; then
 		return 1;

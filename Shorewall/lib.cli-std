@@ -389,8 +389,7 @@ uptodate() {
 
     find=$(mywhich find)
 
-    [ -n "$find" ] || return 1
-
+    [ -n "${find}" ] || return 1
     [ -h "${find}" ] && busybox=Yes
 
     for dir in $g_shorewalldir $(split $CONFIG_PATH); do

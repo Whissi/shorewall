@@ -385,18 +385,23 @@ uptodate() {
 
     local dir
     local busybox
+    local find
 
-    [ -h $(mywhich find) ] && busybox=Yes
+    find=$(mywhich find)
+
+    [ -n "$find" ] || return 1
+
+    [ -h "${find}" ] && busybox=Yes
 
     for dir in $g_shorewalldir $(split $CONFIG_PATH); do
-	if [ -n "$busybox" ]; then
+	if [ -n "${busybox}" ]; then
 	    #
 	    # Busybox 'find' doesn't support -quiet.
 	    #
-	    if [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1 -print)" ]; then
+	    if [ -n "$(${find} ${dir} -maxdepth 1 -type f -newer $1 -print)" ]; then
 		return 1;
 	    fi
-	elif [ -n "$(find ${dir} -maxdepth 1 -type f -newer $1 -print -quit)" ]; then
+	elif [ -n "$(${find} ${dir} -maxdepth 1 -type f -newer $1 -print -quit)" ]; then
 	    return 1;
 	fi
     done

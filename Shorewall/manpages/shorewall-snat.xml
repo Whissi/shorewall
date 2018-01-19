@@ -97,7 +97,7 @@
 
             <varlistentry>
               <term><emphasis
-              role="bold">MASQUERADE[+]</emphasis>[([<replaceable>lowport</replaceable>-<replaceable>highport</replaceable>][<option>random</option>])][:<replaceable>level</replaceable>]</term>
+              role="bold">MASQUERADE[+]</emphasis>[([<replaceable>lowport</replaceable>[-<replaceable>highport</replaceable>]][<option>random</option>])][:<replaceable>level</replaceable>]</term>
 
               <listitem>
                 <para>Causes matching outgoing packages to have their source
@@ -105,11 +105,12 @@
                 specified in the DEST column. if
                 <replaceable>lowport</replaceable>-<replaceable>highport</replaceable>
                 is given, that port range will be used to assign a source
-                port. If option <option>random</option> is used then port
-                mapping will be randomized. MASQUERADE should only be used
-                when the DEST interface has a dynamic IP address. Otherwise,
-                SNAT should be used and should specify the interface's static
-                address.</para>
+                port. If only <replaceable>lowport</replaceable> is given,
+                that port will be assigned, if possible. If option
+                <option>random</option> is used then port mapping will be
+                randomized. MASQUERADE should only be used when the DEST
+                interface has a dynamic IP address. Otherwise, SNAT should be
+                used and should specify the interface's static address.</para>
               </listitem>
             </varlistentry>
 
@@ -156,7 +157,7 @@
             <varlistentry>
               <term><emphasis
               role="bold">SNAT[+]</emphasis>([<emphasis>address-or-address-range</emphasis>][:<emphasis>lowport</emphasis><emphasis
-              role="bold">-</emphasis><emphasis>highport</emphasis>][<emphasis
+              role="bold">[-</emphasis><emphasis>highport</emphasis>]][<emphasis
               role="bold">:random</emphasis>][:<option>persistent</option>]|<emphasis
               role="bold">detect</emphasis>)[:<replaceable>level</replaceable>]</term>
 
@@ -209,6 +210,9 @@
 
                 <programlisting>        192.0.2.4:5000-6000
         :4000-5000</programlisting>
+
+                <para>You may also specify a single port number, which will be
+                assigned to the outgoing connection, if possible.</para>
               </listitem>
             </varlistentry>
 

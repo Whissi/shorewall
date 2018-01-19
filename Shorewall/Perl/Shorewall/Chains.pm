@@ -874,6 +874,9 @@ sub validate_port( $$ ) {
     fatal_error "Invalid/Unknown $proto port/service ($_[1])" unless defined $value;
 }
 
+#
+# Port or port-pair separated by ':'. Either port may be omitted in the pair
+#
 sub validate_portpair( $$ ) {
     my ($proto, $portpair) = @_;
     my $what;
@@ -914,14 +917,14 @@ sub validate_portpair( $$ ) {
 
 }
 
+#
+# Port or port-pair separated by '-'. Neither port may be omitted in the pair
+#
 sub validate_portpair1( $$ ) {
     my ($proto, $portpair) = @_;
     my $what;
 
     fatal_error "Invalid port range ($portpair)" if $portpair =~ tr/-/-/ > 1;
-
-    $portpair = "1$portpair"       if substr( $portpair,  0, 1 ) eq ':';
-    $portpair = "${portpair}65535" if substr( $portpair, -1, 1 ) eq ':';
 
     my @ports = split /-/, $portpair, 2;
 

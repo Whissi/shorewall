@@ -5719,7 +5719,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 				 $params,
 				 $loglevel,
 				 $source,
-				 supplied $destnets && $destnets ne '-' ? $inaction ? $destnets : join( ':', $interface, $destnets ) : $inaction ? '-' : $interface,
+				 supplied( $destnets ) && $destnets ne '-' ? $inaction ? $destnets : join( ':', $interface, $destnets ) : $inaction ? '-' : $interface,
 				 $proto,
 				 $ports,
 				 $ipsec,

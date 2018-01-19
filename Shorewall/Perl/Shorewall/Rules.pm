@@ -1005,7 +1005,7 @@ sub add_policy_rules( $$$$$ ) {
 	}
  
 	log_rule $loglevel , $chainref , $target , '' if $loglevel ne '';
-	fatal_error "Null target in policy_rules()" unless $target;
+	assert( $target );
 
 	if ( $target eq 'BLACKLIST' ) {
 	    my ( $dbl_type, $dbl_ipset, $dbl_level, $dbl_tag ) = split( ':', $config{DYNAMIC_BLACKLIST} );

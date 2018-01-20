@@ -953,13 +953,9 @@ sub add_policy_rules( $$$$$ ) {
     my ( $chainref , $target, $loglevel, $pactions, $dropmulticast ) = @_;
 
     unless ( $target eq 'NONE' ) {
-	my @pactions;
-
-	@pactions = @$pactions;
-
 	add_ijump $chainref, j => 'RETURN', d => '224.0.0.0/4' if $dropmulticast && $target ne 'CONTINUE' && $target ne 'ACCEPT';
 
-	for my $paction ( @pactions ) {
+	for my $paction ( @$pactions ) {
 	    my ( $action ) = split ':', $paction;
 
 	    if ( ( $targets{$action} || 0 ) & ACTION ) {

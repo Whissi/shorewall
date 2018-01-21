@@ -338,22 +338,22 @@ sub balance_default_route( $$$$ ) {
     if ( $first_default_route ) {
 	if ( $balanced_providers == 1 ) {
 	    if ( $gateway ) {
-		emit "DEFAULT_ROUTE=\"via $gateway dev $interface $realm\"";
+		emit qq(DEFAULT_ROUTE="via $gateway dev $interface $realm");
 	    } else {
-		emit "DEFAULT_ROUTE=\"dev $interface $realm\"";
+		emit qq(DEFAULT_ROUTE="dev $interface $realm");
 	    }
 	} elsif ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	    emit qq(DEFAULT_ROUTE="nexthop via $gateway dev $interface weight $weight $realm");
 	} else {
-	    emit "DEFAULT_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    emit qq(DEFAULT_ROUTE="nexthop dev $interface weight $weight $realm");
 	}
 
 	$first_default_route = 0;
     } else {
 	if ( $gateway ) {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
+	    emit qq(DEFAULT_ROUTE="\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $weight $realm");
 	} else {
-	    emit "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $weight $realm\"";
+	    emit qq(DEFAULT_ROUTE="\$DEFAULT_ROUTE nexthop dev $interface weight $weight $realm");
 	}
     }
 }
@@ -368,22 +368,22 @@ sub balance_fallback_route( $$$$ ) {
     if ( $first_fallback_route ) {
 	if ( $fallback_providers == 1 ) {
 	    if ( $gateway ) {
-		emit "FALLBACK_ROUTE=\"via $gateway dev $interface $realm\"";
+		emit qq(FALLBACK_ROUTE="via $gateway dev $interface $realm");
 	    } else {
-		emit "FALLBACK_ROUTE=\"dev $interface $realm\"";
+		emit qq(FALLBACK_ROUTE="dev $interface $realm");
 	    }
 	} elsif ( $gateway ) {
-	    emit "FALLBACK_ROUTE=\"nexthop via $gateway dev $interface weight $weight $realm\"";
+	    emit qq(FALLBACK_ROUTE="nexthop via $gateway dev $interface weight $weight $realm");
 	} else {
-	    emit "FALLBACK_ROUTE=\"nexthop dev $interface weight $weight $realm\"";
+	    emit qq(FALLBACK_ROUTE="nexthop dev $interface weight $weight $realm");
 	}
 
 	$first_fallback_route = 0;
     } else {
 	if ( $gateway ) {
-	    emit "FALLBACK_ROUTE=\"\$FALLBACK_ROUTE nexthop via $gateway dev $interface weight $weight $realm\"";
+	    emit qq(FALLBACK_ROUTE="\$FALLBACK_ROUTE nexthop via $gateway dev $interface weight $weight $realm");
 	} else {
-	    emit "FALLBACK_ROUTE=\"\$FALLBACK_ROUTE nexthop dev $interface weight $weight $realm\"";
+	    emit qq(FALLBACK_ROUTE="\$FALLBACK_ROUTE nexthop dev $interface weight $weight $realm");
 	}
     }
 }

@@ -335,7 +335,7 @@ our $VERSION = 'MODULEVERSION';
 #                                               logchains    => { <key1> = <chainref1>, ... }
 #                                               references   => { <ref1> => <refs>, <ref2> => <refs>, ... }
 #                                               blacklistsection
-#                                                            => Chain was created by entries in the BLACKLIST section of the rules file
+#                                                            => Chain was created by entries in the blrules file
 #                                               action       => <action tuple that generated this chain>
 #                                               restricted   => Logical OR of restrictions of rules in this chain.
 #                                               restriction  => Restrictions on further rules in this chain.
@@ -361,13 +361,13 @@ our $VERSION = 'MODULEVERSION';
 #
 #       Only 'referenced' chains get written to the iptables-restore input.
 #
-#       'loglevel', 'synparams', 'synchain', 'audit', 'default' abd 'origin' only apply to policy chains.
+#       'loglevel', 'synparams', 'synchain', 'audit', 'default' and 'origin' only apply to policy chains.
 ###########################################################################################################################################
 #
 # For each ordered pair of zones, there may exist a 'canonical rules chain' in the filter table; the name of this chain is formed by
 # joining the names of the zones using the ZONE_SEPARATOR ('2' or '-'). This chain contains the rules that specifically deal with
 # connections from the first zone to the second. These chains will end with the policy rules when EXPAND_POLICIES=Yes and when there is an
-# explicit policy for the order pair. Otherwise, unless the applicable policy is CONTINUE, the chain will terminate with a jump to a
+# explicit policy for the ordered pair. Otherwise, unless the applicable policy is CONTINUE, the chain will terminate with a jump to a
 # wildcard policy chain (all[2-]zone, zone[2-]all, or all[2-]all).
 #
 # Except in the most trivial one-interface configurations, each zone has a "forward chain" which is branched to from the filter table
@@ -397,7 +397,7 @@ our $VERSION = 'MODULEVERSION';
 #      MAC Recent      - <dev>_rec
 #      SNAT            - <dev>_snat
 #      ECN             - <dev>_ecn
-#      FORWARD Options - <dev>_fop
+#      INPUT Options   - <dev>_iop
 #      OUTPUT Options  - <dev>_oop
 #      FORWARD Options - <dev>_fop
 #
@@ -1326,7 +1326,7 @@ sub format_rule( $$;$ ) {
 
     my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
     #
-    # The code the follows can be destructive of the rule so we clone it
+    # The code that follows can be destructive of the rule so we clone it
     #
     my $ruleref = $rulerefp->{complex} ? clone_irule( $rulerefp ) : $rulerefp;
     my $nfacct  = $rulerefp->{nfacct};
@@ -3749,7 +3749,7 @@ sub optimize_level4( $$ ) {
     #
     # In this loop, we look for chains that end in an unconditional jump. The jump is replaced by
     # the target's rules, provided that the target chain is short (< 4 rules) or has only one
-    # reference. This prevents multiple copies of long chains being created.
+    # reference. This prevents multiple copies of long chains from being created.
     #
     $progress = 1;
 
@@ -4314,7 +4314,7 @@ sub get_conntrack( $ ) {
 }
 
 #
-# Return an array of keys for the passed rule. 'conntrack',  'comment' & origin are omitted;
+# Return an array of keys for the passed rule. 'conntrack',  'comment' & 'origin' are omitted;
 #
 sub get_keys1( $ ) {
     my %skip = ( comment => 1, origin => 1 , 'conntrack --ctstate' => 1 );

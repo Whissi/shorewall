@@ -267,15 +267,18 @@
       </varlistentry>
 
       <varlistentry>
-        <term><emphasis role="bold">DEST</emphasis> - {[<emphasis
-        role="bold">+</emphasis>]<emphasis>interface</emphasis>[<emphasis
-        role="bold">:</emphasis>[<emphasis>digit</emphasis>]][<emphasis
+        <term><emphasis role="bold">DEST</emphasis> -
+        <emphasis>interface</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>digit][,</emphasis><emphasis>interface</emphasis>[<emphasis
+        role="bold">:</emphasis><emphasis>digit</emphasis>]]...[<emphasis
         role="bold">:</emphasis>[<emphasis>dest-address</emphasis>[<emphasis
-        role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]}</term>
+        role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]</term>
 
         <listitem>
-          <para>Outgoing <emphasis>interface</emphasis>. This is usually your
-          internet interface. If ADD_SNAT_ALIASES=Yes in <ulink
+          <para>Outgoing <emphasis>interface</emphasis>s and destination
+          networks. Multiple interfaces may be listed when the ACTION is
+          MASQUERADE, but this is usually just your internet interface. If
+          ADD_SNAT_ALIASES=Yes in <ulink
           url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5), you
           may add ":" and a <emphasis>digit</emphasis> to indicate that you
           want the alias added with that name (e.g., eth0:0). This will allow

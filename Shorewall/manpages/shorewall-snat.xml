@@ -253,10 +253,10 @@
         <listitem>
           <para>Set of hosts that you wish to masquerade. You can specify this
           as an <emphasis>address</emphasis> (net or host) or as an
-          <emphasis>interface</emphasis> (use of an
-          <emphasis>interface</emphasis> is deprecated). If you give the name
-          of an interface, the interface must be up before you start the
-          firewall and the Shorewall rules compiler will warn you of that
+          <emphasis>interface</emphasis>. Unless you want to perform SNAT in
+          the INPUT chain (see DEST below), if you give the name of an
+          interface (deprecated), the interface must be up before you start
+          the firewall and the Shorewall rules compiler will warn you of that
           fact. (Shorewall will use your main routing table to determine the
           appropriate addresses to masquerade).</para>
 
@@ -268,9 +268,9 @@
 
       <varlistentry>
         <term><emphasis role="bold">DEST</emphasis> -
-        <emphasis>interface</emphasis>[<emphasis
+        {<emphasis>interface</emphasis>[<emphasis
         role="bold">:</emphasis><emphasis>digit][,</emphasis><emphasis>interface</emphasis>[<emphasis
-        role="bold">:</emphasis><emphasis>digit</emphasis>]]...[<emphasis
+        role="bold">:</emphasis><emphasis>digit</emphasis>]]...|$FW}[<emphasis
         role="bold">:</emphasis>[<emphasis>dest-address</emphasis>[<emphasis
         role="bold">,</emphasis><emphasis>dest-address</emphasis>]...[<emphasis>exclusion</emphasis>]]</term>
 
@@ -285,6 +285,10 @@
           the alias to be displayed with ifconfig. <emphasis role="bold">That
           is the only use for the alias name; it may not appear in any other
           place in your Shorewall configuration.</emphasis></para>
+
+          <para>Beginning with Shorewall 5.1.12, SNAT may be performed in the
+          nat table's INPUT chain by specifying $FW rather than one or more
+          interfaces. </para>
 
           <para>Each interface must match an entry in <ulink
           url="/manpages/shorewall-interfaces.html">shorewall-interfaces</ulink>(5).

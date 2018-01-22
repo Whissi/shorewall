@@ -3182,6 +3182,8 @@ sub initialize_chain_table($) {
 	    new_builtin_chain 'nat', $chain, 'ACCEPT';
 	}
 
+	new_builtin_chain 'nat', 'INPUT', 'ACCEPT' if have_capability('NAT_INPUT_CHAIN');
+
 	for my $chain ( qw(PREROUTING INPUT OUTPUT ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';
 	}
@@ -3243,6 +3245,8 @@ sub initialize_chain_table($) {
 	for my $chain ( qw(PREROUTING POSTROUTING OUTPUT) ) {
 	    new_builtin_chain 'nat', $chain, 'ACCEPT';
 	}
+
+	new_builtin_chain 'nat', 'INPUT', 'ACCEPT' if have_capability('NAT_INPUT_CHAIN');
 
 	for my $chain ( qw(PREROUTING INPUT OUTPUT FORWARD POSTROUTING ) ) {
 	    new_builtin_chain 'mangle', $chain, 'ACCEPT';

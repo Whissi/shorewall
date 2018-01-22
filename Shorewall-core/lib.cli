@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=50106
+SHOREWALL_CAPVERSION=50112
 
 if [ -z "$g_basedir" ]; then
     #
@@ -2863,6 +2863,7 @@ determine_capabilities() {
 		qt $g_tool -t nat -A $chain -j NETMAP --to 2001:470:B:227::/64 && NETMAP_TARGET=Yes
 	    fi
 	    qt $g_tool -t nat -A $chain -j MASQUERADE && MASQUERADE_TGT=Yes
+	    qt $g_tool -t nat -L INPUT -n && NAT_INPUT_CHAIN=Yes
 	    qt $g_tool -t nat -A $chain -p udplite -m multiport --dport 33 -j REDIRECT --to-port 22 && UDPREDIRECT=Yes
 	    qt $g_tool -t nat -F $chain
 	    qt $g_tool -t nat -X $chain
@@ -3331,6 +3332,7 @@ report_capabilities_unsorted() {
     report_capability "NFQUEUE CPU Fanout (CPU_FANOUT)" $CPU_FANOUT
     report_capability "NETMAP Target (NETMAP_TARGET)" $NETMAP_TARGET
     report_capability "--nflog-size support (NFLOG_SIZE)" $NFLOG_SIZE
+    report_capability "INPUT chain in nat table (NAT_INPUT_CHAIN)" $NAT_INPUT_CHAIN
 
     echo "   Kernel Version (KERNELVERSION): $KERNELVERSION"
     echo "   Capabilities Version (CAPVERSION): $CAPVERSION"
@@ -3439,6 +3441,7 @@ report_capabilities_unsorted1() {
     report_capability1 NETMAP_TARGET
     report_capability1 NFLOG_SIZE
     report_capability1 RESTORE_WAIT_OPTION
+    report_capability1 NAT_INPUT_CHAIN
 
     report_capability1 AMANDA_HELPER
     report_capability1 FTP_HELPER

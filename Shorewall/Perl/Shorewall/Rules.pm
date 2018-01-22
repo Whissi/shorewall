@@ -5501,22 +5501,6 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	$interfaces    = $dest;
     }
     #
-    # Handle IPSEC options, if any
-    #
-    if ( $ipsec ne '-' ) {
-	fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
-
-	if ( $ipsec =~ /^yes$/i ) {
-	    $baserule .= do_ipsec_options 'out', 'ipsec', '';
-	} elsif ( $ipsec =~ /^no$/i ) {
-	    $baserule .= do_ipsec_options 'out', 'none', '';
-	} else {
-	    $baserule .= do_ipsec_options 'out', 'ipsec', $ipsec;
-	}
-    } elsif ( have_ipsec ) {
-	$baserule .= '-m policy --pol none --dir out ';
-    }
-    #
     # Handle Protocol, Ports and Condition
     #
     $baserule .= do_proto( $proto, $ports, '' );
@@ -5527,7 +5511,9 @@ sub process_snat1( $$$$$$$$$$$$ ) {
     $baserule .= do_user( $user )                    if $user ne '-';
     $baserule .= do_probability( $probability )      if $probability ne '-';
 
-    for my $fullinterface ( split_list( $interfaces, 'interface' ) ) {
+    my @interfaces = split_list( $interfaces, 'interface' );
+
+    for my $fullinterface ( @interfaces ) {
  
 	my $rule = '';
 	my $saveaddresses = $addresses;
@@ -5535,36 +5521,71 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	my $savebaserule  = $baserule;
 	my $interface = $fullinterface;
 
-	$interface =~ s/:.*//;   #interface name may include 'alias'
-
-	unless ( $inaction ) {
-	    if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
-		$interface    = $1;
-		my $provider  = $2;
-
-		fatal_error "Missing Provider ($dest)" unless supplied $provider;
-
-		$dest =~ s/[(]\w*[)]//;
-		my $realm = provider_realm( $provider );
-
-		fatal_error "$provider is not a shared-interface provider" unless $realm;
-
-		$rule .= "-m realm --realm $realm ";
-	    }
-
-	    fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
-
-	    if ( $interfaceref->{root} ) {
-		$interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+	if ( $inaction ) {
+	    $interface =~ s/:.*// if $family == F_IPV4;   #interface name may include 'alias'
+	} else {
+	    if ( $interface eq firewall_zone ) {
+		if ( @interfaces == 1 ) {
+		    fatal_error q('+' not valid when the DEST is $FW) if $pre_nat;
+		    fatal_error q('MASQUERADE' not allowed when DEST is $FW) if $action eq 'MASQUERADE';
+		    require_capability 'NAT_INPUT_CHAIN', '$FW in the DEST column', 's';
+		    $interface = '';
+		} else {
+		    fatal_error q($FW may not appear in a list of interfaces);
+		}
 	    } else {
-		$rule .= match_dest_dev( $interface );
-		$interface = $interfaceref->{name};
+		$interface =~ s/:.*// if $family == F_IPV4;   #interface name may include 'alias'
+
+		if ( $interface =~ /(.*)[(](\w*)[)]$/ ) {
+		    $interface    = $1;
+		    my $provider  = $2;
+
+		    fatal_error "Missing Provider ($dest)" unless supplied $provider;
+
+		    $dest =~ s/[(]\w*[)]//;
+		    my $realm = provider_realm( $provider );
+
+		    fatal_error "$provider is not a shared-interface provider" unless $realm;
+
+		    $rule .= "-m realm --realm $realm ";
+		}
+
+		fatal_error "Unknown interface ($interface)" unless my $interfaceref = known_interface( $interface );
+
+		if ( $interfaceref->{root} ) {
+		    $interface = $interfaceref->{name} if $interface eq $interfaceref->{physical};
+		} else {
+		    $rule .= match_dest_dev( $interface );
+		    $interface = $interfaceref->{name};
+		}
 	    }
 
-	    $chainref = ensure_chain('nat', $pre_nat ? snat_chain $interface : masq_chain $interface);
+	    $chainref = $interface ? ensure_chain('nat',  $pre_nat ? snat_chain $interface : masq_chain $interface) : $nat_table->{INPUT};
 	}
 
 	$baserule .= do_condition( $condition , $chainref->{name} );
+	#
+	# Handle IPSEC options, if any
+	#
+	if ( $ipsec ne '-' ) {
+	    fatal_error "Non-empty IPSEC column requires policy match support in your kernel and iptables"  unless have_capability( 'POLICY_MATCH' );
+
+	    my $dir = $interface ? 'out' : 'in';
+
+	    if ( $ipsec =~ /^yes$/i ) {
+		$baserule .= do_ipsec_options $dir, 'ipsec', '';
+	    } elsif ( $ipsec =~ /^no$/i ) {
+		$baserule .= do_ipsec_options $dir, 'none', '';
+	    } else {
+		$baserule .= do_ipsec_options $dir, 'ipsec', $ipsec;
+	    }
+	} elsif ( have_ipsec ) {
+	    if ( $interface ) {
+		$baserule .= '-m policy --pol none --dir out ';
+	    } else {
+		$baserule .= '-m policy --pol none --dir in ';
+	    }
+	}
 
 	my $detectaddress = 0;
 	my $exceptionrule = '';
@@ -5572,6 +5593,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	if ( $action eq 'SNAT' ) {
 	    if ( $addresses eq 'detect' ) {
+		fatal_error q('detect' not allowed when the destination is $FW) unless $interface;
 		my $variable = get_interface_address $interface;
 		$target .= " --to-source $variable";
 
@@ -5698,6 +5720,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 		$target .= $addrlist;
 	    }
 	} elsif ( $action eq 'MASQUERADE' ) {
+	    fatal_error q('MASQUERADE' not allowed when the destination is $FW') unless $interface;
 	    if ( supplied $addresses ) {
 		validate_portpair1($proto, $addresses );
 		$target .= " --to-ports $addresses";
@@ -5715,7 +5738,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 				 $params,
 				 $loglevel,
 				 $source,
-				 supplied( $destnets ) && $destnets ne '-' ? $inaction ? $destnets : join( ':', $interface, $destnets ) : $inaction ? '-' : $interface,
+				 supplied( $destnets ) && $destnets ne '-' ? $inaction || $interface ? join( ':', $interface, $destnets ) : $destnets : $inaction ? '-' : $interface,
 				 $proto,
 				 $ports,
 				 $ipsec,
@@ -5780,7 +5803,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 	    $destnets = ALLIP unless supplied $destnets && $destnets ne '-';
 
 	    expand_rule( $chainref ,
-			 POSTROUTE_RESTRICT ,
+			 $interface ? POSTROUTE_RESTRICT : INPUT_RESTRICT ,
 			 $prerule ,
 			 $baserule . $inlinematches . $rule ,
 			 $source ,
@@ -5795,7 +5818,7 @@ sub process_snat1( $$$$$$$$$$$$ ) {
 
 	    conditional_rule_end( $chainref ) if $detectaddress || $conditional;
 
-	    if ( $add_snat_aliases && $addresses ) {
+	    if ( $interface && $add_snat_aliases && $addresses ) {
 		my ( $interface, $alias , $remainder ) = split( /:/, $fullinterface, 3 );
 		fatal_error "Invalid alias ($alias:$remainder)" if defined $remainder;
 		for my $address ( split_list $addresses, 'address' ) {

@@ -496,6 +496,7 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
                  NFLOG_SIZE      => '--nflog-size support',
 		 RESTORE_WAIT_OPTION
 				 => 'iptables-restore --wait option',
+                 NAT_INPUT_CHAIN => 'INPUT chain in NAT table',
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -835,7 +836,7 @@ sub initialize( $;$$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => "5.1.8-Beta1",
-		    CAPVERSION              => 50106 ,
+		    CAPVERSION              => 50112 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -1129,6 +1130,7 @@ sub initialize( $;$$$) {
 	       NETMAP_TARGET => undef,
 	       NFLOG_SIZE => undef,
 	       RESTORE_WAIT_OPTION => undef,
+	       NAT_INPUT_CHAIN => undef,
 
 	       AMANDA_HELPER => undef,
 	       FTP_HELPER => undef,
@@ -4446,6 +4448,12 @@ sub Nat_Enabled() {
     qt1( "$iptables $iptablesw -t nat -L -n" );
 }
 
+sub Nat_Input_Chain {
+    have_capability( 'NAT_ENABLED' ) || return '';
+
+    qt1( "$iptables $iptablesw -t nat -L INPUT -n" );
+}
+
 sub Persistent_Snat() {
     have_capability( 'NAT_ENABLED' ) || return '';
 
@@ -5091,6 +5099,7 @@ our %detect_capability =
       MASQUERADE_TGT => \&Masquerade_Tgt,
       MULTIPORT => \&Multiport,
       NAT_ENABLED => \&Nat_Enabled,
+      NAT_INPUT_CHAIN => \&Nat_Input_Chain,
       NETBIOS_NS_HELPER => \&Netbios_ns_Helper,
       NETMAP_TARGET => \&Netmap_Target,
       NEW_CONNTRACK_MATCH => \&New_Conntrack_Match,
@@ -5190,6 +5199,7 @@ sub determine_capabilities() {
 	#
 	$capabilities{NAT_ENABLED}     = detect_capability( 'NAT_ENABLED' );
 	$capabilities{PERSISTENT_SNAT} = detect_capability( 'PERSISTENT_SNAT' );
+	$capabilities{NAT_INPUT_CHAIN} = detect_capability( 'NAT_INPUT_CHAIN' );
 	$capabilities{MANGLE_ENABLED}  = detect_capability( 'MANGLE_ENABLED' );
 
 	if ( $capabilities{CONNTRACK_MATCH} = detect_capability( 'CONNTRACK_MATCH' ) ) {

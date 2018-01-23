@@ -3273,7 +3273,7 @@ sub initialize_chain_table($) {
 	$mangle_table->{POSTROUTING}{chainnumber}   = POSTROUTING;
     }
 
-    if ( my $docker = $config{DOCKER} ) {
+    if ( $config{DOCKER} ) {
 	add_commands( $nat_table->{OUTPUT}, '[ -f ${VARDIR}/.nat_OUTPUT ] && cat ${VARDIR}/.nat_OUTPUT >&3' );
 	add_commands( $nat_table->{POSTROUTING}, '[ -f ${VARDIR}/.nat_POSTROUTING ] && cat ${VARDIR}/.nat_POSTROUTING >&3' );
 	$chainref = new_standard_chain( 'DOCKER' );

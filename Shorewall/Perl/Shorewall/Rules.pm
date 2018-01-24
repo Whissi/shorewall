@@ -1714,34 +1714,6 @@ sub isolate_basic_target( $ ) {
     $target =~ /^(\w+)[(].*[)]$/ ? $1 : $target;
 }
 
-#
-# Map pre-3.0 actions to the corresponding Macro invocation
-#
-
-sub find_old_action ( $$$ ) {
-    my ( $target, $macro, $param ) = @_;
-
-    if ( my $actiontype = find_macro( $macro ) ) {
-	( $macro, $actiontype , $param );
-    } else {
-	( $target, 0, '' );
-    }
-}
-
-sub map_old_actions( $ ) {
-    my $target = shift;
-
-    if ( $target =~ /^Allow(.*)$/ ) {
-	find_old_action( $target, $1, 'ACCEPT' );
-    } elsif ( $target =~ /^Drop(.*)$/ ) {
-	find_old_action( $target, $1, 'DROP' );
-    } elsif ( $target = /^Reject(.*)$/ ) {
-	find_old_action( $target, $1, 'REJECT' );
-    } else {
-	( $target, 0, '' );
-    }
-}
-
 sub process_rule ( $$$$$$$$$$$$$$$$$$$$ );
 sub process_mangle_rule1( $$$$$$$$$$$$$$$$$$$ );
 sub process_snat1( $$$$$$$$$$$$ );
@@ -2629,10 +2601,6 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
     # Determine the validity of the action
     #
     $actiontype = $targets{$basictarget} || find_macro( $basictarget );
-
-    if ( $config{ MAPOLDACTIONS } ) {
-	( $basictarget, $actiontype , $param ) = map_old_actions( $basictarget ) unless $actiontype || supplied $param;
-    }
 
     fatal_error "Unknown ACTION ($action)" unless $actiontype;
 

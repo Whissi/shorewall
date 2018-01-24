@@ -730,6 +730,7 @@ our %eliminated = ( LOGRATE          => 1,
 		    BLACKLISTNEWONLY => 1,
 		    CHAIN_SCRIPTS    => 1,
                     MODULE_SUFFIX    => 1,
+                    MAPOLDACTIONS    => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -937,7 +938,6 @@ sub initialize( $;$$$) {
 	  MACLIST_TTL => undef,
 	  SAVE_IPSETS => undef,
 	  SAVE_ARPTABLES => undef,
-	  MAPOLDACTIONS => undef,
 	  FASTACCEPT => undef,
 	  IMPLICIT_CONTINUE => undef,
 	  IPSET_WARNINGS => undef,
@@ -6391,7 +6391,6 @@ sub get_configuration( $$$$ ) {
     default_yes_no 'SAVE_ARPTABLES'             , '';
     default_yes_no 'STARTUP_ENABLED'            , 'Yes';
     default_yes_no 'DELAYBLACKLISTLOAD'         , '';
-    default_yes_no 'MAPOLDACTIONS'              , 'Yes';
 
     warning_message 'DELAYBLACKLISTLOAD=Yes is not supported by Shorewall ' . $globals{VERSION} if $config{DELAYBLACKLISTLOAD};
 

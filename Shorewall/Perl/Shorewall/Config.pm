@@ -306,7 +306,6 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 				       OPTIMIZE_POLICY_MASK
 				       OPTIMIZE_POLICY_MASK2n4
 				       OPTIMIZE_RULESET_MASK
-				       OPTIMIZE_USE_FIRST
 				       OPTIMIZE_ALL
 				     ) , ] ,
 		   protocols => [ qw (
@@ -547,8 +546,6 @@ use constant {
 	       OPTIMIZE_RULESET_MASK   => 0x1C , # Call optimize_ruleset()
                OPTIMIZE_MASK           => 0x1E , # Do optimizations beyond level 1
 	       OPTIMIZE_ALL            => 0x1F , # Maximum value for documented categories.
-
-	       OPTIMIZE_USE_FIRST      => 0x1000 # Always use interface 'first' chains -- undocumented
 	     };
 
 our %helpers = ( amanda          => UDP,
@@ -6879,7 +6876,7 @@ sub get_configuration( $$$$ ) {
     } else {
 	$val = numeric_value $config{OPTIMIZE};
 
-	fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && ( $val & ~OPTIMIZE_USE_FIRST ) <= OPTIMIZE_ALL;
+	fatal_error "Invalid OPTIMIZE value ($config{OPTIMIZE})" unless supplied( $val ) && $val >= 0 && $val <= OPTIMIZE_ALL;
     }
 
     require_capability 'XMULTIPORT', 'OPTIMIZE level 16', 's' if $val & 16;

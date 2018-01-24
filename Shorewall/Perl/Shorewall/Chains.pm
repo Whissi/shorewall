@@ -2301,8 +2301,6 @@ sub use_forward_chain($$) {
 
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
-
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # Use it if we already have jumps to it
     #
@@ -2377,8 +2375,6 @@ sub use_input_chain($$) {
     my ( $interface, $chainref ) = @_;
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
-
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # We must use the interfaces's chain if the interface is associated with multiple Zones
     #
@@ -2458,8 +2454,6 @@ sub use_output_chain($$) {
     my ( $interface, $chainref)  = @_;
     my $interfaceref = find_interface($interface);
     my $nets = $interfaceref->{nets};
-
-    return 1 if @{$chainref->{rules}} && ( $config{OPTIMIZE} & OPTIMIZE_USE_FIRST );
     #
     # We must use the interfaces's chain if the interface is associated with multiple Zones
     #

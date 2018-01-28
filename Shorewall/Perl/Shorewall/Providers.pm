@@ -2195,17 +2195,13 @@ sub provider_realm( $ ) {
 }
 
 #
-# This function is called by the compiler when it is generating the detect_configuration() function.
-# The function calls Shorewall::Zones::verify_required_interfaces then emits code to set the
-# ..._IS_USABLE interface variables appropriately for the  optional interfaces
+# Perform processing related to optional interfaces. Returns true if there are optional interfaces.
+
 #
-# Returns true if there were required or optional interfaces
-#
-sub handle_optional_interfaces( $ ) {
+sub handle_optional_interfaces() {
 
     my @interfaces;
     my $wildcards;
-
     #
     # First do the provider interfacess. Those that are real providers will never have wildcard physical
     # names but they might derive from wildcard interface entries. Optional interfaces which do not have
@@ -2229,10 +2225,6 @@ sub handle_optional_interfaces( $ ) {
 
     if ( @interfaces ) {
 	my $require     = $config{REQUIRE_INTERFACE};
-	my $gencase     = shift;
-
-	verify_required_interfaces( $gencase );
-	emit '' if $gencase;
 
 	emit( 'HAVE_INTERFACE=', '' ) if $require;
 	#
@@ -2396,8 +2388,6 @@ sub handle_optional_interfaces( $ ) {
 
 	return 1;
     }
-
-    verify_required_interfaces( shift );
 }
 
 #

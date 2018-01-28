@@ -313,9 +313,9 @@ sub generate_script_2() {
 
 	    if ( $global_variables == ( ALL_COMMANDS | NOT_RESTORE ) ) {
 
+		verify_required_interfaces(0);
 		set_global_variables(0, 0);
-
-		handle_optional_interfaces(0);
+		handle_optional_interfaces;
 	    }
 
 	    emit ';;';
@@ -327,19 +327,21 @@ sub generate_script_2() {
 	    push_indent;
 	}
 
+	verify_required_interfaces(1);
 	set_global_variables(1,1);
 
 	if ( $global_variables & NOT_RESTORE ) {
-	    handle_optional_interfaces(1);
+	    handle_optional_interfaces;
 	    emit ';;';
 	    pop_indent;
 	    pop_indent;
 	    emit ( 'esac' );
 	} else {
-	    handle_optional_interfaces(1);
+	    handle_optional_interfaces;
 	}
     } else {
-	emit( 'true' ) unless handle_optional_interfaces(1);
+	verify_required_interfaces(1);
+	emit( 'true' ) unless handle_optional_interfaces;
     }
 
     pop_indent;

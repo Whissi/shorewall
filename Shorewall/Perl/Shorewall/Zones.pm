@@ -2021,6 +2021,7 @@ sub verify_required_interfaces( $ ) {
 
 	emit( "esac\n" );
 
+	$returnvalue = 1;
     }
 
     $interfaces = find_interfaces_by_option( 'required' );
@@ -2066,7 +2067,7 @@ sub verify_required_interfaces( $ ) {
 	    emit( ';;' );
 	    pop_indent;
 	    pop_indent;
-	    emit( 'esac' );
+	    emit( "esac\n" );
 	}
 
 	$returnvalue = 1;

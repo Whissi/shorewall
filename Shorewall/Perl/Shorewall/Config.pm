@@ -834,7 +834,7 @@ sub initialize( $;$$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.8-Beta1",
+		    VERSION                 => "5.1.12-Beta2",
 		    CAPVERSION              => 50112 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -1689,6 +1689,7 @@ sub emit {
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/gm;
+		$line =~ s/[ \t]+\n/\n/gm;
 		print $script "$line\n" if $script;
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 
@@ -1719,6 +1720,7 @@ sub emitstd {
 	    $line =~ s/^\n// if $lastlineblank;
 	    $line =~ s/^/$indent/gm if $indent;
 	    $line =~ s/        /\t/gm;
+	    $line =~ s/[ \t]+\n/\n/gm;
 	    print "$line\n";
 	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {

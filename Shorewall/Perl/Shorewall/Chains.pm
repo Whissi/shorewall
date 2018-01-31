@@ -8509,7 +8509,7 @@ sub save_dynamic_chains() {
 	);
 
     if ( have_capability 'IPTABLES_S' ) {
-	emit <<"EOF";
+	emithd <<"EOF";
 if chain_exists 'UPnP -t nat'; then
     $tool -t nat -S UPnP | tail -n +2 > \${VARDIR}/.UPnP
 else
@@ -8530,6 +8530,7 @@ fi
 EOF
 	if ( $config{MINIUPNPD} ) {
 	    emit << "EOF";
+
 if chain_exists 'MINIUPNPD-POSTROUTING -t nat'; then
     $tool -t nat -S MINIUPNPD-POSTROUTING | tail -n +2 > \${VARDIR}/.MINIUPNPD-POSTROUTING
 else
@@ -8538,7 +8539,7 @@ fi
 EOF
 	}
     } else {
-	emit <<"EOF";
+	emithd <<"EOF";
 if chain_exists 'UPnP -t nat'; then
     $utility -t nat | grep '^-A UPnP ' > \${VARDIR}/.UPnP
 else
@@ -8558,7 +8559,8 @@ else
 fi
 EOF
 	if ( $config{MINIUPNPD} ) {
-	    emit << "EOF";
+	    emithd << "EOF";
+
 if chain_exists 'MINIUPNPD-POSTROUTING -t nat'; then
     $utility -t nat | grep '^-A MINIUPNPD-POSTROUTING' > \${VARDIR}/.MINIUPNPD-POSTROUTING
 else
@@ -8572,7 +8574,7 @@ EOF
     emit ( 'else' );
     push_indent;
 
-emit <<"EOF";
+emithd <<"EOF";
 rm -f \${VARDIR}/.UPnP
 rm -f \${VARDIR}/.forwardUPnP
 EOF
@@ -8609,7 +8611,7 @@ sub ensure_ipsets( @ ) {
 
 	pop_indent;
 
-	emit( qq(    fi\n) );
+	emit( q(    fi) );
 
     }
 
@@ -8785,7 +8787,6 @@ sub create_load_ipsets() {
 		  '        $IPSET flush $set' ,
 		  '        $IPSET destroy $set' ,
 		  "    done" ,
-		  '',
 		);
 	} else {
 	    #
@@ -8797,7 +8798,7 @@ sub create_load_ipsets() {
 		   '    fi' );
 	};
 
-	emit( '}' );
+	emit( "}\n" );
     }
     #
     # Now generate load_ipsets()
@@ -8866,20 +8867,17 @@ sub create_load_ipsets() {
 	    ensure_ipsets( @ipsets );
 
 	    emit( 'elif [ "$COMMAND" = refresh ]; then' );   ################### Refresh Command ###################
-	    emit ( '' );
 	    ensure_ipsets( @ipsets );
-	    emit ( '' );
 	};
 
-	emit ( 'fi' ,
-	       '' );
+	emit ( 'fi' );
     } else {
 	emit 'true';
     }
 
     pop_indent;
 
-    emit '}';	    
+    emit "}\n";	    
 }
 
 #
@@ -9052,7 +9050,7 @@ sub create_netfilter_load( $ ) {
 	  "cat \${VARDIR}/.${utility}-input | \$command # Use this nonsensical form to appease SELinux",
 	  'if [ $? != 0 ]; then',
 	  qq(    fatal_error "iptables-restore Failed. Input is in \${VARDIR}/.${utility}-input"),
-	  "fi\n"
+	  'fi'
 	);
 
     pop_indent;

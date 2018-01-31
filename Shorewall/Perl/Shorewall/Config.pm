@@ -189,6 +189,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 		                       in_hex8
 		                       in_hexp
 				       emit
+				       emithd
 				       emitstd
 				       emit_unindented
 				       save_progress_message
@@ -1708,6 +1709,15 @@ sub emit {
 	    }
 	}
     }
+}
+
+#
+# Used to emit a 'here documents' string without introducing an unwanted blank line at the end
+#
+sub emithd( $ ) {
+    my ( $line ) = @_; #make writable
+    chomp $line;
+    emit $line;
 }
 
 #

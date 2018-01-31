@@ -876,7 +876,7 @@ sub add_a_provider( $$ ) {
 	    }
 
 	    emit( "run_ip route replace default via $gateway src $address dev $physical ${mtu}table $id $realm" );
-	    emit( qq( echo "\$IP route del default via $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1"  >> \${VARDIR}/undo_${table}_routing) );
+	    emit( qq(echo "\$IP route del default via $gateway src $address dev $physical ${mtu}table $id $realm > /dev/null 2>&1"  >> \${VARDIR}/undo_${table}_routing) );
 	}
 
 	if ( ! $noautosrc ) {
@@ -885,7 +885,8 @@ sub add_a_provider( $$ ) {
 		emit( "run_ip rule add from $address pref 20000 table $id" ,
 		      "echo \"\$IP -$family rule del from $address pref 20000> /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing" );
 	    } else {
-		emit  ( "find_interface_addresses $physical | while read address; do",
+		emit  ( '',
+			"find_interface_addresses $physical | while read address; do",
 			"    qt \$IP -$family rule del from \$address",
 			"    run_ip rule add from \$address pref 20000 table $id",
 			"    echo \"\$IP -$family rule del from \$address pref 20000 > /dev/null 2>&1\" >> \${VARDIR}/undo_${table}_routing",
@@ -1250,7 +1251,7 @@ CEOF
 		   'if [ $COMMAND = disable ]; then',
 		   "    do_persistent_${what}_${table}",
 		   "else",
-		   "    echo 1 > \${VARDIR}/${physical}_disabled\n",
+		   "    echo 1 > \${VARDIR}/${physical}_disabled",
 		   "fi\n",
 		 );
 	}
@@ -1593,7 +1594,8 @@ sub finish_providers() {
 	}
 
 	if ( $config{USE_DEFAULT_RT} ) {
-	    emit  ( "    while qt \$IP -$family route del default table $main; do",
+	    emit  ( '',
+		    "    while qt \$IP -$family route del default table $main; do",
 		    '        true',
 		    '    done',
 		    ''
@@ -1739,7 +1741,7 @@ sub process_providers( $ ) {
 
     add_a_provider( $providers{$_}, $tcdevices ) for @providers;
 
-    emit << 'EOF';;
+    emithd << 'EOF';;
 
 #
 # Enable an optional provider
@@ -1785,12 +1787,11 @@ EOF
     pop_indent;
     pop_indent;
 
-    emit << 'EOF';;
+    emithd << 'EOF';;
         *)
             startup_error "$g_interface is not an optional provider or interface"
             ;;
     esac
-
 }
 
 #
@@ -1894,20 +1895,19 @@ sub setup_providers() {
 
 	start_providers;
 
-	setup_null_routing if $config{NULL_ROUTE_RFC1918};
+	setup_null_routing, emit '' if $config{NULL_ROUTE_RFC1918};
 
-	emit '';
-
-	emit "start_$providers{$_}->{what}_$_" for @providers;
-
-	emit '';
+	if ( @providers ) {
+	    emit "start_$providers{$_}->{what}_$_" for @providers;
+	    emit '';
+	}
 
 	finish_providers;
 
 	emit "\nrun_ip route flush cache";
 
 	pop_indent;
-	emit "fi\n";
+	emit 'fi';
 
 	setup_route_marking if @routemarked_interfaces || @load_interfaces;
     } else {
@@ -1918,9 +1918,10 @@ sub setup_providers() {
 	if ( $pseudoproviders ) {
 	    emit '';
 	    emit "start_$providers{$_}->{what}_$_" for @providers;
+	    emit '';
 	}
 
-	emit "\nundo_routing";
+	emit "undo_routing";
 	emit "restore_default_route $config{USE_DEFAULT_RT}";
 
 	my $standard_routes = @{$providers{main}{routes}} || @{$providers{default}{routes}};
@@ -1945,7 +1946,7 @@ sub setup_providers() {
 
 	pop_indent;
 
-	emit "fi\n";
+	emit 'fi';
     }
 }
 

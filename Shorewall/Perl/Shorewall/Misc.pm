@@ -2646,7 +2646,6 @@ EOF
 
         rm -f ${VARDIR}/proxyarp
     fi
-
 EOF
     } else {
 	emit <<'EOF';
@@ -2660,7 +2659,6 @@ EOF
 
         rm -f ${VARDIR}/proxyndp
     fi
-
 EOF
     }
 

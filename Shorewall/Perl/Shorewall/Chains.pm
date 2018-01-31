@@ -3857,7 +3857,10 @@ sub optimize_level8( $$$ ) {
     %renamed = ();
 
     while ( $progress ) {
-	my @chains   = ( sort { level8_compare($a, $b) } ( grep $_->{referenced} && ! $_->{builtin}, values %{$tableref} ) );
+	my @chains   = ( sort { level8_compare($a, $b) } ( grep $_->{referenced} &&
+							   @{$_->{rules}}        &&
+							   ! $_->{builtin},
+							   values %{$tableref} ) );
 	my @chains1  = @chains;
 	my $chains   = @chains;
 	my %rename;
@@ -3877,12 +3880,15 @@ sub optimize_level8( $$$ ) {
 	    # Shift the current $chainref off of @chains1
 	    #
 	    shift @chains1;
-	    #
-	    # Skip empty chains
-	    #
+
 	    for my $chainref1 ( @chains1 ) {
-		next unless @{$chainref1->{rules}};
+		#
+		# Skip chain if it can't be deleted
+		#
 		next if $chainref1->{optflags} & DONT_DELETE;
+		#
+		# Chains identical?
+		#
 		if ( $chainref->{digest} eq $chainref1->{digest} ) {
 		    progress_message "  Chain $chainref1->{name} combined with $chainref->{name}";
 		    $progress = 1;

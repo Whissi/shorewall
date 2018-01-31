@@ -2147,6 +2147,14 @@ LOG:info:,bar                        net                    fw</programlisting>
               <para>Optimization category 8 - Added in Shorewall 4.4.9. When
               set, causes chains with identical rules to be collapsed into a
               single chain.</para>
+
+              <warning>
+                <para>While Optimization category 8 can significantly reduce
+                the size of the generated iptables ruleset, it can also take
+                significant system resources during compilation. If you find
+                that compilation takes an unreasonably long time, try
+                disabling this category by setting OPTIMIZE=23.</para>
+              </warning>
             </listitem>
 
             <listitem>
@@ -2219,7 +2227,8 @@ LOG:info:,bar                        net                    fw</programlisting>
 
           <para>In versions prior to 5.1.0, the default value is zero which
           disables all optimizations. Beginning with Shorewall 5.1.0, the
-          default value is All which enables all optimizations.</para>
+          default value is <emphasis role="bold">All</emphasis> which enables
+          all optimizations.</para>
         </listitem>
       </varlistentry>
 

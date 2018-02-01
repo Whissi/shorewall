@@ -1319,12 +1319,12 @@ sub pop_match( $$ ) {
 
 sub clone_irule( $ );
 
-sub format_rule( $$;$ ) {
-    my ( $chainref, $rulerefp, $suppresshdr ) = @_;
+sub format_rule( $$ ) {
+    my ( $chainref, $rulerefp ) = @_;
 
     return $rulerefp->{cmd} if exists $rulerefp->{cmd};
 
-    my $rule = $suppresshdr ? '' : "-A $chainref->{name}";
+    my $rule = "-A $chainref->{name}";
     #
     # The code that follows can be destructive of the rule so we clone it
     #
@@ -3377,15 +3377,43 @@ sub delete_references( $ ) {
 #
 # Calculate a digest for the passed chain and store it in the {digest} member.
 #
+# First, a lightweight version of format_rule()
+#
+sub irule_to_string( $ ) {
+    my ( $ruleref ) = @_;
+
+    return $ruleref->{cmd} if exists $ruleref->{cmd};
+
+    my $string = '';
+
+    for ( grep ! ( get_opttype( $_, 0 ) & ( CONTROL | TARGET ) ), @{$ruleref->{matches}} ) {
+	my $value = $ruleref->{$_};
+	if ( reftype $value ) {
+	    $string .= "$_=" . join( ',', @$value ) . ' ';
+	} else {
+	    $string .= "$_=$value ";
+	}
+    }
+
+    if ( $ruleref->{target} ) {
+	$string .= join( ' ', " -$ruleref->{jump}", $ruleref->{target} );
+	$string .= join( '', ' ', $ruleref->{targetopts} ) if $ruleref->{targetopts};
+    }
+
+    $string .= join( '', ' -m comment --comment "', $ruleref->{comment}, '"' ) if $ruleref->{comment};
+
+    $string;
+}
+
 sub calculate_digest( $ ) {
     my $chainref = shift;
     my $rules = '';
 
     for ( @{$chainref->{rules}} ) {
 	if ( $rules ) {
-	    $rules .= ' |' . format_rule( $chainref, $_, 1 );
+	    $rules .= ' |' . irule_to_string( $_ );
 	} else {
-	    $rules = format_rule( $chainref, $_, 1 );
+	    $rules = irule_to_string( $_ );
 	}
     }
 
@@ -3881,11 +3909,7 @@ sub optimize_level8( $$$ ) {
 	    #
 	    shift @chains1;
 
-	    for my $chainref1 ( @chains1 ) {
-		#
-		# Skip chain if it can't be deleted
-		#
-		next if $chainref1->{optflags} & DONT_DELETE;
+	    for my $chainref1 (grep ! ( $_->{optflags} & DONT_DELETE ), @chains1 ) {
 		#
 		# Chains identical?
 		#
@@ -8205,19 +8229,8 @@ sub add_interface_options( $ ) {
 	# Generate a digest for each chain
 	#
 	for my $chainref ( values %input_chains, values %forward_chains ) {
-	    my $digest = '';
-
 	    assert( $chainref );
-
-	    for ( @{$chainref->{rules}} ) {
-		if ( $digest ) {
-		    $digest .= ' |' . format_rule( $chainref, $_, 1 );
-		} else {
-		    $digest = format_rule( $chainref, $_, 1 );
-		}
-	    }
-
-	    $chainref->{digest} = sha1_hex $digest;
+	    calculate_digest( $chainref );
 	}
 	#
 	# Insert jumps to the interface chains into the rules chains

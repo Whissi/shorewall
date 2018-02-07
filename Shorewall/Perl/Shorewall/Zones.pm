@@ -2031,7 +2031,7 @@ sub verify_required_interfaces( $ ) {
 	if ( $generate_case ) {
 	    emit( 'case "$COMMAND" in' );
 	    push_indent;
-	    emit( 'start|reload|restore|refresh)' );
+	    emit( 'start|reload|restore)' );
 	    push_indent;
 	}
 

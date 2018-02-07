@@ -8519,7 +8519,7 @@ sub save_dynamic_chains() {
     my $tool    = $family == F_IPV4 ? '${IPTABLES}'      : '${IP6TABLES}';
     my $utility = $family == F_IPV4 ? 'iptables-restore' : 'ip6tables-restore';
 
-    emit ( 'if [ "$COMMAND" = reload -o "$COMMAND" = refresh ]; then' );
+    emit ( 'if [ "$COMMAND" = reload ]; then' );
     push_indent;
 
     emit( 'if [ -n "$g_counters" ]; then' ,
@@ -8884,9 +8884,6 @@ sub create_load_ipsets() {
 
 	    emit ( 'elif [ "$COMMAND" = reload ]; then' );   ################### Reload Command ####################
 	    ensure_ipsets( @ipsets );
-
-	    emit( 'elif [ "$COMMAND" = refresh ]; then' );   ################### Refresh Command ###################
-	    ensure_ipsets( @ipsets );
 	};
 
 	emit ( 'fi' );
@@ -9159,156 +9156,6 @@ sub preview_netfilter_load() {
     pop_indent;
 
     print "\n";
-}
-
-#
-# Generate the netfilter input for refreshing a list of chains
-#
-sub create_chainlist_reload($) {
-
-    my $chains = $_[0];
-
-    my @chains;
-
-    unless ( $chains eq ':none:' ) {
-	if ( $chains eq ':refresh:' ) {
-	    $chains = '';
-	} else {
-	    @chains =  split_list $chains, 'chain';
-	}
-
-	unless ( @chains ) {
-	    @chains = qw( blacklst ) if $filter_table->{blacklst};
-	    push @chains, 'blackout' if $filter_table->{blackout};
-
-	    for ( grep $_->{blacklistsection} && $_->{referenced}, values %{$filter_table} ) {
-		push @chains, $_->{name} if $_->{blacklistsection};
-	    }
-
-	    push @chains, 'mangle:' if have_capability( 'MANGLE_ENABLED' ) && $config{MANGLE_ENABLED};
-	    $chains = join( ',', @chains ) if @chains;
-	}
-    }
-
-    $mode = NULL_MODE;
-
-    emit(  'chainlist_reload()',
-	   '{'
-	   );
-
-    push_indent;
-
-    if ( @chains ) {
-	my $word = @chains == 1 ? 'chain' : 'chains';
-
-	progress_message2 "Compiling iptables-restore input for $word @chains...";
-	save_progress_message "Preparing iptables-restore input for $word @chains...";
-
-	emit '';
-
-	my $table = 'filter';
-
-	my %chains;
-
-	my %tables;
-
-	for my $chain ( @chains ) {
-	    ( $table , $chain ) = split ':', $chain if $chain =~ /:/;
-
-	    fatal_error "Invalid table ( $table )" unless $table =~ /^(nat|mangle|filter|raw)$/;
-
-	    $chains{$table} = {} unless $chains{$table};
-
-	    if ( $chain ) {
-		my $chainref;
-		fatal_error "No $table chain found with name $chain" unless $chainref = $chain_table{$table}{$chain};
-		fatal_error "Built-in chains may not be refreshed" if $chainref->{builtin};
-
-		if ( $chainseq{$table} && @{$chainref->{rules}} ) {
-		    $tables{$table} = 1;
-		} else {
-		    $chains{$table}{$chain} = $chainref;
-		}
-	    } else {
-		$tables{$table} = 1;
-	    }
-	}
-
-	for $table ( keys %tables ) {
-	    while ( my ( $chain, $chainref ) = each %{$chain_table{$table}} ) {
-		$chains{$table}{$chain} = $chainref if $chainref->{referenced} && ! $chainref->{builtin};
-	    }
-	}
-
-	emit 'exec 3>${VARDIR}/.iptables-restore-input';
-
-	enter_cat_mode;
-
-	for $table ( qw(raw nat mangle filter) ) {
-	    my $tableref=$chains{$table};
-
-	    next unless $tableref;
-
-	    @chains = sort keys %$tableref;
-
-	    emit_unindented "*$table";
-
-	    for my $chain ( @chains ) {
-		my $chainref = $tableref->{$chain};
-		emit_unindented ":$chainref->{name} - [0:0]";
-	    }
-
-	    for my $chain ( @chains ) {
-		my $chainref = $tableref->{$chain};
-		my @rules = @{$chainref->{rules}};
-		my $name = $chainref->{name};
-
-		@rules = () unless @rules;
-		#
-		# Emit the chain rules
-		#
-		emitr($chainref, $_) for @rules;
-	    }
-	    #
-	    # Commit the changes to the table
-	    #
-	    enter_cat_mode unless $mode == CAT_MODE;
-
-	    emit_unindented 'COMMIT';
-	}
-
-	enter_cmd_mode;
-
-	#
-	# Now generate the actual ip[6]tables-restore command
-	#
-	emit(  'exec 3>&-',
-	       '' );
-
-	if ( $family == F_IPV4 ) {
-	    emit ( 'progress_message2 "Running iptables-restore..."',
-		   '',
-		   'cat ${VARDIR}/.iptables-restore-input | $IPTABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
-		   'if [ $? != 0 ]; then',
-		   '    fatal_error "iptables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
-		   "fi\n"
-		 );
-	} else {
-	    emit ( 'progress_message2 "Running ip6tables-restore..."',
-		   '',
-		   'cat ${VARDIR}/.iptables-restore-input | $IP6TABLES_RESTORE -n # Use this nonsensical form to appease SELinux',
-		   'if [ $? != 0 ]; then',
-		   '    fatal_error "ip6tables-restore Failed. Input is in ${VARDIR}/.iptables-restore-input"',
-		   "fi\n"
-		 );
-	}
-    } else {
-	emit('true');
-    }
-
-    pop_indent;
-
-    emit "}\n";
 }
 
 #

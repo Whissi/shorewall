@@ -2554,9 +2554,6 @@ EOF
 	        reload)
 	            mylogger kern.err "ERROR:$g_product reload failed"
 	            ;;
-	        refresh)
-	            mylogger kern.err "ERROR:$g_product refresh failed"
-	            ;;
                 enable)
                     mylogger kern.err "ERROR:$g_product 'enable $g_interface' failed"
                     ;;

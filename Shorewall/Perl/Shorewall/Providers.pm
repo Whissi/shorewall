@@ -2368,7 +2368,7 @@ sub handle_optional_interfaces() {
 	    emit( '',
 		  'if [ -z "$HAVE_INTERFACE" ]; then' ,
 		  '    case "$COMMAND" in',
-		  '        start|reload|restore|refresh)'
+		  '        start|reload|restore)'
 		);
 
 	    if ( $family == F_IPV4 ) {

@@ -109,7 +109,7 @@ sub generate_script_1( $ ) {
 ################################################################################
 EOF
 
-    for my $exit ( qw/init start tcclear started stop stopped clear refresh refreshed restored enabled disabled/ ) {
+    for my $exit ( qw/init start tcclear started stop stopped clear restored enabled disabled/ ) {
 	emit "\nrun_${exit}_exit() {";
 	push_indent;
 	append_file $exit or emit 'true';
@@ -366,7 +366,6 @@ sub generate_script_3($) {
 
     create_netfilter_load( $test );
     create_arptables_load( $test ) if $have_arptables;
-    create_chainlist_reload( $_[0] );
     create_save_ipsets;
     create_load_ipsets;
 
@@ -398,16 +397,10 @@ sub generate_script_3($) {
 	emit 'load_kernel_modules Yes';
     }
 
-    emit '';
-
-    emit ( 'if [ "$COMMAND" = refresh ]; then' ,
-	   '   run_refresh_exit' ,
-	   'else' ,
-	   '    run_init_exit',
-	   'fi',
-	   '' );
-
-    emit( 'load_ipsets' ,
+    emit( '' ,
+	  'run_init_exit',
+	  '' ,
+	  'load_ipsets' ,
 	  '' );
 
     create_nfobjects;
@@ -465,11 +458,6 @@ sub generate_script_3($) {
     dump_proxy_arp;
     emit_unindented '__EOF__';
 
-    emit( '',
-	  'if [ "$COMMAND" != refresh ]; then' );
-
-    push_indent;
-
     emit 'cat > ${VARDIR}/zones << __EOF__';
     dump_zone_contents;
     emit_unindented '__EOF__';
@@ -481,10 +469,6 @@ sub generate_script_3($) {
     emit 'cat > ${VARDIR}/marks << __EOF__';
     dump_mark_layout;
     emit_unindented '__EOF__';
-
-    pop_indent;
-
-    emit "fi\n";
 
     emit '> ${VARDIR}/nat';
 
@@ -527,26 +511,9 @@ sub generate_script_3($) {
     emithd <<"EOF";
     set_state Started $config_dir
     run_restored_exit
-elif [ \$COMMAND = refresh ]; then
-    chainlist_reload
+else
+    setup_netfilter
 EOF
-    push_indent;
-    setup_load_distribution;
-    setup_forwarding( $family , 0 );
-    pop_indent;
-    #
-    # Use a parameter list rather than 'here documents' to avoid an extra blank line
-    #
-    emit( '    run_refreshed_exit',
-	  '    do_iptables -N shorewall' );
-
-    emit( '    do_iptables -A shorewall -m recent --set --name %CURRENTTIME' ) if have_capability 'RECENT_MATCH';
-
-    emit( "    set_state Started $config_dir",
-	  '    [ $0 = ${VARDIR}/firewall ] || cp -f $(my_pathname) ${VARDIR}/firewall',
-	  'else',
-	  '    setup_netfilter'	);
-
     push_indent;
     emit 'setup_arptables' if $have_arptables;
     setup_load_distribution;
@@ -580,9 +547,6 @@ case $COMMAND in
         ;;
     reload)
         mylogger kern.info "$g_product reloaded"
-        ;;
-    refresh)
-        mylogger kern.info "$g_product refreshed"
         ;;
     restore)
         mylogger kern.info "$g_product restored"

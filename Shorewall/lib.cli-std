@@ -445,7 +445,7 @@ compiler() {
     get_config Yes
 
     case $COMMAND in
-	*start|try|refresh|reload|restart|safe-*)
+	*start|try|reload|restart|safe-*)
 	    ;;
 	*)
 	    STARTUP_LOG=
@@ -487,7 +487,6 @@ compiler() {
     [ -n "$g_test" ]           && options="$options --test"
     [ -n "$g_preview" ]        && options="$options --preview"
     [ "$g_debugging" = trace ] && options="$options --debug"
-    [ -n "$g_refreshchains" ]  && options="$options --refresh=$g_refreshchains"
     [ -n "$g_confess" ]        && options="$options --confess"
     [ -n "$g_update" ]         && options="$options --update"
     [ -n "$g_annotate" ]       && options="$options --annotate"
@@ -1065,128 +1064,6 @@ restart_command() {
     fi
 
     return $rc
-}
-
-#
-# Refresh Command Executor
-#
-refresh_command() {
-    local finished
-    finished=0
-
-    while [ $finished -eq 0 -a $# -gt 0 ]; do
-	option=$1
-	case $option in
-	    -*)
-		option=${option#-}
-
-		while [ -n "$option" ]; do
-		    case $option in
-			-)
-			    finished=1
-			    option=
-			    ;;
-			d*)
-			    g_debug=Yes
-			    option=${option#d}
-			    ;;
-			n*)
-			    g_noroutes=Yes
-			    option=${option#n}
-			    ;;
-			T*)
-			    g_confess=Yes
-			    option=${option#T}
-			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
-			    ;;
-			D)
-			    if [ $# -gt 1 ]; then
-				g_shorewalldir="$2"
-				option=
-				shift
-			    else
-				fatal_error "The -D option requires a directory name"
-			    fi
-			    ;;
-			*)
-			    option_error $option
-			    ;;
-		    esac
-		done
-		shift
-		;;
-	    *)
-		finished=1
-		;;
-	esac
-    done
-
-    if [ $# -gt 0 ]; then
-	g_refreshchains=$1
-	shift
-
-	while [ $# -gt 0 ]; do
-	    g_refreshchains="$g_refreshchains,$1"
-	    shift
-	done
-    else
-	g_refreshchains=:refresh:
-    fi
-
-    product_is_started || fatal_error "$g_product is not running"
-
-    [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
-
-    g_file="${VARDIR}/.refresh"
-
-    if compiler $g_debugging $nolock compile "$g_file"; then
-	[ -n "$nolock" ] || mutex_on
-	run_it ${VARDIR}/.refresh $g_debugging refresh
-	rc=$?
-	[ -n "$nolock" ] || mutex_off
-    else
-	rc=$?
-    fi
-
-    return $rc
-}
-
-read_yesno_with_timeout() {
-    local timeout
-    timeout=${1:-60}
-
-    case $timeout in
-	*s)
-	    ;;
-	*m)
-	    timeout=$((${timeout%m} * 60))
-	    ;;
-	*h)
-	    timeout=$((${timeout%h} * 3600))
-	    ;;
-    esac
-
-    read -t $timeout yn 2> /dev/null
-    if [ $? -eq 2 ]
-    then
-	# read doesn't support timeout
-	test -x /bin/bash || return 2 # bash is not installed so the feature is not available
-	/bin/bash -c "read -t $timeout yn ; if [ \"\$yn\" == \"y\" ] ; then exit 0 ; else exit 1 ; fi" # invoke bash and use its version of read
-	return $?
-    else
-	# read supports timeout
-	case "$yn" in
-	    y|Y)
-		return 0
-		;;
-	    *)
-		return 1
-		;;
-	esac
-    fi
 }
 
 #
@@ -1791,12 +1668,6 @@ compiler_command() {
 	compile|co)
 	    shift
 	    compile_command $@
-	    ;;
-	refresh)
-	    only_root
-	    get_config Yes Yes
-	    shift
-	    refresh_command $@
 	    ;;
 	check|ck)
 	    shift

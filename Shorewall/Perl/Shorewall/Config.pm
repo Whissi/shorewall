@@ -709,8 +709,8 @@ our %validlevels;            # Valid log levels.
 #
 # Deprecated options with their default values
 #
-our %deprecated = (
-		   LEGACY_RESTART => 'no'
+our %deprecated = ( LEGACY_RESTART => 'no' ,
+		    INLINE_MATCHES => 'no' ,
 		  );
 #
 # Deprecated options that are eliminated via update
@@ -835,7 +835,7 @@ sub initialize( $;$$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.12-Beta2",
+		    VERSION                 => "5.1.12",
 		    CAPVERSION              => 50112 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -2438,6 +2438,8 @@ sub split_line2( $$;$$$ ) {
 
 	if ( $inlinematches ) {
 	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)" unless $inline;
+
+	    warning_message "This entry needs to be changed before the INLINE_MATCHES option is removed in Shorewall 5.2";
 
 	    $inline_matches = $pairs;
 

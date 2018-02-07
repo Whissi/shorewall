@@ -490,7 +490,6 @@ compiler() {
     [ -n "$g_confess" ]        && options="$options --confess"
     [ -n "$g_update" ]         && options="$options --update"
     [ -n "$g_annotate" ]       && options="$options --annotate"
-    [ -n "$g_inline" ]         && options="$options --inline"
 
     if [ -n "$PERL" ]; then
 	if [ ! -x "$PERL" ]; then
@@ -594,10 +593,6 @@ start_command() {
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
-			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
 			    ;;
 			C*)
 			    g_counters=Yes
@@ -709,10 +704,6 @@ compile_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
-			    ;;
 			-)
 			    finished=1
 			    option=
@@ -807,10 +798,6 @@ check_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
-			    ;;
 			*)
 			    option_error $option
 			    ;;
@@ -895,16 +882,11 @@ update_command() {
 			    g_confess=Yes
 			    option=${option#T}
 			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
-			    ;;
 			a*)
 			    g_annotate=Yes
 			    option=${option#a}
 			    ;;
 			A*)
-			    g_inline=Yes
 			    option=${option#A}
 			    ;;
 			*)
@@ -994,7 +976,6 @@ restart_command() {
 			    option=${option#T}
 			    ;;
 			i*)
-			    g_inline=Yes
 			    option=${option#i}
 			    ;;
 			C*)
@@ -1419,10 +1400,6 @@ remote_reload_command() # $* = original arguments less the command.
 			T*)
 			    g_confess=Yes
 			    option=${option#T}
-			    ;;
-			i*)
-			    g_inline=Yes
-			    option=${option#i}
 			    ;;
 			*)
 			    option_error $option

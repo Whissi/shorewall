@@ -665,7 +665,6 @@ our $comments_allowed;       # True if [?]COMMENT is allowed in the current file
 our $nocomment;              # When true, ignore [?]COMMENT in the current file
 our $sr_comment;             # When true, $comment should only be applied to the current rule
 our $warningcount;           # Used to suppress duplicate warnings about missing COMMENT support
-our $checkinline;            # The -i option to check/compile/etc.
 our $directive_callback;     # Function to call in compiler_directive
 
 our $shorewall_dir;          # Shorewall Directory; if non-empty, search here first for files.
@@ -708,13 +707,13 @@ our %validlevels;            # Valid log levels.
 # Deprecated options with their default values
 #
 our %deprecated = (
-		   LEGACY_RESTART => 'no'
+		   LEGACY_RESTART => 'no' ,
 		  );
 #
 # Deprecated options that are eliminated via update
 #
 our %converted = (
-		  LEGACY_RESTART => 1
+		    LEGACY_RESTART => 1 ,
 		 );
 #
 # Eliminated options
@@ -730,6 +729,7 @@ our %eliminated = ( LOGRATE          => 1,
 		    CHAIN_SCRIPTS    => 1,
                     MODULE_SUFFIX    => 1,
                     MAPOLDACTIONS    => 1,
+		    INLINE_MATCHES   => 1,
 		  );
 #
 # Variables involved in ?IF, ?ELSE ?ENDIF processing
@@ -979,7 +979,6 @@ sub initialize( $;$$$) {
 	  USE_RT_NAMES => undef,
 	  TRACK_RULES => undef,
 	  REJECT_ACTION => undef,
-	  INLINE_MATCHES => undef,
 	  BASIC_FILTERS => undef,
 	  WORKAROUNDS => undef ,
 	  LEGACY_RESTART => undef ,
@@ -2391,8 +2390,6 @@ sub clear_comment();
 sub split_line2( $$;$$$ ) {
     my ( $description, $columnsref, $nopad, $maxcolumns, $inline ) = @_;
 
-    my $inlinematches = $config{INLINE_MATCHES};
-
     my ( $columns, $pairs, $rest );
 
     my $currline = $currentline;
@@ -2420,7 +2417,7 @@ sub split_line2( $$;$$$ ) {
 	    #
 	    # Don't look for matches below
 	    #
-	    $inline = $inlinematches = '';
+	    $inline = '';
 	}
     }
     #
@@ -2434,21 +2431,7 @@ sub split_line2( $$;$$$ ) {
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
 
-	if ( $inlinematches ) {
-	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)" unless $inline;
-
-	    $inline_matches = $pairs;
-
-	    if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
-		#
-		# Pairs are enclosed in curly brackets.
-		#
-		$columns = $1;
-		$pairs   = $2;
-	    } else {
-		$pairs = '';
-	    }
-	} elsif ( $inline ) {
+	if ( $inline ) {
 	    #
 	    # This file supports INLINE or IPTABLES
 	    #
@@ -2462,12 +2445,9 @@ sub split_line2( $$;$$$ ) {
 		    $columns = $1;
 		    $pairs   = $2;
 		} else {
-		    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes" if $checkinline;
 		    $pairs = '';
 		}
 	    } 
-	} elsif ( $checkinline ) {
-	    warning_message "This entry needs to be changed before INLINE_MATCHES can be set to Yes";
 	}
     } elsif ( $currline =~ /^(\s*|.*[^&@%])\{(.*)\}$/ ) {
 	#
@@ -6097,9 +6077,9 @@ EOF
 # - Read the capabilities file, if any
 # - establish global hashes %params, %config , %globals and %capabilities
 #
-sub get_configuration( $$$$ ) {
+sub get_configuration( $$$ ) {
 
-    ( my ( $export, $update, $annotate ) , $checkinline ) = @_;
+    my ( $export, $update, $annotate ) = @_;
 
     $globals{EXPORT} = $export;
 

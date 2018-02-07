@@ -40,7 +40,6 @@
 #         --shorewallrc=<path>        # Path to global shorewallrc file.
 #         --shorewallrc1=<path>       # Path to export shorewallrc file.
 #         --config_path=<path-list>   # Search path for config files
-#         --inline                    # Update alternative column specifications
 #         --update                    # Update configuration to current release
 #
 #    If the <filename> is omitted, then a 'check' operation is performed.
@@ -75,7 +74,6 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --shorewallrc=<pathname> ]
     [ --shorewallrc1=<pathname> ]
     [ --config_path=<path-list> ]
-    [ --inline ]
 _EOF_
 
 exit shift @_;
@@ -102,7 +100,6 @@ my $update        = 0;
 my $config_path   = '';
 my $shorewallrc   = '';
 my $shorewallrc1  = '';
-my $inline        = 0;
 
 Getopt::Long::Configure ('bundling');
 
@@ -132,7 +129,6 @@ my $result = GetOptions('h'               => \$help,
 			'annotate'        => \$annotate,
 			'u'               => \$update,
 			'update'          => \$update,
-			'inline'          => \$inline,
 			'config_path=s'   => \$config_path,
 			'shorewallrc=s'   => \$shorewallrc,
 			'shorewallrc1=s'  => \$shorewallrc1,
@@ -159,5 +155,4 @@ compiler( script          => $ARGV[0] || '',
 	  config_path     => $config_path,
 	  shorewallrc     => $shorewallrc,
 	  shorewallrc1    => $shorewallrc1,
-	  inline          => $inline,
 	);

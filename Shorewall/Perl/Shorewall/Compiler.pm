@@ -582,8 +582,8 @@ sub compile_info_command() {
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $config_path, $shorewallrc                      , $shorewallrc1 , $inline ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , ''          , '/usr/share/shorewall/shorewallrc', ''            , 0 );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $config_path, $shorewallrc                      , $shorewallrc1 ) =
+       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , ''          , '/usr/share/shorewall/shorewallrc', ''            );
 
     $export         = 0;
     $test           = 0;
@@ -620,7 +620,6 @@ sub compiler {
 		  confess       => { store => \$confess,       validate=> \&validate_boolean    } ,
 		  update        => { store => \$update,        validate=> \&validate_boolean    } ,
 		  annotate      => { store => \$annotate,      validate=> \&validate_boolean    } ,
-		  inline        => { store => \$inline,        validate=> \&validate_boolean    } ,
 		  config_path   => { store => \$config_path } ,
 		  shorewallrc   => { store => \$shorewallrc } ,
 		  shorewallrc1  => { store => \$shorewallrc1 } ,
@@ -657,7 +656,7 @@ sub compiler {
     #                                      S H O R E W A L L R C ,
     #                      S H O R E W A L L . C O N F  A N D  C A P A B I L I T I E S
     #
-    get_configuration( $export , $update , $annotate , $inline );
+    get_configuration( $export , $update , $annotate );
     #
     # Chain table initialization depends on shorewall.conf and capabilities. So it must be deferred until
     # now when shorewall.conf has been processed and the capabilities have been determined.

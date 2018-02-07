@@ -96,6 +96,7 @@ sub setup_one_proxy_arp( $$$$$$$ ) {
     }
 
     emit ( "run_ip neigh add proxy $address nud permanent dev $extphy" ,
+	   '' ,
 	   qq(progress_message "   Host $address connected to $interface added to $proto on $extphy"\n) );
 
     push @proxyarp, "$address $interface $external $haveroute";

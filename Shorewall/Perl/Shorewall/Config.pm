@@ -189,6 +189,7 @@ our %EXPORT_TAGS = ( internal => [ qw( create_temp_script
 		                       in_hex8
 		                       in_hexp
 				       emit
+				       emithd
 				       emitstd
 				       emit_unindented
 				       save_progress_message
@@ -835,7 +836,7 @@ sub initialize( $;$$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.8-Beta1",
+		    VERSION                 => "5.1.12-Beta2",
 		    CAPVERSION              => 50112 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -1689,6 +1690,7 @@ sub emit {
 		$line =~ s/^\n// if $lastlineblank;
 		$line =~ s/^/$indent/gm if $indent;
 		$line =~ s/        /\t/gm;
+		$line =~ s/[ \t]+\n/\n/gm;
 		print $script "$line\n" if $script;
 		$lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 
@@ -1710,6 +1712,15 @@ sub emit {
 }
 
 #
+# Used to emit a 'here documents' string without introducing an unwanted blank line at the end
+#
+sub emithd( $ ) {
+    my ( $line ) = @_; #make writable
+    chomp $line;
+    emit $line;
+}
+
+#
 # Version of emit() that writes to standard out unconditionally
 #
 sub emitstd {
@@ -1719,6 +1730,7 @@ sub emitstd {
 	    $line =~ s/^\n// if $lastlineblank;
 	    $line =~ s/^/$indent/gm if $indent;
 	    $line =~ s/        /\t/gm;
+	    $line =~ s/[ \t]+\n/\n/gm;
 	    print "$line\n";
 	    $lastlineblank = ( substr( $line, -1, 1 ) eq "\n" );
 	} else {

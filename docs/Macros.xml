@@ -103,6 +103,14 @@ PARAM    -       -       tcp     135,139,445</programlisting>
       </listitem>
 
       <listitem>
+        <para>You can see a list of the Standard Macros in your version of
+        Shorewall using the <command>shorewall show macros</command> command.
+        You can see the contents of the file
+        macro.<replaceable>name</replaceable> by typing <command>shorewall
+        show macro <replaceable>name</replaceable></command>.</para>
+      </listitem>
+
+      <listitem>
         <para>User-defined Macros. These macros are created by end-users. They
         are defined in macro.* files in /etc/shorewall or in another directory
         listed in your CONFIG_PATH (defined in <ulink
@@ -796,19 +804,20 @@ bar:debug</programlisting>
 
     <orderedlist>
       <listitem>
-        <para>You can not associate an Extension Script with a macro <ulink
-        url="Actions.html#Extension">the way that you can with an
-        Action</ulink>. So if you need access to iptables features not
-        directly supported by Shorewall then you must use an action.</para>
+        <para>Embedded Perl is <ulink url="???">much more useful in an
+        action</ulink> than it is in a macro. So if you need access to
+        iptables features not directly supported by Shorewall then you should
+        use an action.</para>
       </listitem>
 
       <listitem>
-        <para>Macros are expanded in-line while each action is its own chain.
-        So if there are a lot of rules involved in your new action/macro then
-        it is generally better to use an action than a macro. Only the packets
-        selected when you invoke the action are directed to the corresponding
-        chain. On the other hand, if there are only one or two rules involved
-        in what you want to do then a macro is more efficient.</para>
+        <para>Macros are expanded in-line while each action (that doesn't
+        specify the inline option) is its own chain. So if there are a lot of
+        rules involved in your new action/macro then it is generally better to
+        use an action than a macro. Only the packets selected when you invoke
+        the action are directed to the corresponding chain. On the other hand,
+        if there are only one or two rules involved in what you want to do
+        then a macro is more efficient.</para>
       </listitem>
     </orderedlist>
 

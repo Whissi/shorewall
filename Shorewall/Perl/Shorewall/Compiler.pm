@@ -103,7 +103,7 @@ sub generate_script_1( $ ) {
 
     copy2( $lib, $debug ) if -f $lib;
 
-    emit <<'EOF';
+    emithd<<'EOF';
 ################################################################################
 # Functions to execute the various user exits (extension scripts)
 ################################################################################
@@ -125,7 +125,7 @@ EOF
 	emit '}';
     }
 
-    emit <<'EOF';
+    emithd <<'EOF';
 ################################################################################
 # End user exit functions
 ################################################################################
@@ -270,12 +270,11 @@ sub generate_script_2() {
 	    );
 	emit( 'chain_exists DOCKER-INGRESS   && g_dockeringress=Yes' );
 	emit( 'chain_exists DOCKER-ISOLATION && g_dockernetwork=Yes' );
-	emit( '' );
     }
 
     pop_indent;
 
-    emit "\n}\n"; # End of initialize()
+    emit "}\n"; # End of initialize()
 
     emit( '' ,
 	  '#' ,
@@ -525,7 +524,7 @@ sub generate_script_3($) {
 
     my $config_dir = $globals{CONFIGDIR};
 
-    emit<<"EOF";
+    emithd <<"EOF";
     set_state Started $config_dir
     run_restored_exit
 elif [ \$COMMAND = refresh ]; then
@@ -572,7 +571,7 @@ EOF
 	  '    run_started_exit',
 	  "fi\n" );
 
-    emit<<'EOF';
+    emithd<<'EOF';
 date > ${VARDIR}/restarted
 
 case $COMMAND in

@@ -2225,7 +2225,8 @@ Creating input Chains...
         <listitem>
           <para>Don't start Shorewall at boot time (Debian and Ubuntu users
           may simply set startup=0 in
-          <filename>/etc/default/shorewall</filename>).</para>
+          <filename>/etc/default/shorewall</filename>) or disable in systemd
+          using <command>systemctl disable shorewall.service</command>.</para>
         </listitem>
 
         <listitem>
@@ -2348,6 +2349,22 @@ gateway:~# </programlisting>
           <command>stop</command> then <command>start</command>, while
           <command>reload</command> avoids the <command>stop</command>
           part.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use a capabilities file:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Run <command>shorewall show -f capabilties &gt;
+              /etc/shorewall/capabilities </command></para>
+            </listitem>
+
+            <listitem>
+              <para>Rerun that command each time you install a new kernel or a
+              new version of shorewall.</para>
+            </listitem>
+          </itemizedlist>
         </listitem>
       </orderedlist>
     </section>

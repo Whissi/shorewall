@@ -2439,7 +2439,7 @@ sub split_line2( $$;$$$ ) {
 	if ( $inlinematches ) {
 	    fatal_error "The $description does not support inline matches (INLINE_MATCHES=Yes)" unless $inline;
 
-	    warning_message "This entry needs to be changed before the INLINE_MATCHES option is removed in Shorewall 5.2";
+	    warning_message "This entry needs to be changed (replace ';' with ';;') before the INLINE_MATCHES option is removed in Shorewall 5.2";
 
 	    $inline_matches = $pairs;
 

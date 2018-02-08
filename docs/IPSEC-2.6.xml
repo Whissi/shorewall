@@ -681,4 +681,65 @@ ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</prog
       the INPUT chain.</para>
     </important>
   </section>
+
+  <section>
+    <title>Using SNAT to Force Traffic over an IPSEC Tunnel</title>
+
+    <para>Cases can arise where you need to use an IPSEC tunnel to access a
+    remote network, but you have no control over the associated security
+    polices. In such cases, the resulting tunnel is accessible from your
+    firewall but not from your local networks.</para>
+
+    <para>Let's take an example:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Remote gateway 192.0.2.26</para>
+      </listitem>
+
+      <listitem>
+        <para>Remote subnet 172.22.4.0/24</para>
+      </listitem>
+
+      <listitem>
+        <para>Your public IP address is 192.0.2.199</para>
+      </listitem>
+
+      <listitem>
+        <para>Your Internet-facing interface is eth0</para>
+      </listitem>
+
+      <listitem>
+        <para>Your local network is 192.168.219.0/24</para>
+      </listitem>
+
+      <listitem>
+        <para>You want to access 172.22.4.0/24 from 192.168.219.0/24</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>You need to configure as follows.</para>
+
+    <para>/etc/shorewall/zones:</para>
+
+    <programlisting>#ZONE        TYPE       OPTIONS
+...
+vpn          ip         # Note that the zone <emphasis role="bold">cannot</emphasis> be declared as type ipsec
+...</programlisting>
+
+    <para>/etc/shorewall/hosts:</para>
+
+    <programlisting>#ZONE         HOSTS                     OPTIONS
+vpn           eth0:172.22.4.0/24        mss=1380,destonly
+vpn           eth0:0.0.0.0/0            mss=1380,ipsec</programlisting>
+
+    <para>/etc/shorewall/snat:</para>
+
+    <programlisting>SNAT(192.0.2.199)    192.168.219.0/24      eth0:172.22.4.0/24</programlisting>
+
+    <para>/etc/shorewall/tunnels:</para>
+
+    <programlisting>#TYPE            ZONE      GATEWAY            GATEWAY_ZONE
+ipsec            net       192.0.2.26         vpn</programlisting>
+  </section>
 </article>

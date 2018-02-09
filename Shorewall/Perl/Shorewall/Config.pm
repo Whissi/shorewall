@@ -2417,6 +2417,10 @@ sub split_line2( $$;$$$ ) {
 	    fatal_error "Only one set of double semicolons (';;') allowed on a line" if defined $rest;
 
 	    $currline = $columns;
+	    #
+	    # Remove trailing white space
+	    #
+	    $currline =~ s/\s*$//;
 
 	    $inline_matches = $pairs;
 	    #

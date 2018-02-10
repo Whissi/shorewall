@@ -2463,7 +2463,7 @@ sub split_line2( $$;$$$ ) {
 	    if ( $currline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
-		warning_message "This entry needs to be changed (replace ';' with ';;') before the INLINE_MATCHES option is removed in Shorewall 5.2";
+		warning_message "This entry needs to be changed before Shorewall 5.2 (replace ';' with ';;'). '$globals{PRODUCT} update' will do that for you";
 
 		if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
 		    #
@@ -6034,6 +6034,8 @@ sub export_params() {
 
 #
 # Walk the CONFIG_PATH converting FORMAT and COMMENT lines to compiler directives
+# Convert single semicolons to double semicolons in lines beginning with 'INLINE',
+# IPTABLES or IP6TABLES
 #
 sub convert_to_directives() {
     my $sharedir = $shorewallrc{SHAREDIR};
@@ -6046,7 +6048,7 @@ sub convert_to_directives() {
 
     my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
 
-    progress_message3 "Converting 'FORMAT', 'SECTION' and 'COMMENT' lines to compiler directives...";
+    progress_message3 "Converting 'FORMAT', 'SECTION' and 'COMMENT' lines to compiler directives and replacing single semicolons in INLINE, IPTABLES and IP6TABLES rules...";
 
     for my $dir ( @path ) {
 	unless ( $dir =~ /$dirtest/ ) {
@@ -6075,6 +6077,9 @@ sub convert_to_directives() {
                                                  s/COMMENT/?COMMENT/;
                                              } elsif ( /^\\s*COMMENT\\s*\$/ ) {
                                                  s/COMMENT/?COMMENT/;
+                                             }
+                                             if ( /^\\s*(?:INLINE|IP6?TABLES)/ ) {
+                                                 s/;/;;/ unless /;;/;
                                              }' $file
 EOF
 			    if ( $result == 0 ) {

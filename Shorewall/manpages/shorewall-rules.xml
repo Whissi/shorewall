@@ -461,12 +461,13 @@
               <listitem>
                 <para>Added in Shorewall 4.5.16. This action allows you to
                 construct most of the rule yourself using iptables syntax. The
-                part that you specify must follow a semicolon (';') and is
+                part that you specify must follow two semicolons (';;')
+                (preferred) or a single semicolon (';') (deprecated) and is
                 completely free-form. If the target of the rule (the part
                 following 'j') is something that Shorewall supports in the
                 ACTION column, then you may enclose it in parentheses (e.g.,
                 INLINE(ACCEPT)). Otherwise, you can include it after the
-                semicolon. In this case, you must declare the target as a
+                semicolon(s). In this case, you must declare the target as a
                 builtin action in <ulink
                 url="/manpages/shorewall-actions.html">shorewall-actions</ulink>(5).</para>
 
@@ -489,7 +490,7 @@
                     necessarily be at the end of the generated rule. For
                     example, if addresses are specified in the SOURCE and/or
                     DEST columns, their generated matches will appear after
-                    those specified using ';'.</para>
+                    those specified using ';;' or ';'.</para>
                   </listitem>
                 </itemizedlist>
               </listitem>

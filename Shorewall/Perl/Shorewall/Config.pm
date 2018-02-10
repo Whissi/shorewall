@@ -2463,6 +2463,8 @@ sub split_line2( $$;$$$ ) {
 	    if ( $currline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
 		$inline_matches = $pairs;
 
+		warning_message "This entry needs to be changed (replace ';' with ';;') before the INLINE_MATCHES option is removed in Shorewall 5.2";
+
 		if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
 		    #
 		    # Pairs are enclosed in curly brackets.

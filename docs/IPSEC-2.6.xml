@@ -107,7 +107,7 @@
     requires an appropriate SA to exist. SAs may be created manually using
     <command>setkey</command>(8) but most often, they are created by a
     cooperative process involving the ISAKMP protocol and a daemon included in
-    your IPSEC package (StrongSwan, LibreSwan, ipsec-tools/Racoon, etc.) .
+    your IPsec package (StrongSwan, LibreSwan, ipsec-tools/Racoon, etc.) .
     Incoming traffic is verified against the SPD to ensure that no unencrypted
     traffic is accepted in violation of the administrator's policies.</para>
 
@@ -227,7 +227,7 @@
 
     <important>
       <para>This article provides guidance regarding configuring Shorewall to
-      use with IPSEC. For configuring IPSEC itself, consult your IPSEC
+      use with IPsec. For configuring IPsec itself, consult your IPsec
       product's documentation.</para>
     </important>
   </section>
@@ -680,5 +680,76 @@ ipip                    <emphasis role="bold">vpn</emphasis>     0.0.0.0/0</prog
       remote zone. If you haven't done that, the traffic will be dropped in
       the INPUT chain.</para>
     </important>
+  </section>
+
+  <section>
+    <title>Using SNAT to Force Traffic over an IPsec Tunnel</title>
+
+    <para>Cases can arise where you need to use an IPsec tunnel to access a
+    remote network, but you have no control over the associated security
+    polices. In such cases, the resulting tunnel is accessible from your
+    firewall but not from your local networks.</para>
+
+    <para>Let's take an example:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Remote gateway 192.0.2.26</para>
+      </listitem>
+
+      <listitem>
+        <para>Remote subnet 172.22.4.0/24</para>
+      </listitem>
+
+      <listitem>
+        <para>Your public IP address is 192.0.2.199</para>
+      </listitem>
+
+      <listitem>
+        <para>Your Internet-facing interface is eth0</para>
+      </listitem>
+
+      <listitem>
+        <para>Your local network is 192.168.219.0/24</para>
+      </listitem>
+
+      <listitem>
+        <para>You want to access 172.22.4.0/24 from 192.168.219.0/24</para>
+      </listitem>
+
+      <listitem>
+        <para>The IPsec tunnel is configured between 172.22.4.0/24 and
+        192.0.2.199</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>You need to configure as follows.</para>
+
+    <para>/etc/shorewall/zones:</para>
+
+    <programlisting>#ZONE        TYPE       OPTIONS
+...
+vpn          ip         # Note that the zone <emphasis role="bold">cannot</emphasis> be declared as type ipsec
+...</programlisting>
+
+    <para>/etc/shorewall/interfaces:</para>
+
+    <programlisting>#ZONE         INTERFACE                 OPTIONS
+net           eth0                      nets=(!172.22.4.0/24),...   # You must exclude the remote network from the net zone</programlisting>
+
+    <para>/etc/shorewall/hosts:</para>
+
+    <programlisting>#ZONE         HOSTS                     OPTIONS
+vpn           eth0:172.22.4.0/24        mss=1380,destonly
+vpn           eth0:0.0.0.0/0            mss=1380,ipsec</programlisting>
+
+    <para>/etc/shorewall/snat:</para>
+
+    <programlisting>SNAT(192.0.2.199)    192.168.219.0/24      eth0:172.22.4.0/24</programlisting>
+
+    <para>/etc/shorewall/tunnels:</para>
+
+    <programlisting>#TYPE            ZONE      GATEWAY            GATEWAY_ZONE
+ipsec            net       192.0.2.26         vpn</programlisting>
   </section>
 </article>

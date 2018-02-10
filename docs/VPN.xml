@@ -43,7 +43,7 @@
 
     <para>It is often the case that a system behind the firewall needs to be
     able to access a remote network through Virtual Private Networking (VPN).
-    The two most common means for doing this are IPSEC and PPTP. The basic
+    The two most common means for doing this are IPsec and PPTP. The basic
     setup is shown in the following diagram:</para>
 
     <graphic fileref="images/VPN.png"/>
@@ -60,8 +60,8 @@
     modules file, Shorewall (Lite) will attempt to load these modules when
     Shorewall (Lite) is started.</para>
 
-    <para>If IPSEC is being used, you should configure IPSEC to use
-    <firstterm>NAT Traversal</firstterm> -- Under NAT traversal the IPSEC
+    <para>If IPsec is being used, you should configure IPsec to use
+    <firstterm>NAT Traversal</firstterm> -- Under NAT traversal the IPsec
     packets (protocol 50 or 51) are encapsulated in UDP packets (normally with
     destination port 4500). Additionally, <firstterm>keep-alive
     messages</firstterm> are sent frequently so that NATing gateways between
@@ -69,10 +69,10 @@
     way that I connect to the HP Intranet and it works flawlessly without
     anything in Shorewall other than my ACCEPT loc-&gt;net policy. NAT
     traversal is available as a patch for Windows 2K and is a standard feature
-    of Windows XP -- simply select "L2TP IPSec VPN" from the "Type of VPN"
+    of Windows XP -- simply select "L2TP IPsec VPN" from the "Type of VPN"
     pulldown.</para>
 
-    <para>Alternatively, if you have an IPSEC gateway behind your firewall
+    <para>Alternatively, if you have an IPsec gateway behind your firewall
     then you can try the following: only one system may connect to the remote
     gateway and there are firewall configuration requirements as
     follows:</para>

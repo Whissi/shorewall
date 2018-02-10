@@ -11,14 +11,20 @@
 #ACTION	SOURCE	DEST	PROTO	DPORT	SPORT	ORIGDEST	RATE	USER
 
 PARAM	-	-	tcp	623		# RMCP
+PARAM	-	-	udp	623		# RMCP
 PARAM	-	-	tcp	3668,3669	# Virtual Media, Secure (Dell)
-PARAM	-	-	tcp	5120,5123	# CD, floppy (Asus, Aten)
+PARAM	-	-	tcp	5120,5122,5123	# CD,FD,HD (Asus, Aten)
 PARAM	-	-	tcp	5900,5901	# Remote Console (Aten, Dell)
 PARAM	-	-	tcp	7578		# Remote Console (AMI)
-PARAM	-	-	tcp	3520		# Remote Console (Redfish)
-PARAM	-	-	udp	623		# RMCP
+PARAM	-	-	tcp	8889		# WS-MAN
 HTTP
-HTTPS
-SNMP
-SSH						# Serial over Lan
 Telnet
+SNMP
+
+# TLS/secure ports
+PARAM	-	-	tcp	3520		# Remote Console (Redfish)
+PARAM	-	-	tcp	3669		# Virtual Media (Dell)
+PARAM	-	-	tcp	5124,5126,5127	# CD,FD,HD (AMI)
+PARAM	-	-	tcp	7582		# Remote Console (AMI)
+HTTPS
+SSH						# Serial over Lan

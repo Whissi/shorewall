@@ -374,7 +374,8 @@ DIVERTHA        -               -               tcp</programlisting>
 
               <listitem>
                 <para>Allows you to place your own ip[6]tables matches at the
-                end of the line following a semicolon (";"). If an
+                end of the line following a semicolon (";") (deprecated) or
+                two semicolons (";;") (preferred since Shoreall 5.0.0). If an
                 <replaceable>action</replaceable> is specified, the compiler
                 proceeds as if that <replaceable>action</replaceable> had been
                 specified in this column. If no action is specified, then you
@@ -391,20 +392,14 @@ DIVERTHA        -               -               tcp</programlisting>
 
                 <programlisting>2:P                   eth0              -         tcp 22
 INLINE(MARK(2)):P     eth0              -         tcp 22
-INLINE(MARK(2)):P     eth0              -                 ; -p tcp
-INLINE                eth0              -         tcp 22  ; -j MARK --set-mark 2
-INLINE                eth0              -                 ; -p tcp -j MARK --set-mark 2
+INLINE(MARK(2)):P     eth0              -                 ;; -p tcp
+INLINE                eth0              -         tcp 22  ;; -j MARK --set-mark 2
+INLINE                eth0              -                 ;; -p tcp -j MARK --set-mark 2
 </programlisting>
 
                 <para>If INLINE_MATCHES=Yes in <ulink
                 url="/manpages/shorewall.conf.html">shorewall6.conf(5)</ulink>
                 then the third rule above can be specified as follows:</para>
-
-                <programlisting>MARK(2):P             eth0              -                 ; -p tcp</programlisting>
-
-                <para>Beginning with Shorewall 5.0.0, the rule may also be
-                written this way, irrespective of the setting of
-                INLINE_MATCHES:</para>
 
                 <programlisting>MARK(2):P             eth0              -                 ;; -p tcp</programlisting>
               </listitem>

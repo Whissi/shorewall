@@ -6440,7 +6440,6 @@ sub get_configuration( $$$ ) {
 	$origin{$_} ||= '';
     }
 	    
-    default_yes_no 'INLINE_MATCHES'             , '';
     default_yes_no 'BASIC_FILTERS'              , '';
     default_yes_no 'WORKAROUNDS'                , 'Yes';
     default_yes_no 'DOCKER'                     , '';

@@ -2425,7 +2425,7 @@ sub split_line2( $$;$$$ ) {
 	}
     }
     #
-    # Next, see if there is a semicolon on the line; what follows will be column/value pairs or raw iptables input
+    # Next, see if there is a single semicolon on the line; what follows will be column/value pairs
     #
     ( $columns, $pairs, $rest ) = split( ';', $currline );
 
@@ -2434,25 +2434,6 @@ sub split_line2( $$;$$$ ) {
 	# Found it -- be sure there wasn't more than one.
 	#
 	fatal_error "Only one semicolon (';') allowed on a line" if defined $rest;
-
-	if ( $inline ) {
-	    #
-	    # This file supports INLINE or IPTABLES
-	    #
-	    if ( $currline =~ /^\s*INLINE(?:\(.*\)(:.*)?|:.*)?\s/ || $currline =~ /^\s*IP6?TABLES(?:\(.*\)|:.*)?\s/ ) {
-		$inline_matches = $pairs;
-
-		if ( $columns =~ /^(\s*|.*[^&@%])\{(.*)\}\s*$/ ) {
-		    #
-		    # Pairs are enclosed in curly brackets.
-		    #
-		    $columns = $1;
-		    $pairs   = $2;
-		} else {
-		    $pairs = '';
-		}
-	    } 
-	}
     } elsif ( $currline =~ /^(\s*|.*[^&@%])\{(.*)\}$/ ) {
 	#
 	# Pairs are enclosed in curly brackets.

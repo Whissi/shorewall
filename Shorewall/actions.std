@@ -8,11 +8,8 @@
 #
 ###############################################################################
 #ACTION
-A_AllowICMPs inline		# Audited version of AllowICMPs
-A_Drop				# Audited Default Action for DROP policy
 A_REJECT     noinline,logjump	# Audits then rejects a connection request
 A_REJECT!    inline		# Audits then rejects a connection request
-A_Reject			# Audited Default action for REJECT policy
 AllowICMPs   inline		# Allow Required ICMP packets
 allowBcast   inline		# Silently Allow Broadcast
 allowinUPnP  inline		# Allow UPnP inbound (to firewall) traffic
@@ -27,7 +24,6 @@ Broadcast    inline,audit	# Handles Broadcast/Anycast
 Broadcast    noinline,audit	# Handles Broadcast/Anycast
 ?endif
 DNSAmp	     proto=17		# Matches one-question recursive DNS queries
-Drop				# Default Action for DROP policy (deprecated)
 dropBcast    inline		# Silently Drop Broadcast
 dropBcasts   inline		# Silently Drop Broadcast
 dropInvalid  inline		# Drops packets in the INVALID conntrack state
@@ -54,7 +50,6 @@ New	     inline,state=NEW	# Handles packets in the NEW conntrack state
 NotSyn	     inline,audit,\	# Handles TCP packets which do not have SYN=1 and ACK=0
 	     proto=6
 rejNotSyn    noinline,proto=6	# Silently Reject Non-syn TCP packets
-Reject				# Default Action for REJECT policy (deprecated)
 Related	     inline,\		# Handles packets in the RELATED conntrack state
 	     state=RELATED	#
 ResetEvent   inline		# Reset an Event

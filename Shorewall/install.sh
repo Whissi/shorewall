@@ -1231,6 +1231,19 @@ if [ -n "$SYSCONFFILE" -a -f "$SYSCONFFILE" -a ! -f ${DESTDIR}${SYSCONFDIR}/${PR
     echo "$SYSCONFFILE file installed in ${DESTDIR}${SYSCONFDIR}/${PRODUCT}"
 fi
 
+#
+# Remove deleted actions and macros
+#
+if [ $PRODUCT = shorewall ]; then
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/action.A_AllowICMPs
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/action.A_Drop
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/action.A_Reject
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/action.Drop
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/action.Reject
+
+    rm -f ${DESTDIR}${SHAREDIR}/${PRODUCT}/deprecated/macro.SMTPTraps
+fi
+
 if [ $configure -eq 1 -a -z "$DESTDIR" -a -n "$first_install" -a -z "${cygwin}${mac}" ]; then
     if [ -n "$SERVICEDIR" ]; then
 	if systemctl enable ${PRODUCT}.service; then

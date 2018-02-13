@@ -834,7 +834,7 @@ sub initialize( $;$$$) {
 		    TC_SCRIPT               => '',
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
-		    VERSION                 => "5.1.12",
+		    VERSION                 => '5.2.0-Beta1',
 		    CAPVERSION              => 50112 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
@@ -5458,7 +5458,33 @@ sub update_config_file( $ ) {
 	update_default( 'BLACKLIST_DEFAULT', 'dropBcasts,dropNotSyn,dropInvalid' );
     } else {
 	update_default( 'BLACKLIST_DEFAULT', 'AllowICMPs,dropBcasts,dropNotSyn,dropInvalid' );
-    }	
+    }
+
+    for ( qw/DROP_DEFAULT REJECT_DEFAULT/ ) {
+	my $policy = $config{ $_ };
+
+	if ( $policy =~ /\bA_(?:Drop|Reject)\b/ ) {
+	    if ( $family == F_IPV4 ) {
+		$policy =~ s/A_(?:Drop|Reject)/Broadcast(A_DROP),Multicast(A_DROP)/;
+	    } else {
+		$policy =~ s/A_(?:Drop|Reject)/AllowICMPS(A_ACCEPT),Broadcast(A_DROP),Multicast(A_DROP)/;
+	    }
+	} elsif ( $policy =~ /\b(?:Drop|Reject)\(\s*audit.*\)/ ) {
+	    if ( $family == F_IPV4 ) {
+		$policy =~ s/(?:Drop|Reject)\(\s*audit.*\)/Broadcast(A_DROP),Multicast(A_DROP)/;
+	    } else {
+		$policy =~ s/(?:Drop|Reject)\(\s*audit.*\)/AllowICMPs(A_ACCEPT),Broadcast(A_DROP),Multicast(A_DROP)/;
+	    }
+	} elsif ( $policy =~ /\b(?:Drop|Reject)\b/ ) {
+	    if ( $family == F_IPV4 ) {
+		$policy =~ s/(?:Drop|Reject)/Broadcast(DROP),Multicast(DROP)/;
+	    } else {
+		$policy =~ s/(?:Drop|Reject)/AllowICMPs,Broadcast(DROP),Multicast(DROP)/;
+	    }
+	}
+
+	$config{$_} = $policy;
+    }
 
     my $fn;
 
@@ -5499,7 +5525,13 @@ sub update_config_file( $ ) {
 			#
 			# OPTION='' - use default if 'Yes' or 'No'
 			#
-			$config{$var} = $val = $default if $default eq 'Yes' || $default eq 'No';
+			if ( $default eq 'Yes' || $default eq 'No' ) {
+			    $config{$var} = $val = $default;
+			} elsif ( $var eq 'CONFIG_PATH' ) {
+			    $val =~ s|^/etc/|\${CONFDIR}|;
+			    $val =~ s|:/etc/|:\${CONFDIR}/g|;
+			    $val =~ s|:/usr/share/|:\${SHAREDIR}|g;
+			}
 		    } else {
 			#
 			# Wasn't mentioned in old file - use default value
@@ -5507,7 +5539,6 @@ sub update_config_file( $ ) {
 			$config{$var} = $val = $default;
 
 		    }
-
 		}
 		if ( supplied $val ) {
 		    #
@@ -5988,9 +6019,12 @@ sub export_params() {
 }
 
 #
-# Walk the CONFIG_PATH converting FORMAT and COMMENT lines to compiler directives
+# Walk the CONFIG_PATH converting
+# - FORMAT and COMMENT lines to compiler directives
+# - single semicolons to double semicolons in lines beginning with 'INLINE', IPTABLES or IP6TABLES
+# - Rename macros/actions to their 5.2 counterparts
 #
-sub convert_to_directives() {
+sub convert_to_version_5_2() {
     my $sharedir = $shorewallrc{SHAREDIR};
     #
     # Make a copy of @config_path so that the for-loop below doesn't clobber that list
@@ -6001,7 +6035,7 @@ sub convert_to_directives() {
 
     my $dirtest = qr|^$sharedir/+shorewall6?(?:/.*)?$|;
 
-    progress_message3 "Converting 'FORMAT', 'SECTION' and 'COMMENT' lines to compiler directives...";
+    progress_message3 "Performing Shorewall 5.2 conversions...";
 
     for my $dir ( @path ) {
 	unless ( $dir =~ /$dirtest/ ) {
@@ -6012,40 +6046,129 @@ sub convert_to_directives() {
 
 		opendir( my $dirhandle, $dir ) || fatal_error "Cannot open directory $dir for reading:$!";
 
-		while ( my $file = readdir( $dirhandle ) ) {
-		    unless ( $file eq 'capabilities'       ||
-			     $file eq 'params'             ||
-			     $file =~ /^shorewall6?.conf$/ ||
-			     $file =~ /\.bak$/ ) {
-			$file = "$dir/$file";
-		
-			if ( -f $file && -w _ ) {
+		while ( my $fname = readdir( $dirhandle ) ) {
+		    unless ( $fname eq 'capabilities'       ||
+			     $fname eq 'params'             ||
+			     $fname =~ /^shorewall6?.conf$/ ||
+			     $fname =~ /\.bak$/ ) {
+			#
+			# File we are interested in
+			#
+			my $fullname = "$dir/$fname";
+
+			if ( -f $fullname && -w _ ) {
 			    #
 			    # writeable regular file
 			    #
-			    my $result = system << "EOF";
-			    perl -pi.bak -e '/^\\s*FORMAT\\s+/ && s/FORMAT/?FORMAT/;
-                                             /^\\s*SECTION\\s+/ && s/SECTION/?SECTION/;
-                                             if ( /^\\s*COMMENT\\s+/ ) {
-                                                 s/COMMENT/?COMMENT/;
-                                             } elsif ( /^\\s*COMMENT\\s*\$/ ) {
-                                                 s/COMMENT/?COMMENT/;
-                                             }' $file
-EOF
-			    if ( $result == 0 ) {
-				if ( system( "diff -q $file ${file}.bak > /dev/null" ) ) {
-				    progress_message3 "   File $file updated - old file renamed ${file}.bak";
-				} elsif ( rename "${file}.bak" , $file ) {
-				    progress_message "   File $file not updated -- no bare 'COMMENT', 'SECTION' or 'FORMAT' lines found";
-				    progress_message "   File $file not updated -- no bare 'COMMENT' or 'FORMAT' lines found";
+			    my $v5_2_update = ( $fname eq 'rules'          ||
+						$fname =~ /^action\./      ||
+						$fname =~ /^macro\./       ||
+						$fname eq 'snat'           ||
+						$fname eq 'mangle'         ||
+						$fname eq 'conntrack'      ||
+						$fname eq 'accounting'     ||
+						$fname eq 'masq'           ||
+						$fname eq 'policy' );
+			    my $is_policy   = ( $fname eq 'policy' );
+			    my @file;
+			    my ( $ifile, $ofile );
+			    my $omitting = 0;
+			    my $changed;
+
+			    open $ifile, '<', "$fullname" or fatal_error "Unable to open $fullname: $!";
+
+			    while ( <$ifile> ) {
+				if ( $omitting ) {
+				    $omitting = 0, next if /\s*\??end\s+(?:perl|shell)/i;
 				} else {
-				    warning message "Unable to rename ${file}.bak to $file:$!";
+				    $omitting = 1, next if /\s*\??begin\s+(?:perl|shell)/i;
 				}
+
+				unless ( $omitting || /^\s*[#?]/ ) {
+				    if ( /^\s*FORMAT\s+/ ) {
+					s/FORMAT/?FORMAT/;
+					$changed = 1;
+				    }
+
+				    if ( /^\s*SECTION\s+/ ) {
+					s/SECTION/?SECTION/;
+					$changed = 1;
+				    }
+
+				    if ( /^\s*COMMENT\s+/ ) {
+					s/COMMENT/?COMMENT/;
+					$changed = 1;
+				    } elsif ( /^\\s*COMMENT\\s*\$/ ) {
+					s/COMMENT/?COMMENT/;
+				    }
+
+				    if ( $v5_2_update ) {
+					if ( /\bA_AllowICMPs\b/ ) {
+					    s/A_AllowICMPs/AllowICMPs(A_ACCEPT)/;
+					    $changed = 1;
+					}
+
+					if ( $is_policy ) {
+					    if ( /\bA_(?:Drop|Reject)\b/ ) {
+						if ( $family == F_IPV4 ) {
+						    s/A_(?:Drop|Reject)/Broadcast(A_DROP),Multicast(A_DROP)/;
+						} else {
+						    s/A_(?:Drop|Reject)/AllowICMPS(A_ACCEPT),Broadcast(A_DROP),Multicast(A_DROP)/;
+						}
+
+						$changed = 1;
+					    } elsif ( /\b(?:Drop|Reject)\(\s*audit.*\)/ ) {
+						if ( $family == F_IPV4 ) {
+						    s/(?:Drop|Reject)\(\s*audit.*\)/Broadcast(A_DROP),Multicast(A_DROP)/;
+						} else {
+						    s/(?:Drop|Reject)\(\s*audit.*\)/AllowICMPs(A_ACCEPT),Broadcast(A_DROP),Multicast(A_DROP)/;
+						}
+
+						$changed = 1;
+					    } elsif ( /\b(?:Drop|Reject)\b/ ) {
+						if ( $family == F_IPV4 ) {
+						    s/(?:Drop|Reject)/Broadcast(DROP),Multicast(DROP)/;
+						} else {
+						    s/(?:Drop|Reject)/AllowICMPs,Broadcast(DROP),Multicast(DROP)/;
+						}
+
+						$changed = 1;
+					    }
+					} else {
+					    unless ( /;;/ ) {
+						if ( /^\s*(?:INLINE|IP6?TABLES)/ ) {
+						    s/;/;;/;
+						    $changed = 1;
+						} elsif ( /^[^#]*;\s*-[mgj]/ ) {
+						    s/;/;;/;
+						    $changed = 1;
+						}
+					    }
+
+					    if ( /\bSMTPTrap\b/ ) {
+						s/SMTPTrap/SMTPtrap/;
+						$changed = 1;
+					    }
+					}
+				    }
+				}
+
+				push @file, $_;
+			    }
+
+			    close $ifile;
+
+			    if ( $changed ) {
+				fatal_error "Can't rename $fullname to $fullname.bak" unless rename $fullname, "$fullname.bak";
+				open $ofile, '>', "$fullname" or fatal_error "Unable to open $fullname: $!";
+				print $ofile $_ for @file;
+				close $ofile;
+				progress_message3 "   File $fullname updated - old file renamed ${fullname}.bak";
 			    } else {
-				warning_message ("Unable to update file $file" );
+				progress_message "   File $file not updated -- no update required";
 			    }
 			} else {
-			    warning_message( "$file skipped (not writeable)" ) unless -d _;
+			    warning_message( "$fullname skipped (not writeable)" ) unless -d _;
 			}
 		    }
 		}
@@ -6918,7 +7041,7 @@ sub get_configuration( $$$ ) {
 	$variables{$var} = $config{$val};
     }
 
-    convert_to_directives if $update;
+    convert_to_version_5_2 if $update;
 
     cleanup_iptables if $sillyname && ! $config{LOAD_HELPERS_ONLY};
 }

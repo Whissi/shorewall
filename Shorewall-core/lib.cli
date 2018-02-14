@@ -87,6 +87,8 @@ showchain() # $1 = name of chain
 #
 validate_restorefile() # $* = label
 {
+    [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
     case $RESTOREFILE in
 	*/*)
 	    error_message "ERROR: $@ must specify a simple file name: $RESTOREFILE"
@@ -1189,6 +1191,26 @@ show_ipsec_command() {
     show_ipsec
 }
 
+show_saves_command() {
+    local f
+    local fn
+    local mtime
+
+    echo "$g_product $SHOREWALL_VERSION Saves at $g_hostname - $(date)"
+    echo "Saved snapshots are:"
+    echo
+
+    for f in ${VARDIR}/*-iptables; do
+	fn=$(basename $f)
+	fn=${fn%-iptables}
+	mtime=$(ls -lt $f | tail -n 1 | cut -d ' ' -f '6 7 8' )
+	[ $fn = "$RESTOREFILE" ] && fn="$fn (default)"
+	echo "   $mtime ${fn%-iptables}"
+    done
+
+    echo
+}
+
 #
 # Show Command Executor
 #
@@ -1477,6 +1499,10 @@ show_command() {
 	    [ $# -gt 1 ] && too_many_arguments $2
 	    only_root
 	    eval show_ipsec_command $g_pager
+	    ;;
+	saves)
+	    [ $# -gt 1 ] && too_many_arguments $2
+	    show_saves_command
 	    ;;
 	*)
 	    case "$PRODUCT" in
@@ -4348,6 +4374,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] opens"
     echo "   [ show | list | ls ] policies"
     echo "   [ show | list | ls ] routing"
+    echo "   [ show | list | ls ] saves"
     echo "   [ show | list | ls ] tc [ device ]"
     echo "   [ show | list | ls ] vardir"
     echo "   [ show | list | ls ] zones"

@@ -25,7 +25,7 @@
 # loaded after this one and replaces some of the functions declared here.
 #
 
-SHOREWALL_CAPVERSION=50112
+SHOREWALL_CAPVERSION=50200
 
 if [ -z "$g_basedir" ]; then
     #
@@ -2793,7 +2793,6 @@ determine_capabilities() {
     LENGTH_MATCH=
     CLASSIFY_TARGET=
     ENHANCED_REJECT=
-    USEPKTTYPE=
     KLUDGEFREE=
     MARK=
     XMARK=
@@ -3140,7 +3139,6 @@ determine_capabilities() {
 	fi
     fi
 
-    qt $g_tool -A $chain -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
     qt $g_tool -A $chain -m addrtype --src-type BROADCAST -j ACCEPT && ADDRTYPE=Yes
     qt $g_tool -A $chain -p tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1000:1500 -j ACCEPT && TCPMSS_MATCH=Yes
     qt $g_tool -A $chain -m hashlimit --hashlimit-upto 4 --hashlimit-burst 5 --hashlimit-name $chain --hashlimit-mode dstip -j ACCEPT && HASHLIMIT_MATCH=Yes
@@ -3254,7 +3252,6 @@ report_capabilities_unsorted() {
 	report_capability "Extended Connection Tracking Match Support (NEW_CONNTRACK_MATCH)" $NEW_CONNTRACK_MATCH
 	[ -n "$OLD_CONNTRACK_MATCH" ] && report_capability "Old Connection Tracking Match Syntax (OLD_CONNTRACK_MATCH)" $OLD_CONNTRACK_MATCH
     fi
-    report_capability "Packet Type Match (USEPKTTYPE)" $USEPKTTYPE
     report_capability "Policy Match (POLICY_MATCH)" $POLICY_MATCH
     report_capability "Physdev Match (PHYSDEV_MATCH)" $PHYSDEV_MATCH
     report_capability "Physdev-is-bridged Support (PHYSDEV_BRIDGE)" $PHYSDEV_BRIDGE
@@ -3371,8 +3368,6 @@ report_capabilities() {
 	report_capabilities_unsorted | sort
     fi
 
-    [ -n "$PKTTYPE" ] || USEPKTTYPE=
-
 }
 
 report_capabilities_unsorted1() {
@@ -3389,7 +3384,6 @@ report_capabilities_unsorted1() {
     report_capability1 CONNTRACK_MATCH
     report_capability1 NEW_CONNTRACK_MATCH
     report_capability1 OLD_CONNTRACK_MATCH
-    report_capability1 USEPKTTYPE
     report_capability1 POLICY_MATCH
     report_capability1 PHYSDEV_MATCH
     report_capability1 PHYSDEV_BRIDGE

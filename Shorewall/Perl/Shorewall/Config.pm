@@ -414,7 +414,6 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		                    'Old conntrack match syntax',
 		 NEW_CONNTRACK_MATCH =>
 		                    'Extended Connection Tracking Match',
-		 USEPKTTYPE      => 'Packet Type Match',
 		 POLICY_MATCH    => 'Policy Match',
 		 PHYSDEV_MATCH   => 'Physdev Match',
 		 PHYSDEV_BRIDGE  => 'Physdev-is-bridged support',
@@ -498,6 +497,9 @@ our %capdesc = ( NAT_ENABLED     => 'NAT',
 		 RESTORE_WAIT_OPTION
 				 => 'iptables-restore --wait option',
                  NAT_INPUT_CHAIN => 'INPUT chain in NAT table',
+		 #
+		 # Helpers
+		 #
 		 AMANDA_HELPER   => 'Amanda Helper',
 		 FTP_HELPER      => 'FTP Helper',
 		 FTP0_HELPER     => 'FTP-0 Helper',
@@ -835,7 +837,7 @@ sub initialize( $;$$$) {
 		    EXPORT                  => 0,
 		    KLUDGEFREE              => '',
 		    VERSION                 => '5.2.0-Beta1',
-		    CAPVERSION              => 50112 ,
+		    CAPVERSION              => 50200 ,
 		    BLACKLIST_LOG_TAG       => '',
 		    RELATED_LOG_TAG         => '',
 		    MACLIST_LOG_TAG         => '',
@@ -1049,7 +1051,6 @@ sub initialize( $;$$$) {
 	       CONNTRACK_MATCH => undef,
 	       NEW_CONNTRACK_MATCH => undef,
 	       OLD_CONNTRACK_MATCH => undef,
-	       USEPKTTYPE => undef,
 	       POLICY_MATCH => undef,
 	       PHYSDEV_MATCH => undef,
 	       PHYSDEV_BRIDGE => undef,
@@ -4751,10 +4752,6 @@ sub IPSET_V5() {
     $result;
 }
 
-sub Usepkttype() {
-    qt1( "$iptables $iptablesw -A $sillyname -m pkttype --pkt-type broadcast -j ACCEPT" );
-}
-
 sub Addrtype() {
     qt1( "$iptables $iptablesw -A $sillyname -m addrtype --src-type BROADCAST -j ACCEPT" );
 }
@@ -5110,7 +5107,6 @@ our %detect_capability =
       TIME_MATCH => \&Time_Match,
       TPROXY_TARGET => \&Tproxy_Target,
       UDPLITEREDIRECT => \&Udpliteredirect,
-      USEPKTTYPE => \&Usepkttype,
       XCONNMARK_MATCH => \&Xconnmark_Match,
       XCONNMARK => \&Xconnmark,
       XMARK => \&Xmark,
@@ -5221,7 +5217,6 @@ sub determine_capabilities() {
 	$capabilities{MANGLE_FORWARD}  = detect_capability( 'MANGLE_FORWARD' );
 	$capabilities{RAW_TABLE}       = detect_capability( 'RAW_TABLE' );
 	$capabilities{IPSET_MATCH}     = detect_capability( 'IPSET_MATCH' );
-	$capabilities{USEPKTTYPE}      = detect_capability( 'USEPKTTYPE' );
 	$capabilities{ADDRTYPE}        = detect_capability( 'ADDRTYPE' );
 	$capabilities{TCPMSS_MATCH}    = detect_capability( 'TCPMSS_MATCH' );
 	$capabilities{NFQUEUE_TARGET}  = detect_capability( 'NFQUEUE_TARGET' );

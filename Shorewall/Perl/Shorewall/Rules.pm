@@ -580,7 +580,7 @@ sub process_policy_actions( $$$ ) {
 	    for my $paction ( split_list3( $pactions, 'Policy Action' ) ) {
 		my ( $action, $level, $remainder ) = split( /:/, $paction, 3 );
 
-		fatal_error "Invalid policy action ($paction:$level:$remainder)" if defined $remainder;
+		fatal_error "Invalid policy action ($paction)" if defined $remainder;
 
 		push @pactions, process_policy_action( $originalpolicy, $policy, $action, $level );
 	    }

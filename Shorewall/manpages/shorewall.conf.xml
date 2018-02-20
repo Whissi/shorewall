@@ -1419,6 +1419,24 @@ net     all  DROP   info</programlisting>then the chain name is 'net-all'
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">LOG_ZONE=</emphasis>[<emphasis
+        role="bold"><option>src</option>|<option>dst</option>|<option>both</option></emphasis>]</term>
+
+        <listitem>
+          <para>Added in Shorewall 5.2.0. When a log message is issued from a
+          chain that relates to a pair of zones (e.g, 'fw-net'), the chain
+          name normally appears in the log message (unless LOGTAGONLY=Yes and
+          a log tag is specified). This can prevent OPTIMIZE category 8 from
+          combining chains which are identical except for the names of the
+          zones involved. LOG_ZONE allows for only the source or destination
+          zone to appear in the messages by setting LOG_ZONE to
+          <option>src</option> or <option>dest</option> respectively. If
+          LOG_ZONE=<option>both</option> (the default), then the full chain
+          name is included in log messages.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis
         role="bold">LOG_LEVEL=</emphasis><emphasis>log-level</emphasis>[:<replaceable>log-tag</replaceable>]</term>
 

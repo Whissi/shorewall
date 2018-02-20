@@ -282,7 +282,7 @@ sub process_accounting_rule1( $$$$$$$$$$$ ) {
 
 	    if ( $dest eq 'any' || $dest eq 'all' || $dest eq ALLIP ) {
 		expand_rule(
-			    ensure_rules_chain ( 'accountout' ) ,
+			    ensure_chain ( $config{ACCOUNTING_TABLE}, 'accountout' ) ,
 			    OUTPUT_RESTRICT ,
 			    $prerule ,
 			    $rule ,

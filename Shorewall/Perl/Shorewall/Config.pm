@@ -881,6 +881,7 @@ sub initialize( $;$$$) {
 	  UNTRACKED_LOG_LEVEL => undef,
 	  LOG_BACKEND => undef,
 	  LOG_LEVEL => undef,
+	  LOG_ZONE => undef,
 	  #
 	  # Location of Files
 	  #
@@ -3022,9 +3023,9 @@ sub process_compiler_directive( $$$$ ) {
 		      $var = $2 || 'chain';
 		      directive_error( "Shorewall variables may only be SET in the body of an action", $filename, $linenumber ) unless $actparams{0};
 		      my $val = $actparams{$var} = evaluate_expression ( $expression,
-									$filename,
-									$linenumber,
-									0  );
+									 $filename,
+									 $linenumber,
+									 0  );
 		      $parmsmodified = PARMSMODIFIED;
 		  } else {
 		      $variables{$2} = evaluate_expression( $expression,
@@ -6789,6 +6790,13 @@ sub get_configuration( $$$ ) {
 	}
 
 	$config{LOG_BACKEND} = $val;
+    }
+
+    if ( supplied( $val = $config{LOG_ZONE} ) ) {
+	fatal_error "Invalid LOG_ZONE setting ($val)" unless $val =~ /^(src|dst|both)$/i;
+	$config{LOG_ZONE} = lc( $val );
+    } else {
+	$config{LOG_ZONE} = 'both';
     }
 
     warning_message "RFC1918_LOG_LEVEL=$config{RFC1918_LOG_LEVEL} ignored. The 'norfc1918' interface/host option is no longer supported" if $config{RFC1918_LOG_LEVEL};

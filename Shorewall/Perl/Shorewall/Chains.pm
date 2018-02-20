@@ -172,6 +172,12 @@ our %EXPORT_TAGS = (
 				       related_chain
 				       invalid_chain
 				       untracked_chain
+				       rules_log
+				       blacklist_log
+				       established_log
+				       related_log
+				       invalid_log
+				       untracked_log
 				       zone_forward_chain
 				       use_forward_chain
 				       input_chain
@@ -2264,6 +2270,56 @@ sub invalid_chain($$) {
 #
 sub untracked_chain($$) {
     '&' . &rules_chain(@_);
+}
+
+#
+# Logname for chains between an ordered pair of zones
+#
+sub rules_log( $$ ) {
+    my $logchain = $config{LOG_ZONE};
+
+    if ( $logchain eq 'both' ) {
+	join "$config{ZONE2ZONE}", @_;
+    } elsif ( $logchain eq 'src' ) {
+	$_[0];
+    } else {
+	$_[1];
+    }
+}
+
+#
+# Log name of the blacklist chain between an ordered pair of zones
+#
+sub blacklist_log($$) {
+    &rules_log(@_) . '~';
+}
+
+#
+# Log name of the established chain between an ordered pair of zones
+#
+sub established_log($$) {
+    '^' . &rules_log(@_)
+}
+
+#
+# Log name of the related chain between an ordered pair of zones
+#
+sub related_log($$) {
+    '+' . &rules_log(@_);
+}
+
+#
+# Log name of the invalid chain between an ordered pair of zones
+#
+sub invalid_log($$) {
+    '_' . &rules_log(@_);
+}
+
+#
+# Name of the untracked chain between an ordered pair of zones
+#
+sub untracked_log($$) {
+    '&' . &rules_log(@_);
 }
 
 #
@@ -4629,7 +4685,7 @@ sub logchain( $$$$$$ ) {
 	log_irule_limit(
 		       $loglevel ,
 		       $logchainref ,
-		       $chainref->{name} ,
+		       $chainref->{logname} ,
 		       $disposition ,
 		       [] ,
 		       $logtag,
@@ -6808,13 +6864,13 @@ sub log_irule_limit( $$$$$$$$@ ) {
 sub log_rule( $$$$ ) {
     my ( $level, $chainref, $disposition, $matches ) = @_;
 
-    log_rule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGLIMIT}, '', 'add', $matches;
+    log_rule_limit $level, $chainref, $chainref->{logname} , $disposition, $globals{LOGLIMIT}, '', 'add', $matches;
 }
 
 sub log_irule( $$$;@ ) {
     my ( $level, $chainref, $disposition, @matches ) = @_;
 
-    log_irule_limit $level, $chainref, $chainref->{name} , $disposition, $globals{LOGILIMIT} , '', 'add', '', @matches;
+    log_irule_limit $level, $chainref, $chainref->{logname} , $disposition, $globals{LOGILIMIT} , '', 'add', '', @matches;
 }
 
 #

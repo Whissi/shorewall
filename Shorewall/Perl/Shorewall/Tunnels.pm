@@ -85,8 +85,8 @@ sub setup_tunnels() {
 	    for my $zone ( split_list $gatewayzones, 'zone' ) {
 		my $type = zone_type( $zone );
 		fatal_error "Invalid zone ($zone) for GATEWAY ZONE" if $type == FIREWALL || $type == BPORT;
-		$inchainref  = ensure_rules_chain( rules_chain( ${zone}, ${fw} ) );
-		$outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );
+		$inchainref  = ensure_rules_chain( ${zone}, ${fw} );
+		$outchainref = ensure_rules_chain( ${fw}, ${zone} );
 
 		unless ( have_ipsec ) {
 		    add_tunnel_rule $inchainref,  p => 50, @$source;
@@ -250,8 +250,8 @@ sub setup_tunnels() {
 
 	fatal_error "Invalid tunnel ZONE ($zone)" if $zonetype & ( FIREWALL | BPORT );
 
-	my $inchainref  = ensure_rules_chain( rules_chain( ${zone}, ${fw} ) );
-	my $outchainref = ensure_rules_chain( rules_chain( ${fw}, ${zone} ) );
+	my $inchainref  = ensure_rules_chain( ${zone}, ${fw}   );
+	my $outchainref = ensure_rules_chain( ${fw},   ${zone} );
 
 	$gateways = ALLIP if $gateways eq '-';
 

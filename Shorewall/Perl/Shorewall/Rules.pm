@@ -112,6 +112,13 @@ our %section_functions = ( ALL_SECTION ,        \&rules_chain,
 			   UNTRACKED_SECTION,   \&untracked_chain,
 			   NEW_SECTION,         \&rules_chain );
 
+our %log_functions = ( ALL_SECTION ,         \&rules_log ,
+		       BLACKLIST_SECTION ,   \&blacklist_log ,
+		       ESTABLISHED_SECTION , \&established_log ,
+		       RELATED_SECTION ,     \&related_log ,
+		       INVALID_SECTION ,     \&invalid_log ,
+		       UNTRACKED_SECTION ,   \&untracked_log ,
+		       NEW_SECTION ,         \&rules_log );
 #
 # Section => STATE map - initialized in process_rules().
 #
@@ -403,8 +410,8 @@ sub initialize( $ ) {
 #
 # Create a rules chain
 #
-sub new_rules_chain( $ ) {
-    my $chainref = new_chain( 'filter', $_[0] );
+sub new_rules_chain( $$ ) {
+    my $chainref = new_chain( 'filter', &rules_chain( @_ ), &rules_log( @_ ) );
 
     if ( $config{FASTACCEPT} ) {
 	if ( $globals{RELATED_TARGET} eq 'ACCEPT' && ! $config{RELATED_LOG_LEVEL} ) {
@@ -445,7 +452,7 @@ sub new_policy_chain($$$$$)
 {
     my ($source, $dest, $policy, $provisional, $audit) = @_;
 
-    my $chainref = new_rules_chain( rules_chain( ${source}, ${dest} ) );
+    my $chainref = new_rules_chain( ${source}, ${dest} );
 
     convert_to_policy_chain( $chainref, $source, $dest, $policy, $provisional, $audit );
 
@@ -455,9 +462,11 @@ sub new_policy_chain($$$$$)
 #
 # Set the passed chain's policychain and policy to the passed values.
 #
-sub set_policy_chain($$$$$$)
+sub set_policy_chain($$$$$)
 {
-    my ( $chain, $source, $dest, $polchainref, $policy, $intrazone ) = @_;
+    my ( $source, $dest, $polchainref, $policy, $intrazone ) = @_;
+
+    my $chain = rules_chain( $source, $dest );
 
     my $chainref = $filter_table->{$chain};
 
@@ -467,7 +476,7 @@ sub set_policy_chain($$$$$$)
 	    $chainref->{provisional} = '';
 	}
     } else {
-	$chainref = new_rules_chain $chain;
+	$chainref = new_rules_chain( $source, $dest );
     }
 
     unless ( $chainref->{policychain} ) {
@@ -483,6 +492,7 @@ sub set_policy_chain($$$$$$)
 	    if ( defined $polchainref->{synparams} ) {
 		$chainref->{synparams}   = $polchainref->{synparams};
 		$chainref->{synchain}    = $polchainref->{synchain};
+		$chainref->{synlog}      = $polchainref->{synlog};
 	    }
 
 	    $chainref->{pactions}    = $polchainref->{pactions} || [];
@@ -743,7 +753,8 @@ sub process_a_policy1($$$$$$$) {
 	$value  = do_ratelimit $synparams, 'ACCEPT'  if $synparams ne '';
 	$value .= do_connlimit $connlimit            if $connlimit ne '';
 	$chainref->{synparams} = $value;
-	$chainref->{synchain}  = $chain
+	$chainref->{synchain}  = $chain;
+	$chainref->{synlog}    = '@' . $chainref->{logname};
     }
 
     $chainref->{pactions} = $pactionref;
@@ -753,19 +764,19 @@ sub process_a_policy1($$$$$$$) {
 	if ( $serverwild ) {
 	    for my $zone ( @zonelist ) {
 		for my $zone1 ( @zonelist ) {
-		    set_policy_chain rules_chain( ${zone}, ${zone1} ), $zone, $zone1, $chainref, $policy, $intrazone;
+		    set_policy_chain $zone, $zone1, $chainref, $policy, $intrazone;
 		    print_policy $zone, $zone1, $originalpolicy, $chain;
 		}
 	    }
 	} else {
 	    for my $zone ( all_zones ) {
-		set_policy_chain rules_chain( ${zone}, ${server} ), $zone, $server, $chainref, $policy, $intrazone;
+		set_policy_chain $zone, $server, $chainref, $policy, $intrazone;
 		print_policy $zone, $server, $originalpolicy, $chain;
 	    }
 	}
     } elsif ( $serverwild ) {
 	for my $zone ( @zonelist ) {
-	    set_policy_chain rules_chain( ${client}, ${zone} ), $client, $zone, $chainref, $policy, $intrazone;
+	    set_policy_chain $client, $zone, $chainref, $policy, $intrazone;
 	    print_policy $client, $zone, $originalpolicy, $chain;
 	}
     } else {
@@ -832,6 +843,8 @@ sub save_policies() {
     }
 }
 
+sub ensure_rules_chain( $$ );
+
 #
 # Process the policy file
 #
@@ -881,19 +894,15 @@ sub process_policies()
 	if ( $type == LOCAL ) {
 	    for my $zone1 ( off_firewall_zones ) {
 		unless ( $zone eq $zone1 ) {
-		    my $name  = rules_chain( $zone,  $zone1 );
-		    my $name1 = rules_chain( $zone1, $zone  );
-		    set_policy_chain( $name,  $zone,  $zone1, ensure_rules_chain( $name  ), 'NONE', 0 );
-		    set_policy_chain( $name1, $zone1, $zone,  ensure_rules_chain( $name1 ), 'NONE', 0 );
+		    set_policy_chain( $zone,  $zone1, ensure_rules_chain( $zone, $zone1  ), 'NONE', 0 );
+		    set_policy_chain( $zone1, $zone,  ensure_rules_chain( $zone1, $zone ), 'NONE', 0 );
 		}
 	    }
 	} elsif ( $type == LOOPBACK ) {
 	    for my $zone1 ( off_firewall_zones ) {
 		unless ( $zone eq $zone1 || zone_type( $zone1 ) == LOOPBACK ) {
-		    my $name  = rules_chain( $zone,  $zone1 );
-		    my $name1 = rules_chain( $zone1, $zone  );
-		    set_policy_chain( $name,  $zone,  $zone1, ensure_rules_chain( $name  ), 'NONE', 0 );
-		    set_policy_chain( $name1, $zone1, $zone,  ensure_rules_chain( $name1 ), 'NONE', 0 );
+		    set_policy_chain( $zone,  $zone1, ensure_rules_chain( $zone, $zone1  ), 'NONE', 0 );
+		    set_policy_chain( $zone1, $zone,  ensure_rules_chain( $zone1, $zone ), 'NONE', 0 );
 		}
 	    }
 	}
@@ -1062,7 +1071,7 @@ sub complete_policy_chain( $$$ ) { #Chainref, Source Zone, Destination Zone
     progress_message_nocompress "   Policy $policy from $_[1] to $_[2] using chain $chainref->{name}";
 }
 
-sub ensure_rules_chain( $ );
+sub finish_chain_sections( $ );
 
 #
 # Finish all policy Chains
@@ -1076,7 +1085,7 @@ sub complete_policy_chains() {
 	    my $provisional = $chainref->{provisional};
 	    my $defaults    = $chainref->{pactions};
 	    my $name        = $chainref->{name};
-	    my $synparms    = $chainref->{synparms};
+	    my $synparams   = $chainref->{synparams};
 
 	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
 		if ( $config{OPTIMIZE} & 2 ) {
@@ -1086,13 +1095,13 @@ sub complete_policy_chains() {
 		    # is a single jump. Generate_matrix() will just use the policy target when
 		    # needed.
 		    #
-		    ensure_rules_chain $name if ( @$defaults         ||
-						  $loglevel          ||
-						  $synparms          ||
-						  $config{MULTICAST} ||
-						  ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} ) );
+		    finish_chain_sections( $chainref ) if ( @$defaults         ||
+							    $loglevel          ||
+							    $synparams         ||
+							    $config{MULTICAST} ||
+							    ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} ) );
 		} else {
-		    ensure_rules_chain $name;
+		    finish_chain_sections( $chainref );
 		}
 	    }
 
@@ -1149,13 +1158,14 @@ sub setup_syn_flood_chains() {
 	my $limit = $chainref->{synparams};
 	if ( $limit && ! $filter_table->{syn_flood_chain $chainref} ) {
 	    my $level = $chainref->{loglevel};
-	    my $synchainref = @zones > 1 ?
-		    new_chain 'filter' , syn_flood_chain $chainref :
-		    new_chain( 'filter' , '@' . $chainref->{name} );
+	    my $synchainref =
+		@zones > 1 ?
+		new_chain( 'filter' , syn_flood_chain $chainref , $chainref->{synlog} ) :
+		new_chain( 'filter' , '@' . $chainref->{name}   , '@' . $chainref->{logname} );
 	    add_rule $synchainref , "${limit}-j RETURN";
 	    log_irule_limit( $level ,
 			     $synchainref ,
-			     $synchainref->{name} ,
+			     $synchainref->{logname} ,
 			     'DROP',
 			     @{$globals{LOGILIMIT}} ? $globals{LOGILIMIT} : [ limit => "--limit 5/min --limit-burst 5" ] ,
 			    '' ,
@@ -1227,7 +1237,7 @@ sub finish_chain_section ($$$) {
 
 		    log_rule_limit( $level,
 				    $chain2ref,
-				    $chain2ref->{name},
+				    $chain2ref->{logname},
 				    uc $target,
 				    $globals{LOGLIMIT},
 				    $tag ,
@@ -1306,20 +1316,9 @@ sub finish_chain_section ($$$) {
     pop_comment( $save_comment );
 }
 
-#
-# Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
-#
-# Return a reference to the chain's table entry.
-#
-sub ensure_rules_chain( $ )
-{
-    my ($chain) = @_;
+sub finish_chain_sections( $ ) {
+    my ( $chainref ) = @_;
 
-    my $chainref = $filter_table->{$chain};
-
-    $chainref = new_rules_chain( $chain ) unless $chainref;
-
-    unless ( $chainref->{referenced} ) {
 	if ( $section & ( NEW_SECTION | POLICYACTION_SECTION ) ) {
 	    finish_chain_section $chainref , $chainref, 'ESTABLISHED,RELATED,INVALID,UNTRACKED';
 	} elsif ( $section == UNTRACKED_SECTION ) {
@@ -1331,7 +1330,24 @@ sub ensure_rules_chain( $ )
 	}
 
 	$chainref->{referenced} = 1;
-    }
+}
+ 
+#
+# Create a rules chain if necessary and populate it with the appropriate ESTABLISHED,RELATED rule(s) and perform SYN rate limiting.
+#
+# Return a reference to the chain's table entry.
+#
+sub ensure_rules_chain( $$ )
+{
+    my ($source, $dest) = @_;
+
+    my $chain = rules_chain( $source, $dest );
+
+    my $chainref = $filter_table->{$chain};
+
+    $chainref = new_rules_chain( $source, $dest ) unless $chainref;
+
+    finish_chain_sections( $chainref ) unless $chainref->{referenced};
 
     $chainref;
 }
@@ -2967,7 +2983,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 	#
 	# Mark the chain as referenced and add appropriate rules from earlier sections.
 	#
-	$chainref = ensure_rules_chain $chain;
+	$chainref = ensure_rules_chain ${sourcezone}, ${destzone};
 	#
 	# Handle rules in the BLACKLIST, ESTABLISHED, RELATED, INVALID and UNTRACKED sections
 	#
@@ -2977,7 +2993,7 @@ sub process_rule ( $$$$$$$$$$$$$$$$$$$$ ) {
 
 	    unless ( $auxref ) {
 		my $save_comment = push_comment;
-		$auxref = new_chain 'filter', $auxchain;
+		$auxref = new_chain 'filter', $auxchain, $log_functions{$section}->( $sourcezone, $destzone );
 		$auxref->{blacklistsection} = 1 if $blacklist;
 
 		add_ijump( $chainref, j => $auxref, state_imatch( $section_states{$section} ) );

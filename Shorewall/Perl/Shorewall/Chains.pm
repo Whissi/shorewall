@@ -2585,13 +2585,14 @@ sub reserved_name( $ ) {
 #
 # Create a new chain and return a reference to it.
 #
-sub new_chain($$)
+sub new_chain($$;$)
 {
-    my ($table, $chain) = @_;
+    my ($table, $chain, $logchain) = @_;
 
     assert( $chain_table{$table} && ! ( $chain_table{$table}{$chain} || $builtin_target{ $chain } ) );
 
     my $chainref = { name           => $chain,
+		     logname        => $logchain || $chain,
 		     rules          => [],
 		     table          => $table,
 		     loglevel       => '',
@@ -2612,7 +2613,7 @@ sub new_chain($$)
 #
 # Find a chain
 #
-sub find_chain($$) {
+sub find_chain($$;$) {
     my ($table, $chain) = @_;
 
     assert( $table && $chain && $chain_table{$table} );
@@ -2623,7 +2624,7 @@ sub find_chain($$) {
 #
 # Create a chain if it doesn't exist already
 #
-sub ensure_chain($$)
+sub ensure_chain($$;$)
 {
     &find_chain( @_ ) || &new_chain( @_ );
 }

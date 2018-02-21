@@ -1076,7 +1076,7 @@ sub complete_policy_chains() {
 	    my $provisional = $chainref->{provisional};
 	    my $defaults    = $chainref->{pactions};
 	    my $name        = $chainref->{name};
-	    my $synparms    = $chainref->{synparms};
+	    my $synparams   = $chainref->{synparams};
 
 	    unless ( $chainref->{referenced} || $provisional || $policy eq 'CONTINUE' ) {
 		if ( $config{OPTIMIZE} & 2 ) {
@@ -1088,7 +1088,7 @@ sub complete_policy_chains() {
 		    #
 		    ensure_rules_chain $name if ( @$defaults         ||
 						  $loglevel          ||
-						  $synparms          ||
+						  $synparams         ||
 						  $config{MULTICAST} ||
 						  ! ( $policy eq 'ACCEPT' || $config{FASTACCEPT} ) );
 		} else {

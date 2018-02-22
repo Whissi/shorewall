@@ -3980,7 +3980,7 @@ sub optimize_level8( $$$ ) {
 					'',      # Origin
 					1 );     # Recalculate digests of modified chains
 
-		    unless ( $chainref->{name} =~ /^~/ || $chainref1->{name} =~ /^%/ ) {
+		    if ( $config{RENAME_COMBINED} && $chainref->{name} !~ /^[~%]/ ) {
 			#
 			# For simple use of the BLACKLIST section, we can end up with many identical
 			# chains. To distinguish them from other renamed chains, we keep track of

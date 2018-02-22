@@ -995,6 +995,7 @@ sub initialize( $;$$$) {
 	  BALANCE_PROVIDERS => undef ,
 	  PERL_HASH_SEED => undef ,
 	  USE_NFLOG_SIZE => undef ,
+	  RENAME_COMBINED => undef ,
 	  #
 	  # Packet Disposition
 	  #
@@ -6540,6 +6541,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'AUTOCOMMENT'                , 'Yes';
     default_yes_no 'MULTICAST'                  , '';
     default_yes_no 'MARK_IN_FORWARD_CHAIN'      , '';
+    default_yes_no 'RENAME_COMBINED'            , 'Yes';
 
     if ( supplied ( $val = $config{TRACK_RULES} ) ) {
 	if ( lc( $val ) eq 'file' ) {

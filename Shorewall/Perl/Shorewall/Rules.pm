@@ -1232,7 +1232,7 @@ sub finish_chain_section ($$$) {
 		    if ( $twochains ) {
 			$chain2ref = $chainref;
 		    } else {
-			$chain2ref = new_chain( 'filter', "${char}$chainref->{name}" );
+			$chain2ref = new_chain( 'filter', "${char}$chainref->{name}" , "${char}$chainref->{logname}" );
 		    }
 
 		    log_rule_limit( $level,

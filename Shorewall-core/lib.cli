@@ -417,9 +417,9 @@ resolve_arptables() {
 savesets() {
     local supported
 
-    supported=$(run_it ${VARDIR}/firewall help | fgrep savesets )
+    supported=$(run_it $g_firewall help | fgrep savesets )
 
-    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${g_restorepath}-ipsets 
+    [ -n "$supported" ] && run_it $g_firewall savesets ${g_restorepath}-ipsets 
 }
 
 #
@@ -428,9 +428,9 @@ savesets() {
 savesets1() {
     local supported
 
-    supported=$(run_it ${VARDIR}/firewall help | fgrep savesets )
+    supported=$(run_it $g_firewall help | fgrep savesets )
 
-    [ -n "$supported" ] && run_it ${VARDIR}/firewall savesets ${VARDIR}/ipsets.save && progress_message3 "The ipsets have been saved to ${VARDIR}/ipsets.save"
+    [ -n "$supported" ] && run_it $g_firewall savesets ${VARDIR}/ipsets.save && progress_message3 "The ipsets have been saved to ${VARDIR}/ipsets.save"
 }
 
 #
@@ -441,9 +441,9 @@ do_save() {
     local arptables
     status=0
 
-    if [ -f ${VARDIR}/firewall ]; then
+    if [ -f $g_firewall ]; then
 	if $iptables_save | grep -v -- '-A dynamic.* -j ACCEPT' > ${VARDIR}/restore-$$; then
-	    cp -f ${VARDIR}/firewall $g_restorepath
+	    cp -f $g_firewall $g_restorepath
 	    mv -f ${VARDIR}/restore-$$ ${g_restorepath}-iptables
 	    chmod 700 $g_restorepath
 	    chmod 600 ${g_restorepath}-iptables
@@ -455,7 +455,7 @@ do_save() {
 	    status=1
 	fi
     else
-	echo "   ERROR: ${VARDIR}/firewall does not exist" >&2
+	echo "   ERROR: $g_firewall does not exist" >&2
 	status=1
     fi
 
@@ -3947,7 +3947,7 @@ get_config() {
 
     ensure_config_path
 
-    [ -f ${VARDIR}/firewall.conf ] && . ${VARDIR}/firewall.conf
+    [ -f $g_firewall.conf ] && . ${VARDIR}/firewall.conf
 
     [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
@@ -4101,15 +4101,15 @@ start_command() {
 	rc=0
 	[ -n "$g_nolock" ] || mutex_on
 
-	if [ -x ${VARDIR}/firewall ]; then
-	    if [ -n "$g_fast" -a -x ${VARDIR}/${RESTOREFILE} -a ! ${VARDIR}/firewall -nt ${VARDIR}/${RESTOREFILE} ]; then
+	if [ -x $g_firewall ]; then
+	    if [ -n "$g_fast" -a -x ${VARDIR}/${RESTOREFILE} -a ! $g_firewall -nt ${VARDIR}/${RESTOREFILE} ]; then
 		run_it ${VARDIR}/${RESTOREFILE} $g_debugging restore
 	    else
-		run_it ${VARDIR}/firewall $g_debugging start
+		run_it $g_firewall $g_debugging start
 	    fi
 	    rc=$?
 	else
-	    error_message "${VARDIR}/firewall is missing or is not executable"
+	    error_message "$g_firewall is missing or is not executable"
 	    mylogger kern.err "ERROR:$g_product start failed"
 	    rc=6
 	fi
@@ -4238,11 +4238,11 @@ restart_command() {
 
     [ -n "$g_nolock" ] || mutex_on
 
-    if [ -x ${VARDIR}/firewall ]; then
-	run_it ${VARDIR}/firewall $g_debugging $COMMAND
+    if [ -x $g_firewall ]; then
+	run_it $g_firewall $g_debugging $COMMAND
 	rc=$?
     else
-	error_message "${VARDIR}/firewall is missing or is not executable"
+	error_message "$g_firewall is missing or is not executable"
 	mylogger kern.err "ERROR:$g_product $COMMAND failed"
 	rc=6
     fi
@@ -4252,10 +4252,10 @@ restart_command() {
 }
 
 run_command() {
-    if [ -x ${VARDIR}/firewall ] ; then
-	run_it ${VARDIR}/firewall $g_debugging $@
+    if [ -x $g_firewall ] ; then
+	run_it $g_firewall $g_debugging $@
     else
-	fatal_error "${VARDIR}/firewall does not exist or is not executable"
+	fatal_error "$g_firewall does not exist or is not executable"
     fi
 }
 
@@ -4640,7 +4640,7 @@ shorewall_cli() {
 	    only_root
 	    get_config Yes
 	    if product_is_started; then
-		run_it ${VARDIR}/firewall $g_debugging $@
+		run_it $g_firewall $g_debugging $@
 	    else
 		fatal_error "$g_product is not running"
 	    fi

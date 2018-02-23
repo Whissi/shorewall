@@ -635,7 +635,7 @@ start_command() {
     esac
 
     if [ -n "${g_fast}${AUTOMAKE}" ]; then
-	if ! uptodate ${VARDIR}/firewall; then
+	if ! uptodate $g_firewall; then
 	    g_fast=
 	    AUTOMAKE=
 	fi
@@ -643,7 +643,7 @@ start_command() {
 
     if [ -n "$AUTOMAKE" ]; then
 	[ -n "$nolock" ] || mutex_on
-	run_it ${VARDIR}/firewall $g_debugging start
+	run_it $g_firewall $g_debugging start
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     else
@@ -724,7 +724,7 @@ compile_command() {
 
     case $# in
 	0)
-	    [ -n "$g_export" ] && g_file=firewall || g_file=${VARDIR}/firewall
+	    [ -n "$g_export" ] && g_file=firewall || g_file=$g_firewall
 	    ;;
 	1)
 	    g_file=$1
@@ -1021,7 +1021,7 @@ restart_command() {
     [ -n "$STARTUP_ENABLED" ] || not_configured_error "Startup is disabled"
 
     if [ -z "$g_fast" -a -n "$AUTOMAKE" ]; then
-	uptodate ${VARDIR}/firewall && g_fast=Yes
+	uptodate $g_firewall && g_fast=Yes
     fi
 
     g_file="${VARDIR}/.${COMMAND}"
@@ -1037,9 +1037,9 @@ restart_command() {
 	    mylogger kern.err "ERROR:$g_product ${COMMAND} failed"
 	fi
     else
-	[ -x ${VARDIR}/firewall ] || fatal_error "No ${VARDIR}/firewall file found"
+	[ -x $g_firewall ] || fatal_error "No $g_firewall file found"
 	[ -n "$nolock" ] || mutex_on
-	run_it ${VARDIR}/firewall $g_debugging $COMMAND
+	run_it $g_firewall $g_debugging $COMMAND
 	rc=$?
 	[ -n "$nolock" ] || mutex_off
     fi
@@ -1631,11 +1631,11 @@ export_command() # $* = original arguments less the command.
 }
 
 run_command() {
-    if [ -x ${VARDIR}/firewall ] ; then
-	uptodate ${VARDIR}/firewall || echo "   WARNING: ${VARDIR}/firewall is not up to date" >&2
-	run_it ${VARDIR}/firewall $g_debugging $@
+    if [ -x $g_firewall ] ; then
+	uptodate $g_firewall || echo "   WARNING: $g_firewall is not up to date" >&2
+	run_it $g_firewall $g_debugging $@
     else
-	fatal_error "${VARDIR}/firewall does not exist or is not executable"
+	fatal_error "$g_firewall does not exist or is not executable"
     fi
 }
 

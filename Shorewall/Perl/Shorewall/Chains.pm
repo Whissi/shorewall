@@ -4570,8 +4570,8 @@ sub optimize_ruleset() {
 	my $optimize = $config{OPTIMIZE};
 
 	$passes = optimize_level4(  $table, $tableref )           if $optimize & 4;
-	$passes = optimize_level8(  $table, $tableref , $passes ) if $optimize & 8;
 	$passes = optimize_level16( $table, $tableref , $passes ) if $optimize & 16;
+	$passes = optimize_level8(  $table, $tableref , $passes ) if $optimize & 8;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

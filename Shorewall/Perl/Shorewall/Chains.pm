@@ -4563,15 +4563,21 @@ sub valid_tables() {
 
 sub optimize_ruleset() {
 
+    my $optimize = $config{OPTIMIZE};
+
     for my $table ( valid_tables ) {
 
 	my $tableref = $chain_table{$table};
 	my $passes   = 0;
-	my $optimize = $config{OPTIMIZE};
 
 	$passes = optimize_level4(  $table, $tableref )           if $optimize & 4;
 	$passes = optimize_level16( $table, $tableref , $passes ) if $optimize & 16;
+
+	my $savepasses = $passes;
+
 	$passes = optimize_level8(  $table, $tableref , $passes ) if $optimize & 8;
+
+	$passes = optimize_level16( $table, $tableref , $passes ) if $optimize & 16 && $passes > $savepasses + 1;
 
 	progress_message "  Table $table Optimized -- Passes = $passes";
 	progress_message '';

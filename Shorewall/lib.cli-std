@@ -642,17 +642,17 @@ start_command() {
     fi
 
     if [ -n "$AUTOMAKE" ]; then
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging start
 	rc=$?
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     else
 	g_file="${VARDIR}/.start"
-	if compiler $g_debugging $nolock compile "$g_file"; then
-	    [ -n "$nolock" ] || mutex_on
+	if compiler $g_debugging $g_nolock compile "$g_file"; then
+	    [ -n "$g_nolock" ] || mutex_on
 	    run_it ${VARDIR}/.start $g_debugging start
 	    rc=$?
-	    [ -n "$nolock" ] || mutex_off
+	    [ -n "$g_nolock" ] || mutex_off
 	else
 	    rc=$?
 	    mylogger kern.err "ERROR:$g_product start failed"
@@ -834,7 +834,7 @@ check_command() {
 
     g_doing="Checking"
 
-    compiler $g_debugging $nolock check
+    compiler $g_debugging $g_nolock check
 }
 
 #
@@ -925,7 +925,7 @@ update_command() {
 
     g_doing="Updating"
 
-    compiler $g_debugging $nolock check
+    compiler $g_debugging $g_nolock check
 }
 
 #
@@ -1027,21 +1027,21 @@ restart_command() {
     g_file="${VARDIR}/.${COMMAND}"
 
     if [ -z "$g_fast" ]; then
-	if compiler $g_debugging $nolock compile "$g_file"; then
-	    [ -n "$nolock" ] || mutex_on
+	if compiler $g_debugging $g_nolock compile "$g_file"; then
+	    [ -n "$g_nolock" ] || mutex_on
 	    run_it ${VARDIR}/.${COMMAND} $g_debugging ${COMMAND}
 	    rc=$?
-	    [ -n "$nolock" ] || mutex_off
+	    [ -n "$g_nolock" ] || mutex_off
 	else
 	    rc=$?
 	    mylogger kern.err "ERROR:$g_product ${COMMAND} failed"
 	fi
     else
 	[ -x $g_firewall ] || fatal_error "No $g_firewall file found"
-	[ -n "$nolock" ] || mutex_on
+	[ -n "$g_nolock" ] || mutex_on
 	run_it $g_firewall $g_debugging $COMMAND
 	rc=$?
-	[ -n "$nolock" ] || mutex_off
+	[ -n "$g_nolock" ] || mutex_off
     fi
 
     return $rc
@@ -1169,7 +1169,7 @@ safe_commands() {
 	    ;;
     esac
 
-    [ -n "$nolock" ] || mutex_on
+    [ -n "$g_nolock" ] || mutex_on
 
     if run_it ${VARDIR}/.$command $g_debugging $command; then
 
@@ -1184,7 +1184,7 @@ safe_commands() {
 		run_it ${VARDIR}/.$command clear
 	    fi
 
-	    [ -n "$nolock" ] || mutex_off
+	    [ -n "$g_nolock" ] || mutex_off
 
 	    echo "New configuration has been rejected and the old one restored"
 	    exit 2
@@ -1192,7 +1192,7 @@ safe_commands() {
 
     fi
 
-    [ -n "$nolock" ] || mutex_off
+    [ -n "$g_nolock" ] || mutex_off
 }
 
 #
@@ -1282,7 +1282,7 @@ try_command() {
 
     g_file="${VARDIR}/.$command"
 
-    if ! compiler $g_debugging $nolock compile "$g_file"; then
+    if ! compiler $g_debugging $g_nolock compile "$g_file"; then
 	status=$?
 	exit $status
     fi
@@ -1302,7 +1302,7 @@ try_command() {
 	    ;;
     esac
 
-    [ -n "$nolock" ] || mutex_on
+    [ -n "$g_nolock" ] || mutex_on
 
     if run_it ${VARDIR}/.$command $g_debugging $command && [ -n "$timeout" ]; then
 	sleep $timeout
@@ -1314,7 +1314,7 @@ try_command() {
 	fi
     fi
 
-    [ -n "$nolock" ] || mutex_off
+    [ -n "$g_nolock" ] || mutex_off
 
     return 0
 }

@@ -464,7 +464,7 @@
       <varlistentry>
         <term><emphasis role="bold">AUTOMAKE=</emphasis>[<emphasis
         role="bold">Yes</emphasis>|<emphasis
-        role="bold">No</emphasis>|<replaceable>depth</replaceable>]</term>
+        role="bold">No</emphasis>|<option>recursive</option>|<replaceable>depth</replaceable>]</term>
 
         <listitem>
           <para>If set, the behavior of the <command>start</command>,
@@ -492,13 +492,17 @@
           Prior to 5.1.10.2, a change to a file in or adding a file to
           /etc/shorewall/rules.d/loc/ would trigger recompilation. Beginning
           with 5.1.10.2, such changes would not trigger recompilation.
-          Beginning with Shorewall 5.2.0, AUTOMAKE may be set to a numeric
-          <replaceable>depth</replaceable> which specifies how deeply each
-          listed directory is to be searched. AUTOMAKE=1 only searches each
-          directory itself and is equivalent to AUTOMAKE=Yes. AUTOMAKE=2 will
-          search each directory and its immediate sub-directories; AUTOMAKE=3
-          will search each diretory, each of its immediate sub-directories,
-          and each of their immediate sub-directories, etc.</para>
+          Beginning with Shorewall 5.2.0, the pre-5.1.10.2 behavior can be
+          obtained by setting AUTOMAKE=recursive.</para>
+
+          <para>Also beginning with Shorewall 5.2.0, AUTOMAKE may be set to a
+          numeric <replaceable>depth</replaceable> which specifies how deeply
+          each listed directory is to be searched. AUTOMAKE=1 only searches
+          each directory itself and is equivalent to AUTOMAKE=Yes. AUTOMAKE=2
+          will search each directory and its immediate sub-directories;
+          AUTOMAKE=3 will search each diretory, each of its immediate
+          sub-directories, and each of their immediate sub-directories,
+          etc.</para>
         </listitem>
       </varlistentry>
 

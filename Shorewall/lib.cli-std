@@ -290,6 +290,9 @@ get_config() {
 	    ;;
 	[1-9][0-9])
 	    ;;
+	[Rr]ecursive)
+	    AUTOMAKE=recursive
+	    ;;
 	*)
 	    if [ -n "$AUTOMAKE" ]; then
 		fatal_error "Invalid AUTOMAKE setting ($AUTOMAKE)"
@@ -402,7 +405,15 @@ uptodate() {
 	    #
 	    # Busybox 'find' doesn't support -quit.
 	    #
-	    if [ -n "$(${find} ${dir} -maxdepth $AUTOMAKE -type f -newer $1 -print)" ]; then
+	    if [ $AUTOMAKE = recursive ]; then
+		if [ -n "$(${find} ${dir} -newer $1 -print)" ]; then
+		    return 1;
+		fi
+	    elif  [ -n "$(${find} ${dir} -maxdepth $AUTOMAKE -type f -newer $1 -print)" ]; then
+		return 1;
+	    fi
+	elif [ $AUTOMAKE = recursive ]; then
+	    if [ -n "$(${find} ${dir} -newer $1 -print -quit)" ]; then
 		return 1;
 	    fi
 	elif [ -n "$(${find} ${dir} -maxdepth $AUTOMAKE -type f -newer $1 -print -quit)" ]; then

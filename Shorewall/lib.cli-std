@@ -281,9 +281,14 @@ get_config() {
 
     case $AUTOMAKE in
 	Yes|yes)
+	    AUTOMAKE=1
 	    ;;
 	No|no)
 	    AUTOMAKE=
+	    ;;
+	[1-9])
+	    ;;
+	[1-9][0-9])
 	    ;;
 	*)
 	    if [ -n "$AUTOMAKE" ]; then
@@ -397,10 +402,10 @@ uptodate() {
 	    #
 	    # Busybox 'find' doesn't support -quit.
 	    #
-	    if [ -n "$(${find} ${dir} -maxdepth 1 -type f -newer $1 -print)" ]; then
+	    if [ -n "$(${find} ${dir} -maxdepth $AUTOMAKE -type f -newer $1 -print)" ]; then
 		return 1;
 	    fi
-	elif [ -n "$(${find} ${dir} -maxdepth 1 -type f -newer $1 -print -quit)" ]; then
+	elif [ -n "$(${find} ${dir} -maxdepth $AUTOMAKE -type f -newer $1 -print -quit)" ]; then
 	    return 1;
 	fi
     done

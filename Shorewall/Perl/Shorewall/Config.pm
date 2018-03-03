@@ -6593,7 +6593,7 @@ sub get_configuration( $$$ ) {
     default_yes_no 'MANGLE_ENABLED'             , have_capability( 'MANGLE_ENABLED' ) ? 'Yes' : '';
     default_yes_no 'USE_DEFAULT_RT'             , '';
     default_yes_no 'RESTORE_DEFAULT_ROUTE'      , 'Yes';
-    default_yes_no 'AUTOMAKE'                   , '';
+    default_yes_no 'AUTOMAKE'                   , '' unless ( $val = $config{AUTOMAKE} ) && $val =~ /^\d{1,2}$/; 
     default_yes_no 'TRACK_PROVIDERS'            , 'Yes';
     default_yes_no 'BALANCE_PROVIDERS'          , $config{USE_DEFAULT_RT} ? 'Yes' : '';
     default_yes_no 'USE_NFLOG_SIZE'             , '';

@@ -463,7 +463,8 @@
 
       <varlistentry>
         <term><emphasis role="bold">AUTOMAKE=</emphasis>[<emphasis
-        role="bold">Yes</emphasis>|<emphasis role="bold">No</emphasis>]</term>
+        role="bold">Yes</emphasis>|<emphasis
+        role="bold">No</emphasis>|<replaceable>depth</replaceable>]</term>
 
         <listitem>
           <para>If set, the behavior of the <command>start</command>,
@@ -481,6 +482,23 @@
           <command>restart</command> command includes a directory name
           (e.g.,<command> shorewall restart
           /etc/shorewall.new</command>).</para>
+
+          <para>When AUTOMAKE=Yes, each directory in the CONFIG_PATH was
+          originally searched recursively for files newer than the compiled
+          script. That was changed in Shorewall 5.1.10.2 such that only the
+          listed directories themselves were searched. That broke some
+          configurations that played tricks with embedded SHELL such as
+          "<command>SHELL cat /etc/shorewall/rules.d/loc/*.rules".</command>
+          Prior to 5.1.10.2, a change to a file in or adding a file to
+          /etc/shorewall/rules.d/loc/ would trigger recompilation. Beginning
+          with 5.1.10.2, such changes would not trigger recompilation.
+          Beginning with Shorewall 5.2.0, AUTOMAKE may be set to a numeric
+          <replaceable>depth</replaceable> which specifies how deeply each
+          listed directory is to be searched. AUTOMAKE=1 only searches each
+          directory itself and is equivalent to AUTOMAKE=Yes. AUTOMAKE=2 will
+          search each directory and its immediate sub-directories; AUTOMAKE=3
+          will search each diretory, each of its immediate sub-directories,
+          and each of their immediate sub-directories, etc.</para>
         </listitem>
       </varlistentry>
 

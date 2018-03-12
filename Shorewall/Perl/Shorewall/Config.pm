@@ -562,7 +562,9 @@ our %helpers = ( amanda          => UDP,
 		 sip             => UDP,
 		 snmp            => UDP,
 		 tftp            => UDP,
-	       );
+    );
+
+use constant { INCLUDE_LIMIT     => 20 };
 
 our %helpers_map;
 
@@ -3320,7 +3322,7 @@ sub copy1( $ ) {
 			my @line = split / /;
 
 			fatal_error "Invalid INCLUDE command"    if @line != 2;
-			fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+			fatal_error "INCLUDEs nested too deeply" if @includestack >= INCLUDE_LIMIT;
 
 			my $filename = find_file $line[1];
 
@@ -3530,7 +3532,7 @@ sub read_a_line($);
 sub embedded_shell( $ ) {
     my $multiline = shift;
 
-    fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+    fatal_error "INCLUDEs nested too deeply" if @includestack >= INCLUDE_LIMIT;
     my ( $command, $linenumber ) = ( "/bin/sh -c '$currentline", $currentlinenumber );
 
     $directive_callback->( 'SHELL', $currentline ) if $directive_callback;
@@ -3617,7 +3619,7 @@ sub embedded_perl( $ ) {
     $embedded--;
 
     if ( $perlscript ) {
-	fatal_error "INCLUDEs nested too deeply" if @includestack >= 4;
+	fatal_error "INCLUDEs nested too deeply" if @includestack >= INCLUDE_LIMIT;
 
 	assert( close $perlscript );
 
@@ -3971,7 +3973,7 @@ sub read_a_line($) {
 		my @line = split ' ', $currentline;
 
 		fatal_error "Invalid INCLUDE command"    if @line != 2;
-		fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= 4;
+		fatal_error "INCLUDEs/Scripts nested too deeply" if @includestack >= INCLUDE_LIMIT;
 
 		my $filename = find_file $line[1];
 

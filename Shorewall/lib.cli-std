@@ -1349,6 +1349,125 @@ rcp_command() {
 }
 
 #
+# Remote-{getcaps|getrc} command executer
+#
+remote_capture() # $* = original arguments less the command.
+{
+    local verbose
+    verbose=$(make_verbose)
+    local finished
+    finished=0
+    local system
+    local getrc
+    getrc=
+    local remote_sw_dir_path
+    remote_sw_dir_path=
+    local root
+    root=root
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			R*)
+			    getrc=Yes
+			    option=${option#R}
+			    ;;
+			r)
+			    [ $# -gt 1 ] || fatal_error "Missing Root User name"
+			    root=$2
+			    option=
+			    shift
+			    ;;
+			D)
+			    [ $# -gt 1 ] || fatal_error "Missing directory name"
+			    g_shorewalldir=$2
+			    option=
+			    shift
+			    ;;
+			p)
+			    [ $# -gt 1 ] || fatal_error "Missing directory name"
+			    remote_sw_dir_path=$2
+			    option=
+			    shift
+			    ;;
+			T*)
+			    g_confess=Yes
+			    option=${option#T}
+			    ;;
+			*)
+			    option_error $option
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    [ -n "$g_shorewalldir" ] || g_shorewalldir='.'
+	    ;;
+	1)
+	    g_shorewalldir="."
+	    system=$1
+	    ;;
+	2)
+	    g_shorewalldir=$1
+	    system=$2
+	    ;;
+	*)
+	    too_many_arguments $3
+	    ;;
+    esac
+
+    [ -f $g_shorewalldir/${PRODUCT}.conf ] || fatal_error "Missing file: $g_shorewalldir/${PRODUCT}.conf."
+
+    g_export=Yes
+
+    ensure_config_path
+
+    get_config No
+
+    g_haveconfig=Yes
+
+    if [ -z "$system" ]; then
+        system=$FIREWALL
+        [ -n "$system" ] || fatal_error "No system name given and the FIREWALL option is not set"
+    fi
+
+    case $COMMAND in
+        remote-getrc)
+            getrc=Yes
+            ;;
+    esac
+
+    if [ -n "$getrc" -o ! -s $g_shorewalldir/shorewallrc ]; then
+        progress_message2 "Getting RC file on system $system..."
+
+        if [ -n "$remote_sw_dir_path" ]; then
+            if ! rsh_command "/sbin/shorewall-lite show rc $remote_sw_dir_path" > $g_shorewalldir/shorewallrc; then
+                fatal_error "Capturing RC file on system $system failed"
+            fi
+        elif ! rsh_command "/sbin/shorewall-lite show rc" > $g_shorewalldir/shorewallrc; then
+            fatal_error "Capturing RC file on system $system failed"
+        fi
+    fi
+}
+
+#
 # Remote-{start|reload|restart} command executor
 #
 remote_commands() # $* = original arguments less the command.
@@ -1690,6 +1809,10 @@ compiler_command() {
 	    shift
 	    safe_commands $@
 	    ;;
+        remote-getrc)
+            shift
+            remote_capture $@
+            ;;
 	*)
 	    fatal_error "Invalid command: $COMMAND"
 	    ;;

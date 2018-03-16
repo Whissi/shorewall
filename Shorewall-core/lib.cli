@@ -1432,6 +1432,17 @@ show_command() {
 	vardir)
 	    echo $VARDIR;
 	    ;;
+        rc)
+            shift
+	    [ $# -gt 1 ] && too_many_arguments $2
+            if [ -n "$1" -a -d "$1" ]; then
+                cat $1/shorewallrc
+            elif [ -n "$g_basedir" -a -d "$g_basedir" ]; then
+                cat $g_basedir/shorewallrc
+            else
+                fatal_error "Can not determine the location of the shorewall program."
+            fi
+            ;;
 	policies)
 	    only_root
 	    [ $# -gt 1 ] && too_many_arguments $2
@@ -4373,6 +4384,7 @@ usage() # $1 = exit status
     echo "   [ show | list | ls ] saves"
     echo "   [ show | list | ls ] tc [ device ]"
     echo "   [ show | list | ls ] vardir"
+    echo "   [ show | list | ls ] rc [ <remote-dir-path-of-sw-program> ]"
     echo "   [ show | list | ls ] zones"
 
     if [ -n "$g_lite" ]; then

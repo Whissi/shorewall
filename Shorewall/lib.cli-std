@@ -1360,10 +1360,14 @@ remote_capture() # $* = original arguments less the command.
     local system
     local getrc
     getrc=
+    local getcaps
+    getcaps=
     local remote_sw_dir_path
     remote_sw_dir_path=
     local root
     root=root
+    local libexec
+    libexec=${LIBEXECDIR}
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -1380,6 +1384,10 @@ remote_capture() # $* = original arguments less the command.
 			R*)
 			    getrc=Yes
 			    option=${option#R}
+			    ;;
+			c*)
+			    getcaps=Yes
+			    option=${option#c}
 			    ;;
 			r)
 			    [ $# -gt 1 ] || fatal_error "Missing Root User name"
@@ -1452,7 +1460,12 @@ remote_capture() # $* = original arguments less the command.
         remote-getrc)
             getrc=Yes
             ;;
+        remote-getcaps)
+            getcaps=Yes
+            ;;
     esac
+
+    [ -n "$getcaps" ] && getrc=Yes
 
     if [ -n "$getrc" -o ! -s $g_shorewalldir/shorewallrc ]; then
         progress_message2 "Getting RC file on system $system..."
@@ -1463,6 +1476,29 @@ remote_capture() # $* = original arguments less the command.
             fi
         elif ! rsh_command "/sbin/shorewall-lite show rc" > $g_shorewalldir/shorewallrc; then
             fatal_error "Capturing RC file on system $system failed"
+        fi
+    fi
+
+    remote_sw_dir_path=
+
+    if [ -n "$getcaps" -o ! -s $g_shorewalldir/capabilities ]; then
+        if [ -f $g_shorewalldir/shorewallrc -a -s $g_shorewalldir/shorewallrc ]; then
+            . $g_shorewalldir/shorewallrc
+            libexec="$LIBEXECDIR"
+
+            [ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
+
+            progress_message2 "Getting Capabilities on system $system..."
+
+            if [ $g_family -eq 4 ]; then
+                if ! rsh_command "MODULESDIR=$MODULESDIR IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_shorewalldir/capabilities; then
+                    fatal_error "Capturing capabilities on system $system failed"
+                fi
+            elif ! rsh_command "MODULESDIR=$MODULESDIR IP6TABLES=$IP6TABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall6-lite/shorecap" > $g_shorewalldir/capabilities; then
+                fatal_error "Capturing capabilities on system $system failed"
+            fi
+        else
+            fatal_error "$g_shorewalldir/shorewallrc is not present."
         fi
     fi
 }
@@ -1809,7 +1845,7 @@ compiler_command() {
 	    shift
 	    safe_commands $@
 	    ;;
-        remote-getrc)
+        remote-getrc|remote-getcaps)
             shift
             remote_capture $@
             ;;

@@ -1485,7 +1485,7 @@ remote_reload_command() # $* = original arguments less the command.
 
     if [ -z "$getcaps" ]; then
 	capabilities=$(find_file capabilities)
-	[ -f $capabilities ] || getcaps=Yes
+	[ ! -f $capabilities -o ! -s $capabilities ] && getcaps=Yes
     fi
 
     if [ -n "$getcaps" ]; then

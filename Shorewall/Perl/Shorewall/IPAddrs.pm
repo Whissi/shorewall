@@ -60,6 +60,7 @@ our @EXPORT = ( qw( ALLIPv4
 		  decompose_net
 		  decompose_net_u32
 		  compare_nets
+		  loopback_address
 		  validate_host
 		  validate_range
 		  ip_range_explicit
@@ -98,12 +99,14 @@ our $resolve_dnsname;
 our $validate_range;
 our $validate_host;
 our $family;
+our $loopback_address;
 
 use constant { ALLIPv4             => '0.0.0.0/0' ,
 	       ALLIPv6             => '::/0' ,
 	       NILIPv4             => '0.0.0.0' ,
 	       NILIPv6             => '::' ,
 	       IPv4_MULTICAST      => '224.0.0.0/4' ,
+	       IPv4_LOOPBACK       => '127.0.0.1' ,
 	       IPv6_MULTICAST      => 'ff00::/8' ,
 	       IPv6_LINKLOCAL      => 'fe80::/10' ,
 	       IPv6_SITELOCAL      => 'feC0::/10' ,
@@ -368,6 +371,10 @@ sub nilipv6() {
 
 sub rfc1918_networks() {
     @rfc1918_networks
+}
+
+sub loopback_address() {
+    $loopback_address;
 }
 
 #
@@ -755,6 +762,7 @@ sub initialize( $ ) {
 	$nilip            = NILIPv4;
 	@nilip            = @nilipv4;
 	$vlsm_width       = VLSMv4;
+	$loopback_address = IPv4_LOOPBACK;
 	$valid_address    = \&valid_4address;
 	$validate_address = \&validate_4address;
 	$validate_net     = \&validate_4net;
@@ -767,6 +775,7 @@ sub initialize( $ ) {
 	$nilip            = NILIPv6;
 	@nilip            = @nilipv6;
 	$vlsm_width       = VLSMv6;
+	$loopback_address = IPv6_LOOPBACK;
 	$valid_address    = \&valid_6address;
 	$validate_address = \&validate_6address;
 	$validate_net     = \&validate_6net;

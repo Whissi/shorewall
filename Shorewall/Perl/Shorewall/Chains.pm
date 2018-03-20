@@ -7097,14 +7097,17 @@ sub interface_address( $ ) {
 #
 sub get_interface_address ( $;$ ) {
     my ( $logical, $provider ) = @_;
-
     my $interface = get_physical( $logical );
     my $variable = interface_address( $interface );
-    my $function = interface_is_optional( $logical ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
 
     $global_variables |= ALL_COMMANDS;
 
-    $interfaceaddr{$interface} = "$variable=\$($function $interface)\n";
+    if ( $interface eq loopback_interface ) {
+	$interfaceaddr{$interface} = "$variable=" . loopback_address;
+    } else {
+	my $function = interface_is_optional( $logical ) ? 'find_first_interface_address_if_any' : 'find_first_interface_address';
+	$interfaceaddr{$interface} = "$variable=\$($function $interface)\n";
+    }
 
     set_interface_option( $logical, 'used_address_variable', 1 ) unless $provider;
 

@@ -1,5 +1,5 @@
 #
-# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Proc.pm
+# Shorewall 5.2 -- /usr/share/shorewall/Shorewall/Proc.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

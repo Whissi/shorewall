@@ -1,5 +1,5 @@
 #
-# Shorewall 5.0 -- /usr/share/shorewall/Shorewall/Tunnels.pm
+# Shorewall 5.2 -- /usr/share/shorewall/Shorewall/Tunnels.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #     (c) 2007-2016 - Tom Eastep (teastep@shorewall.net)

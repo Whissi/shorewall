@@ -1,5 +1,5 @@
 #
-# Shorewall 5.1 -- /usr/share/shorewall/Shorewall/IPAddrs.pm
+# Shorewall 5.2 -- /usr/share/shorewall/Shorewall/IPAddrs.pm
 #
 #     This program is under GPL [http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt]
 #

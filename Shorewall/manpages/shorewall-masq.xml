@@ -26,9 +26,13 @@
     <title>Description</title>
 
     <para>This file is used to define dynamic NAT (Masquerading) and to define
-    Source NAT (SNAT). While still supported, its use is deprecated in favor
-    of <ulink url="shorewall-snat.html">shorewall-snat</ulink>(5) which was
-    introduced in Shorewall 5.0.14.</para>
+    Source NAT (SNAT). Its use was deprecated in favor of <ulink
+    url="shorewall-snat.html">shorewall-snat</ulink>(5) in Shorewall 5.0.14,
+    and the file was superseded by <ulink
+    url="shorewall-snat.html">shorewall-snat</ulink>(5) in Shorewall 5.2.0.
+    Beginning with that release, the Shorewall compiler will automatically
+    convert existing masq files to the equivalent snat file, and rename the
+    masq file to masq.bak.</para>
 
     <warning>
       <para>The entries in this file are order-sensitive. The first entry that

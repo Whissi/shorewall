@@ -779,7 +779,7 @@ sub compiler {
     #
     # Setup Masquerade/SNAT
     #
-    setup_snat;
+    setup_snat( $update );
     #
     # Setup Nat
     #

@@ -452,6 +452,54 @@
 
       <arg>options</arg>
 
+      <arg choice="plain"><option>remote-getcaps</option></arg>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-R</option></arg>
+
+      <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-i</option></arg>
+
+      <arg><arg><option>-D</option></arg><replaceable>directory</replaceable></arg>
+
+      <arg choice="plain"><arg><replaceable>system</replaceable></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall[6]</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>options</arg>
+
+      <arg choice="plain"><option>remote-getrc</option></arg>
+
+      <arg><option>-s</option></arg>
+
+      <arg><option>-c</option></arg>
+
+      <arg><option>-r</option> <replaceable>root-user-name</replaceable></arg>
+
+      <arg><option>-T</option></arg>
+
+      <arg><option>-i</option></arg>
+
+      <arg><arg><option>-D</option></arg><replaceable>directory</replaceable></arg>
+
+      <arg choice="plain"><arg><replaceable>system</replaceable></arg></arg>
+    </cmdsynopsis>
+
+    <cmdsynopsis>
+      <command>shorewall[6]</command>
+
+      <arg choice="opt"><option>trace</option>|<option>debug</option></arg>
+
+      <arg>options</arg>
+
       <arg choice="plain"><option>remote-start</option></arg>
 
       <arg><option>-s</option></arg>
@@ -1871,6 +1919,57 @@
       </varlistentry>
 
       <varlistentry>
+        <term><emphasis role="bold">remote-getcaps</emphasis>
+        [-<option>R</option>] [-<option>r</option>
+        <replaceable>root-user-name</replaceable>] [ [ -D ]
+        <replaceable>directory</replaceable> ] [
+        <replaceable>system</replaceable> ]</term>
+
+        <listitem>
+          <para>Added in Shoreall 5.2.0, this command executes <emphasis
+          role="bold">shorewall[6]-lite show capabilities -f &gt;
+          /var/lib/shorewall[6]-lite/capabilities</emphasis> on the remote
+          <replaceable>system</replaceable> via ssh then the generated file is
+          copied to <replaceable>directory</replaceable> on the local system.
+          If no <replaceable>directory</replaceable> is given, the current
+          working directory is assumed.</para>
+
+          <para>if <emphasis role="bold">-R</emphasis> is included, the remote
+          shorewallrc file is also copied to
+          <replaceable>directory</replaceable>.</para>
+
+          <para>If <option>-r</option> is included, it specifies that the root
+          user on <replaceable>system</replaceable> is named
+          <replaceable>root-user-name</replaceable> rather than "root".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><emphasis role="bold">remote-getrc</emphasis>
+        [-<option>c</option>] [-<option>r</option>
+        <replaceable>root-user-name</replaceable>] [ [ -D ]
+        <replaceable>directory</replaceable> ] [
+        <replaceable>system</replaceable> ]</term>
+
+        <listitem>
+          <para>Added in Shoreall 5.2.0, this command copies the shorewallrc
+          file from the remote <replaceable>system</replaceable> to
+          <replaceable>directory</replaceable> on the local system. If no
+          <replaceable>directory</replaceable> is given, the current working
+          directory is assumed.</para>
+
+          <para>if <emphasis role="bold">-c</emphasis> is included, the remote
+          capabilities are also copied to
+          <replaceable>directory</replaceable>, as is done by the
+          <command>remote-getcaps</command> command.</para>
+
+          <para>If <option>-r</option> is included, it specifies that the root
+          user on <replaceable>system</replaceable> is named
+          <replaceable>root-user-name</replaceable> rather than "root".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term><emphasis role="bold">remote-start</emphasis>
         [-<option>n</option>] [-<option>s</option>] [-<option>c</option>]
         [-<option>r</option> <replaceable>root-user-name</replaceable>]
@@ -1921,9 +2020,9 @@
           role="bold">shorewall-lite save</emphasis> via ssh.</para>
 
           <para>if <emphasis role="bold">-c</emphasis> is included, the
-          command <emphasis role="bold">shorewall-lite show capabilities -f
-          &gt; /var/lib/shorewall-lite/capabilities</emphasis> is executed via
-          ssh then the generated file is copied to
+          command <emphasis role="bold">shorewall[6]-lite show capabilities -f
+          &gt; /var/lib/shorewall[6]-lite/capabilities</emphasis> is executed
+          via ssh then the generated file is copied to
           <replaceable>directory</replaceable> using scp. This step is
           performed before the configuration is compiled.</para>
 
@@ -1934,13 +2033,6 @@
           <para>The <option>-T</option> option was added in Shorewall 4.5.3
           and causes a Perl stack trace to be included with each
           compiler-generated error and warning message.</para>
-
-          <para>The <option>-i</option> option was added in Shorewall 4.6.0
-          and causes a warning message to be issued if the current line
-          contains alternative input specifications following a semicolon
-          (";"). Such lines will be handled incorrectly if INLINE_MATCHES is
-          set to Yes in <ulink
-          url="/manpages/shorewall.conf.html">shorewall.conf</ulink>(5).</para>
         </listitem>
       </varlistentry>
 
@@ -2663,6 +2755,15 @@
                 ACCEPT policies are not displayed for zones associated with a
                 single network where that network doesn't specify
                 <option>routeback</option>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term><emphasis role="bold">rc</emphasis></term>
+
+              <listitem>
+                <para>Added in Shorewall 5.2.0. Displays the contents of
+                $SHAREDIR/shorewall/shorewallrc.</para>
               </listitem>
             </varlistentry>
 

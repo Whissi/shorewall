@@ -37,7 +37,7 @@ use strict;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw( setup_nat setup_netmap add_addresses );
-our %EXPORT_TAGS = ( rules => [ qw ( handle_nat_rule handle_nonat_rule process_one_masq convert_masq @addresses_to_add %addresses_to_add ) ] );
+our %EXPORT_TAGS = ( rules => [ qw ( handle_nat_rule handle_nonat_rule convert_masq @addresses_to_add %addresses_to_add ) ] );
 our @EXPORT_OK = ();
 
 Exporter::export_ok_tags('rules');
@@ -587,10 +587,10 @@ EOF
 # Convert a masq file into the equivalent snat file
 #
 sub convert_masq() {
+    my $have_masq_rules;
+
     if ( my $fn = open_file( 'masq', 1, 1 ) ) {
 	my ( $snat, $fn1 ) = open_snat_for_output( $fn );
-
-	my $have_masq_rules;
 
 	directive_callback(
 	    sub ()
@@ -647,6 +647,8 @@ sub convert_masq() {
 
 	close $snat, directive_callback( 0 );
     }
+
+    $have_masq_rules;
 }
 
 #

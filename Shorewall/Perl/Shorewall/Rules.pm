@@ -5851,23 +5851,15 @@ sub process_snat( )
 }
 
 #
-# Process the masq or snat file
+# Process the snat file. Convert the masq file if found and non-empty
 #
-sub setup_snat( $ ) # Convert masq->snat if true
+sub setup_snat()
 {
     my $fn;
-    my $have_masq;
 
-    if ( $_[0] ) {
-	convert_masq();
-    } elsif ( $fn = open_file( 'masq', 1, 1 ) ) {
-	first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty masq file" , 's'; } );
-	process_one_masq(0), $have_masq = 1 while read_a_line( NORMAL_READ );
-    }
-
-    unless ( $have_masq ) {
+    unless ( convert_masq ) {
 	#
-	# Masq file empty or didn't exist
+	# Masq file was empty or didn't exist
 	#
 	if ( $fn = open_file( 'snat', 1, 1 ) ) {
 	    first_entry( sub { progress_message2 "$doing $fn..."; require_capability 'NAT_ENABLED' , "a non-empty snat file" , 's'; } );

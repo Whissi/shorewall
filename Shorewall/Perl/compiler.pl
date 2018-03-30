@@ -32,7 +32,6 @@
 #         --directory=<directory>     # Directory where configuration resides (default is /etc/shorewall)
 #         --timestamp                 # Timestamp all progress messages
 #         --debug                     # Print stack trace on warnings and fatal error.
-#         --refresh=<chainlist>       # Make the 'refresh' command refresh a comma-separated list of chains rather than 'blacklst'.
 #         --log=<filename>            # Log file
 #         --log_verbosity=<number>    # Log Verbosity range -1 to 2
 #         --family=<number>           # IP family; 4 = IPv4 (default), 6 = IPv6
@@ -63,7 +62,6 @@ usage: compiler.pl [ <option> ... ] [ <filename> ]
     [ --timestamp ]
     [ --debug ]
     [ --confess ]
-    [ --refresh=<chainlist> ]
     [ --log=<filename> ]
     [ --log-verbose={-1|0-2} ]
     [ --test ]
@@ -88,7 +86,6 @@ my $verbose       = 0;
 my $timestamp     = 0;
 my $debug         = 0;
 my $confess       = 0;
-my $chains        = ':none:';
 my $log           = '';
 my $log_verbose   = 0;
 my $help          = 0;
@@ -114,8 +111,6 @@ my $result = GetOptions('h'               => \$help,
 			'timestamp'       => \$timestamp,
 			't'               => \$timestamp,
 		        'debug'           => \$debug,
-			'r=s'             => \$chains,
-			'refresh=s'       => \$chains,
 			'log=s'           => \$log,
 			'l=s'             => \$log,
 			'log_verbosity=i' => \$log_verbose,
@@ -143,7 +138,6 @@ compiler( script          => $ARGV[0] || '',
 	  timestamp       => $timestamp,
 	  debug           => $debug,
 	  export          => $export,
-	  chains          => $chains,
 	  log             => $log,
 	  log_verbosity   => $log_verbose,
 	  test            => $test,

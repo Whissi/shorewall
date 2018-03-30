@@ -356,7 +356,7 @@ sub generate_script_2() {
 #    Note: This function is not called when $command eq 'check'. So it must have no side effects other
 #          than those related to writing to the output script file.
 #
-sub generate_script_3($) {
+sub generate_script_3() {
 
     if ( $family == F_IPV4 ) {
 	progress_message2 "Creating iptables-restore input...";
@@ -582,8 +582,8 @@ sub compile_info_command() {
 #
 sub compiler {
 
-    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $chains , $log , $log_verbosity, $preview, $confess , $update , $annotate , $config_path, $shorewallrc                      , $shorewallrc1 ) =
-       ( '',              '',         -1,          '',          0,      '',       '',   -1,             0,        0,         0,        0,        , ''          , '/usr/share/shorewall/shorewallrc', ''            );
+    my ( $scriptfilename, $directory, $verbosity, $timestamp , $debug, $log , $log_verbosity, $preview, $confess , $update , $annotate , $config_path, $shorewallrc                      , $shorewallrc1 ) =
+       ( '',              '',         -1,         '',          0,      '',    -1,             0,        0,         0,        0,        , ''          , '/usr/share/shorewall/shorewallrc', ''            );
 
     $export         = 0;
     $test           = 0;
@@ -612,7 +612,6 @@ sub compiler {
 		  timestamp     => { store => \$timestamp,     validate => \&validate_boolean   } ,
 		  debug         => { store => \$debug,         validate => \&validate_boolean   } ,
 		  export        => { store => \$export ,       validate => \&validate_boolean   } ,
-		  chains        => { store => \$chains },
 		  log           => { store => \$log },
 		  log_verbosity => { store => \$log_verbosity, validate => \&validate_verbosity } ,
 		  test          => { store => \$test },
@@ -882,7 +881,7 @@ sub compiler {
 	#                          N E T F I L T E R   L O A D
 	#    (Produces setup_netfilter(), setup_arptables(), chainlist_reload() and define_firewall() )
 	#
-	generate_script_3( $chains );
+	generate_script_3();
 	#
 	# We must reinitialize Shorewall::Chains before generating the iptables-restore input
 	# for stopping the firewall

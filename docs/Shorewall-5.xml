@@ -135,6 +135,21 @@
         <listitem>
           <para>CHAIN_SCRIPTS (Removed in Shorewall 5.1).</para>
         </listitem>
+
+        <listitem>
+          <para>MODULE_SUFFIX (Removed in Shorewall 5.1.7). Shorewall can now
+          locate modules independent of their suffix (extension).</para>
+        </listitem>
+
+        <listitem>
+          <para>INLINE_MATCHES (Removed in Shorewall 5.2). Inline matches are
+          now separated from column-oriented input by two adjacent semicolons
+          (";;").</para>
+        </listitem>
+
+        <listitem>
+          <para>MAPOLDACTIONS (Removed in Shorewall 5.2). </para>
+        </listitem>
       </itemizedlist>
 
       <para>A compilation warning is issued when any of these options are
@@ -173,17 +188,18 @@
       <title>Obsolete Configuration Files</title>
 
       <para>Support has been removed for the 'blacklist', 'tcrules',
-      'routestopped', 'notrack' and 'tos' files.</para>
+      'routestopped', 'notrack', 'tos' and 'masq' files.</para>
 
-      <para>The <option>-t</option> and <option>-b</option> options of the
-      <command>update</command> command are still available to convert the
-      'tcrules' and 'tos' files to the equivalent 'mangle' file and to convert
-      the 'blacklist' file into an equivalent 'blrules' file.</para>
+      <para>The <command>update</command> command is available to convert the
+      'tcrules' and 'tos' files to the equivalent 'mangle' file, to convert
+      the 'blacklist' file into an equivalent 'blrules' file, and to convert
+      the 'masq' file to the equivalent 'snat' file.</para>
 
-      <para>As in Shorewall 4.6.12, the <option>-s</option> option is
-      available to convert the 'routestopped' file into the equivalent
-      'stoppedrules' file and the <option>-n</option> option is available to
-      convert a 'notrack' file to the equivalent 'conntrack' file.</para>
+      <para>As in Shorewall 4.6.12, the <command>update</command> command
+      converts the 'routestopped' file into the equivalent 'stoppedrules' file
+      and converts a 'notrack' file to the equivalent 'conntrack' file.</para>
+
+      <para>Note that in Shorewall 5.2, the update command </para>
     </section>
 
     <section>
@@ -367,6 +383,33 @@
         equivalent RESTART setting.</para>
       </note>
     </section>
+
+    <section>
+      <title>refresh</title>
+
+      <para>Given the availability of ipset-based blacklisting, the
+      <command>refresh</command> command was eliminated in Shorewall
+      5.2.</para>
+
+      <para>Some users may have been using <command>refresh</command> as a
+      lightweight form of <command>reload</command>. The most common of these
+      uses seem to be for reloading traffic shaping after an interface has
+      gone down and come back up. The best way to handle this situation under
+      5.2 is to make the interface 'optional' in your
+      /etc/shorewall[6]/interfaces file, then either:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Install Shorewall-init and enable IFUPDOWN; or</para>
+        </listitem>
+
+        <listitem>
+          <para>Use the <command>reenable</command> command when the interface
+          comes back up in place of the <command>refresh</command>
+          command.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 
   <section>
@@ -423,9 +466,14 @@
   <section>
     <title>Upgrading to Shorewall 5</title>
 
-    <para>It is strongly recommended that you first upgrade your installation
-    to a 4.6 release that supports the <option>-A</option> option to the
-    <command>update</command> command; 4.6.13.2 or later is preferred.</para>
+    <para><important>
+        <para>For detailed upgrade information, please consult the 'Migration
+        Issues' section of the release notes for the version that you are
+        upgrading to.</para>
+      </important>It is strongly recommended that you first upgrade your
+    installation to a 4.6 release that supports the <option>-A</option> option
+    to the <command>update</command> command; 4.6.13.2 or later is
+    preferred.</para>
 
     <para>Once you are on that release, execute the <command>shorewall update
     -A</command> command (and <command>shorewall6 update -A</command> if you
@@ -445,7 +493,9 @@
     have been removed -- the updates triggered by those options are now
     performed unconditionally. The <option>-i </option>and <option>-A
     </option>options have been retained - both enable checking for issues that
-    could result if INLINE_MATCHES were to be set to Yes.</para>
+    could result if INLINE_MATCHES were to be set to Yes. The -i option was
+    removed in Shorewall 5.2, given that the INLINE_MATCHES option was also
+    removed.</para>
 
     <section>
       <title id="CHAIN_SCRIPTS">CHAIN_SCRIPTS Removal</title>

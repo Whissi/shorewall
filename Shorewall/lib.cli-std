@@ -1468,7 +1468,7 @@ remote_capture() # $* = original arguments less the command.
     [ -n "$getcaps" ] && getrc=Yes
 
     if [ -n "$getrc" -o ! -s $g_shorewalldir/shorewallrc ]; then
-        progress_message2 "Getting RC file on system $system..."
+        progress_message2 "Getting shorewallrc file on system $system..."
 
         if [ -n "$remote_sw_dir_path" ]; then
             if ! rsh_command "/sbin/shorewall-lite show rc $remote_sw_dir_path" > $g_shorewalldir/shorewallrc; then
@@ -1646,7 +1646,7 @@ remote_commands() # $* = original arguments less the command.
     if [ -n "$getcaps" ]; then
 	[ -n "$DONT_LOAD" ] && DONT_LOAD="$(echo $DONT_LOAD | tr ',' ' ')"
 
-	progress_message "Getting Capabilities on system $system..."
+	progress_message2 "Getting Capabilities on system $system..."
 	if [ $g_family -eq 4 ]; then
 	    if ! rsh_command "MODULESDIR=$MODULESDIR IPTABLES=$IPTABLES DONT_LOAD=\"$DONT_LOAD\" $libexec/shorewall-lite/shorecap" > $g_shorewalldir/capabilities; then
 	        fatal_error "Capturing capabilities on system $system failed"
@@ -1662,6 +1662,7 @@ remote_commands() # $* = original arguments less the command.
     #
     # Handle nonstandard remote VARDIR
     #
+    progress_message2 "Getting VARDIR on system $system..."
     temp=$(rsh_command $program show config 2> /dev/null | grep ^LITEDIR | sed 's/LITEDIR is //')
  
     [ -n "$temp" ] && litedir="$temp"

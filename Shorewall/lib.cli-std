@@ -1441,13 +1441,11 @@ remote_capture() # $* = original arguments less the command.
 	    ;;
     esac
 
-    [ -f $g_shorewalldir/${PRODUCT}.conf ] || fatal_error "Missing file: $g_shorewalldir/${PRODUCT}.conf."
-
     g_export=Yes
 
     ensure_config_path
 
-    get_config No
+    get_config Yes
 
     g_haveconfig=Yes
 

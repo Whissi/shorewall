@@ -1617,23 +1617,15 @@ remote_commands() # $* = original arguments less the command.
 
     g_export=Yes
 
-    if [ -f $g_shorewalldir/${PRODUCT}.conf ]; then
-	if [ -f $g_shorewalldir/params ]; then
-	    . $g_shorewalldir/params
-	fi
+    ensure_config_path
 
-	ensure_config_path
+    get_config Yes
 
-	get_config No
+    g_haveconfig=Yes
 
-	g_haveconfig=Yes
-
-	if [ -z "$system" ]; then
-	    system=$FIREWALL
-	    [ -n "$system" ] || fatal_error "No system name given and the FIREWALL option is not set"
-	fi
-    else
-	fatal_error "$g_shorewalldir/$PRODUCT.conf does not exist"
+    if [ -z "$system" ]; then
+        system=$FIREWALL
+        [ -n "$system" ] || fatal_error "No system name given and the FIREWALL option is not set"
     fi
 
     if [ -z "$getcaps" ]; then

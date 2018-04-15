@@ -135,7 +135,7 @@ if ( $command & $RESET_CMD ) {
     #
     # if the event is armed, remove it and perform the action
     #
-    perl_action_helper( $action , "-m mark --mark $mark/$mark -m recent --remove --name $event $srcdest" );
+    perl_action_helper( $action , "-m mark --mark $mark/$mark -m recent --remove --name $event $srcdst" );
 } elsif ( $command & $UPDATE_CMD ) {
     perl_action_helper( $action, "-m recent --update ${duration}--hitcount $hitcount --name $event $srcdst" );
 } else {
